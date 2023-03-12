@@ -5,7 +5,9 @@ This project aims to port the fabulous [rjwats/esp8266-react](https://github.com
 - SSL support for MQTT
 - Websocket client with SSL support
 - OTA with information pulled from github release pages
+- Advertize services with Bonjour/mDNS to the local network
 - Depreciate support for ESP8266, use ESP32-C3 instead
+- Store important information in NVS instead of filesystem, so that they survive an update
 
 A simple, secure and extensible framework for IoT projects built on ESP32 platforms with responsive [Sveltekit](https://kit.svelte.dev/) front-end built with [TailwindCSS](https://tailwindcss.com/) and [DaisyUI](https://daisyui.com/).
 
@@ -102,17 +104,9 @@ board = node32s
 
 #### Serving the interface from the filesystem
 
-If you choose to serve the interface from the filesystem you will need to change the default configuration and upload the file system image manually.
+If you choose to serve the interface from the filesystem the build process will automatically create and upload the filesystem image.
 
-Disable `-D PROGMEM_WWW build` flag in ['platformio.ini'](platformio.ini) and re-build the firmware. The build process will now copy the compiled interface to the `data/` directory and it may be uploaded to the device by pressing the "Upload File System image" button:
-
-![uploadfs](/media/uploadfs.png?raw=true "uploadfs")
-
-Alternatively run the 'uploadfs' target:
-
-```bash
-platformio run -t uploadfs
-```
+Disable `-D PROGMEM_WWW build` flag in ['platformio.ini'](platformio.ini) and re-build the firmware. The build process will compile the filesystem image from the `data/` directory and upload it to the device automatically.
 
 ### Developing the interface locally
 
