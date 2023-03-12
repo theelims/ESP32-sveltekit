@@ -11,8 +11,8 @@ const config: UserConfig = {
     ],
     server: {
         proxy: {
-          // Proxying REST: http://localhost:5173/api/bar -> http://192.168.1.83/api/bar
-          '/api': {
+          // Proxying REST: http://localhost:5173/rest/bar -> http://192.168.1.83/rest/bar
+          '/rest': {
             target: 'http://192.168.1.83',
             changeOrigin: true,
           },
