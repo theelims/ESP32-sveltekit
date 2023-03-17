@@ -8,6 +8,9 @@ This project aims to port the fabulous [rjwats/esp8266-react](https://github.com
 - Advertize services with Bonjour/mDNS to the local network
 - Depreciate support for ESP8266, use ESP32-C3 instead
 - Store important information in NVS instead of filesystem, so that they survive an update
+- Service thread instead of a loop function.
+- Fallback / recovery mode
+- Compatibility with the whole ESP32 range of chips
 
 A simple, secure and extensible framework for IoT projects built on ESP32 platforms with responsive [Sveltekit](https://kit.svelte.dev/) front-end built with [TailwindCSS](https://tailwindcss.com/) and [DaisyUI](https://daisyui.com/).
 
