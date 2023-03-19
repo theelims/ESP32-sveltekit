@@ -1,3 +1,9 @@
+<script lang="ts">
+	import type { PageData } from './$types';
+
+	export let data: PageData;
+</script>
+
 <div class="hero h-full bg-base-100">
 	<div class="hero-content text-center">
 		<div class="max-w-md">
