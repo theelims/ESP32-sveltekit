@@ -11,6 +11,8 @@ This project aims to port the fabulous [rjwats/esp8266-react](https://github.com
 - Service thread instead of a loop function.
 - Fallback / recovery mode
 - Compatibility with the whole ESP32 range of chips
+- Allow anonyoums guest user
+- Store Wi-Fi credentials for more then one network. Select network by preference and signal strength
 
 A simple, secure and extensible framework for IoT projects built on ESP32 platforms with responsive [Sveltekit](https://kit.svelte.dev/) front-end built with [TailwindCSS](https://tailwindcss.com/) and [DaisyUI](https://daisyui.com/).
 

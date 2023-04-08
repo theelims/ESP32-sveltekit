@@ -2,14 +2,27 @@
 
 ## WiFi
 
-| Method | Request URL            | JSON Body                                    | Info                                                            |
-| ------ | ---------------------- | -------------------------------------------- | --------------------------------------------------------------- |
-| GET    | /api/wifi/configlist   | none                                         | Get the configured SSID AP list                                 |
-| GET    | /api/wifi/scan         | none                                         | Async Scan for Networks in Range.                               |
-| GET    | /api/wifi/status       | none                                         | Show Status of the ESP32                                        |
-| POST   | /api/wifi/add          | `{ "apName": "mySSID", "apPass": "secret" }` | Add a new SSID to the AP list                                   |
-| DELETE | /api/wifi/id           | `{ "id": 1 }`                                | Drop the AP list entry using the ID                             |
-| DELETE | /api/wifi/apName       | `{ "apName": "mySSID" }`                     | Drop the AP list entries identified by the AP (SSID) Name       |
-| POST   | /api/wifi/softAp/start | none                                         | Open/Create a softAP. Used to switch from client to AP mode     |
-| POST   | /api/wifi/softAp/stop  | none                                         | Disconnect the softAP and start to connect to known SSIDs       |
-| POST   | /api/wifi/client/stop  | none                                         | Disconnect current wifi connection, start to search and connect |
+| Method | Request URL            | JSON Body                          | Info                                                                      |
+| ------ | ---------------------- | ---------------------------------- | ------------------------------------------------------------------------- |
+| GET    | /rest/features         | none                               | Tells the client which features of the UI should be use                                               |
+| GET    | /rest/otaSettings      | none                               | Retriev current OTA settings                                              |
+| POST   | /rest/otaSettings      | `{"enabled": true,"port": 8266,"password": "esp-sveltekit"}` | Update OTA settings                             |
+| GET    | /rest/mqttStatus       | none                               | Current MQTT connection status                                            |
+| GET    | /rest/mqttSettings     | none                               | Currently used MQTT settings                                              |
+| POST   | /rest/mqttSettings     | `{"enabled":false,"host":"test.mosquitto.org","port":1883,"username":"","password":"","client_id":"esp32-e89f6d20372c","keep_alive":60,"clean_session":true,"max_topic_length":128}`          | Update MQTT settings with new parameters                                  |
+| GET    | /rest/ntpStatus        | none                               | Current NTP connection status                                             |
+| GET    | /rest/ntpSettings      | none                               | Current NTP settings                                                      |
+| POST   | /rest/ntpSettings      | `{"enabled": true,"server": "time.google.com","tz_label": "Europe/London","tz_format": "GMT0BST,M3.5.0/1,M10.5.0"}`                                                                      | Update the NTP settings                                                   |
+| GET    | /rest/apStatus         | none                               | Current AP status and client information                                  |
+| GET    | /rest/apSettings       | none                               | Current AP settings                                                       |
+| POST   | /rest/apSettings       | `{"provision_mode": 1,"ssid": "ESP8266-React-e89f6d20372c","password": "esp-react","channel": 1,"ssid_hidden": false,"max_clients": 4,"local_ip": "192.168.4.1","gateway_ip": "192.168.4.1","subnet_mask": "255.255.255.0"}` | Update AP settings                                      |
+| GET    | /rest/wifiStatus       | none                               | Current status of the wifi client connection                              |
+| GET    | /rest/scanNetworks     | none                               | Async Scan for Networks in Range                                          |
+| GET    | /rest/listNetworks     | none                               | List networks in range after succesfull scanning. Otherwise triggers scanning. |
+| GET    | /rest/wifiSettings     | none                               | Current WiFi settings                                                     |
+| POST   | /rest/wifiSettings     | `{"ssid":"YourSSID","password":"YourPassword","hostname":"esp32-sveltekit","static_ip_config":false}`                                                                      | Udate WiFi settings and credentials                                       |
+| GET    | /rest/systemStatus     | none                               | Get system informations about the ESP.                                    |
+| POST   | /rest/restart          | none                               | Restart the ESP32                                                         |
+| POST   | /rest/factoryReset     | none                               | Reset the ESP32 and all settings to their default values                  |
+
+User API documentation still missing
