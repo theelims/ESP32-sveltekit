@@ -11,39 +11,60 @@
 	import Logout from '~icons/tabler/logout';
 	import Copyright from '~icons/tabler/copyright';
 
-	let userManagement = true;
+	const features = {
+		project: true,
+		security: false,
+		mqtt: true,
+		ntp: true,
+		ota: true,
+		upload_firmware: true
+	};
+
+	const appName = 'ESP32 SvelteKit';
+
+	const copyright = '2023 theelims';
+
+	const github = { href: 'https://github.com/theelims/ESP32-sveltekit', active: true };
+
+	const discord = { href: '.', active: false };
+
+	let menuItems = [
+		{ title: 'Demo App', icon: Control, href: '/app', feature: features.project, active: false },
+		{ title: 'Connections', icon: Remote, href: '/connections', feature: true, active: false },
+		{ title: 'Wi-Fi', icon: WiFi, href: '/wifi', feature: true, active: false },
+		{ title: 'System', icon: Settings, href: '/system', feature: true, active: false },
+		{ title: 'User', icon: User, href: '/user', feature: features.security, active: false }
+	];
+
+	function handleClick(i: number) {
+		// clear border for each menu item
+		menuItems.forEach((item) => {
+			item.active = false;
+		});
+		menuItems[i].active = true;
+	}
 </script>
 
 <ul class="menu p-4 w-80 bg-base-200 text-base-content">
 	<!-- Sidebar content here -->
-	<div class="flex items-center mb-4 rounded-lg">
+	<a href="/" class="flex items-center mb-4 rounded-lg hover:scale-[1.03] active:scale-[0.98]">
 		<img src={logo} alt="Logo" class="w-12 h-12" />
-		<h1 class="text-2xl font-bold px-4">ESP32 SvelteKit</h1>
-	</div>
-	<li class="bordered">
-		<a href="/app" class="text-lg font-bold"><Control class="h-6 w-6" />Demo App</a>
-	</li>
-	<li class="hover-bordered">
-		<a href="/connections" class="collapse-title text-lg font-bold"
-			><Remote class="h-6 w-6" />Connections</a
-		>
-	</li>
-	<li class="hover-bordered">
-		<a href="/wifi" class="text-lg font-bold"><WiFi class="h-6 w-6" />Wi-Fi</a>
-	</li>
-	<li class="hover-bordered">
-		<a href="/system" class="text-lg font-bold"><Settings class="h-6 w-6" />System</a>
-	</li>
-	{#if userManagement}
-		<li class="hover-bordered">
-			<a href="/user" class="text-lg font-bold"><User class="h-6 w-6" />User</a>
-		</li>
-	{/if}
+		<h1 class="text-2xl font-bold px-4">{appName}</h1>
+	</a>
+	{#each menuItems as menuItem, i (menuItem.title)}
+		{#if menuItem.feature}
+			<li class={menuItem.active ? 'bordered' : 'hover-bordered'}>
+				<a href={menuItem.href} class="text-lg font-bold" on:click={() => handleClick(i)}
+					><svelte:component this={menuItem.icon} class="h-6 w-6" />{menuItem.title}</a
+				>
+			</li>
+		{/if}
+	{/each}
 
 	<div class="flex-col" />
 	<div class="flex-grow" />
 
-	{#if userManagement}
+	{#if features.security}
 		<div class="flex items-center">
 			<Avatar class="w-8 h-8" />
 			<span class="text-xl font-bold px-4 flex-grow ">admin</span>
@@ -53,12 +74,16 @@
 
 	<div class="divider my-0" />
 	<div class="flex items-center">
-		<a href="https://github.com/theelims/ESP32-sveltekit" class="btn btn-ghost"
-			><Github class="w-5 h-5" /></a
-		>
-		<a href="." class="btn btn-ghost"><Discord class="w-5 h-5" /></a>
+		{#if github.active}
+			<a href={github.href} class="btn btn-ghost" target="_blank" rel="noopener noreferrer"
+				><Github class="w-5 h-5" /></a
+			>
+		{/if}
+		{#if discord.active}
+			<a href={discord.href} class="btn btn-ghost"><Discord class="w-5 h-5" /></a>
+		{/if}
 		<div class="flex-grow text-sm justify-end inline-flex items-center">
-			<Copyright class="w-4 h-4" /><span class="px-2">2023 theelims</span>
+			<Copyright class="w-4 h-4" /><span class="px-2">{copyright}</span>
 		</div>
 	</div>
 </ul>

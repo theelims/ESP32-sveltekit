@@ -1,22 +1,15 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-  import Spinner from '$lib/spinner.svelte';
-	export let data: PageData;
+	import Accesspoint from './Accesspoint.svelte';
+	import Wifi from './Wifi.svelte';
 
-	async function getStatus() {
-    const response = await fetch('/rest/wifiStatus')
-    const status = await response.json()
-    return status
-  }
+	export let data: PageData;
 </script>
 
-{#await getStatus()}
-<Spinner/>
-{:then status}
-<pre>
-	{JSON.stringify(status, null, 2)}
-</pre>
-{:catch error}
-  <p>{error.message}</p>
-{/await}
-
+<div
+	class="flex flex-col space-y-4
+     mx-8 my-8"
+>
+	<Wifi wifiSettings={data.wifiSettings} wifiStatus={data.wifiStatus} />
+	<Accesspoint apSettings={data.apSettings} apStatus={data.apStatus} />
+</div>
