@@ -8,7 +8,25 @@
 	import Home from '~icons/tabler/home';
 	import Devices from '~icons/tabler/devices';
 
-	// How to use the SvelteKit Load function for periodic calls instead?
+	type ApStatus = {
+		status: number;
+		ip_address: string;
+		mac_address: string;
+		station_num: number;
+	};
+
+	type ApSettings = {
+		provision_mode: number;
+		ssid: string;
+		password: string;
+		channel: number;
+		ssid_hidden: boolean;
+		max_clients: number;
+		local_ip: string;
+		gateway_ip: string;
+		subnet_mask: string;
+	};
+
 	async function getAPStatus() {
 		const response = await fetch('/rest/apStatus');
 		apStatus = await response.json();
@@ -17,12 +35,117 @@
 
 	const interval = setInterval(async () => {
 		getAPStatus();
-	}, 1000);
+	}, 5000);
 
 	onDestroy(() => clearInterval(interval));
 
-	export let apSettings = {};
-	export let apStatus = {};
+	export let apSettings: ApSettings;
+	export let apStatus: ApStatus;
+
+	let formField: any;
+
+	let provisionMode = [
+		{
+			id: 0,
+			text: `Always`
+		},
+		{
+			id: 1,
+			text: `When WiFi Disconnected`
+		},
+		{
+			id: 2,
+			text: `Never`
+		}
+	];
+
+	let formErrors = {
+		ssid: false,
+		channel: false,
+		max_clients: false,
+		local_ip: false,
+		gateway_ip: false,
+		subnet_mask: false
+	};
+
+	async function postAPSettings(data: ApSettings) {
+		try {
+			const response = await fetch('/rest/apSettings', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(data)
+			});
+
+			apSettings = await response.json();
+		} catch (error) {
+			console.error('Error:', error);
+		}
+	}
+
+	function handleSubmitAP() {
+		let valid = true;
+
+		// Validate SSID
+		if (apSettings.ssid.length < 3 || apSettings.ssid.length > 32) {
+			valid = false;
+			formErrors.ssid = true;
+		} else {
+			formErrors.ssid = false;
+		}
+
+		// Validate Channel
+		let channel = Number(apSettings.channel);
+		if (1 > channel || channel > 13) {
+			valid = false;
+			formErrors.channel = true;
+		} else {
+			formErrors.channel = false;
+		}
+
+		// Validate max_clients
+		let maxClients = Number(apSettings.max_clients);
+		if (1 > maxClients || maxClients > 8) {
+			valid = false;
+			formErrors.max_clients = true;
+		} else {
+			formErrors.max_clients = false;
+		}
+
+		// RegEx for IPv4
+		const regexExp =
+			/\b(?:(?:2(?:[0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9])\.){3}(?:(?:2([0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9]))\b/;
+
+		// Validate gateway IP
+		if (!regexExp.test(apSettings.gateway_ip)) {
+			valid = false;
+			formErrors.gateway_ip = true;
+		} else {
+			formErrors.gateway_ip = false;
+		}
+
+		// Validate Subnet Mask
+		if (!regexExp.test(apSettings.subnet_mask)) {
+			valid = false;
+			formErrors.subnet_mask = true;
+		} else {
+			formErrors.subnet_mask = false;
+		}
+
+		// Validate local IP
+		if (!regexExp.test(apSettings.local_ip)) {
+			valid = false;
+			formErrors.local_ip = true;
+		} else {
+			formErrors.local_ip = false;
+		}
+
+		// Submit JSON to REST API
+		if (valid) {
+			postAPSettings(apSettings);
+		}
+	}
 </script>
 
 <SettingsCard open={true}>
@@ -111,15 +234,26 @@
 		<input type="checkbox" />
 		<div class="collapse-title text-xl font-medium">Change AP Settings</div>
 		<div class="collapse-content">
-			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full content-center">
+			<form
+				class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 px-4 w-full content-center"
+				on:submit|preventDefault={handleSubmitAP}
+				novalidate
+				bind:this={formField}
+			>
 				<div>
 					<label class="label" for="apmode">
-						<span class="label-text">Povide Access Point ...</span>
+						<span class="label-text">Provide Access Point ...</span>
 					</label>
-					<select class="select select-bordered w-full" id="apmode">
-						<option>Always</option>
-						<option>When WiFi Disconnected</option>
-						<option>Never</option>
+					<select
+						class="select select-bordered w-full"
+						id="apmode"
+						bind:value={apSettings.provision_mode}
+					>
+						{#each provisionMode as mode}
+							<option value={mode.id}>
+								{mode.text}
+							</option>
+						{/each}
 					</select>
 				</div>
 				<div>
@@ -128,17 +262,27 @@
 					</label>
 					<input
 						type="text"
-						class="input input-bordered w-full"
-						value={apSettings.ssid}
+						class="input input-bordered w-full invalid:border-error invalid:border-2 {formErrors.ssid
+							? 'border-error border-2'
+							: ''}"
+						bind:value={apSettings.ssid}
 						id="ssid"
+						min="2"
+						max="32"
+						required
 					/>
+					<label class="label" for="ssid">
+						<span class="label-text-alt text-error {formErrors.ssid ? '' : 'hidden'}"
+							>SSID must be between 2 and 32 characters long</span
+						>
+					</label>
 				</div>
 
 				<div>
 					<label class="label" for="pwd">
 						<span class="label-text text-md">Password</span>
 					</label>
-					<InputPassword value={apSettings.password} id="pwd" />
+					<InputPassword bind:value={apSettings.password} id="pwd" />
 				</div>
 				<div>
 					<label class="label" for="channel">
@@ -148,10 +292,18 @@
 						type="number"
 						min="1"
 						max="13"
-						class="input input-bordered w-full"
-						value={apSettings.channel}
+						class="input input-bordered w-full invalid:border-error invalid:border-2 {formErrors.channel
+							? 'border-error border-2'
+							: ''}"
+						bind:value={apSettings.channel}
 						id="channel"
+						required
 					/>
+					<label class="label" for="channel">
+						<span class="label-text-alt text-error {formErrors.channel ? '' : 'hidden'}"
+							>Must be channel 1 to 13</span
+						>
+					</label>
 				</div>
 
 				<div>
@@ -162,10 +314,18 @@
 						type="number"
 						min="1"
 						max="8"
-						class="input input-bordered w-full"
-						value={apSettings.max_clients}
+						class="input input-bordered w-full invalid:border-error invalid:border-2 {formErrors.max_clients
+							? 'border-error border-2'
+							: ''}"
+						bind:value={apSettings.max_clients}
 						id="clients"
+						required
 					/>
+					<label class="label" for="clients">
+						<span class="label-text-alt text-error {formErrors.max_clients ? '' : 'hidden'}"
+							>Maximum 8 clients allowed</span
+						>
+					</label>
 				</div>
 
 				<div>
@@ -174,15 +334,19 @@
 					</label>
 					<input
 						type="text"
-						class="input input-bordered w-full"
+						class="input input-bordered w-full {formErrors.local_ip ? 'border-error border-2' : ''}"
 						minlength="7"
 						maxlength="15"
 						size="15"
-						pattern="^((\d{(1, 2)}|1\d\d|2[0-4]\d|25[0-5])\.){3}(\d{(1,
-						2)}|1\d\d|2[0-4]\d|25[0-5])$"
-						value={apSettings.local_ip}
+						bind:value={apSettings.local_ip}
 						id="localIP"
+						required
 					/>
+					<label class="label" for="localIP">
+						<span class="label-text-alt text-error {formErrors.local_ip ? '' : 'hidden'}"
+							>Must be a valid IPv4 address</span
+						>
+					</label>
 				</div>
 
 				<div>
@@ -191,15 +355,21 @@
 					</label>
 					<input
 						type="text"
-						class="input input-bordered w-full"
+						class="input input-bordered w-full {formErrors.gateway_ip
+							? 'border-error border-2'
+							: ''}"
 						minlength="7"
 						maxlength="15"
 						size="15"
-						pattern="^((\d{(1, 2)}|1\d\d|2[0-4]\d|25[0-5])\.){3}(\d{(1,
-						2)}|1\d\d|2[0-4]\d|25[0-5])$"
-						value={apSettings.gateway_ip}
+						bind:value={apSettings.gateway_ip}
 						id="gateway"
+						required
 					/>
+					<label class="label" for="gateway">
+						<span class="label-text-alt text-error {formErrors.gateway_ip ? '' : 'hidden'}"
+							>Must be a valid IPv4 address</span
+						>
+					</label>
 				</div>
 				<div>
 					<label class="label" for="subnet">
@@ -207,30 +377,36 @@
 					</label>
 					<input
 						type="text"
-						class="input input-bordered w-full"
+						class="input input-bordered w-full {formErrors.subnet_mask
+							? 'border-error border-2'
+							: ''}"
 						minlength="7"
 						maxlength="15"
 						size="15"
-						pattern="^((\d{(1, 2)}|1\d\d|2[0-4]\d|25[0-5])\.){3}(\d{(1,
-						2)}|1\d\d|2[0-4]\d|25[0-5])$"
-						value={apSettings.subnet_mask}
+						bind:value={apSettings.subnet_mask}
 						id="subnet"
+						required
 					/>
+					<label class="label" for="subnet">
+						<span class="label-text-alt text-error {formErrors.subnet_mask ? '' : 'hidden'}"
+							>Must be a valid IPv4 address</span
+						>
+					</label>
 				</div>
 
 				<label class="label cursor-pointer justify-start gap-4 my-auto">
 					<input
 						type="checkbox"
-						checked={apSettings.ssid_hidden}
+						bind:checked={apSettings.ssid_hidden}
 						class="checkbox checkbox-primary"
 					/>
 					<span class="">Hide SSID</span>
 				</label>
 
 				<div class="place-self-end">
-					<button class="btn btn-primary">Apply Settings</button>
+					<button class="btn btn-primary" type="submit">Apply Settings</button>
 				</div>
-			</div>
+			</form>
 		</div>
 	</div>
 </SettingsCard>

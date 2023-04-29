@@ -6,6 +6,6 @@ export const ssr = false;
 
 export const load = (async () => {
     return {
-        title: 'Home'
+        title: 'ESP32-SvelteKit'
     };
 }) satisfies LayoutLoad;

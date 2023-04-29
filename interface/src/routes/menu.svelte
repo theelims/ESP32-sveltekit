@@ -10,6 +10,9 @@
 	import Avatar from '~icons/tabler/user-circle';
 	import Logout from '~icons/tabler/logout';
 	import Copyright from '~icons/tabler/copyright';
+	import { onMount } from 'svelte';
+
+	export let title: string;
 
 	const features = {
 		project: true,
@@ -36,25 +39,42 @@
 		{ title: 'User', icon: User, href: '/user', feature: features.security, active: false }
 	];
 
-	function handleClick(i: number) {
+	function handleMenuClick(i: number) {
 		// clear border for each menu item
 		menuItems.forEach((item) => {
 			item.active = false;
 		});
-		menuItems[i].active = true;
+
+		// set clicked menu item active, but not the Home link
+		if (i > -1) {
+			menuItems[i].active = true;
+		}
+		menuItems = menuItems;
 	}
+
+	onMount(() => {
+		const index = menuItems.findIndex((item) => item.title === title);
+		handleMenuClick(index);
+	});
 </script>
 
 <ul class="menu p-4 w-80 bg-base-200 text-base-content">
 	<!-- Sidebar content here -->
-	<a href="/" class="flex items-center mb-4 rounded-lg hover:scale-[1.03] active:scale-[0.98]">
+	<a
+		href="/"
+		class="flex items-center mb-4 rounded-lg hover:scale-[1.03] active:scale-[0.98]"
+		on:click={() => handleMenuClick(-1)}
+	>
 		<img src={logo} alt="Logo" class="w-12 h-12" />
 		<h1 class="text-2xl font-bold px-4">{appName}</h1>
 	</a>
 	{#each menuItems as menuItem, i (menuItem.title)}
 		{#if menuItem.feature}
-			<li class={menuItem.active ? 'bordered' : 'hover-bordered'}>
-				<a href={menuItem.href} class="text-lg font-bold" on:click={() => handleClick(i)}
+			<li class="hover-bordered">
+				<a
+					href={menuItem.href}
+					class="text-lg font-bold {menuItem.active ? 'bg-base-100' : ''}"
+					on:click={() => handleMenuClick(i)}
 					><svelte:component this={menuItem.icon} class="h-6 w-6" />{menuItem.title}</a
 				>
 			</li>

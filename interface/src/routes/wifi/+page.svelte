@@ -7,7 +7,7 @@
 </script>
 
 <div
-	class="flex flex-col space-y-4
+	class="flex flex-col gap-4
      mx-8 my-8"
 >
 	<Wifi wifiSettings={data.wifiSettings} wifiStatus={data.wifiStatus} />

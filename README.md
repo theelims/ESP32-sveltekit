@@ -11,8 +11,9 @@ This project aims to port the fabulous [rjwats/esp8266-react](https://github.com
 - Service thread instead of a loop function.
 - Fallback / recovery mode
 - Compatibility with the whole ESP32 range of chips
-- Allow anonyoums guest user
+- Allow anonymous guest user
 - Store Wi-Fi credentials for more then one network. Select network by preference and signal strength
+- Task Monitor to see the core usage and optimize power consumption
 
 A simple, secure and extensible framework for IoT projects built on ESP32 platforms with responsive [Sveltekit](https://kit.svelte.dev/) front-end built with [TailwindCSS](https://tailwindcss.com/) and [DaisyUI](https://daisyui.com/).
 
@@ -674,9 +675,13 @@ esp8266React.getWiFiSettingsService()->addUpdateHandler(
 
 ## Libraries Used
 
-- [React](https://reactjs.org/)
-- [Material-UI](https://mui.com/)
-- [notistack](https://github.com/iamhosseindhv/notistack)
+- [SvelteKit](https://kit.svelte.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [DaisyUI](https://daisyui.com/)
+- [tabler ICONS](https://tabler-icons.io/)
+- [unplugin-icons](https://github.com/antfu/unplugin-icons)
+- [svelte-modals](https://svelte-modals.mattjennings.io/)
+- [SVoast](https://svoast.vercel.app/)
 - [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
 - [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)
 - [AsyncMqttClient](https://github.com/marvinroger/async-mqtt-client)

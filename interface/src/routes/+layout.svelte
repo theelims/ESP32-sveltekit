@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { LayoutData } from './$types';
 	import { page } from '$app/stores';
+	import { Modals, closeModal } from 'svelte-modals';
+	import { fade } from 'svelte/transition';
 	import '../app.css';
 	import Menu from './menu.svelte';
 	import Statusbar from './statusbar.svelte';
@@ -30,7 +32,17 @@
 		<!-- Side Navigation -->
 		<div class="drawer-side shadow-2xl shadow-primary/50">
 			<label for="main-menu" class="drawer-overlay" />
-			<Menu />
+			<Menu title={$page.data.title} />
 		</div>
 	</div>
 {/if}
+
+<Modals>
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<div
+		slot="backdrop"
+		class="fixed inset-0 bg-black/20 backdrop-blur max-w-full max-h-full z-10"
+		transition:fade
+		on:click={closeModal}
+	/>
+</Modals>
