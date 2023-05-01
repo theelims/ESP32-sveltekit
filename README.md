@@ -1,4 +1,12 @@
-# ESP32 Sveltekit
+# ESP32 SvelteKit
+
+A word of warning, this repository is heavily been worked on. It is not yet production ready.
+
+This project aims to port the fabulous [rjwats/esp8266-react](https://github.com/rjwats/esp8266-react) project to Sveltekit and to add some more useful features.
+
+A simple, secure and extensible framework for IoT projects built on ESP32 platforms with responsive [Sveltekit](https://kit.svelte.dev/) front-end built with [TailwindCSS](https://tailwindcss.com/) and [DaisyUI](https://daisyui.com/).
+
+First Step - recreate the Front End with SvelteKit:
 
 - [x] WiFi-API
 - [x] WiFi-AP-API
@@ -6,13 +14,14 @@
 - [x] OTA-API
 - [x] Firmware Upload API
 - [ ] MQTT-API
-- [ ] Demo Project
 - [ ] NTP-API
+- [ ] Feature Selector Front End
+- [ ] Demo Project
 - [ ] Security-API
 - [ ] Serve from LittleFS
 - [ ] Serve from PROGMEM
 
-This project aims to port the fabulous [rjwats/esp8266-react](https://github.com/rjwats/esp8266-react) project to Sveltekit and to add some more useful features like:
+Second Step - extend the features
 
 - SSL support for MQTT
 - Websocket client with SSL support
@@ -20,14 +29,12 @@ This project aims to port the fabulous [rjwats/esp8266-react](https://github.com
 - Advertize services with Bonjour/mDNS to the local network
 - Depreciate support for ESP8266, use ESP32-C3 instead
 - Store important information in NVS instead of filesystem, so that they survive an update
-- Service thread instead of a loop function.
+- Service threads instead of a loop function with millis().
 - Fallback / recovery mode
 - Compatibility with the whole ESP32 range of chips
 - Allow anonymous guest user
 - Store Wi-Fi credentials for more then one network. Select network by preference and signal strength
 - Task Monitor to see the core usage and optimize power consumption
-
-A simple, secure and extensible framework for IoT projects built on ESP32 platforms with responsive [Sveltekit](https://kit.svelte.dev/) front-end built with [TailwindCSS](https://tailwindcss.com/) and [DaisyUI](https://daisyui.com/).
 
 Designed to work with the PlatformIO IDE with [limited setup](#getting-started). Please read below for setup, build and upload instructions.
 
