@@ -14,7 +14,7 @@ First Step - recreate the Front End with SvelteKit:
 - [x] OTA-API
 - [x] Firmware Upload API
 - [ ] MQTT-API
-- [ ] NTP-API
+- [x] NTP-API
 - [ ] Feature Selector Front End
 - [ ] Demo Project
 - [ ] Security-API
@@ -700,7 +700,6 @@ esp8266React.getWiFiSettingsService()->addUpdateHandler(
 - [tabler ICONS](https://tabler-icons.io/)
 - [unplugin-icons](https://github.com/antfu/unplugin-icons)
 - [svelte-modals](https://svelte-modals.mattjennings.io/)
-- [SVoast](https://svoast.vercel.app/)
 - [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
 - [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)
 - [AsyncMqttClient](https://github.com/marvinroger/async-mqtt-client)

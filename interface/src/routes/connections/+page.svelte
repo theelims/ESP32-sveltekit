@@ -1,23 +1,15 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-  import Spinner from '$lib/spinner.svelte';
+	import MQTT from './MQTT.svelte';
+	import NTP from './NTP.svelte';
 
 	export let data: PageData;
-
-	async function getStatus() {
-    const response = await fetch('/rest/mqttStatus')
-    const status = await response.json()
-    return status
-  }
 </script>
 
-{#await getStatus()}
-<Spinner/>
-{:then status}
-<pre>
-	{JSON.stringify(status, null, 2)}
-</pre>
-{:catch error}
-  <p>{error.message}</p>
-{/await}
-
+<div
+	class="flex flex-col gap-4
+     mx-8 my-8"
+>
+	<NTP ntpSettings={data.ntpSettings} ntpStatus={data.ntpStatus} />
+	<!--MQTT mqttSettings={data.mqttSettings} mqttStatus={data.mqttStatus} /-->
+</div>
