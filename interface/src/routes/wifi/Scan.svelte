@@ -60,8 +60,8 @@
 				{#if scanActive}<div
 						class="flex flex-col items-center justify-center w-full p-6 h-full bg-base-100"
 					>
-						<AP class="animate-ping h-16 w-16 stroke-2 text-secondary" />
-						<p class="text-xl mt-8">Scanning ...</p>
+						<AP class="animate-ping h-32 w-32 stroke-2 text-secondary" />
+						<p class="text-2xl mt-8">Scanning ...</p>
 					</div>
 				{:else}
 					<ul class="menu">
@@ -89,7 +89,7 @@
 											class="indicator-item indicator-start badge badge-accent badge-outline badge-xs"
 											>{network.rssi} dBm</span
 										>
-										<WiFi class="w-10 h-auto text-primary-content opacity-50" />
+										<WiFi class="w-10 h-auto text-base-content opacity-50" />
 									</div>
 								</div>
 							</li>
