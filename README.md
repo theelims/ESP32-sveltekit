@@ -1,5 +1,17 @@
 # ESP32 Sveltekit
 
+- [x] WiFi-API
+- [x] WiFi-AP-API
+- [x] System-API
+- [x] OTA-API
+- [x] Firmware Upload API
+- [ ] MQTT-API
+- [ ] Demo Project
+- [ ] NTP-API
+- [ ] Security-API
+- [ ] Serve from LittleFS
+- [ ] Serve from PROGMEM
+
 This project aims to port the fabulous [rjwats/esp8266-react](https://github.com/rjwats/esp8266-react) project to Sveltekit and to add some more useful features like:
 
 - SSL support for MQTT

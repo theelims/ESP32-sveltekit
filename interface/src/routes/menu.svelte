@@ -62,7 +62,7 @@
 	<!-- Sidebar content here -->
 	<a
 		href="/"
-		class="flex items-center mb-4 rounded-lg hover:scale-[1.03] active:scale-[0.98]"
+		class="flex items-center mb-4 rounded-lg hover:scale-[1.02] active:scale-[0.98]"
 		on:click={() => handleMenuClick(-1)}
 	>
 		<img src={logo} alt="Logo" class="w-12 h-12" />

@@ -164,13 +164,14 @@
 		}
 	}
 
-	let ssid = '';
-
-	$: console.log('Got the following SSID: ${ssid}');
-
 	function scanForNetworks() {
-		ssid = 'test';
-		openModal(ScanNetworks, { ssid: ssid });
+		openModal(ScanNetworks, {
+			storeNetwork: (network: string) => {
+				wifiSettings.ssid = network;
+				wifiSettings.password = '';
+				closeModal();
+			}
+		});
 	}
 </script>
 
