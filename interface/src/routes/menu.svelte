@@ -32,7 +32,7 @@
 	const discord = { href: '.', active: false };
 
 	let menuItems = [
-		{ title: 'Demo App', icon: Control, href: '/app', feature: features.project, active: false },
+		{ title: 'Demo App', icon: Control, href: '/demo', feature: features.project, active: false },
 		{ title: 'Connections', icon: Remote, href: '/connections', feature: true, active: false },
 		{ title: 'Wi-Fi', icon: WiFi, href: '/wifi', feature: true, active: false },
 		{ title: 'System', icon: Settings, href: '/system', feature: true, active: false },
@@ -58,15 +58,15 @@
 	});
 </script>
 
-<ul class="menu p-4 w-80 bg-base-200 text-base-content">
+<ul class="menu bg-base-200 text-base-content w-80 p-4">
 	<!-- Sidebar content here -->
 	<a
 		href="/"
-		class="flex items-center mb-4 rounded-lg hover:scale-[1.02] active:scale-[0.98]"
+		class="mb-4 flex items-center rounded-lg hover:scale-[1.02] active:scale-[0.98]"
 		on:click={() => handleMenuClick(-1)}
 	>
-		<img src={logo} alt="Logo" class="w-12 h-12" />
-		<h1 class="text-2xl font-bold px-4">{appName}</h1>
+		<img src={logo} alt="Logo" class="h-12 w-12" />
+		<h1 class="px-4 text-2xl font-bold">{appName}</h1>
 	</a>
 	{#each menuItems as menuItem, i (menuItem.title)}
 		{#if menuItem.feature}
@@ -86,9 +86,9 @@
 
 	{#if features.security}
 		<div class="flex items-center">
-			<Avatar class="w-8 h-8" />
-			<span class="text-xl font-bold px-4 flex-grow ">admin</span>
-			<div class="btn btn-ghost"><Logout class="w-8 h-8 rotate-180" /></div>
+			<Avatar class="h-8 w-8" />
+			<span class="flex-grow px-4 text-xl font-bold">admin</span>
+			<div class="btn btn-ghost"><Logout class="h-8 w-8 rotate-180" /></div>
 		</div>
 	{/if}
 
@@ -96,14 +96,16 @@
 	<div class="flex items-center">
 		{#if github.active}
 			<a href={github.href} class="btn btn-ghost" target="_blank" rel="noopener noreferrer"
-				><Github class="w-5 h-5" /></a
+				><Github class="h-5 w-5" /></a
 			>
 		{/if}
 		{#if discord.active}
-			<a href={discord.href} class="btn btn-ghost"><Discord class="w-5 h-5" /></a>
+			<a href={discord.href} class="btn btn-ghost" target="_blank" rel="noopener noreferrer"
+				><Discord class="h-5 w-5" /></a
+			>
 		{/if}
-		<div class="flex-grow text-sm justify-end inline-flex items-center">
-			<Copyright class="w-4 h-4" /><span class="px-2">{copyright}</span>
+		<div class="inline-flex flex-grow items-center justify-end text-sm">
+			<Copyright class="h-4 w-4" /><span class="px-2">{copyright}</span>
 		</div>
 	</div>
 </ul>

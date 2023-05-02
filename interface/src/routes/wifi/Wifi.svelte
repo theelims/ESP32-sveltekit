@@ -58,8 +58,12 @@
 
 	// How to use the SvelteKit Load function for periodic calls instead?
 	async function getWifiStatus() {
-		const response = await fetch('/rest/wifiStatus');
-		wifiStatus = await response.json();
+		try {
+			const response = await fetch('/rest/wifiStatus');
+			wifiStatus = await response.json();
+		} catch (error) {
+			console.error('Error:', error);
+		}
 		return;
 	}
 

@@ -28,8 +28,12 @@
 	};
 
 	async function getAPStatus() {
-		const response = await fetch('/rest/apStatus');
-		apStatus = await response.json();
+		try {
+			const response = await fetch('/rest/apStatus');
+			apStatus = await response.json();
+		} catch (error) {
+			console.error('Error:', error);
+		}
 		return;
 	}
 

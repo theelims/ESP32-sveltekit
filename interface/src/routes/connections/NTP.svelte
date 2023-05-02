@@ -26,8 +26,12 @@
 	};
 
 	async function getNTPStatus() {
-		const response = await fetch('/rest/ntpStatus');
-		ntpStatus = await response.json();
+		try {
+			const response = await fetch('/rest/ntpStatus');
+			ntpStatus = await response.json();
+		} catch (error) {
+			console.error('Error:', error);
+		}
 		return;
 	}
 
@@ -117,9 +121,9 @@
 </script>
 
 <SettingsCard open={false}>
-	<Clock slot="icon" class="lex-shrink-0 self-end w-6 h-6 mr-2" />
+	<Clock slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">Network Time</span>
-	<div class="overflow-x-auto w-full">
+	<div class="w-full overflow-x-auto">
 		<table class="table w-full">
 			<tbody>
 				<!-- row 1 -->
@@ -127,12 +131,12 @@
 					<td>
 						<div class="flex items-center space-x-3">
 							<div
-								class="mask mask-hexagon w-10 h-auto {ntpStatus.status === 1
+								class="mask mask-hexagon h-auto w-10 {ntpStatus.status === 1
 									? 'bg-success'
 									: 'bg-error'}"
 							>
 								<NTP
-									class="w-full h-auto scale-75 {ntpStatus.status === 1
+									class="h-auto w-full scale-75 {ntpStatus.status === 1
 										? 'text-success-content'
 										: 'text-error-content'}"
 								/>
@@ -150,8 +154,8 @@
 				<tr>
 					<td>
 						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary w-10 h-auto">
-								<Server class="w-full h-auto scale-75 text-primary-content" />
+							<div class="mask mask-hexagon bg-primary h-auto w-10">
+								<Server class="text-primary-content h-auto w-full scale-75" />
 							</div>
 							<div>
 								<div class="font-bold">NTP Server</div>
@@ -166,8 +170,8 @@
 				<tr>
 					<td>
 						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary w-10 h-auto">
-								<Clock class="w-full h-auto scale-75 text-primary-content" />
+							<div class="mask mask-hexagon bg-primary h-auto w-10">
+								<Clock class="text-primary-content h-auto w-full scale-75" />
 							</div>
 							<div>
 								<div class="font-bold">Local Time</div>
@@ -185,8 +189,8 @@
 				<tr>
 					<td>
 						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary w-10 h-auto">
-								<UTC class="w-full h-auto scale-75 text-primary-content" />
+							<div class="mask mask-hexagon bg-primary h-auto w-10">
+								<UTC class="text-primary-content h-auto w-full scale-75" />
 							</div>
 							<div>
 								<div class="font-bold">UTC Time</div>
@@ -205,8 +209,8 @@
 				<tr>
 					<td>
 						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary w-10 h-auto">
-								<Stopwatch class="w-full h-auto scale-75 text-primary-content" />
+							<div class="mask mask-hexagon bg-primary h-auto w-10">
+								<Stopwatch class="text-primary-content h-auto w-full scale-75" />
 							</div>
 							<div>
 								<div class="font-bold">Uptime</div>
@@ -231,7 +235,7 @@
 				novalidate
 				bind:this={formField}
 			>
-				<label class="label justify-start gap-4 cursor-pointer">
+				<label class="label cursor-pointer justify-start gap-4">
 					<input
 						type="checkbox"
 						bind:checked={ntpSettings.enabled}
@@ -246,7 +250,7 @@
 					type="text"
 					min="3"
 					max="64"
-					class="input input-bordered w-full invalid:border-error invalid:border-2 {formErrors.server
+					class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.server
 						? 'border-error border-2'
 						: ''}"
 					bind:value={ntpSettings.server}
@@ -267,7 +271,7 @@
 					{/each}
 				</select>
 
-				<div class="place-self-end mt-6">
+				<div class="mt-6 place-self-end">
 					<button class="btn btn-primary" type="submit">Apply Settings</button>
 				</div>
 			</form>

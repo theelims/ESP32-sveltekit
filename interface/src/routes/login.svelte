@@ -3,9 +3,9 @@
 	import InputPassword from '$lib/InputPassword.svelte';
 </script>
 
-<div class="hero min-h-screen bg-gradient-to-br from-primary/30 to-secondary/30">
-	<div class="card lg:card-side bg-base-100 shadow-2xl shadow-primary">
-		<figure class="bg-base-200"><img src={logo} alt="Logo" class="w-48 lg:w-64 h-auto" /></figure>
+<div class="hero from-primary/30 to-secondary/30 min-h-screen bg-gradient-to-br">
+	<div class="card lg:card-side bg-base-100 shadow-primary shadow-2xl">
+		<figure class="bg-base-200"><img src={logo} alt="Logo" class="h-auto w-48 lg:w-64" /></figure>
 		<div class="card-body w-80">
 			<h2 class="card-title text-2xl">Login</h2>
 			<div class="form-control w-full max-w-xs">
@@ -20,7 +20,7 @@
 				<InputPassword id="pwd" />
 			</div>
 
-			<div class="card-actions justify-end mt-4">
+			<div class="card-actions mt-4 justify-end">
 				<button class="btn btn-primary">Submit</button>
 			</div>
 		</div>
