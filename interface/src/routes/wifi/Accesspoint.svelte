@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import InputPassword from '$lib/InputPassword.svelte';
-	import SettingsCard from '$lib/SettingsCard.svelte';
+	import InputPassword from '$lib/components/InputPassword.svelte';
+	import SettingsCard from '$lib/components/SettingsCard.svelte';
 
 	import AP from '~icons/tabler/access-point';
 	import MAC from '~icons/tabler/dna-2';

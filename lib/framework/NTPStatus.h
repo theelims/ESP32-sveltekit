@@ -20,12 +20,13 @@
 #define MAX_NTP_STATUS_SIZE 1024
 #define NTP_STATUS_SERVICE_PATH "/rest/ntpStatus"
 
-class NTPStatus {
- public:
-  NTPStatus(AsyncWebServer* server, SecurityManager* securityManager);
+class NTPStatus
+{
+public:
+    NTPStatus(AsyncWebServer *server, SecurityManager *securityManager);
 
- private:
-  void ntpStatus(AsyncWebServerRequest* request);
+private:
+    void ntpStatus(AsyncWebServerRequest *request);
 };
 
-#endif  // end NTPStatus_h
+#endif // end NTPStatus_h

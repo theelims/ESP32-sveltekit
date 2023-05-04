@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { openModal, closeModal } from 'svelte-modals';
-	import ConfirmDialog from '$lib/ConfirmDialog.svelte';
-	import InputPassword from '$lib/InputPassword.svelte';
-	import SettingsCard from '$lib/SettingsCard.svelte';
+	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
+	import InputPassword from '$lib/components/InputPassword.svelte';
+	import SettingsCard from '$lib/components/SettingsCard.svelte';
 
 	import OTA from '~icons/tabler/refresh-alert';
 	import Warning from '~icons/tabler/alert-triangle';
@@ -80,9 +80,9 @@
 </script>
 
 <SettingsCard open={false}>
-	<OTA slot="icon" class="lex-shrink-0 self-end w-6 h-6 rounded-full mr-2" />
+	<OTA slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end rounded-full" />
 	<span slot="title">OTA Firmware Update</span>
-	<label class="label justify-start gap-4 cursor-pointer">
+	<label class="label cursor-pointer justify-start gap-4">
 		<input type="checkbox" bind:checked={otaSettings.enabled} class="checkbox checkbox-primary" />
 		<span class="">Enable Remote OTA Updates?</span>
 	</label>
@@ -95,7 +95,7 @@
 			type="number"
 			min="1025"
 			max="65536"
-			class="input input-bordered w-full invalid:border-error invalid:border-2"
+			class="input input-bordered invalid:border-error w-full invalid:border-2"
 			bind:value={otaSettings.port}
 			id="port"
 			required
@@ -109,7 +109,7 @@
 			<span class="label-text text-md">Password</span>
 		</label>
 		<InputPassword bind:value={otaSettings.password} id="pwd" />
-		<div class="flex justify-end mt-6">
+		<div class="mt-6 flex justify-end">
 			<button class="btn btn-primary" type="submit">Apply Settings</button>
 		</div>
 	</form>
@@ -119,7 +119,7 @@
 	<span class="text-lg font-semibold">Upload Firmware</span>
 	<div class="alert alert-warning shadow-lg">
 		<div>
-			<Warning class="flex-shrink-0 h-6 w-6" />
+			<Warning class="h-6 w-6 flex-shrink-0" />
 			<span>Uploading a new firmware (.bin) file will replace the existing firmware.</span>
 		</div>
 	</div>
@@ -127,7 +127,7 @@
 	<input
 		type="file"
 		id="binFile"
-		class="file-input file-input-bordered file-input-secondary w-full mt-4"
+		class="file-input file-input-bordered file-input-secondary mt-4 w-full"
 		bind:files
 		accept=".bin"
 		on:change={confirmBinUpload}

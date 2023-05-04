@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { openModal, closeModal } from 'svelte-modals';
-	import SettingsCard from '$lib/SettingsCard.svelte';
-	import InputPassword from '$lib/InputPassword.svelte';
+	import SettingsCard from '$lib/components/SettingsCard.svelte';
+	import InputPassword from '$lib/components/InputPassword.svelte';
 	import ScanNetworks from './Scan.svelte';
 
 	import AP from '~icons/tabler/access-point';
@@ -180,9 +180,9 @@
 </script>
 
 <SettingsCard>
-	<WiFi slot="icon" class="lex-shrink-0 self-end w-6 h-6 mr-2" />
+	<WiFi slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">Wi-Fi</span>
-	<div class="overflow-x-auto w-full">
+	<div class="w-full overflow-x-auto">
 		<table class="table w-full">
 			<tbody>
 				<!-- row 1 -->
@@ -190,12 +190,12 @@
 					<td>
 						<div class="flex items-center space-x-3">
 							<div
-								class="mask mask-hexagon w-10 h-auto {wifiStatus.status === 3
+								class="mask mask-hexagon h-auto w-10 {wifiStatus.status === 3
 									? 'bg-success'
 									: 'bg-error'}"
 							>
 								<AP
-									class="w-full h-auto scale-75 {wifiStatus.status === 3
+									class="h-auto w-full scale-75 {wifiStatus.status === 3
 										? 'text-success-content'
 										: 'text-error-content'}"
 								/>
@@ -213,8 +213,8 @@
 				<tr>
 					<td>
 						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary w-10 h-auto">
-								<SSID class="w-full h-auto scale-75 text-primary-content" />
+							<div class="mask mask-hexagon bg-primary h-auto w-10">
+								<SSID class="text-primary-content h-auto w-full scale-75" />
 							</div>
 							<div>
 								<div class="font-bold">SSID</div>
@@ -229,8 +229,8 @@
 				<tr>
 					<td>
 						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary w-10 h-auto">
-								<Home class="w-full h-auto scale-75 text-primary-content" />
+							<div class="mask mask-hexagon bg-primary h-auto w-10">
+								<Home class="text-primary-content h-auto w-full scale-75" />
 							</div>
 							<div>
 								<div class="font-bold">IP Address</div>
@@ -245,8 +245,8 @@
 				<tr>
 					<td>
 						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary w-10 h-auto">
-								<MAC class="w-full h-auto scale-75 text-primary-content" />
+							<div class="mask mask-hexagon bg-primary h-auto w-10">
+								<MAC class="text-primary-content h-auto w-full scale-75" />
 							</div>
 							<div>
 								<div class="font-bold">MAC Address</div>
@@ -262,7 +262,7 @@
 								}}
 							>
 								<Down
-									class="w-6 h-auto text-primary-content transition-transform ease-in-out duration-300 {showWifiDetails
+									class="text-primary-content h-auto w-6 transition-transform duration-300 ease-in-out {showWifiDetails
 										? 'rotate-180'
 										: ''}"
 								/>
@@ -275,8 +275,8 @@
 					<tr>
 						<td>
 							<div class="flex items-center space-x-3">
-								<div class="mask mask-hexagon bg-primary w-10 h-auto">
-									<WiFi class="w-full h-auto scale-75 text-primary-content" />
+								<div class="mask mask-hexagon bg-primary h-auto w-10">
+									<WiFi class="text-primary-content h-auto w-full scale-75" />
 								</div>
 								<div>
 									<div class="font-bold">RSSI</div>
@@ -290,8 +290,8 @@
 					<tr>
 						<td>
 							<div class="flex items-center space-x-3">
-								<div class="mask mask-hexagon bg-primary w-10 h-auto">
-									<Channel class="w-full h-auto scale-75 text-primary-content" />
+								<div class="mask mask-hexagon bg-primary h-auto w-10">
+									<Channel class="text-primary-content h-auto w-full scale-75" />
 								</div>
 								<div>
 									<div class="font-bold">Channel</div>
@@ -305,8 +305,8 @@
 					<tr>
 						<td>
 							<div class="flex items-center space-x-3">
-								<div class="mask mask-hexagon bg-primary w-10 h-auto">
-									<Gateway class="w-full h-auto scale-75 text-primary-content" />
+								<div class="mask mask-hexagon bg-primary h-auto w-10">
+									<Gateway class="text-primary-content h-auto w-full scale-75" />
 								</div>
 								<div>
 									<div class="font-bold">Gateway IP</div>
@@ -320,8 +320,8 @@
 					<tr>
 						<td>
 							<div class="flex items-center space-x-3">
-								<div class="mask mask-hexagon bg-primary w-10 h-auto">
-									<Subnet class="w-full h-auto scale-75 text-primary-content" />
+								<div class="mask mask-hexagon bg-primary h-auto w-10">
+									<Subnet class="text-primary-content h-auto w-full scale-75" />
 								</div>
 								<div>
 									<div class="font-bold">Subnet Mask</div>
@@ -335,8 +335,8 @@
 					<tr>
 						<td>
 							<div class="flex items-center space-x-3">
-								<div class="mask mask-hexagon bg-primary w-10 h-auto">
-									<DNS class="w-full h-auto scale-75 text-primary-content" />
+								<div class="mask mask-hexagon bg-primary h-auto w-10">
+									<DNS class="text-primary-content h-auto w-full scale-75" />
 								</div>
 								<div>
 									<div class="font-bold">DNS 1</div>
@@ -356,14 +356,14 @@
 		<div class="collapse-title text-xl font-medium">Change Wi-Fi Settings</div>
 		<div class="collapse-content">
 			<form on:submit|preventDefault={handleSubmitWiFi} novalidate bind:this={formField}>
-				<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 px-4 w-full content-center">
+				<div class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2">
 					<div>
 						<label class="label" for="ssid">
 							<span class="label-text text-md">SSID</span>
 						</label>
 						<input
 							type="text"
-							class="input input-bordered w-full invalid:border-error invalid:border-2 {formErrors.ssid
+							class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.ssid
 								? 'border-error border-2'
 								: ''}"
 							bind:value={wifiSettings.ssid}
@@ -392,7 +392,7 @@
 							type="text"
 							min="1"
 							max="32"
-							class="input input-bordered w-full invalid:border-error invalid:border-2 {formErrors.hostname
+							class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.hostname
 								? 'border-error border-2'
 								: ''}"
 							bind:value={wifiSettings.hostname}
@@ -405,7 +405,7 @@
 							>
 						</label>
 					</div>
-					<label class="label cursor-pointer justify-start gap-4 content-end inline-flex">
+					<label class="label inline-flex cursor-pointer content-end justify-start gap-4">
 						<input
 							type="checkbox"
 							bind:checked={wifiSettings.static_ip_config}
@@ -527,8 +527,8 @@
 						</div>
 					{/if}
 				</div>
-				<div class="divider mt-0 mb-2" />
-				<div class="flex justify-end gap-2 flex-wrap mx-4">
+				<div class="divider mb-2 mt-0" />
+				<div class="mx-4 flex flex-wrap justify-end gap-2">
 					<button class="btn btn-primary" type="button" on:click={scanForNetworks}
 						>Scan Networks</button
 					>

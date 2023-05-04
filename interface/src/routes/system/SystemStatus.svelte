@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import { openModal, closeModal } from 'svelte-modals';
-	import ConfirmDialog from '$lib/ConfirmDialog.svelte';
-	import SettingsCard from '$lib/SettingsCard.svelte';
+	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
+	import SettingsCard from '$lib/components/SettingsCard.svelte';
 
 	import CPU from '~icons/tabler/cpu';
 	import Power from '~icons/tabler/power';

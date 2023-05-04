@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import SettingsCard from '$lib/SettingsCard.svelte';
+	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import type { TimeZones } from './timezones';
 	import { TIME_ZONES } from './timezones';
 
@@ -120,7 +120,7 @@
 	}
 </script>
 
-<SettingsCard open={false}>
+<SettingsCard open={true}>
 	<Clock slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">Network Time</span>
 	<div class="w-full overflow-x-auto">

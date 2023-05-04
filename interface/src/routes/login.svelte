@@ -1,6 +1,6 @@
 <script lang="ts">
 	import logo from '$lib/assets/svelte-logo.png';
-	import InputPassword from '$lib/InputPassword.svelte';
+	import InputPassword from '$lib/components/InputPassword.svelte';
 </script>
 
 <div class="hero from-primary/30 to-secondary/30 min-h-screen bg-gradient-to-br">

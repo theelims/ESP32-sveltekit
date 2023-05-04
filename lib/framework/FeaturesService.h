@@ -18,12 +18,13 @@
 #define MAX_FEATURES_SIZE 256
 #define FEATURES_SERVICE_PATH "/rest/features"
 
-class FeaturesService {
- public:
-  FeaturesService(AsyncWebServer* server);
+class FeaturesService
+{
+public:
+    FeaturesService(AsyncWebServer *server);
 
- private:
-  void features(AsyncWebServerRequest* request);
+private:
+    void features(AsyncWebServerRequest *request);
 };
 
 #endif

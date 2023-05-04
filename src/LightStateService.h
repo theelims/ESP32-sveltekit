@@ -26,62 +26,73 @@
 #define LIGHT_SETTINGS_ENDPOINT_PATH "/rest/lightState"
 #define LIGHT_SETTINGS_SOCKET_PATH "/ws/lightState"
 
-class LightState {
- public:
-  bool ledOn;
+class LightState
+{
+public:
+    bool ledOn;
 
-  static void read(LightState& settings, JsonObject& root) {
-    root["led_on"] = settings.ledOn;
-  }
-
-  static StateUpdateResult update(JsonObject& root, LightState& lightState) {
-    boolean newState = root["led_on"] | DEFAULT_LED_STATE;
-    if (lightState.ledOn != newState) {
-      lightState.ledOn = newState;
-      return StateUpdateResult::CHANGED;
+    static void read(LightState &settings, JsonObject &root)
+    {
+        root["led_on"] = settings.ledOn;
     }
-    return StateUpdateResult::UNCHANGED;
-  }
 
-  static void haRead(LightState& settings, JsonObject& root) {
-    root["state"] = settings.ledOn ? ON_STATE : OFF_STATE;
-  }
+    static StateUpdateResult update(JsonObject &root, LightState &lightState)
+    {
+        boolean newState = root["led_on"] | DEFAULT_LED_STATE;
+        if (lightState.ledOn != newState)
+        {
+            lightState.ledOn = newState;
+            return StateUpdateResult::CHANGED;
+        }
+        return StateUpdateResult::UNCHANGED;
+    }
 
-  static StateUpdateResult haUpdate(JsonObject& root, LightState& lightState) {
-    String state = root["state"];
-    // parse new led state 
-    boolean newState = false;
-    if (state.equals(ON_STATE)) {
-      newState = true;
-    } else if (!state.equals(OFF_STATE)) {
-      return StateUpdateResult::ERROR;
+    static void haRead(LightState &settings, JsonObject &root)
+    {
+        root["state"] = settings.ledOn ? ON_STATE : OFF_STATE;
     }
-    // change the new state, if required
-    if (lightState.ledOn != newState) {
-      lightState.ledOn = newState;
-      return StateUpdateResult::CHANGED;
+
+    static StateUpdateResult haUpdate(JsonObject &root, LightState &lightState)
+    {
+        String state = root["state"];
+        // parse new led state
+        boolean newState = false;
+        if (state.equals(ON_STATE))
+        {
+            newState = true;
+        }
+        else if (!state.equals(OFF_STATE))
+        {
+            return StateUpdateResult::ERROR;
+        }
+        // change the new state, if required
+        if (lightState.ledOn != newState)
+        {
+            lightState.ledOn = newState;
+            return StateUpdateResult::CHANGED;
+        }
+        return StateUpdateResult::UNCHANGED;
     }
-    return StateUpdateResult::UNCHANGED;
-  }
 };
 
-class LightStateService : public StatefulService<LightState> {
- public:
-  LightStateService(AsyncWebServer* server,
-                    SecurityManager* securityManager,
-                    AsyncMqttClient* mqttClient,
-                    LightMqttSettingsService* lightMqttSettingsService);
-  void begin();
+class LightStateService : public StatefulService<LightState>
+{
+public:
+    LightStateService(AsyncWebServer *server,
+                      SecurityManager *securityManager,
+                      AsyncMqttClient *mqttClient,
+                      LightMqttSettingsService *lightMqttSettingsService);
+    void begin();
 
- private:
-  HttpEndpoint<LightState> _httpEndpoint;
-  MqttPubSub<LightState> _mqttPubSub;
-  WebSocketTxRx<LightState> _webSocket;
-  AsyncMqttClient* _mqttClient;
-  LightMqttSettingsService* _lightMqttSettingsService;
+private:
+    HttpEndpoint<LightState> _httpEndpoint;
+    MqttPubSub<LightState> _mqttPubSub;
+    WebSocketTxRx<LightState> _webSocket;
+    AsyncMqttClient *_mqttClient;
+    LightMqttSettingsService *_lightMqttSettingsService;
 
-  void registerConfig();
-  void onConfigUpdated();
+    void registerConfig();
+    void onConfigUpdated();
 };
 
 #endif

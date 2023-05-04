@@ -1,6 +1,13 @@
 <script lang="ts">
-	import type { PageData } from '../app/$types';
-	import Spinner from '$lib/spinner.svelte';
+	import type { PageData } from '../$types';
+	import Demo from './Demo.svelte';
 
 	export let data: PageData;
 </script>
+
+<div
+	class="mx-8 my-8 flex
+     flex-col gap-4"
+>
+	<Demo lightState={data.lightState} />
+</div>

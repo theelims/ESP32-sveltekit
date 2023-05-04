@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import InputPassword from '$lib/InputPassword.svelte';
-	import SettingsCard from '$lib/SettingsCard.svelte';
+	import InputPassword from '$lib/components/InputPassword.svelte';
+	import SettingsCard from '$lib/components/SettingsCard.svelte';
 
 	import MQTT from '~icons/tabler/topology-star-3';
 	import Client from '~icons/tabler/robot';
@@ -123,7 +123,7 @@
 	}
 </script>
 
-<SettingsCard open={true}>
+<SettingsCard open={true} collapsable={false}>
 	<MQTT slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">MQTT</span>
 	<div class="w-full overflow-x-auto">
@@ -179,7 +179,7 @@
 		</table>
 	</div>
 
-	<div class="collapse">
+	<div class="collapse-arrow collapse">
 		<input type="checkbox" />
 		<div class="collapse-title text-xl font-medium">Change MQTT Settings</div>
 		<div class="collapse-content">
@@ -275,9 +275,9 @@
 						<input
 							type="checkbox"
 							bind:checked={mqttSettings.clean_session}
-							class="checkbox checkbox-primary sm:-mb-5"
+							class="checkbox checkbox-primary mt-2 sm:-mb-8 sm:mt-0"
 						/>
-						<span class="mt-2 sm:-mb-5 sm:mt-0">Clean Session?</span>
+						<span class="mt-2 sm:-mb-8 sm:mt-0">Clean Session?</span>
 					</label>
 					<!-- Keep Alive -->
 					<div>

@@ -11,7 +11,7 @@
 		<div class="card-body w-80">
 			<h2 class="card-title text-center text-2xl">Welcome to ESP32-SvelteKit</h2>
 			<p class="py-6 text-center">
-				A simple, secure and extensible framework for IoT projects built on ESP32 platforms with
+				A simple, secure and extensible framework for IoT projects for ESP32 platforms with
 				responsive <a
 					href="https://kit.svelte.dev/"
 					class="link"

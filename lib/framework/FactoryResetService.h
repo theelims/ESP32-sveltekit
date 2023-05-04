@@ -17,16 +17,17 @@
 #define FS_CONFIG_DIRECTORY "/config"
 #define FACTORY_RESET_SERVICE_PATH "/rest/factoryReset"
 
-class FactoryResetService {
-  FS* fs;
+class FactoryResetService
+{
+    FS *fs;
 
- public:
-  FactoryResetService(AsyncWebServer* server, FS* fs, SecurityManager* securityManager);
+public:
+    FactoryResetService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager);
 
-  void factoryReset();
+    void factoryReset();
 
- private:
-  void handleRequest(AsyncWebServerRequest* request);
+private:
+    void handleRequest(AsyncWebServerRequest *request);
 };
 
-#endif  // end FactoryResetService_h
+#endif // end FactoryResetService_h

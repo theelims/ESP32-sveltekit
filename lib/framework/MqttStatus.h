@@ -18,14 +18,15 @@
 #define MAX_MQTT_STATUS_SIZE 1024
 #define MQTT_STATUS_SERVICE_PATH "/rest/mqttStatus"
 
-class MqttStatus {
- public:
-  MqttStatus(AsyncWebServer* server, MqttSettingsService* mqttSettingsService, SecurityManager* securityManager);
+class MqttStatus
+{
+public:
+    MqttStatus(AsyncWebServer *server, MqttSettingsService *mqttSettingsService, SecurityManager *securityManager);
 
- private:
-  MqttSettingsService* _mqttSettingsService;
+private:
+    MqttSettingsService *_mqttSettingsService;
 
-  void mqttStatus(AsyncWebServerRequest* request);
+    void mqttStatus(AsyncWebServerRequest *request);
 };
 
-#endif  // end MqttStatus_h
+#endif // end MqttStatus_h

@@ -4,7 +4,7 @@ A word of warning, this repository is heavily been worked on. It is not yet prod
 
 This project aims to port the fabulous [rjwats/esp8266-react](https://github.com/rjwats/esp8266-react) project to Sveltekit and to add some more useful features.
 
-A simple, secure and extensible framework for IoT projects built on ESP32 platforms with responsive [Sveltekit](https://kit.svelte.dev/) front-end built with [TailwindCSS](https://tailwindcss.com/) and [DaisyUI](https://daisyui.com/).
+A simple, secure and extensible framework for IoT projects for ESP32 platforms with responsive [Sveltekit](https://kit.svelte.dev/) front-end built with [TailwindCSS](https://tailwindcss.com/) and [DaisyUI](https://daisyui.com/).
 
 First Step - recreate the Front End with SvelteKit:
 
@@ -13,7 +13,7 @@ First Step - recreate the Front End with SvelteKit:
 - [x] System-API
 - [x] OTA-API
 - [x] Firmware Upload API
-- [ ] MQTT-API
+- [x] MQTT-API
 - [x] NTP-API
 - [ ] Feature Selector Front End
 - [ ] Demo Project
