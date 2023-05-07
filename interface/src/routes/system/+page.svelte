@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { security } from '$lib/stores/user';
 	import SystemStatus from './SystemStatus.svelte';
 	import OtaSettings from './OTASettings.svelte';
 
@@ -7,9 +8,12 @@
 </script>
 
 <div
-	class="flex flex-col space-y-4
-     mx-8 my-8"
+	class="mx-8 my-8 flex
+     flex-col space-y-4"
 >
 	<SystemStatus systemStatus={data.systemStatus} />
-	<OtaSettings otaSettings={data.otaSettings} />
+
+	{#if $security.admin_required}
+		<OtaSettings otaSettings={data.otaSettings} />
+	{/if}
 </div>

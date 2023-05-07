@@ -153,9 +153,9 @@
 </script>
 
 <SettingsCard open={true}>
-	<AP slot="icon" class="lex-shrink-0 self-end w-6 h-6 mr-2" />
+	<AP slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">Access Point</span>
-	<div class="overflow-x-auto w-full">
+	<div class="w-full overflow-x-auto">
 		<table class="table w-full">
 			<tbody>
 				<!-- row 1 -->
@@ -163,12 +163,12 @@
 					<td>
 						<div class="flex items-center space-x-3">
 							<div
-								class="mask mask-hexagon w-10 h-auto {apStatus.status === 0
+								class="mask mask-hexagon h-auto w-10 {apStatus.status === 0
 									? 'bg-success'
 									: 'bg-error'}"
 							>
 								<AP
-									class="w-full h-auto scale-75 {apStatus.status === 0
+									class="h-auto w-full scale-75 {apStatus.status === 0
 										? 'text-success-content'
 										: 'text-error-content'}"
 								/>
@@ -186,8 +186,8 @@
 				<tr>
 					<td>
 						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary w-10 h-auto">
-								<Home class="w-full h-auto scale-75 text-primary-content" />
+							<div class="mask mask-hexagon bg-primary h-auto w-10">
+								<Home class="text-primary-content h-auto w-full scale-75" />
 							</div>
 							<div>
 								<div class="font-bold">IP Address</div>
@@ -202,8 +202,8 @@
 				<tr>
 					<td>
 						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary w-10 h-auto">
-								<MAC class="w-full h-auto scale-75 text-primary-content" />
+							<div class="mask mask-hexagon bg-primary h-auto w-10">
+								<MAC class="text-primary-content h-auto w-full scale-75" />
 							</div>
 							<div>
 								<div class="font-bold">MAC Address</div>
@@ -218,8 +218,8 @@
 				<tr>
 					<td>
 						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary w-10 h-auto">
-								<Devices class="w-full h-auto scale-75 text-primary-content" />
+							<div class="mask mask-hexagon bg-primary h-auto w-10">
+								<Devices class="text-primary-content h-auto w-full scale-75" />
 							</div>
 							<div>
 								<div class="font-bold">AP Clients</div>
@@ -239,7 +239,7 @@
 		<div class="collapse-title text-xl font-medium">Change AP Settings</div>
 		<div class="collapse-content">
 			<form
-				class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 px-4 w-full content-center"
+				class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2"
 				on:submit|preventDefault={handleSubmitAP}
 				novalidate
 				bind:this={formField}
@@ -266,7 +266,7 @@
 					</label>
 					<input
 						type="text"
-						class="input input-bordered w-full invalid:border-error invalid:border-2 {formErrors.ssid
+						class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.ssid
 							? 'border-error border-2'
 							: ''}"
 						bind:value={apSettings.ssid}
@@ -296,7 +296,7 @@
 						type="number"
 						min="1"
 						max="13"
-						class="input input-bordered w-full invalid:border-error invalid:border-2 {formErrors.channel
+						class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.channel
 							? 'border-error border-2'
 							: ''}"
 						bind:value={apSettings.channel}
@@ -318,7 +318,7 @@
 						type="number"
 						min="1"
 						max="8"
-						class="input input-bordered w-full invalid:border-error invalid:border-2 {formErrors.max_clients
+						class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.max_clients
 							? 'border-error border-2'
 							: ''}"
 						bind:value={apSettings.max_clients}
@@ -398,7 +398,7 @@
 					</label>
 				</div>
 
-				<label class="label cursor-pointer justify-start gap-4 my-auto">
+				<label class="label my-auto cursor-pointer justify-start gap-4">
 					<input
 						type="checkbox"
 						bind:checked={apSettings.ssid_hidden}

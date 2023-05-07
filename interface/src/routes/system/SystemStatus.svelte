@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import { openModal, closeModal } from 'svelte-modals';
+	import { user, security } from '$lib/stores/user';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 
@@ -33,7 +34,13 @@
 
 	async function getSystemStatus() {
 		try {
-			const response = await fetch('/rest/systemStatus');
+			const response = await fetch('/rest/systemStatus', {
+				method: 'GET',
+				headers: {
+					Authorization: $security.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					'Content-Type': 'application/json'
+				}
+			});
 			systemStatus = await response.json();
 			return;
 		} catch (error) {
@@ -51,7 +58,10 @@
 
 	async function postRestart() {
 		const response = await fetch('/rest/restart', {
-			method: 'POST'
+			method: 'POST',
+			headers: {
+				Authorization: $security.security ? 'Bearer ' + $user.bearer_token : 'Basic'
+			}
 		});
 	}
 
@@ -72,7 +82,10 @@
 
 	async function postFactoryReset() {
 		const response = await fetch('/rest/factoryReset', {
-			method: 'POST'
+			method: 'POST',
+			headers: {
+				Authorization: $security.security ? 'Bearer ' + $user.bearer_token : 'Basic'
+			}
 		});
 	}
 
@@ -93,18 +106,18 @@
 </script>
 
 <SettingsCard>
-	<CPU slot="icon" class="lex-shrink-0 self-end w-6 h-6 mr-2" />
+	<CPU slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">System Status</span>
 
-	<div class="overflow-x-auto w-full">
+	<div class="w-full overflow-x-auto">
 		<table class="table w-full">
 			<tbody>
 				<!-- row 1 -->
 				<tr>
 					<td>
 						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary w-10 h-auto">
-								<CPU class="w-full h-auto scale-75 text-primary-content" />
+							<div class="mask mask-hexagon bg-primary h-auto w-10">
+								<CPU class="text-primary-content h-auto w-full scale-75" />
 							</div>
 							<div>
 								<div class="font-bold">Device (Platform / SDK)</div>
@@ -119,8 +132,8 @@
 				<tr>
 					<td>
 						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary w-10 h-auto">
-								<Speed class="w-full h-auto scale-75 text-primary-content" />
+							<div class="mask mask-hexagon bg-primary h-auto w-10">
+								<Speed class="text-primary-content h-auto w-full scale-75" />
 							</div>
 							<div>
 								<div class="font-bold">CPU Frequency</div>
@@ -135,8 +148,8 @@
 				<tr>
 					<td>
 						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary w-10 h-auto">
-								<Heap class="w-full h-auto scale-75 text-primary-content" />
+							<div class="mask mask-hexagon bg-primary h-auto w-10">
+								<Heap class="text-primary-content h-auto w-full scale-75" />
 							</div>
 							<div>
 								<div class="font-bold">Heap (Free / Max Alloc)</div>
@@ -153,8 +166,8 @@
 				<tr>
 					<td>
 						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary w-10 h-auto">
-								<Pyramid class="w-full h-auto scale-75 text-primary-content" />
+							<div class="mask mask-hexagon bg-primary h-auto w-10">
+								<Pyramid class="text-primary-content h-auto w-full scale-75" />
 							</div>
 							<div>
 								<div class="font-bold">PSRAM (Size / Free)</div>
@@ -171,8 +184,8 @@
 				<tr>
 					<td>
 						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary w-10 h-auto">
-								<Sketch class="w-full h-auto scale-75 text-primary-content" />
+							<div class="mask mask-hexagon bg-primary h-auto w-10">
+								<Sketch class="text-primary-content h-auto w-full scale-75" />
 							</div>
 							<div>
 								<div class="font-bold">Sketch (Size / Free)</div>
@@ -189,8 +202,8 @@
 				<tr>
 					<td>
 						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary w-10 h-auto">
-								<Flash class="w-full h-auto scale-75 text-primary-content" />
+							<div class="mask mask-hexagon bg-primary h-auto w-10">
+								<Flash class="text-primary-content h-auto w-full scale-75" />
 							</div>
 							<div>
 								<div class="font-bold">Flash Chip (Size / Speed)</div>
@@ -207,12 +220,12 @@
 				<tr>
 					<td>
 						<div class="flex items-center space-x-3">
-							<div class="flex-none mask mask-hexagon bg-primary w-10 h-auto">
-								<Folder class="w-full h-auto scale-75 text-primary-content" />
+							<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
+								<Folder class="text-primary-content h-auto w-full scale-75" />
 							</div>
 							<div>
 								<div class="font-bold">File System (Used / Total)</div>
-								<div class="text-sm opacity-75 flex flex-wrap justify-start gap-1">
+								<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
 									<span
 										>{systemStatus.fs_used.toLocaleString('en-US')} / {systemStatus.fs_total.toLocaleString(
 											'en-US'
@@ -231,12 +244,15 @@
 			</tbody>
 		</table>
 	</div>
-	<div class="flex justify-end gap-2 flex-wrap mt-4">
-		<button class="btn btn-primary inline-flex items-center" on:click={confirmRestart}
-			><Power class="w-5 h-5 mr-2" /><span>Restart</span></button
-		>
-		<button class="btn btn-secondary inline-flex items-center" on:click={confirmReset}
-			><FactoryReset class="w-5 h-5 mr-2" /><span>Factory Reset</span></button
-		>
-	</div>
+    {#if $security.admin_required}
+    	<div class="mt-4 flex flex-wrap justify-end gap-2">
+            <button class="btn btn-primary inline-flex items-center" on:click={confirmRestart}
+                ><Power class="mr-2 h-5 w-5" /><span>Restart</span></button
+            >
+            <button class="btn btn-secondary inline-flex items-center" on:click={confirmReset}
+                ><FactoryReset class="mr-2 h-5 w-5" /><span>Factory Reset</span></button
+            >
+	    </div>     
+    {/if}
+
 </SettingsCard>

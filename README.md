@@ -15,7 +15,7 @@ First Step - recreate the Front End with SvelteKit:
 - [x] Firmware Upload API
 - [x] MQTT-API
 - [x] NTP-API
-- [ ] Feature Selector Front End
+- [x] Feature Selector Front End
 - [ ] Demo Project
 - [ ] Security-API
 - [ ] Serve from LittleFS
@@ -33,6 +33,7 @@ Second Step - extend the features:
 - Service threads instead of a loop function with millis().
 - Fallback / recovery mode
 - Allow anonymous guest user
+- Remove JWT secret retrieval from the API. Uses generate new secret instead.
 - Store Wi-Fi credentials for more then one network. Select network by preference and signal strength
 - Task Monitor to see the core usage and optimize power consumption
 - Battery API

@@ -11,17 +11,10 @@
 	import Logout from '~icons/tabler/logout';
 	import Copyright from '~icons/tabler/copyright';
 	import { onMount } from 'svelte';
+	import { features } from '$lib/stores/features';
+	import { user } from '$lib/stores/user';
 
 	export let title: string;
-
-	const features = {
-		project: true,
-		security: false,
-		mqtt: true,
-		ntp: true,
-		ota: true,
-		upload_firmware: true
-	};
 
 	const appName = 'ESP32 SvelteKit';
 
@@ -32,11 +25,23 @@
 	const discord = { href: '.', active: false };
 
 	let menuItems = [
-		{ title: 'Demo App', icon: Control, href: '/demo', feature: features.project, active: false },
-		{ title: 'Connections', icon: Remote, href: '/connections', feature: true, active: false },
+		{ title: 'Demo App', icon: Control, href: '/demo', feature: $features.project, active: false },
+		{
+			title: 'Connections',
+			icon: Remote,
+			href: '/connections',
+			feature: $features.mqtt || $features.ntp,
+			active: false
+		},
 		{ title: 'Wi-Fi', icon: WiFi, href: '/wifi', feature: true, active: false },
 		{ title: 'System', icon: Settings, href: '/system', feature: true, active: false },
-		{ title: 'User', icon: User, href: '/user', feature: features.security, active: false }
+		{
+			title: 'User',
+			icon: User,
+			href: '/user',
+			feature: $features.security && $user.admin,
+			active: false
+		}
 	];
 
 	function handleMenuClick(i: number) {
@@ -84,11 +89,14 @@
 	<div class="flex-col" />
 	<div class="flex-grow" />
 
-	{#if features.security}
+	{#if $features.security}
 		<div class="flex items-center">
 			<Avatar class="h-8 w-8" />
-			<span class="flex-grow px-4 text-xl font-bold">admin</span>
-			<div class="btn btn-ghost"><Logout class="h-8 w-8 rotate-180" /></div>
+			<span class="flex-grow px-4 text-xl font-bold">{$user.username}</span>
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<div class="btn btn-ghost" on:click={user.invalidate}>
+				<Logout class="h-8 w-8 rotate-180" />
+			</div>
 		</div>
 	{/if}
 

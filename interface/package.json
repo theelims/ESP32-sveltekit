@@ -37,6 +37,7 @@
 	"type": "module",
 	"dependencies": {
 		"daisyui": "^2.51.5",
+		"jwt-decode": "^3.1.2",
 		"svelte-modals": "^1.2.1"
 	}
 }
