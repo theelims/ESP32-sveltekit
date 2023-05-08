@@ -2,7 +2,7 @@ import type { LayoutLoad } from './$types';
 import { features } from '$lib/stores/features';
 
 // This can be false if you're using a fallback (i.e. SPA mode)
-export const prerender = true;
+export const prerender = false;
 export const ssr = false;
 
 export const load = (async () => {

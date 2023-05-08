@@ -17,14 +17,10 @@ let empty = {
 function createStore() {
 	const { subscribe, set } = writable(empty);
 
-	console.log('User store created');
-
 	// retrieve store from sessionStorage / localStorage if available
-	if (typeof localStorage !== 'undefined') {
-		const userdata = localStorage.getItem('user');
-		if (userdata) {
-			set(JSON.parse(userdata));
-		}
+	const userdata = localStorage.getItem('user');
+	if (userdata) {
+		set(JSON.parse(userdata));
 	}
 
 	return {

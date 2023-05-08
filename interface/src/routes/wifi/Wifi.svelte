@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { openModal, closeModal } from 'svelte-modals';
+	import { user, security } from '$lib/stores/user';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import InputPassword from '$lib/components/InputPassword.svelte';
 	import ScanNetworks from './Scan.svelte';
-
+	import Spinner from '$lib/components/Spinner.svelte';
 	import AP from '~icons/tabler/access-point';
 	import MAC from '~icons/tabler/dna-2';
 	import Home from '~icons/tabler/home';
@@ -42,6 +43,9 @@
 		dns_ip_2?: string;
 	};
 
+	let wifiStatus: WifiStatus;
+	let wifiSettings: WifiSettings;
+
 	let showWifiDetails = false;
 
 	let formField: any;
@@ -56,15 +60,35 @@
 		dns_2: false
 	};
 
-	// How to use the SvelteKit Load function for periodic calls instead?
 	async function getWifiStatus() {
 		try {
-			const response = await fetch('/rest/wifiStatus');
+			const response = await fetch('/rest/wifiStatus', {
+				method: 'GET',
+				headers: {
+					Authorization: $security.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					'Content-Type': 'application/json'
+				}
+			});
 			wifiStatus = await response.json();
 		} catch (error) {
 			console.error('Error:', error);
 		}
-		return;
+		return wifiStatus;
+	}
+	async function getWifiSettings() {
+		try {
+			const response = await fetch('/rest/wifiSettings', {
+				method: 'GET',
+				headers: {
+					Authorization: $security.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					'Content-Type': 'application/json'
+				}
+			});
+			wifiSettings = await response.json();
+		} catch (error) {
+			console.error('Error:', error);
+		}
+		return wifiSettings;
 	}
 
 	const interval = setInterval(async () => {
@@ -72,9 +96,6 @@
 	}, 5000);
 
 	onDestroy(() => clearInterval(interval));
-
-	export let wifiStatus: WifiStatus;
-	export let wifiSettings: WifiSettings;
 
 	async function postWiFiSettings(data: WifiSettings) {
 		try {
@@ -183,358 +204,368 @@
 	<WiFi slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">Wi-Fi</span>
 	<div class="w-full overflow-x-auto">
-		<table class="table w-full">
-			<tbody>
-				<!-- row 1 -->
-				<tr>
-					<td>
-						<div class="flex items-center space-x-3">
-							<div
-								class="mask mask-hexagon h-auto w-10 {wifiStatus.status === 3
-									? 'bg-success'
-									: 'bg-error'}"
-							>
-								<AP
-									class="h-auto w-full scale-75 {wifiStatus.status === 3
-										? 'text-success-content'
-										: 'text-error-content'}"
-								/>
-							</div>
-							<div>
-								<div class="font-bold">Status</div>
-								<div class="text-sm opacity-75">
-									{wifiStatus.status === 3 ? 'Connected' : 'Inactive'}
-								</div>
-							</div>
-						</div>
-					</td>
-				</tr>
-				<!-- row 2 -->
-				<tr>
-					<td>
-						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary h-auto w-10">
-								<SSID class="text-primary-content h-auto w-full scale-75" />
-							</div>
-							<div>
-								<div class="font-bold">SSID</div>
-								<div class="text-sm opacity-75">
-									{wifiStatus.ssid}
-								</div>
-							</div>
-						</div>
-					</td>
-				</tr>
-				<!-- row 3 -->
-				<tr>
-					<td>
-						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary h-auto w-10">
-								<Home class="text-primary-content h-auto w-full scale-75" />
-							</div>
-							<div>
-								<div class="font-bold">IP Address</div>
-								<div class="text-sm opacity-75">
-									{wifiStatus.local_ip}
-								</div>
-							</div>
-						</div>
-					</td>
-				</tr>
-				<!-- row 4 -->
-				<tr>
-					<td>
-						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary h-auto w-10">
-								<MAC class="text-primary-content h-auto w-full scale-75" />
-							</div>
-							<div>
-								<div class="font-bold">MAC Address</div>
-								<div class="text-sm opacity-75">
-									{wifiStatus.mac_address}
-								</div>
-							</div>
-							<div class="grow" />
-							<button
-								class="btn btn-circle btn-primary btn-sm modal-button"
-								on:click={() => {
-									showWifiDetails = !showWifiDetails;
-								}}
-							>
-								<Down
-									class="text-primary-content h-auto w-6 transition-transform duration-300 ease-in-out {showWifiDetails
-										? 'rotate-180'
-										: ''}"
-								/>
-							</button>
-						</div>
-					</td>
-				</tr>
-				<!-- Folds open -->
-				{#if showWifiDetails}
+		{#await getWifiStatus()}
+			<Spinner />
+		{:then nothing}
+			<table class="table w-full">
+				<tbody>
+					<!-- row 1 -->
 					<tr>
 						<td>
 							<div class="flex items-center space-x-3">
-								<div class="mask mask-hexagon bg-primary h-auto w-10">
-									<WiFi class="text-primary-content h-auto w-full scale-75" />
+								<div
+									class="mask mask-hexagon h-auto w-10 {wifiStatus.status === 3
+										? 'bg-success'
+										: 'bg-error'}"
+								>
+									<AP
+										class="h-auto w-full scale-75 {wifiStatus.status === 3
+											? 'text-success-content'
+											: 'text-error-content'}"
+									/>
 								</div>
 								<div>
-									<div class="font-bold">RSSI</div>
+									<div class="font-bold">Status</div>
 									<div class="text-sm opacity-75">
-										{wifiStatus.rssi} dBm
+										{wifiStatus.status === 3 ? 'Connected' : 'Inactive'}
 									</div>
 								</div>
 							</div>
 						</td>
 					</tr>
+					<!-- row 2 -->
 					<tr>
 						<td>
 							<div class="flex items-center space-x-3">
 								<div class="mask mask-hexagon bg-primary h-auto w-10">
-									<Channel class="text-primary-content h-auto w-full scale-75" />
+									<SSID class="text-primary-content h-auto w-full scale-75" />
 								</div>
 								<div>
-									<div class="font-bold">Channel</div>
+									<div class="font-bold">SSID</div>
 									<div class="text-sm opacity-75">
-										{wifiStatus.channel}
+										{wifiStatus.ssid}
 									</div>
 								</div>
 							</div>
 						</td>
 					</tr>
+					<!-- row 3 -->
 					<tr>
 						<td>
 							<div class="flex items-center space-x-3">
 								<div class="mask mask-hexagon bg-primary h-auto w-10">
-									<Gateway class="text-primary-content h-auto w-full scale-75" />
+									<Home class="text-primary-content h-auto w-full scale-75" />
 								</div>
 								<div>
-									<div class="font-bold">Gateway IP</div>
+									<div class="font-bold">IP Address</div>
 									<div class="text-sm opacity-75">
-										{wifiStatus.gateway_ip}
+										{wifiStatus.local_ip}
 									</div>
 								</div>
 							</div>
 						</td>
 					</tr>
+					<!-- row 4 -->
 					<tr>
 						<td>
 							<div class="flex items-center space-x-3">
 								<div class="mask mask-hexagon bg-primary h-auto w-10">
-									<Subnet class="text-primary-content h-auto w-full scale-75" />
+									<MAC class="text-primary-content h-auto w-full scale-75" />
 								</div>
 								<div>
-									<div class="font-bold">Subnet Mask</div>
+									<div class="font-bold">MAC Address</div>
 									<div class="text-sm opacity-75">
-										{wifiStatus.subnet_mask}
+										{wifiStatus.mac_address}
 									</div>
 								</div>
+								<div class="grow" />
+								<button
+									class="btn btn-circle btn-primary btn-sm modal-button"
+									on:click={() => {
+										showWifiDetails = !showWifiDetails;
+									}}
+								>
+									<Down
+										class="text-primary-content h-auto w-6 transition-transform duration-300 ease-in-out {showWifiDetails
+											? 'rotate-180'
+											: ''}"
+									/>
+								</button>
 							</div>
 						</td>
 					</tr>
-					<tr>
-						<td>
-							<div class="flex items-center space-x-3">
-								<div class="mask mask-hexagon bg-primary h-auto w-10">
-									<DNS class="text-primary-content h-auto w-full scale-75" />
-								</div>
-								<div>
-									<div class="font-bold">DNS 1</div>
-									<div class="text-sm opacity-75">
-										{wifiStatus.dns_ip_1}
+					<!-- Folds open -->
+					{#if showWifiDetails}
+						<tr>
+							<td>
+								<div class="flex items-center space-x-3">
+									<div class="mask mask-hexagon bg-primary h-auto w-10">
+										<WiFi class="text-primary-content h-auto w-full scale-75" />
+									</div>
+									<div>
+										<div class="font-bold">RSSI</div>
+										<div class="text-sm opacity-75">
+											{wifiStatus.rssi} dBm
+										</div>
 									</div>
 								</div>
-							</div>
-						</td>
-					</tr>
-				{/if}
-			</tbody>
-		</table>
-	</div>
-	<div class="collapse">
-		<input type="checkbox" />
-		<div class="collapse-title text-xl font-medium">Change Wi-Fi Settings</div>
-		<div class="collapse-content">
-			<form on:submit|preventDefault={handleSubmitWiFi} novalidate bind:this={formField}>
-				<div class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2">
-					<div>
-						<label class="label" for="ssid">
-							<span class="label-text text-md">SSID</span>
-						</label>
-						<input
-							type="text"
-							class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.ssid
-								? 'border-error border-2'
-								: ''}"
-							bind:value={wifiSettings.ssid}
-							id="ssid"
-							min="2"
-							max="32"
-							required
-						/>
-						<label class="label" for="ssid">
-							<span class="label-text-alt text-error {formErrors.ssid ? '' : 'hidden'}"
-								>SSID must be between 2 and 32 characters long</span
-							>
-						</label>
-					</div>
-					<div>
-						<label class="label" for="pwd">
-							<span class="label-text text-md">Password</span>
-						</label>
-						<InputPassword bind:value={wifiSettings.password} id="pwd" />
-					</div>
-					<div>
-						<label class="label" for="channel">
-							<span class="label-text text-md">Host Name</span>
-						</label>
-						<input
-							type="text"
-							min="1"
-							max="32"
-							class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.hostname
-								? 'border-error border-2'
-								: ''}"
-							bind:value={wifiSettings.hostname}
-							id="channel"
-							required
-						/>
-						<label class="label" for="channel">
-							<span class="label-text-alt text-error {formErrors.hostname ? '' : 'hidden'}"
-								>Host name must be between 2 and 32 characters long</span
-							>
-						</label>
-					</div>
-					<label class="label inline-flex cursor-pointer content-end justify-start gap-4">
-						<input
-							type="checkbox"
-							bind:checked={wifiSettings.static_ip_config}
-							class="checkbox checkbox-primary sm:-mb-5"
-						/>
-						<span class="sm:-mb-5">Static IP Config?</span>
-					</label>
-					{#if wifiSettings.static_ip_config}
-						<div>
-							<label class="label" for="localIP">
-								<span class="label-text text-md">Local IP</span>
-							</label>
-							<input
-								type="text"
-								class="input input-bordered w-full {formErrors.local_ip
-									? 'border-error border-2'
-									: ''}"
-								minlength="7"
-								maxlength="15"
-								size="15"
-								bind:value={wifiSettings.local_ip}
-								id="localIP"
-								required
-							/>
-							<label class="label" for="localIP">
-								<span class="label-text-alt text-error {formErrors.local_ip ? '' : 'hidden'}"
-									>Must be a valid IPv4 address</span
-								>
-							</label>
-						</div>
-
-						<div>
-							<label class="label" for="gateway">
-								<span class="label-text text-md">Gateway IP</span>
-							</label>
-							<input
-								type="text"
-								class="input input-bordered w-full {formErrors.gateway_ip
-									? 'border-error border-2'
-									: ''}"
-								minlength="7"
-								maxlength="15"
-								size="15"
-								bind:value={wifiSettings.gateway_ip}
-								id="gateway"
-								required
-							/>
-							<label class="label" for="gateway">
-								<span class="label-text-alt text-error {formErrors.gateway_ip ? '' : 'hidden'}"
-									>Must be a valid IPv4 address</span
-								>
-							</label>
-						</div>
-						<div>
-							<label class="label" for="subnet">
-								<span class="label-text text-md">Subnet Mask</span>
-							</label>
-							<input
-								type="text"
-								class="input input-bordered w-full {formErrors.subnet_mask
-									? 'border-error border-2'
-									: ''}"
-								minlength="7"
-								maxlength="15"
-								size="15"
-								bind:value={wifiSettings.subnet_mask}
-								id="subnet"
-								required
-							/>
-							<label class="label" for="subnet">
-								<span class="label-text-alt text-error {formErrors.subnet_mask ? '' : 'hidden'}"
-									>Must be a valid IPv4 address</span
-								>
-							</label>
-						</div>
-						<div>
-							<label class="label" for="gateway">
-								<span class="label-text text-md">DNS 1</span>
-							</label>
-							<input
-								type="text"
-								class="input input-bordered w-full {formErrors.dns_1
-									? 'border-error border-2'
-									: ''}"
-								minlength="7"
-								maxlength="15"
-								size="15"
-								bind:value={wifiSettings.dns_ip_1}
-								id="gateway"
-								required
-							/>
-							<label class="label" for="gateway">
-								<span class="label-text-alt text-error {formErrors.dns_1 ? '' : 'hidden'}"
-									>Must be a valid IPv4 address</span
-								>
-							</label>
-						</div>
-						<div>
-							<label class="label" for="subnet">
-								<span class="label-text text-md">DNS 2</span>
-							</label>
-							<input
-								type="text"
-								class="input input-bordered w-full {formErrors.dns_2
-									? 'border-error border-2'
-									: ''}"
-								minlength="7"
-								maxlength="15"
-								size="15"
-								bind:value={wifiSettings.dns_ip_2}
-								id="subnet"
-								required
-							/>
-							<label class="label" for="subnet">
-								<span class="label-text-alt text-error {formErrors.dns_2 ? '' : 'hidden'}"
-									>Must be a valid IPv4 address</span
-								>
-							</label>
-						</div>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<div class="flex items-center space-x-3">
+									<div class="mask mask-hexagon bg-primary h-auto w-10">
+										<Channel class="text-primary-content h-auto w-full scale-75" />
+									</div>
+									<div>
+										<div class="font-bold">Channel</div>
+										<div class="text-sm opacity-75">
+											{wifiStatus.channel}
+										</div>
+									</div>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<div class="flex items-center space-x-3">
+									<div class="mask mask-hexagon bg-primary h-auto w-10">
+										<Gateway class="text-primary-content h-auto w-full scale-75" />
+									</div>
+									<div>
+										<div class="font-bold">Gateway IP</div>
+										<div class="text-sm opacity-75">
+											{wifiStatus.gateway_ip}
+										</div>
+									</div>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<div class="flex items-center space-x-3">
+									<div class="mask mask-hexagon bg-primary h-auto w-10">
+										<Subnet class="text-primary-content h-auto w-full scale-75" />
+									</div>
+									<div>
+										<div class="font-bold">Subnet Mask</div>
+										<div class="text-sm opacity-75">
+											{wifiStatus.subnet_mask}
+										</div>
+									</div>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<div class="flex items-center space-x-3">
+									<div class="mask mask-hexagon bg-primary h-auto w-10">
+										<DNS class="text-primary-content h-auto w-full scale-75" />
+									</div>
+									<div>
+										<div class="font-bold">DNS 1</div>
+										<div class="text-sm opacity-75">
+											{wifiStatus.dns_ip_1}
+										</div>
+									</div>
+								</div>
+							</td>
+						</tr>
 					{/if}
-				</div>
-				<div class="divider mb-2 mt-0" />
-				<div class="mx-4 flex flex-wrap justify-end gap-2">
-					<button class="btn btn-primary" type="button" on:click={scanForNetworks}
-						>Scan Networks</button
-					>
-					<button class="btn btn-primary" type="submit">Apply Settings</button>
-				</div>
-			</form>
-		</div>
+				</tbody>
+			</table>
+		{/await}
 	</div>
+	{#if $security.admin_required}
+		<div class="collapse">
+			<input type="checkbox" />
+			<div class="collapse-title text-xl font-medium">Change Wi-Fi Settings</div>
+			<div class="collapse-content">
+				{#await getWifiSettings()}
+					<Spinner />
+				{:then value}
+					<form on:submit|preventDefault={handleSubmitWiFi} novalidate bind:this={formField}>
+						<div class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2">
+							<div>
+								<label class="label" for="ssid">
+									<span class="label-text text-md">SSID</span>
+								</label>
+								<input
+									type="text"
+									class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.ssid
+										? 'border-error border-2'
+										: ''}"
+									bind:value={wifiSettings.ssid}
+									id="ssid"
+									min="2"
+									max="32"
+									required
+								/>
+								<label class="label" for="ssid">
+									<span class="label-text-alt text-error {formErrors.ssid ? '' : 'hidden'}"
+										>SSID must be between 2 and 32 characters long</span
+									>
+								</label>
+							</div>
+							<div>
+								<label class="label" for="pwd">
+									<span class="label-text text-md">Password</span>
+								</label>
+								<InputPassword bind:value={wifiSettings.password} id="pwd" />
+							</div>
+							<div>
+								<label class="label" for="channel">
+									<span class="label-text text-md">Host Name</span>
+								</label>
+								<input
+									type="text"
+									min="1"
+									max="32"
+									class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.hostname
+										? 'border-error border-2'
+										: ''}"
+									bind:value={wifiSettings.hostname}
+									id="channel"
+									required
+								/>
+								<label class="label" for="channel">
+									<span class="label-text-alt text-error {formErrors.hostname ? '' : 'hidden'}"
+										>Host name must be between 2 and 32 characters long</span
+									>
+								</label>
+							</div>
+							<label class="label inline-flex cursor-pointer content-end justify-start gap-4">
+								<input
+									type="checkbox"
+									bind:checked={wifiSettings.static_ip_config}
+									class="checkbox checkbox-primary sm:-mb-5"
+								/>
+								<span class="sm:-mb-5">Static IP Config?</span>
+							</label>
+							{#if wifiSettings.static_ip_config}
+								<div>
+									<label class="label" for="localIP">
+										<span class="label-text text-md">Local IP</span>
+									</label>
+									<input
+										type="text"
+										class="input input-bordered w-full {formErrors.local_ip
+											? 'border-error border-2'
+											: ''}"
+										minlength="7"
+										maxlength="15"
+										size="15"
+										bind:value={wifiSettings.local_ip}
+										id="localIP"
+										required
+									/>
+									<label class="label" for="localIP">
+										<span class="label-text-alt text-error {formErrors.local_ip ? '' : 'hidden'}"
+											>Must be a valid IPv4 address</span
+										>
+									</label>
+								</div>
+
+								<div>
+									<label class="label" for="gateway">
+										<span class="label-text text-md">Gateway IP</span>
+									</label>
+									<input
+										type="text"
+										class="input input-bordered w-full {formErrors.gateway_ip
+											? 'border-error border-2'
+											: ''}"
+										minlength="7"
+										maxlength="15"
+										size="15"
+										bind:value={wifiSettings.gateway_ip}
+										id="gateway"
+										required
+									/>
+									<label class="label" for="gateway">
+										<span class="label-text-alt text-error {formErrors.gateway_ip ? '' : 'hidden'}"
+											>Must be a valid IPv4 address</span
+										>
+									</label>
+								</div>
+								<div>
+									<label class="label" for="subnet">
+										<span class="label-text text-md">Subnet Mask</span>
+									</label>
+									<input
+										type="text"
+										class="input input-bordered w-full {formErrors.subnet_mask
+											? 'border-error border-2'
+											: ''}"
+										minlength="7"
+										maxlength="15"
+										size="15"
+										bind:value={wifiSettings.subnet_mask}
+										id="subnet"
+										required
+									/>
+									<label class="label" for="subnet">
+										<span class="label-text-alt text-error {formErrors.subnet_mask ? '' : 'hidden'}"
+											>Must be a valid IPv4 address</span
+										>
+									</label>
+								</div>
+								<div>
+									<label class="label" for="gateway">
+										<span class="label-text text-md">DNS 1</span>
+									</label>
+									<input
+										type="text"
+										class="input input-bordered w-full {formErrors.dns_1
+											? 'border-error border-2'
+											: ''}"
+										minlength="7"
+										maxlength="15"
+										size="15"
+										bind:value={wifiSettings.dns_ip_1}
+										id="gateway"
+										required
+									/>
+									<label class="label" for="gateway">
+										<span class="label-text-alt text-error {formErrors.dns_1 ? '' : 'hidden'}"
+											>Must be a valid IPv4 address</span
+										>
+									</label>
+								</div>
+								<div>
+									<label class="label" for="subnet">
+										<span class="label-text text-md">DNS 2</span>
+									</label>
+									<input
+										type="text"
+										class="input input-bordered w-full {formErrors.dns_2
+											? 'border-error border-2'
+											: ''}"
+										minlength="7"
+										maxlength="15"
+										size="15"
+										bind:value={wifiSettings.dns_ip_2}
+										id="subnet"
+										required
+									/>
+									<label class="label" for="subnet">
+										<span class="label-text-alt text-error {formErrors.dns_2 ? '' : 'hidden'}"
+											>Must be a valid IPv4 address</span
+										>
+									</label>
+								</div>
+							{/if}
+						</div>
+						<div class="divider mb-2 mt-0" />
+						<div class="mx-4 flex flex-wrap justify-end gap-2">
+							<button class="btn btn-primary" type="button" on:click={scanForNetworks}
+								>Scan Networks</button
+							>
+							<button class="btn btn-primary" type="submit">Apply Settings</button>
+						</div>
+					</form>
+				{/await}
+			</div>
+		</div>
+	{/if}
 </SettingsCard>

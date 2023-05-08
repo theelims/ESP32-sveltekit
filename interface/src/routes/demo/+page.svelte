@@ -9,5 +9,5 @@
 	class="mx-8 my-8 flex
      flex-col gap-4"
 >
-	<Demo lightState={data.lightState} />
+	<Demo />
 </div>

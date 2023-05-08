@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { openModal, closeModal } from 'svelte-modals';
 	import { user, security } from '$lib/stores/user';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
+	import Spinner from '$lib/components/Spinner.svelte';
 
 	import CPU from '~icons/tabler/cpu';
 	import Power from '~icons/tabler/power';
@@ -41,8 +42,7 @@
 					'Content-Type': 'application/json'
 				}
 			});
-			systemStatus = await response.json();
-			return;
+			return await response.json();
 		} catch (error) {
 			console.log('Error:', error);
 		}
@@ -52,9 +52,9 @@
 		getSystemStatus();
 	}, 5000);
 
-	onDestroy(() => clearInterval(interval));
+	onMount(() => getSystemStatus());
 
-	export let systemStatus: SystemStatus;
+	onDestroy(() => clearInterval(interval));
 
 	async function postRestart() {
 		const response = await fetch('/rest/restart', {
@@ -110,149 +110,152 @@
 	<span slot="title">System Status</span>
 
 	<div class="w-full overflow-x-auto">
-		<table class="table w-full">
-			<tbody>
-				<!-- row 1 -->
-				<tr>
-					<td>
-						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary h-auto w-10">
-								<CPU class="text-primary-content h-auto w-full scale-75" />
-							</div>
-							<div>
-								<div class="font-bold">Device (Platform / SDK)</div>
-								<div class="text-sm opacity-75">
-									{systemStatus.esp_platform} / {systemStatus.sdk_version}
+		{#await getSystemStatus()}
+			<Spinner />
+		{:then systemStatus}
+			<table class="table w-full">
+				<tbody>
+					<!-- row 1 -->
+					<tr>
+						<td>
+							<div class="flex items-center space-x-3">
+								<div class="mask mask-hexagon bg-primary h-auto w-10">
+									<CPU class="text-primary-content h-auto w-full scale-75" />
+								</div>
+								<div>
+									<div class="font-bold">Device (Platform / SDK)</div>
+									<div class="text-sm opacity-75">
+										{systemStatus.esp_platform} / {systemStatus.sdk_version}
+									</div>
 								</div>
 							</div>
-						</div>
-					</td>
-				</tr>
-				<!-- row 2 -->
-				<tr>
-					<td>
-						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary h-auto w-10">
-								<Speed class="text-primary-content h-auto w-full scale-75" />
-							</div>
-							<div>
-								<div class="font-bold">CPU Frequency</div>
-								<div class="text-sm opacity-75">
-									{systemStatus.cpu_freq_mhz} MHz
+						</td>
+					</tr>
+					<!-- row 2 -->
+					<tr>
+						<td>
+							<div class="flex items-center space-x-3">
+								<div class="mask mask-hexagon bg-primary h-auto w-10">
+									<Speed class="text-primary-content h-auto w-full scale-75" />
+								</div>
+								<div>
+									<div class="font-bold">CPU Frequency</div>
+									<div class="text-sm opacity-75">
+										{systemStatus.cpu_freq_mhz} MHz
+									</div>
 								</div>
 							</div>
-						</div>
-					</td>
-				</tr>
-				<!-- row 3 -->
-				<tr>
-					<td>
-						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary h-auto w-10">
-								<Heap class="text-primary-content h-auto w-full scale-75" />
-							</div>
-							<div>
-								<div class="font-bold">Heap (Free / Max Alloc)</div>
-								<div class="text-sm opacity-75">
-									{systemStatus.free_heap.toLocaleString('en-US')} / {systemStatus.max_alloc_heap.toLocaleString(
-										'en-US'
-									)} bytes
+						</td>
+					</tr>
+					<!-- row 3 -->
+					<tr>
+						<td>
+							<div class="flex items-center space-x-3">
+								<div class="mask mask-hexagon bg-primary h-auto w-10">
+									<Heap class="text-primary-content h-auto w-full scale-75" />
 								</div>
-							</div>
-						</div>
-					</td>
-				</tr>
-				<!-- row 4 -->
-				<tr>
-					<td>
-						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary h-auto w-10">
-								<Pyramid class="text-primary-content h-auto w-full scale-75" />
-							</div>
-							<div>
-								<div class="font-bold">PSRAM (Size / Free)</div>
-								<div class="text-sm opacity-75">
-									{systemStatus.psram_size.toLocaleString('en-US')} / {systemStatus.psram_size.toLocaleString(
-										'en-US'
-									)} bytes
-								</div>
-							</div>
-						</div>
-					</td>
-				</tr>
-				<!-- row 5 -->
-				<tr>
-					<td>
-						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary h-auto w-10">
-								<Sketch class="text-primary-content h-auto w-full scale-75" />
-							</div>
-							<div>
-								<div class="font-bold">Sketch (Size / Free)</div>
-								<div class="text-sm opacity-75">
-									{systemStatus.sketch_size.toLocaleString('en-US')} / {systemStatus.free_sketch_space.toLocaleString(
-										'en-US'
-									)} bytes
-								</div>
-							</div>
-						</div>
-					</td>
-				</tr>
-				<!-- row 6 -->
-				<tr>
-					<td>
-						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary h-auto w-10">
-								<Flash class="text-primary-content h-auto w-full scale-75" />
-							</div>
-							<div>
-								<div class="font-bold">Flash Chip (Size / Speed)</div>
-								<div class="text-sm opacity-75">
-									{systemStatus.flash_chip_size.toLocaleString('en-US')} bytes / {(
-										systemStatus.flash_chip_speed / 1000000
-									).toLocaleString('en-US')} MHz
-								</div>
-							</div>
-						</div>
-					</td>
-				</tr>
-				<!-- row 7 -->
-				<tr>
-					<td>
-						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-								<Folder class="text-primary-content h-auto w-full scale-75" />
-							</div>
-							<div>
-								<div class="font-bold">File System (Used / Total)</div>
-								<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
-									<span
-										>{systemStatus.fs_used.toLocaleString('en-US')} / {systemStatus.fs_total.toLocaleString(
+								<div>
+									<div class="font-bold">Heap (Free / Max Alloc)</div>
+									<div class="text-sm opacity-75">
+										{systemStatus.free_heap.toLocaleString('en-US')} / {systemStatus.max_alloc_heap.toLocaleString(
 											'en-US'
-										)} bytes</span
-									>
-
-									<span
-										>({(systemStatus.fs_total - systemStatus.fs_used).toLocaleString('en-US')}
-										bytes free)</span
-									>
+										)} bytes
+									</div>
 								</div>
 							</div>
-						</div>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
-    {#if $security.admin_required}
-    	<div class="mt-4 flex flex-wrap justify-end gap-2">
-            <button class="btn btn-primary inline-flex items-center" on:click={confirmRestart}
-                ><Power class="mr-2 h-5 w-5" /><span>Restart</span></button
-            >
-            <button class="btn btn-secondary inline-flex items-center" on:click={confirmReset}
-                ><FactoryReset class="mr-2 h-5 w-5" /><span>Factory Reset</span></button
-            >
-	    </div>     
-    {/if}
+						</td>
+					</tr>
+					<!-- row 4 -->
+					<tr>
+						<td>
+							<div class="flex items-center space-x-3">
+								<div class="mask mask-hexagon bg-primary h-auto w-10">
+									<Pyramid class="text-primary-content h-auto w-full scale-75" />
+								</div>
+								<div>
+									<div class="font-bold">PSRAM (Size / Free)</div>
+									<div class="text-sm opacity-75">
+										{systemStatus.psram_size.toLocaleString('en-US')} / {systemStatus.psram_size.toLocaleString(
+											'en-US'
+										)} bytes
+									</div>
+								</div>
+							</div>
+						</td>
+					</tr>
+					<!-- row 5 -->
+					<tr>
+						<td>
+							<div class="flex items-center space-x-3">
+								<div class="mask mask-hexagon bg-primary h-auto w-10">
+									<Sketch class="text-primary-content h-auto w-full scale-75" />
+								</div>
+								<div>
+									<div class="font-bold">Sketch (Size / Free)</div>
+									<div class="text-sm opacity-75">
+										{systemStatus.sketch_size.toLocaleString('en-US')} / {systemStatus.free_sketch_space.toLocaleString(
+											'en-US'
+										)} bytes
+									</div>
+								</div>
+							</div>
+						</td>
+					</tr>
+					<!-- row 6 -->
+					<tr>
+						<td>
+							<div class="flex items-center space-x-3">
+								<div class="mask mask-hexagon bg-primary h-auto w-10">
+									<Flash class="text-primary-content h-auto w-full scale-75" />
+								</div>
+								<div>
+									<div class="font-bold">Flash Chip (Size / Speed)</div>
+									<div class="text-sm opacity-75">
+										{systemStatus.flash_chip_size.toLocaleString('en-US')} bytes / {(
+											systemStatus.flash_chip_speed / 1000000
+										).toLocaleString('en-US')} MHz
+									</div>
+								</div>
+							</div>
+						</td>
+					</tr>
+					<!-- row 7 -->
+					<tr>
+						<td>
+							<div class="flex items-center space-x-3">
+								<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
+									<Folder class="text-primary-content h-auto w-full scale-75" />
+								</div>
+								<div>
+									<div class="font-bold">File System (Used / Total)</div>
+									<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
+										<span
+											>{systemStatus.fs_used.toLocaleString('en-US')} / {systemStatus.fs_total.toLocaleString(
+												'en-US'
+											)} bytes</span
+										>
 
+										<span
+											>({(systemStatus.fs_total - systemStatus.fs_used).toLocaleString('en-US')}
+											bytes free)</span
+										>
+									</div>
+								</div>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		{/await}
+	</div>
+	{#if $security.admin_required}
+		<div class="mt-4 flex flex-wrap justify-end gap-2">
+			<button class="btn btn-primary inline-flex items-center" on:click={confirmRestart}
+				><Power class="mr-2 h-5 w-5" /><span>Restart</span></button
+			>
+			<button class="btn btn-secondary inline-flex items-center" on:click={confirmReset}
+				><FactoryReset class="mr-2 h-5 w-5" /><span>Factory Reset</span></button
+			>
+		</div>
+	{/if}
 </SettingsCard>

@@ -1,15 +1,18 @@
 <script lang="ts">
 	import type { LayoutData } from './$types';
+	import { onMount } from 'svelte';
 	import { user, security } from '$lib/stores/user';
-    import type { userProfile } from '$lib/stores/user';
+	import { features } from '$lib/stores/features';
+	import type { userProfile } from '$lib/stores/user';
 	import { page } from '$app/stores';
+	import { invalidateAll } from '$app/navigation';
 	import { Modals, closeModal } from 'svelte-modals';
 	import { fade } from 'svelte/transition';
 	import '../app.css';
 	import Menu from './menu.svelte';
 	import Statusbar from './statusbar.svelte';
 	import Login from './login.svelte';
-	import { onMount } from 'svelte';
+	import Spinner from '$lib/components/Spinner.svelte';
 
 	export let data: LayoutData;
 

@@ -7,9 +7,9 @@
 </script>
 
 <div
-	class="flex flex-col gap-4
-     mx-8 my-8"
+	class="mx-8 my-8 flex
+     flex-col gap-4"
 >
-	<Wifi wifiSettings={data.wifiSettings} wifiStatus={data.wifiStatus} />
-	<Accesspoint apSettings={data.apSettings} apStatus={data.apStatus} />
+	<Wifi />
+	<Accesspoint />
 </div>

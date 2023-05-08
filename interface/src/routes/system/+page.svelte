@@ -11,9 +11,9 @@
 	class="mx-8 my-8 flex
      flex-col space-y-4"
 >
-	<SystemStatus systemStatus={data.systemStatus} />
+	<SystemStatus />
 
 	{#if $security.admin_required}
-		<OtaSettings otaSettings={data.otaSettings} />
+		<OtaSettings />
 	{/if}
 </div>
