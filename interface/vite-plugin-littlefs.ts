@@ -11,21 +11,21 @@ export default function viteLittleFS(): Plugin[] {
 				const { assetFileNames, chunkFileNames, entryFileNames } =
 					config.build?.rollupOptions?.output;
 
-				// Handle Server-build + Client Assets
-				config.build.rollupOptions.output = {
-					...config.build?.rollupOptions?.output,
-					assetFileNames: assetFileNames.replace('[hash].', '')
-				};
+      // Handle Server-build + Client Assets
+      config.build.rollupOptions.output = {
+        ...config.build?.rollupOptions?.output,
+        assetFileNames: assetFileNames.replace('.[hash]', '')
+      }
 
-				// Handle Client-build
-				if (config.build?.rollupOptions?.output.chunkFileNames.includes('hash')) {
-					config.build.rollupOptions.output = {
-						...config.build?.rollupOptions?.output,
-						chunkFileNames: chunkFileNames.replace('[hash].', ''),
-						entryFileNames: entryFileNames.replace('[hash].', '')
-					};
-				}
-			}
-		}
-	];
+      // Handle Client-build
+      if (config.build?.rollupOptions?.output.chunkFileNames.includes('hash')) {
+
+        config.build.rollupOptions.output = {
+          ...config.build?.rollupOptions?.output,
+          chunkFileNames: chunkFileNames.replace('.[hash]', ''),
+          entryFileNames: entryFileNames.replace('.[hash]', ''),
+        }
+      }
+    }
+  }]
 }
