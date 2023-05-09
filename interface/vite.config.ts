@@ -2,6 +2,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import type { UserConfig } from 'vite';
 import Icons from 'unplugin-icons/vite';
 import viteLittleFS from './vite-plugin-littlefs';
+import ProgmemGenerator from './vite-plugin-progmem';
 
 const config: UserConfig = {
 	plugins: [
@@ -10,7 +11,12 @@ const config: UserConfig = {
 			compiler: 'svelte'
 		}),
 		// Shorten file names for LittleFS 32 char limit
-		viteLittleFS()
+		viteLittleFS(),
+        // 
+        ProgmemGenerator({ 
+            outputPath: "../lib/framework/WWWData.h", 
+            bytesPerLine: 20 
+        })
 	],
 	server: {
 		proxy: {
