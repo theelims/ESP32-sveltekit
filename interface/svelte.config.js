@@ -9,13 +9,13 @@ const config = {
 
 	kit: {
 		adapter: adapter({
-            pages: '../data/www',
-            assets: '../data/www',
-            fallback: 'index.html',
-            precompress: false,
-            strict: true
-        }),
-        //prerender: { default: true },
+			pages: '../data/www',
+			assets: '../data/www',
+			fallback: 'index.html',
+			precompress: false,
+			strict: true
+		})
+		//prerender: { default: true },
 	}
 };
 
