@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import logo from '$lib/assets/svelte-logo.png';
+    import { notifications } from '$lib/stores/notifications';
+	import { goto } from '$app/navigation';
 
 	export let data: PageData;
 </script>
@@ -27,7 +29,7 @@
 					>DaisyUI</a
 				>.
 			</p>
-			<a class="btn btn-primary" href="/demo">Start Demo</a>
+			<a class="btn btn-primary" href="/demo" on:click={() => notifications.success('You did it!', 3000)}>Start Demo</a>
 		</div>
 	</div>
 </div>

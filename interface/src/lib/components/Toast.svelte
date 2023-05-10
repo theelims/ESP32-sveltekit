@@ -1,0 +1,34 @@
+<script>
+	import { flip } from 'svelte/animate';
+	import { fly } from 'svelte/transition';
+	import { notifications } from '$lib/stores/notifications';
+	import error from '~icons/tabler/circle-x';
+	import success from '~icons/tabler/circle-check';
+	import warning from '~icons/tabler/alert-triangle';
+	import info from '~icons/tabler/info-circle';
+
+	export let theme = {
+		error: 'alert-error',
+		success: 'alert-success',
+		warning: 'alert-warning',
+		info: 'alert-error'
+	};
+
+	export let icon = {
+		error: error,
+		success: success,
+		warning: warning,
+		info: info
+	};
+</script>
+
+<div class="toast toast-end mr-4">
+	{#each $notifications as notification (notification.id)}
+		<div animate:flip class="alert {theme[notification.type]}" transition:fly={{ y: 30 }}>
+			<div>
+				<svelte:component this={icon[notification.type]} class="h-6 w-6 flex-shrink-0" />
+				<span>{notification.message}</span>
+			</div>
+		</div>
+	{/each}
+</div>

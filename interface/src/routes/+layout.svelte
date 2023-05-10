@@ -12,7 +12,7 @@
 	import Menu from './menu.svelte';
 	import Statusbar from './statusbar.svelte';
 	import Login from './login.svelte';
-	import Spinner from '$lib/components/Spinner.svelte';
+	import Toast from '$lib/components/Toast.svelte';
 
 	export let data: LayoutData;
 
@@ -76,3 +76,5 @@
 		on:click={closeModal}
 	/>
 </Modals>
+
+<Toast />
