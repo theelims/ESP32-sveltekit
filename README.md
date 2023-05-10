@@ -18,7 +18,6 @@ First Step - recreate the Front End with SvelteKit:
 - [x] Feature Selector Front End
 - [ ] Demo Project
 - [ ] Security-API
-- [ ] Toast Component
 - [ ] Serve from LittleFS
 - [ ] Serve from PROGMEM
 - [ ] Update docs

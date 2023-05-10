@@ -7,12 +7,12 @@
 	import { page } from '$app/stores';
 	import { invalidateAll } from '$app/navigation';
 	import { Modals, closeModal } from 'svelte-modals';
+	import Toast from '$lib/components/Toast.svelte';
 	import { fade } from 'svelte/transition';
 	import '../app.css';
 	import Menu from './menu.svelte';
 	import Statusbar from './statusbar.svelte';
 	import Login from './login.svelte';
-	import Toast from '$lib/components/Toast.svelte';
 
 	export let data: LayoutData;
 

@@ -3,6 +3,7 @@
 	import InputPassword from '$lib/components/InputPassword.svelte';
 	import type { userProfile } from '$lib/stores/user';
 	import { user } from '$lib/stores/user';
+	import { notifications } from '$lib/stores/notifications';
 
 	type SignInData = {
 		password: string;
@@ -26,8 +27,12 @@
 			if (response.status === 200) {
 				token = await response.json();
 				user.init(token.access_token);
+				let username = $user.username;
+				notifications.success('User ' + username + ' signed in', 5000);
 			} else {
-				// user not logged in --> show error ot user
+				username = '';
+				password = '';
+				notifications.error('Wrong Username or Password!', 5000);
 			}
 		} catch (error) {
 			console.error('Error:', error);
