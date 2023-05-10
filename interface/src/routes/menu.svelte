@@ -13,6 +13,7 @@
 	import { onMount } from 'svelte';
 	import { features } from '$lib/stores/features';
 	import { user } from '$lib/stores/user';
+	import { goto } from '$app/navigation';
 
 	export let title: string;
 
@@ -94,7 +95,13 @@
 			<Avatar class="h-8 w-8" />
 			<span class="flex-grow px-4 text-xl font-bold">{$user.username}</span>
 			<!-- svelte-ignore a11y-click-events-have-key-events -->
-			<div class="btn btn-ghost" on:click={user.invalidate}>
+			<div
+				class="btn btn-ghost"
+				on:click={() => {
+					goto('/');
+					user.invalidate();
+				}}
+			>
 				<Logout class="h-8 w-8 rotate-180" />
 			</div>
 		</div>
