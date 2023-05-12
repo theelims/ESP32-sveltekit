@@ -50,7 +50,7 @@
 {#if $security.login_required}
 	<Login />
 {:else}
-	<div class="drawer drawer-mobile">
+	<div class="drawer drawer-mobile" >
 		<input id="main-menu" type="checkbox" class="drawer-toggle" />
 		<div class="drawer-content flex flex-col">
 			<!-- Status bar content here -->

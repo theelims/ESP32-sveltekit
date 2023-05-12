@@ -1,6 +1,7 @@
 from pathlib import Path
 from subprocess import check_output, Popen, PIPE, STDOUT, CalledProcessError
 import os
+import zlib
 
 Import("env")
 

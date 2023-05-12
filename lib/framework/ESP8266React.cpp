@@ -46,13 +46,13 @@ ESP8266React::ESP8266React(AsyncWebServer *server) : _featureService(server),
             {
                 server->onNotFound([requestHandler](AsyncWebServerRequest *request)
                                    {
-            if (request->method() == HTTP_GET) {
-              requestHandler(request);
-            } else if (request->method() == HTTP_OPTIONS) {
-              request->send(200);
-            } else {
-              request->send(404);
-            } });
+                    if (request->method() == HTTP_GET) {
+                        requestHandler(request);
+                    } else if (request->method() == HTTP_OPTIONS) {
+                        request->send(200);
+                    } else {
+                        request->send(404);
+                    } });
             }
         });
 #else

@@ -24,7 +24,12 @@
 
 <div class="toast toast-end mr-4">
 	{#each $notifications as notification (notification.id)}
-		<div animate:flip class="alert {theme[notification.type]}" transition:fly={{ y: 30 }}>
+		<div
+			animate:flip={{ duration: 400 }}
+			class="alert animate-none {theme[notification.type]}"
+			in:fly={{ y: 100, duration: 400 }}
+			out:fly={{ x: 100, duration: 400 }}
+		>
 			<div>
 				<svelte:component this={icon[notification.type]} class="h-6 w-6 flex-shrink-0" />
 				<span>{notification.message}</span>
