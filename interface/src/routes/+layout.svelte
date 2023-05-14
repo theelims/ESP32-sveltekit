@@ -50,11 +50,11 @@
 {#if $security.login_required}
 	<Login />
 {:else}
-	<div class="drawer drawer-mobile" >
+	<div class="drawer drawer-mobile">
 		<input id="main-menu" type="checkbox" class="drawer-toggle" />
 		<div class="drawer-content flex flex-col">
 			<!-- Status bar content here -->
-			<Statusbar title={$page.data.title} />
+			<Statusbar />
 
 			<!-- Main page content here -->
 			<slot />
@@ -62,7 +62,7 @@
 		<!-- Side Navigation -->
 		<div class="drawer-side shadow-primary/50 shadow-2xl">
 			<label for="main-menu" class="drawer-overlay" />
-			<Menu title={$page.data.title} />
+			<Menu />
 		</div>
 	</div>
 {/if}

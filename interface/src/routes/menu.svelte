@@ -10,12 +10,11 @@
 	import Avatar from '~icons/tabler/user-circle';
 	import Logout from '~icons/tabler/logout';
 	import Copyright from '~icons/tabler/copyright';
+	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { features } from '$lib/stores/features';
 	import { user } from '$lib/stores/user';
 	import { goto } from '$app/navigation';
-
-	export let title: string;
 
 	const appName = 'ESP32 SvelteKit';
 
@@ -59,7 +58,7 @@
 	}
 
 	onMount(() => {
-		const index = menuItems.findIndex((item) => item.title === title);
+		const index = menuItems.findIndex((item) => item.title === $page.data.title);
 		handleMenuClick(index);
 	});
 </script>
