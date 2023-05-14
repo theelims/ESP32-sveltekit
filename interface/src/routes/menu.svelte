@@ -12,7 +12,6 @@
 	import Copyright from '~icons/tabler/copyright';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import { features } from '$lib/stores/features';
 	import { user } from '$lib/stores/user';
 	import { goto } from '$app/navigation';
 
@@ -25,12 +24,18 @@
 	const discord = { href: '.', active: false };
 
 	let menuItems = [
-		{ title: 'Demo App', icon: Control, href: '/demo', feature: $features.project, active: false },
+		{
+			title: 'Demo App',
+			icon: Control,
+			href: '/demo',
+			feature: $page.data.features.project,
+			active: false
+		},
 		{
 			title: 'Connections',
 			icon: Remote,
 			href: '/connections',
-			feature: $features.mqtt || $features.ntp,
+			feature: $page.data.features.mqtt || $page.data.features.ntp,
 			active: false
 		},
 		{ title: 'Wi-Fi', icon: WiFi, href: '/wifi', feature: true, active: false },
@@ -39,7 +44,7 @@
 			title: 'User',
 			icon: User,
 			href: '/user',
-			feature: $features.security && $user.admin,
+			feature: $page.data.features.security && $user.admin,
 			active: false
 		}
 	];
@@ -89,7 +94,7 @@
 	<div class="flex-col" />
 	<div class="flex-grow" />
 
-	{#if $features.security}
+	{#if $page.data.features.security}
 		<div class="flex items-center">
 			<Avatar class="h-8 w-8" />
 			<span class="flex-grow px-4 text-xl font-bold">{$user.username}</span>

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { openModal, closeModal } from 'svelte-modals';
-	import { user, security } from '$lib/stores/user';
+    import { user } from '$lib/stores/user';
+    import { page } from '$app/stores';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import InputPassword from '$lib/components/InputPassword.svelte';
 	import ScanNetworks from './Scan.svelte';
@@ -65,7 +66,7 @@
 			const response = await fetch('/rest/wifiStatus', {
 				method: 'GET',
 				headers: {
-					Authorization: $security.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
@@ -80,7 +81,7 @@
 			const response = await fetch('/rest/wifiSettings', {
 				method: 'GET',
 				headers: {
-					Authorization: $security.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
@@ -376,7 +377,7 @@
 			</table>
 		{/await}
 	</div>
-	{#if $security.admin_required}
+	{#if !$page.data.features.security || $user.admin}
 		<div class="collapse">
 			<input type="checkbox" />
 			<div class="collapse-title text-xl font-medium">Change Wi-Fi Settings</div>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { LayoutData } from './$types';
 	import { onMount } from 'svelte';
-	import { user, security } from '$lib/stores/user';
+	import { user } from '$lib/stores/user';
 	import type { userProfile } from '$lib/stores/user';
 	import { page } from '$app/stores';
 	import { Modals, closeModal } from 'svelte-modals';
@@ -45,7 +45,7 @@
 	<title>{$page.data.title}</title>
 </svelte:head>
 
-{#if $security.login_required}
+{#if $page.data.features.security && $user.bearer_token === ''}
 	<Login />
 {:else}
 	<div class="drawer drawer-mobile">

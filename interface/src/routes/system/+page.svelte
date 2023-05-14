@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { security } from '$lib/stores/user';
 	import SystemStatus from './SystemStatus.svelte';
 	import OtaSettings from './OTASettings.svelte';
+    import { user } from '$lib/stores/user';
+    import { page } from '$app/stores';
 
 	export let data: PageData;
 </script>
@@ -13,7 +14,7 @@
 >
 	<SystemStatus />
 
-	{#if $security.admin_required}
+	{#if !$page.data.features.security || $user.admin}
 		<OtaSettings />
 	{/if}
 </div>

@@ -1,5 +1,4 @@
 import { writable, derived } from 'svelte/store';
-import { features } from '$lib/stores/features';
 import jwt_decode from 'jwt-decode';
 
 export type userProfile = {
@@ -46,11 +45,3 @@ function createStore() {
 }
 
 export const user = createStore();
-
-export const security = derived([user, features], ([$user, $features], set) => {
-	set({
-		admin_required: !$features.security || $user.admin,
-		security: $features.security,
-		login_required: $features.security && $user.bearer_token === ''
-	});
-});

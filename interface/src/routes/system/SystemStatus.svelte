@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import { openModal, closeModal } from 'svelte-modals';
-	import { user, security } from '$lib/stores/user';
+	import { user } from '$lib/stores/user';
+	import { page } from '$app/stores';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
@@ -38,7 +39,7 @@
 			const response = await fetch('/rest/systemStatus', {
 				method: 'GET',
 				headers: {
-					Authorization: $security.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
@@ -60,7 +61,7 @@
 		const response = await fetch('/rest/restart', {
 			method: 'POST',
 			headers: {
-				Authorization: $security.security ? 'Bearer ' + $user.bearer_token : 'Basic'
+				Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic'
 			}
 		});
 	}
@@ -84,7 +85,7 @@
 		const response = await fetch('/rest/factoryReset', {
 			method: 'POST',
 			headers: {
-				Authorization: $security.security ? 'Bearer ' + $user.bearer_token : 'Basic'
+				Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic'
 			}
 		});
 	}
@@ -248,7 +249,7 @@
 			</table>
 		{/await}
 	</div>
-	{#if $security.admin_required}
+	{#if !$page.data.features.security || $user.admin}
 		<div class="mt-4 flex flex-wrap justify-end gap-2">
 			<button class="btn btn-primary inline-flex items-center" on:click={confirmRestart}
 				><Power class="mr-2 h-5 w-5" /><span>Restart</span></button

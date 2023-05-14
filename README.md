@@ -26,6 +26,7 @@ First Step - recreate the Front End with SvelteKit:
   - [ ] menu as store
   - [ ] Collapsible as svelte component with animations
   - [ ] RSSI Indicator as svelte component
+  - [ ] +error.svelte page
 
 Second Step - extend the features:
 
@@ -34,7 +35,7 @@ Second Step - extend the features:
 - OTA with information pulled from github release pages
 - Advertize services with Bonjour/mDNS to the local network
 - Depreciate support for ESP8266, use ESP32-C3 instead and compatibility with the whole ESP32 range of chips
-- Store important information in NVS instead of filesystem, so that they survive an update
+- Play nice with ESP sleep modes
 - Service threads instead of a loop function with millis().
 - Fallback / recovery mode
 - Allow anonymous guest user
@@ -43,7 +44,7 @@ Second Step - extend the features:
 - Task Monitor to see the core usage and optimize power consumption
 - Battery API
 - File API
-- Telemetry (RSSI, Heap, Uptime, Connection states, Battery (SOC, Charging, ...), ...) with SSE
+- Telemetry (RSSI, Heap, Uptime, Connection states, Battery (SOC, Charging, ...)) with SSE
 - Put docs on github-pages
 
 Designed to work with the PlatformIO IDE with [limited setup](#getting-started). Please read below for setup, build and upload instructions.

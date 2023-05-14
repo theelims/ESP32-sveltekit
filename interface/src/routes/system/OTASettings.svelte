@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import { openModal, closeModal } from 'svelte-modals';
-	import { user, security } from '$lib/stores/user';
+	import { user } from '$lib/stores/user';
+    import { page } from '$app/stores';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import InputPassword from '$lib/components/InputPassword.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
-	import { features } from '$lib/stores/features';
 	import OTA from '~icons/tabler/refresh-alert';
 	import Warning from '~icons/tabler/alert-triangle';
 	import Cancel from '~icons/tabler/x';
@@ -24,7 +24,7 @@
 			const otaSettingsRes = await fetch('/rest/otaSettings', {
 				method: 'GET',
 				headers: {
-					Authorization: $security.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
@@ -44,7 +44,7 @@
 			const response = await fetch('/rest/otaSettings', {
 				method: 'POST',
 				headers: {
-					Authorization: $security.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(data)
@@ -78,7 +78,7 @@
 			const response = await fetch('/rest/uploadFirmware', {
 				method: 'POST',
 				headers: {
-					Authorization: $security.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				},
 				body: formData
@@ -108,7 +108,7 @@
 <SettingsCard open={false}>
 	<OTA slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end rounded-full" />
 	<span slot="title">OTA Firmware Update</span>
-	{#if $features.ota}
+	{#if $page.data.features.ota}
 		{#await getOTASettings()}
 			<Spinner />
 		{:then nothing}
@@ -150,11 +150,11 @@
 		{/await}
 	{/if}
 
-	{#if $features.ota && $features.upload_firmware}
+	{#if $page.data.features.ota && $page.data.features.upload_firmware}
 		<div class="divider" />
 	{/if}
 
-	{#if $features.upload_firmware}
+	{#if $page.data.features.upload_firmware}
 		<span class="text-lg font-semibold">Upload Firmware</span>
 		<div class="alert alert-warning shadow-lg">
 			<div>
