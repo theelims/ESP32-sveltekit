@@ -76,7 +76,7 @@
 						class="btn btn-primary"
 						on:click={() => {
 							signInUser({ username: username, password: password });
-						}}>Submit</button
+						}}>Login</button
 					>
 				</div>
 			</form>

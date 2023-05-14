@@ -1,18 +1,19 @@
 <script lang="ts">
 	import { closeModal } from 'svelte-modals';
 	import { fly } from 'svelte/transition';
-    import { user } from '$lib/stores/user';
-    import { page } from '$app/stores';
+	import { user } from '$lib/stores/user';
+	import { page } from '$app/stores';
 	import WiFi from '~icons/tabler/wifi';
 	import Network from '~icons/tabler/router';
 	import AP from '~icons/tabler/access-point';
 	import Cancel from '~icons/tabler/x';
 	import Reload from '~icons/tabler/reload';
 	import { onMount } from 'svelte';
+	import RssiIndicator from '$lib/components/RSSIIndicator.svelte';
 
 	// provided by <Modals />
-	export let isOpen;
-	export let storeNetwork;
+	export let isOpen: boolean;
+	export let storeNetwork: string;
 
 	const encryptionType = [
 		'Open',
@@ -98,13 +99,7 @@
 										</div>
 									</div>
 									<div class="flex-grow" />
-									<div class="indicator">
-										<span
-											class="indicator-item indicator-start badge badge-accent badge-outline badge-xs"
-											>{network.rssi} dBm</span
-										>
-										<WiFi class="text-base-content h-auto w-10 opacity-50" />
-									</div>
+									<RssiIndicator showDBm={true} rssi_dbm={network.rssi} />
 								</div>
 							</li>
 						{/each}

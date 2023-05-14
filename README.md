@@ -25,8 +25,8 @@ First Step - recreate the Front End with SvelteKit:
 - [ ] Enhance User Experience
   - [ ] menu as store
   - [ ] Collapsible as svelte component with animations
-  - [ ] RSSI Indicator as svelte component
-  - [ ] +error.svelte page
+  - [x] RSSI Indicator as svelte component
+  - [x] +error.svelte page
 
 Second Step - extend the features:
 
