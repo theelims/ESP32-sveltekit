@@ -2,10 +2,8 @@
 	import type { LayoutData } from './$types';
 	import { onMount } from 'svelte';
 	import { user, security } from '$lib/stores/user';
-	import { features } from '$lib/stores/features';
 	import type { userProfile } from '$lib/stores/user';
 	import { page } from '$app/stores';
-	import { invalidateAll } from '$app/navigation';
 	import { Modals, closeModal } from 'svelte-modals';
 	import Toast from '$lib/components/Toast.svelte';
 	import { fade } from 'svelte/transition';
@@ -16,7 +14,7 @@
 
 	export let data: LayoutData;
 
-	$: console.log($user);
+	//$: console.log($user);
 
 	onMount(() => {
 		if ($user.bearer_token !== '') {
