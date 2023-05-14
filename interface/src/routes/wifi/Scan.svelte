@@ -99,7 +99,11 @@
 										</div>
 									</div>
 									<div class="flex-grow" />
-									<RssiIndicator showDBm={true} rssi_dbm={network.rssi} />
+									<RssiIndicator
+										showDBm={true}
+										rssi_dbm={network.rssi}
+										class="text-base-content h-10 w-10"
+									/>
 								</div>
 							</li>
 						{/each}

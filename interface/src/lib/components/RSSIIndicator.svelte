@@ -15,21 +15,21 @@
 		</span>
 	{/if}
 	{#if rssi_dbm >= -55}
-		<WiFi class="text-base-content h-auto w-10" />
+		<WiFi class={$$props.class || ''} />
 	{:else if rssi_dbm >= -75}
-		<div class="relative h-10 w-10">
-			<WiFi class="text-base-content absolute inset-0 h-10 w-10 opacity-10" />
-			<WiFi2 class="text-base-content absolute inset-0 h-10 w-10" />
+		<div class="{$$props.class || ''} relative">
+			<WiFi class="absolute inset-0 h-full w-full opacity-10" />
+			<WiFi2 class="absolute inset-0 h-full w-full" />
 		</div>
 	{:else if rssi_dbm >= -85}
-		<div class="relative h-10 w-10">
-			<WiFi class="text-base-content absolute inset-0 h-10 w-10 opacity-10" />
-			<WiFi1 class="text-base-content absolute inset-0 h-10 w-10" />
+		<div class="{$$props.class || ''} relative">
+			<WiFi class="absolute inset-0 h-full w-full opacity-10" />
+			<WiFi1 class="absolute inset-0 h-full w-full" />
 		</div>
 	{:else}
-		<div class="relative h-10 w-10">
-			<WiFi class="text-base-content absolute inset-0 h-10 w-10 opacity-10" />
-			<WiFi0 class="text-base-content absolute inset-0 h-10 w-10" />
+		<div class="{$$props.class || ''} relative">
+			<WiFi class="absolute inset-0 h-full w-full opacity-10" />
+			<WiFi0 class="absolute inset-0 h-full w-full" />
 		</div>
 	{/if}
 </div>
