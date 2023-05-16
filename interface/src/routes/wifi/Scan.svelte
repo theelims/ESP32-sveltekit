@@ -13,7 +13,7 @@
 
 	// provided by <Modals />
 	export let isOpen: boolean;
-	export let storeNetwork: string;
+	export let storeNetwork: any;
 
 	const encryptionType = [
 		'Open',
@@ -67,7 +67,7 @@
 		on:outroend
 	>
 		<div
-			class="bg-base-100 shadow-secondary/30 pointer-events-auto flex min-w-fit max-w-md flex-col justify-between rounded-xl p-4 shadow-lg"
+			class="bg-base-100 shadow-secondary/30 rounded-box pointer-events-auto flex min-w-fit max-w-md flex-col justify-between p-4 shadow-lg"
 		>
 			<h2 class="text-base-content text-start text-2xl font-bold">Scan Networks</h2>
 			<div class="divider my-2" />
@@ -84,7 +84,7 @@
 							<li>
 								<!-- svelte-ignore a11y-click-events-have-key-events -->
 								<div
-									class="bg-base-200 my-1 flex items-center space-x-3 rounded-md hover:scale-[1.02] active:scale-[0.98]"
+									class="bg-base-200 rounded-btn my-1 flex items-center space-x-3 hover:scale-[1.02] active:scale-[0.98]"
 									on:click={() => {
 										storeNetwork(network.ssid);
 									}}

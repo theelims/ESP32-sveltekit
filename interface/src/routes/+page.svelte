@@ -6,7 +6,7 @@
 	export let data: PageData;
 </script>
 
-<div class="hero bg-base-100 min-h-screen">
+<div class="hero bg-base-100 h-screen">
 	<div class="card md:card-side bg-base-200 shadow-primary shadow-2xl">
 		<figure class="bg-base-200"><img src={logo} alt="Logo" class="h-auto w-64" /></figure>
 		<div class="card-body w-80">

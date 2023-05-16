@@ -17,14 +17,14 @@ First Step - recreate the Front End with SvelteKit:
 - [x] NTP-API
 - [x] Feature Selector Front End
 - [ ] Demo Project
-- [ ] Security-API
+- [x] Security-API
 - [ ] Edit Users
 - [ ] Serve from LittleFS
 - [ ] Serve from PROGMEM
 - [ ] Update docs
 - [ ] Enhance User Experience
   - [ ] menu as store
-  - [ ] Collapsible as svelte component with animations
+  - [x] Collapsible as svelte component with animations
   - [x] RSSI Indicator as svelte component
   - [x] +error.svelte page
 

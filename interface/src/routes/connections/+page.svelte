@@ -9,10 +9,10 @@
 
 <div class="mx-8 my-8 flex flex-col gap-4">
 	{#if $page.data.features.mqtt}
-		<MQTT mqttSettings={data.mqttSettings} mqttStatus={data.mqttStatus} />
-	{/if}
+		<MQTT />
+	{/if} 
 
 	{#if $page.data.features.ntp}
-		<NTP ntpSettings={data.ntpSettings} ntpStatus={data.ntpStatus} />
+		<NTP />
 	{/if}
 </div>

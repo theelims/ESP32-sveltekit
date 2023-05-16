@@ -6,7 +6,8 @@
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
-
+	import { slide } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 	import CPU from '~icons/tabler/cpu';
 	import Power from '~icons/tabler/power';
 	import FactoryReset from '~icons/tabler/refresh-dot';
@@ -106,7 +107,7 @@
 	}
 </script>
 
-<SettingsCard>
+<SettingsCard collapsable={false}>
 	<CPU slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">System Status</span>
 
@@ -114,139 +115,111 @@
 		{#await getSystemStatus()}
 			<Spinner />
 		{:then systemStatus}
-			<table class="table w-full">
-				<tbody>
-					<!-- row 1 -->
-					<tr>
-						<td>
-							<div class="flex items-center space-x-3">
-								<div class="mask mask-hexagon bg-primary h-auto w-10">
-									<CPU class="text-primary-content h-auto w-full scale-75" />
-								</div>
-								<div>
-									<div class="font-bold">Device (Platform / SDK)</div>
-									<div class="text-sm opacity-75">
-										{systemStatus.esp_platform} / {systemStatus.sdk_version}
-									</div>
-								</div>
-							</div>
-						</td>
-					</tr>
-					<!-- row 2 -->
-					<tr>
-						<td>
-							<div class="flex items-center space-x-3">
-								<div class="mask mask-hexagon bg-primary h-auto w-10">
-									<Speed class="text-primary-content h-auto w-full scale-75" />
-								</div>
-								<div>
-									<div class="font-bold">CPU Frequency</div>
-									<div class="text-sm opacity-75">
-										{systemStatus.cpu_freq_mhz} MHz
-									</div>
-								</div>
-							</div>
-						</td>
-					</tr>
-					<!-- row 3 -->
-					<tr>
-						<td>
-							<div class="flex items-center space-x-3">
-								<div class="mask mask-hexagon bg-primary h-auto w-10">
-									<Heap class="text-primary-content h-auto w-full scale-75" />
-								</div>
-								<div>
-									<div class="font-bold">Heap (Free / Max Alloc)</div>
-									<div class="text-sm opacity-75">
-										{systemStatus.free_heap.toLocaleString('en-US')} / {systemStatus.max_alloc_heap.toLocaleString(
-											'en-US'
-										)} bytes
-									</div>
-								</div>
-							</div>
-						</td>
-					</tr>
-					<!-- row 4 -->
-					<tr>
-						<td>
-							<div class="flex items-center space-x-3">
-								<div class="mask mask-hexagon bg-primary h-auto w-10">
-									<Pyramid class="text-primary-content h-auto w-full scale-75" />
-								</div>
-								<div>
-									<div class="font-bold">PSRAM (Size / Free)</div>
-									<div class="text-sm opacity-75">
-										{systemStatus.psram_size.toLocaleString('en-US')} / {systemStatus.psram_size.toLocaleString(
-											'en-US'
-										)} bytes
-									</div>
-								</div>
-							</div>
-						</td>
-					</tr>
-					<!-- row 5 -->
-					<tr>
-						<td>
-							<div class="flex items-center space-x-3">
-								<div class="mask mask-hexagon bg-primary h-auto w-10">
-									<Sketch class="text-primary-content h-auto w-full scale-75" />
-								</div>
-								<div>
-									<div class="font-bold">Sketch (Size / Free)</div>
-									<div class="text-sm opacity-75">
-										{systemStatus.sketch_size.toLocaleString('en-US')} / {systemStatus.free_sketch_space.toLocaleString(
-											'en-US'
-										)} bytes
-									</div>
-								</div>
-							</div>
-						</td>
-					</tr>
-					<!-- row 6 -->
-					<tr>
-						<td>
-							<div class="flex items-center space-x-3">
-								<div class="mask mask-hexagon bg-primary h-auto w-10">
-									<Flash class="text-primary-content h-auto w-full scale-75" />
-								</div>
-								<div>
-									<div class="font-bold">Flash Chip (Size / Speed)</div>
-									<div class="text-sm opacity-75">
-										{systemStatus.flash_chip_size.toLocaleString('en-US')} bytes / {(
-											systemStatus.flash_chip_speed / 1000000
-										).toLocaleString('en-US')} MHz
-									</div>
-								</div>
-							</div>
-						</td>
-					</tr>
-					<!-- row 7 -->
-					<tr>
-						<td>
-							<div class="flex items-center space-x-3">
-								<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-									<Folder class="text-primary-content h-auto w-full scale-75" />
-								</div>
-								<div>
-									<div class="font-bold">File System (Used / Total)</div>
-									<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
-										<span
-											>{systemStatus.fs_used.toLocaleString('en-US')} / {systemStatus.fs_total.toLocaleString(
-												'en-US'
-											)} bytes</span
-										>
+			<div
+				class="flex w-full flex-col space-y-1"
+				transition:slide|local={{ duration: 300, easing: cubicOut }}
+			>
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10">
+						<CPU class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Device (Platform / SDK)</div>
+						<div class="text-sm opacity-75">
+							{systemStatus.esp_platform} / {systemStatus.sdk_version}
+						</div>
+					</div>
+				</div>
 
-										<span
-											>({(systemStatus.fs_total - systemStatus.fs_used).toLocaleString('en-US')}
-											bytes free)</span
-										>
-									</div>
-								</div>
-							</div>
-						</td>
-					</tr>
-				</tbody>
-			</table>
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10">
+						<Speed class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">CPU Frequency</div>
+						<div class="text-sm opacity-75">
+							{systemStatus.cpu_freq_mhz} MHz
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10">
+						<Heap class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Heap (Free / Max Alloc)</div>
+						<div class="text-sm opacity-75">
+							{systemStatus.free_heap.toLocaleString('en-US')} / {systemStatus.max_alloc_heap.toLocaleString(
+								'en-US'
+							)} bytes
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10">
+						<Pyramid class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">PSRAM (Size / Free)</div>
+						<div class="text-sm opacity-75">
+							{systemStatus.psram_size.toLocaleString('en-US')} / {systemStatus.psram_size.toLocaleString(
+								'en-US'
+							)} bytes
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10">
+						<Sketch class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Sketch (Size / Free)</div>
+						<div class="text-sm opacity-75">
+							{systemStatus.sketch_size.toLocaleString('en-US')} / {systemStatus.free_sketch_space.toLocaleString(
+								'en-US'
+							)} bytes
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10">
+						<Flash class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Flash Chip (Size / Speed)</div>
+						<div class="text-sm opacity-75">
+							{systemStatus.flash_chip_size.toLocaleString('en-US')} bytes / {(
+								systemStatus.flash_chip_speed / 1000000
+							).toLocaleString('en-US')} MHz
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
+						<Folder class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">File System (Used / Total)</div>
+						<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
+							<span
+								>{systemStatus.fs_used.toLocaleString('en-US')} / {systemStatus.fs_total.toLocaleString(
+									'en-US'
+								)} bytes</span
+							>
+
+							<span
+								>({(systemStatus.fs_total - systemStatus.fs_used).toLocaleString('en-US')}
+								bytes free)</span
+							>
+						</div>
+					</div>
+				</div>
+			</div>
 		{/await}
 	</div>
 	{#if !$page.data.features.security || $user.admin}

@@ -1,8 +1,13 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { slide } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 	import InputPassword from '$lib/components/InputPassword.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
-
+	import { user } from '$lib/stores/user';
+	import { page } from '$app/stores';
+	import Spinner from '$lib/components/Spinner.svelte';
+	import Collapsable from '$lib/components/Collapsable.svelte';
 	import MQTT from '~icons/tabler/topology-star-3';
 	import Client from '~icons/tabler/robot';
 
@@ -25,6 +30,11 @@
 		max_topic_length: number;
 	};
 
+	let mqttSettings: MQTTSettings;
+	let mqttStatus: MQTTStatus;
+
+	let formField: any;
+
 	const disconnectReason = [
 		'TCP Disconnected',
 		'Unacceptable Protocol Version',
@@ -35,14 +45,37 @@
 		'Not Enough Memory',
 		'TLS Rejected'
 	];
+
 	async function getMQTTStatus() {
 		try {
-			const response = await fetch('/rest/mqttStatus');
+			const response = await fetch('/rest/mqttStatus', {
+				method: 'GET',
+				headers: {
+					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					'Content-Type': 'application/json'
+				}
+			});
 			mqttStatus = await response.json();
 		} catch (error) {
 			console.error('Error:', error);
 		}
-		return;
+		return mqttStatus;
+	}
+
+	async function getMQTTSettings() {
+		try {
+			const response = await fetch('/rest/mqttSettings', {
+				method: 'GET',
+				headers: {
+					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					'Content-Type': 'application/json'
+				}
+			});
+			mqttSettings = await response.json();
+		} catch (error) {
+			console.error('Error:', error);
+		}
+		return mqttSettings;
 	}
 
 	const interval = setInterval(async () => {
@@ -51,10 +84,11 @@
 
 	onDestroy(() => clearInterval(interval));
 
-	export let mqttSettings: MQTTSettings;
-	export let mqttStatus: MQTTStatus;
-
-	let formField: any;
+	onMount(() => {
+		if (!$page.data.features.security || $user.admin) {
+			getMQTTSettings();
+		}
+	});
 
 	let formErrors = {
 		host: false,
@@ -68,6 +102,7 @@
 			const response = await fetch('/rest/mqttSettings', {
 				method: 'POST',
 				headers: {
+					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(data)
@@ -123,66 +158,62 @@
 	}
 </script>
 
-<SettingsCard open={true} collapsable={false}>
+<SettingsCard collapsable={false}>
 	<MQTT slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">MQTT</span>
 	<div class="w-full overflow-x-auto">
-		<table class="table w-full">
-			<tbody>
-				<!-- row 1 -->
-				<tr>
-					<td>
-						<div class="flex items-center space-x-3">
-							<div
-								class="mask mask-hexagon h-auto w-10 {mqttStatus.connected === true
-									? 'bg-success'
-									: 'bg-error'}"
-							>
-								<MQTT
-									class="h-auto w-full scale-75 {mqttStatus.connected === true
-										? 'text-success-content'
-										: 'text-error-content'}"
-								/>
-							</div>
-							<div>
-								<div class="font-bold">Status</div>
-								<div class="text-sm opacity-75">
-									{#if mqttStatus.connected}
-										Connected
-									{:else if !mqttStatus.enabled}
-										MQTT Disabled
-									{:else}
-										{disconnectReason[mqttStatus.disconnect_reason]}
-									{/if}
-								</div>
-							</div>
+		{#await getMQTTStatus()}
+			<Spinner />
+		{:then nothing}
+			<div
+				class="flex w-full flex-col space-y-1"
+				transition:slide|local={{ duration: 300, easing: cubicOut }}
+			>
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div
+						class="mask mask-hexagon h-auto w-10 {mqttStatus.connected === true
+							? 'bg-success'
+							: 'bg-error'}"
+					>
+						<MQTT
+							class="h-auto w-full scale-75 {mqttStatus.connected === true
+								? 'text-success-content'
+								: 'text-error-content'}"
+						/>
+					</div>
+					<div>
+						<div class="font-bold">Status</div>
+						<div class="text-sm opacity-75">
+							{#if mqttStatus.connected}
+								Connected
+							{:else if !mqttStatus.enabled}
+								MQTT Disabled
+							{:else}
+								{disconnectReason[mqttStatus.disconnect_reason]}
+							{/if}
 						</div>
-					</td>
-				</tr>
-				<!-- row 2 -->
-				<tr>
-					<td>
-						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary h-auto w-10">
-								<Client class="text-primary-content h-auto w-full scale-75" />
-							</div>
-							<div>
-								<div class="font-bold">Client ID</div>
-								<div class="text-sm opacity-75">
-									{mqttStatus.client_id}
-								</div>
-							</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10">
+						<Client class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Client ID</div>
+						<div class="text-sm opacity-75">
+							{mqttStatus.client_id}
 						</div>
-					</td>
-				</tr>
-			</tbody>
-		</table>
+					</div>
+				</div>
+			</div>
+		{/await}
 	</div>
 
-	<div class="collapse-arrow collapse">
-		<input type="checkbox" />
-		<div class="collapse-title text-xl font-medium">Change MQTT Settings</div>
-		<div class="collapse-content">
+	{#if !$page.data.features.security || $user.admin}
+		<Collapsable open={false} class="bg-base-300 shadow-lg" on:closed={getMQTTSettings}>
+			<span slot="title">Change MQTT Settings</span>
+
 			<form on:submit|preventDefault={handleSubmitMQTT} novalidate bind:this={formField}>
 				<div class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2">
 					<!-- Enable -->
@@ -335,6 +366,6 @@
 					<button class="btn btn-primary" type="submit">Apply Settings</button>
 				</div>
 			</form>
-		</div>
-	</div>
+		</Collapsable>
+	{/if}
 </SettingsCard>

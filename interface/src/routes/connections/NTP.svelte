@@ -1,9 +1,14 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { slide } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
+	import Collapsable from '$lib/components/Collapsable.svelte';
+	import Spinner from '$lib/components/Spinner.svelte';
+	import { user } from '$lib/stores/user';
+	import { page } from '$app/stores';
 	import type { TimeZones } from './timezones';
 	import { TIME_ZONES } from './timezones';
-
 	import NTP from '~icons/tabler/clock-check';
 	import Server from '~icons/tabler/server';
 	import Clock from '~icons/tabler/clock';
@@ -25,10 +30,35 @@
 		tz_format: string;
 	};
 
+	let ntpSettings: NTPSettings;
+	let ntpStatus: NTPStatus;
+
 	async function getNTPStatus() {
 		try {
-			const response = await fetch('/rest/ntpStatus');
+			const response = await fetch('/rest/ntpStatus', {
+				method: 'GET',
+				headers: {
+					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					'Content-Type': 'application/json'
+				}
+			});
 			ntpStatus = await response.json();
+		} catch (error) {
+			console.error('Error:', error);
+		}
+		return;
+	}
+
+	async function getNTPSettings() {
+		try {
+			const response = await fetch('/rest/ntpSettings', {
+				method: 'GET',
+				headers: {
+					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					'Content-Type': 'application/json'
+				}
+			});
+			ntpSettings = await response.json();
 		} catch (error) {
 			console.error('Error:', error);
 		}
@@ -41,8 +71,11 @@
 
 	onDestroy(() => clearInterval(interval));
 
-	export let ntpSettings: NTPSettings;
-	export let ntpStatus: NTPStatus;
+	onMount(() => {
+		if (!$page.data.features.security || $user.admin) {
+			getNTPSettings();
+		}
+	});
 
 	let formField: any;
 
@@ -55,6 +88,7 @@
 			const response = await fetch('/rest/ntpSettings', {
 				method: 'POST',
 				headers: {
+					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(data)
@@ -120,115 +154,98 @@
 	}
 </script>
 
-<SettingsCard open={true}>
+<SettingsCard collapsable={false}>
 	<Clock slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">Network Time</span>
 	<div class="w-full overflow-x-auto">
-		<table class="table w-full">
-			<tbody>
-				<!-- row 1 -->
-				<tr>
-					<td>
-						<div class="flex items-center space-x-3">
-							<div
-								class="mask mask-hexagon h-auto w-10 {ntpStatus.status === 1
-									? 'bg-success'
-									: 'bg-error'}"
-							>
-								<NTP
-									class="h-auto w-full scale-75 {ntpStatus.status === 1
-										? 'text-success-content'
-										: 'text-error-content'}"
-								/>
-							</div>
-							<div>
-								<div class="font-bold">Status</div>
-								<div class="text-sm opacity-75">
-									{ntpStatus.status === 1 ? 'Active' : 'Inactive'}
-								</div>
-							</div>
+		{#await getNTPStatus()}
+			<Spinner />
+		{:then nothing}
+			<div
+				class="flex w-full flex-col space-y-1"
+				transition:slide|local={{ duration: 300, easing: cubicOut }}
+			>
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div
+						class="mask mask-hexagon h-auto w-10 {ntpStatus.status === 1
+							? 'bg-success'
+							: 'bg-error'}"
+					>
+						<NTP
+							class="h-auto w-full scale-75 {ntpStatus.status === 1
+								? 'text-success-content'
+								: 'text-error-content'}"
+						/>
+					</div>
+					<div>
+						<div class="font-bold">Status</div>
+						<div class="text-sm opacity-75">
+							{ntpStatus.status === 1 ? 'Active' : 'Inactive'}
 						</div>
-					</td>
-				</tr>
-				<!-- row 2 -->
-				<tr>
-					<td>
-						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary h-auto w-10">
-								<Server class="text-primary-content h-auto w-full scale-75" />
-							</div>
-							<div>
-								<div class="font-bold">NTP Server</div>
-								<div class="text-sm opacity-75">
-									{ntpStatus.server}
-								</div>
-							</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10">
+						<Server class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">NTP Server</div>
+						<div class="text-sm opacity-75">
+							{ntpStatus.server}
 						</div>
-					</td>
-				</tr>
-				<!-- row 3 -->
-				<tr>
-					<td>
-						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary h-auto w-10">
-								<Clock class="text-primary-content h-auto w-full scale-75" />
-							</div>
-							<div>
-								<div class="font-bold">Local Time</div>
-								<div class="text-sm opacity-75">
-									{new Intl.DateTimeFormat('en-GB', {
-										dateStyle: 'long',
-										timeStyle: 'long'
-									}).format(new Date(ntpStatus.local_time))}
-								</div>
-							</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10">
+						<Clock class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Local Time</div>
+						<div class="text-sm opacity-75">
+							{new Intl.DateTimeFormat('en-GB', {
+								dateStyle: 'long',
+								timeStyle: 'long'
+							}).format(new Date(ntpStatus.local_time))}
 						</div>
-					</td>
-				</tr>
-				<!-- row 4 -->
-				<tr>
-					<td>
-						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary h-auto w-10">
-								<UTC class="text-primary-content h-auto w-full scale-75" />
-							</div>
-							<div>
-								<div class="font-bold">UTC Time</div>
-								<div class="text-sm opacity-75">
-									{new Intl.DateTimeFormat('en-GB', {
-										dateStyle: 'long',
-										timeStyle: 'long',
-										timeZone: 'UTC'
-									}).format(new Date(ntpStatus.utc_time))}
-								</div>
-							</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10">
+						<UTC class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">UTC Time</div>
+						<div class="text-sm opacity-75">
+							{new Intl.DateTimeFormat('en-GB', {
+								dateStyle: 'long',
+								timeStyle: 'long',
+								timeZone: 'UTC'
+							}).format(new Date(ntpStatus.utc_time))}
 						</div>
-					</td>
-				</tr>
-				<!-- row 5 -->
-				<tr>
-					<td>
-						<div class="flex items-center space-x-3">
-							<div class="mask mask-hexagon bg-primary h-auto w-10">
-								<Stopwatch class="text-primary-content h-auto w-full scale-75" />
-							</div>
-							<div>
-								<div class="font-bold">Uptime</div>
-								<div class="text-sm opacity-75">
-									{convertSeconds(ntpStatus.uptime)}
-								</div>
-							</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10">
+						<Stopwatch class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Uptime</div>
+						<div class="text-sm opacity-75">
+							{convertSeconds(ntpStatus.uptime)}
 						</div>
-					</td>
-				</tr>
-			</tbody>
-		</table>
+					</div>
+				</div>
+			</div>
+		{/await}
 	</div>
 
-	<div class="collapse">
-		<input type="checkbox" />
-		<div class="collapse-title text-xl font-medium">Change NTP Settings</div>
-		<div class="collapse-content">
+	{#if !$page.data.features.security || $user.admin}
+		<Collapsable open={false} class="bg-base-300 shadow-lg" on:closed={getNTPSettings}>
+			<span slot="title">Change NTP Settings</span>
 			<form
 				class="form-control w-full"
 				on:submit|preventDefault={handleSubmitNTP}
@@ -275,6 +292,6 @@
 					<button class="btn btn-primary" type="submit">Apply Settings</button>
 				</div>
 			</form>
-		</div>
-	</div>
+		</Collapsable>
+	{/if}
 </SettingsCard>

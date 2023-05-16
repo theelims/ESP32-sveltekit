@@ -58,7 +58,7 @@
 			<slot />
 		</div>
 		<!-- Side Navigation -->
-		<div class="drawer-side shadow-primary/50 shadow-2xl">
+		<div class="drawer-side shadow-lg">
 			<label for="main-menu" class="drawer-overlay" />
 			<Menu />
 		</div>

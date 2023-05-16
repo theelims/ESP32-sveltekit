@@ -4,6 +4,7 @@
 	import type { userProfile } from '$lib/stores/user';
 	import { user } from '$lib/stores/user';
 	import { notifications } from '$lib/stores/notifications';
+	import { fade, fly } from 'svelte/transition';
 
 	type SignInData = {
 		password: string;
@@ -51,6 +52,8 @@
 		class="card lg:card-side bg-base-100 shadow-primary face shadow-2xl {loginFailed
 			? 'failure border-error border-2'
 			: ''}"
+		in:fly={{ delay: 200, y: 100, duration: 500 }}
+		out:fade={{ duration: 200 }}
 	>
 		<figure class="bg-base-200"><img src={logo} alt="Logo" class="h-auto w-48 lg:w-64" /></figure>
 		<div class="card-body w-80">
