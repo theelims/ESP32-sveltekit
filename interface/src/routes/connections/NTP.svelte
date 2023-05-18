@@ -7,6 +7,7 @@
 	import Spinner from '$lib/components/Spinner.svelte';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
+	import { notifications } from '$lib/stores/notifications';
 	import type { TimeZones } from './timezones';
 	import { TIME_ZONES } from './timezones';
 	import NTP from '~icons/tabler/clock-check';
@@ -94,7 +95,12 @@
 				body: JSON.stringify(data)
 			});
 
-			ntpSettings = await response.json();
+			if (response.status == 200) {
+				notifications.success('Security settings updated.', 3000);
+				ntpSettings = await response.json();
+			} else {
+				notifications.error('User not authorized.', 3000);
+			}
 		} catch (error) {
 			console.error('Error:', error);
 		}

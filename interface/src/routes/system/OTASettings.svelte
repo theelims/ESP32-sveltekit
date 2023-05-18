@@ -3,6 +3,7 @@
 	import { openModal, closeModal } from 'svelte-modals';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
+	import { notifications } from '$lib/stores/notifications';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import InputPassword from '$lib/components/InputPassword.svelte';
@@ -47,8 +48,12 @@
 				},
 				body: JSON.stringify(data)
 			});
-
-			otaSettings = await response.json();
+			if (response.status == 200) {
+				notifications.success('OTA settings updated.', 3000);
+				otaSettings = await response.json();
+			} else {
+				notifications.error('User not authorized.', 3000);
+			}
 		} catch (error) {
 			console.error('Error:', error);
 		}

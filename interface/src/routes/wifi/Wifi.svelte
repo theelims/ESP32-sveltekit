@@ -5,6 +5,7 @@
 	import { cubicOut } from 'svelte/easing';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
+	import { notifications } from '$lib/stores/notifications';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import InputPassword from '$lib/components/InputPassword.svelte';
 	import Collapsable from '$lib/components/Collapsable.svelte';
@@ -116,8 +117,12 @@
 				},
 				body: JSON.stringify(data)
 			});
-
-			wifiSettings = await response.json();
+			if (response.status == 200) {
+				notifications.success('Wi-Fi settings updated.', 3000);
+				wifiSettings = await response.json();
+			} else {
+				notifications.error('User not authorized.', 3000);
+			}
 		} catch (error) {
 			console.error('Error:', error);
 		}

@@ -6,6 +6,7 @@
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
+	import { notifications } from '$lib/stores/notifications';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import Collapsable from '$lib/components/Collapsable.svelte';
 	import MQTT from '~icons/tabler/topology-star-3';
@@ -107,8 +108,12 @@
 				},
 				body: JSON.stringify(data)
 			});
-
-			mqttSettings = await response.json();
+			if (response.status == 200) {
+				notifications.success('Security settings updated.', 3000);
+				mqttSettings = await response.json();
+			} else {
+				notifications.error('User not authorized.', 3000);
+			}
 		} catch (error) {
 			console.error('Error:', error);
 		}

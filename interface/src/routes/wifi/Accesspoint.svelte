@@ -6,6 +6,7 @@
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
+	import { notifications } from '$lib/stores/notifications';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import Collapsable from '$lib/components/Collapsable.svelte';
 	import AP from '~icons/tabler/access-point';
@@ -115,8 +116,12 @@
 				},
 				body: JSON.stringify(data)
 			});
-
-			apSettings = await response.json();
+			if (response.status == 200) {
+				notifications.success('Access Point settings updated.', 3000);
+				apSettings = await response.json();
+			} else {
+				notifications.error('User not authorized.', 3000);
+			}
 		} catch (error) {
 			console.error('Error:', error);
 		}
