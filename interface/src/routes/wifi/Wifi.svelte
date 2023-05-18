@@ -113,6 +113,7 @@
 			const response = await fetch('/rest/wifiSettings', {
 				method: 'POST',
 				headers: {
+					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(data)
@@ -282,13 +283,13 @@
 					</div>
 					<div class="grow" />
 					<button
-						class="btn btn-circle btn-primary btn-sm modal-button"
+						class="btn btn-circle btn-ghost btn-sm modal-button"
 						on:click={() => {
 							showWifiDetails = !showWifiDetails;
 						}}
 					>
 						<Down
-							class="text-primary-content h-auto w-6 transition-transform duration-300 ease-in-out {showWifiDetails
+							class="text-base-content h-auto w-6 transition-transform duration-300 ease-in-out {showWifiDetails
 								? 'rotate-180'
 								: ''}"
 						/>

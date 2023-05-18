@@ -18,7 +18,7 @@ First Step - recreate the Front End with SvelteKit:
 - [x] Feature Selector Front End
 - [ ] Demo Project
 - [x] Security-API
-- [ ] Edit Users
+- [x] Edit Users
 - [ ] Serve from LittleFS
 - [ ] Serve from PROGMEM
 - [ ] Docs with material for mkdocs on gh-pages
@@ -28,7 +28,7 @@ First Step - recreate the Front End with SvelteKit:
   - [x] RSSI Indicator as svelte component
   - [x] +error.svelte page
   - [ ] focus trap for modal.svelte
-  - [ ] Toast notifications for parameter changes
+  - [x] Toast notifications for parameter changes
 
 Second Step - extend the features:
 
