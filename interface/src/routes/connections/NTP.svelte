@@ -250,7 +250,7 @@
 	</div>
 
 	{#if !$page.data.features.security || $user.admin}
-		<Collapsable open={false} class="bg-base-300 shadow-lg" on:closed={getNTPSettings}>
+		<Collapsable open={false} class="shadow-lg" on:closed={getNTPSettings}>
 			<span slot="title">Change NTP Settings</span>
 			<form
 				class="form-control w-full"

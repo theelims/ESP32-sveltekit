@@ -22,6 +22,8 @@ First Step - recreate the Front End with SvelteKit:
 - [ ] Serve from LittleFS
 - [ ] Serve from PROGMEM
 - [ ] Docs with material for mkdocs on gh-pages
+- [ ] Depreciate support for ESP8266
+- [ ] Copyright LGPL for backend code, MIT for frontend code
 - [ ] Enhance User/Dev Experience
   - [ ] menu as store
   - [x] Collapsible as svelte component with animations

@@ -1,7 +1,7 @@
 import type { PageLoad } from './$types';
 
 export const load = (async ({ fetch }) => {
-    return {
-        title: "Project Demo"
-    };
+	return {
+		title: 'Demo App'
+	};
 }) satisfies PageLoad;

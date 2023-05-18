@@ -216,7 +216,7 @@
 	</div>
 
 	{#if !$page.data.features.security || $user.admin}
-		<Collapsable open={false} class="bg-base-300 shadow-lg" on:closed={getMQTTSettings}>
+		<Collapsable open={false} class="shadow-lg" on:closed={getMQTTSettings}>
 			<span slot="title">Change MQTT Settings</span>
 
 			<form on:submit|preventDefault={handleSubmitMQTT} novalidate bind:this={formField}>
