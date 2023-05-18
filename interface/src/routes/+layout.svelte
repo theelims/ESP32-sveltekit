@@ -59,7 +59,7 @@
 		</div>
 		<!-- Side Navigation -->
 		<div class="drawer-side shadow-lg">
-			<label for="main-menu" class="drawer-overlay" />
+			<label for="main-menu" class="drawer-overlay bg-black/20 backdrop-blur" />
 			<Menu />
 		</div>
 	</div>

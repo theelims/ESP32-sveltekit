@@ -35,8 +35,6 @@
 		}
 	}
 
-	onMount(() => getOTASettings());
-
 	let errorPort = false;
 
 	async function postOTASettings(data: otaSettingsType) {

@@ -5,6 +5,7 @@
 	import { user } from '$lib/stores/user';
 	import { notifications } from '$lib/stores/notifications';
 	import { fade, fly } from 'svelte/transition';
+	import Login from '~icons/tabler/login';
 
 	type SignInData = {
 		password: string;
@@ -76,10 +77,10 @@
 
 				<div class="card-actions mt-4 justify-end">
 					<button
-						class="btn btn-primary"
+						class="btn btn-primary inline-flex items-center"
 						on:click={() => {
 							signInUser({ username: username, password: password });
-						}}>Login</button
+						}}><Login class="mr-2 h-5 w-5" /><span>Login</span></button
 					>
 				</div>
 			</form>

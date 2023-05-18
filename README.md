@@ -21,12 +21,14 @@ First Step - recreate the Front End with SvelteKit:
 - [ ] Edit Users
 - [ ] Serve from LittleFS
 - [ ] Serve from PROGMEM
-- [ ] Update docs
-- [ ] Enhance User Experience
+- [ ] Docs with material for mkdocs on gh-pages
+- [ ] Enhance User/Dev Experience
   - [ ] menu as store
   - [x] Collapsible as svelte component with animations
   - [x] RSSI Indicator as svelte component
   - [x] +error.svelte page
+  - [ ] focus trap for modal.svelte
+  - [ ] Toast notifications for parameter changes
 
 Second Step - extend the features:
 

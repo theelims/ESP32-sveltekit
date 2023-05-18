@@ -2,7 +2,7 @@
 	import logo from '$lib/assets/svelte-logo.png';
 	import Github from '~icons/tabler/brand-github';
 	import Discord from '~icons/tabler/brand-discord';
-	import User from '~icons/tabler/user';
+	import Users from '~icons/tabler/users';
 	import Settings from '~icons/tabler/settings';
 	import WiFi from '~icons/tabler/wifi';
 	import Remote from '~icons/tabler/network';
@@ -41,8 +41,8 @@
 		{ title: 'Wi-Fi', icon: WiFi, href: '/wifi', feature: true, active: false },
 		{ title: 'System', icon: Settings, href: '/system', feature: true, active: false },
 		{
-			title: 'User',
-			icon: User,
+			title: 'Users',
+			icon: Users,
 			href: '/user',
 			feature: $page.data.features.security && $user.admin,
 			active: false
@@ -72,7 +72,7 @@
 	<!-- Sidebar content here -->
 	<a
 		href="/"
-		class="mb-4 flex items-center rounded-box hover:scale-[1.02] active:scale-[0.98]"
+		class="rounded-box mb-4 flex items-center hover:scale-[1.02] active:scale-[0.98]"
 		on:click={() => handleMenuClick(-1)}
 	>
 		<img src={logo} alt="Logo" class="h-12 w-12" />
