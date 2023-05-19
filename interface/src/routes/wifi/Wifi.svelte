@@ -367,7 +367,7 @@
 		{/await}
 	</div>
 	{#if !$page.data.features.security || $user.admin}
-		<Collapsable open={false} class="bg-base-300 shadow-lg" on:closed={getWifiSettings}>
+		<Collapsable open={false} class="bg-base-200 shadow-lg" on:closed={getWifiSettings}>
 			<span slot="title">Change Wi-Fi Settings</span>
 			<form on:submit|preventDefault={handleSubmitWiFi} novalidate bind:this={formField}>
 				<div class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2">
@@ -388,7 +388,7 @@
 						/>
 						<label class="label" for="ssid">
 							<span class="label-text-alt text-error {formErrors.ssid ? '' : 'hidden'}"
-								>SSID must be between 2 and 32 characters long</span
+								>SSID must be between 3 and 32 characters long</span
 							>
 						</label>
 					</div>

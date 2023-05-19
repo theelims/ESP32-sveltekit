@@ -16,7 +16,7 @@ First Step - recreate the Front End with SvelteKit:
 - [x] MQTT-API
 - [x] NTP-API
 - [x] Feature Selector Front End
-- [ ] Demo Project
+- [x] Demo Project
 - [x] Security-API
 - [x] Edit Users
 - [ ] Serve from LittleFS

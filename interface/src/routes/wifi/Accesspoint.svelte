@@ -262,7 +262,7 @@
 	</div>
 
 	{#if !$page.data.features.security || $user.admin}
-		<Collapsable open={false} class="bg-base-300 shadow-lg" on:closed={getAPSettings}>
+		<Collapsable open={false} class="bg-base-200 shadow-lg" on:closed={getAPSettings}>
 			<span slot="title">Change AP Settings</span>
 			<form
 				class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2"
