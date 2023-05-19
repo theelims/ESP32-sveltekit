@@ -1,16 +1,13 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
-	import InputPassword from '$lib/components/InputPassword.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
 	import { notifications } from '$lib/stores/notifications';
 	import Spinner from '$lib/components/Spinner.svelte';
-	import Collapsable from '$lib/components/Collapsable.svelte';
 	import MQTT from '~icons/tabler/topology-star-3';
-	import Client from '~icons/tabler/robot';
+	import Info from '~icons/tabler/info-circle';
 
 	type BrokerSettings = {
 		mqtt_path: string;
@@ -113,6 +110,15 @@
 				bind:this={formField}
 				transition:slide|local={{ duration: 300, easing: cubicOut }}
 			>
+				<div class="alert alert-info my-2 shadow-lg">
+					<div>
+						<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
+						<span
+							>The LED is controllable via MQTT with the demo project designed to work with Home
+							Assistant's auto discovery feature.</span
+						>
+					</div>
+				</div>
 				<div class="grid w-full grid-cols-1 content-center gap-x-4 px-4">
 					<div>
 						<label class="label" for="uid">
