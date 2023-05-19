@@ -19,7 +19,7 @@ First Step - recreate the Front End with SvelteKit:
 - [x] Demo Project
 - [x] Security-API
 - [x] Edit Users
-- [ ] Serve from LittleFS
+- [x] Serve from LittleFS
 - [ ] Serve from PROGMEM
 - [ ] Docs with material for mkdocs on gh-pages
 - [ ] Depreciate support for ESP8266

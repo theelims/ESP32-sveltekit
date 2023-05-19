@@ -36,7 +36,7 @@ ESP8266React::ESP8266React(AsyncWebServer *server) : _featureService(server),
             ArRequestHandlerFunction requestHandler = [contentType, content, len](AsyncWebServerRequest *request)
             {
                 AsyncWebServerResponse *response = request->beginResponse_P(200, contentType, content, len);
-                response->addHeader("Content-Encoding", "gzip");
+                // response->addHeader("Content-Encoding", "gzip");
                 request->send(response);
             };
             server->on(uri.c_str(), HTTP_GET, requestHandler);
@@ -57,22 +57,19 @@ ESP8266React::ESP8266React(AsyncWebServer *server) : _featureService(server),
         });
 #else
     // Serve static resources from /www/
-    server->serveStatic("/js/", ESPFS, "/www/js/");
-    server->serveStatic("/css/", ESPFS, "/www/css/");
-    server->serveStatic("/fonts/", ESPFS, "/www/fonts/");
-    server->serveStatic("/app/", ESPFS, "/www/app/");
-    server->serveStatic("/favicon.ico", ESPFS, "/www/favicon.ico");
-    // Serving all other get requests with "/www/index.htm"
-    // OPTIONS get a straight up 200 response
+    server->serveStatic("/_app/", ESPFS, "/www/_app/");
+    server->serveStatic("/favicon.png", ESPFS, "/www/favicon.png");
+    //  Serving all other get requests with "/www/index.htm"
+    //  OPTIONS get a straight up 200 response
     server->onNotFound([](AsyncWebServerRequest *request)
                        {
-    if (request->method() == HTTP_GET) {
-      request->send(ESPFS, "/www/index.html");
-    } else if (request->method() == HTTP_OPTIONS) {
-      request->send(200);
-    } else {
-      request->send(404);
-    } });
+        if (request->method() == HTTP_GET) {
+            request->send(ESPFS, "/www/index.html");
+        } else if (request->method() == HTTP_OPTIONS) {
+            request->send(200);
+        } else {
+            request->send(404);
+        } });
 #endif
 
 // Enable CORS if required
