@@ -8,3 +8,5 @@
 /interface/node_modules
 /interface/.eslintcache
 .vscode
+node_modules
+
