@@ -36,7 +36,7 @@ ESP8266React::ESP8266React(AsyncWebServer *server) : _featureService(server),
             ArRequestHandlerFunction requestHandler = [contentType, content, len](AsyncWebServerRequest *request)
             {
                 AsyncWebServerResponse *response = request->beginResponse_P(200, contentType, content, len);
-                // response->addHeader("Content-Encoding", "gzip");
+                response->addHeader("Content-Encoding", "gzip");
                 request->send(response);
             };
             server->on(uri.c_str(), HTTP_GET, requestHandler);
