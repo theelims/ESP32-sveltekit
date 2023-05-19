@@ -53,7 +53,7 @@ Second Step - extend the features:
 
 Designed to work with the PlatformIO IDE with [limited setup](#getting-started). Please read below for setup, build and upload instructions.
 
-![Screenshots](/media/screenshots.png?raw=true "Screenshots")
+![Screenshots](/docs/media/screenshots.png?raw=true "Screenshots")
 
 ## Features
 
@@ -97,7 +97,7 @@ Once the platform and libraries are downloaded the back end should successfully 
 
 The firmware may be built by pressing the "Build" button:
 
-![build](/media/build.png?raw=true "build")
+![build](/docs/media/build.png?raw=true "build")
 
 Alternatively type the run command:
 
@@ -111,7 +111,7 @@ The project is configured to upload over a serial connection by default. You can
 
 The firmware may be uploaded to the device by pressing the "Upload" button:
 
-![uploadfw](/media/uploadfw.png?raw=true "uploadfw")
+![uploadfw](/docs/media/uploadfw.png?raw=true "uploadfw")
 
 Alternatively run the 'upload' target:
 
@@ -152,7 +152,7 @@ Disable `-D PROGMEM_WWW build` flag in ['platformio.ini'](platformio.ini) and re
 
 UI development is an iterative process so it's best to run a development server locally during interface development (using `npm run dev`). This can be accomplished by deploying the backend to a device and configuring the interface to point to it:
 
-![Development Server](/media/devserver.png?raw=true "Development Server")
+![Development Server](/docs/media/devserver.png?raw=true "Development Server")
 
 The following steps can get you up and running for local interface development:
 
@@ -291,7 +291,7 @@ This project supports ESP8266 and ESP32 platforms. To support OTA programming, e
 
 The pre-configured environments are "esp12e" and "node32s". These are common ESP8266/ESP32 variants with 4mb of flash:
 
-![ESP12E](/media/esp12e.jpg?raw=true "ESP12E") ![ESP32](/media/esp32.jpg?raw=true "ESP32")
+![ESP12E](/docs/media/esp12e.jpg?raw=true "ESP12E") ![ESP32](/docs/media/esp32.jpg?raw=true "ESP32")
 
 The settings file ['platformio.ini'](platformio.ini) configures the supported environments. Modify these, or add new environments for the devides you need to support. The default environments are as follows:
 
@@ -354,7 +354,7 @@ const theme = responsiveFontSizes(
 );
 ```
 
-![Dark Theme](/media/dark.png?raw=true "Dark Theme")
+![Dark Theme](/docs/media/dark.png?raw=true "Dark Theme")
 
 ### Changing the app icon
 
@@ -432,7 +432,7 @@ The framework promotes a modular design and exposes features you may re-use to s
 
 The following diagram visualises how the framework's modular components fit together, each feature is described in detail below.
 
-![framework diagram](/media/framework.png?raw=true "framework diagram")
+![framework diagram](/docs/media/framework.png?raw=true "framework diagram")
 
 #### Stateful service
 

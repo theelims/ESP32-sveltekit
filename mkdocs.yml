@@ -49,10 +49,9 @@ theme:
     - navigation.tracking
     - navigation.tabs
     - navigation.sections
-    #  - toc.integrate
+    - navigation.indexes
     - toc.follow
     - navigation.top
-    #  - navigation.footer
 
 markdown_extensions:
   - attr_list
