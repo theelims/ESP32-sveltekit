@@ -70,7 +70,7 @@ def buildProgMem():
     progmem.write('    static void registerRoutes(RouteRegistrationHandler handler) {\n')
 
     for asset_path, asset in assetMap.items():
-        progmem.write('      handler("' + str(asset_path) + '", "' + asset['mime'] + '", ' + asset['name'] + ', ' + str(asset['size']) + ');\n')
+        progmem.write('      handler("/' + str(asset_path) + '", "' + asset['mime'] + '", ' + asset['name'] + ', ' + str(asset['size']) + ');\n')
 
     progmem.write('    }\n')
     progmem.write('};\n')
