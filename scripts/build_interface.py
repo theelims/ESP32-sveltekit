@@ -7,17 +7,6 @@ import mimetypes
 
 Import("env")
 
-mimeLookup = {
-    "html": "text/html",
-    "js": "application/javascript",
-    "json": "application/json",
-    "css": "text/css",
-    "png": "image/png",
-    "jpg": "image/jpeg",
-    "ico": "image/x-icon",
-    "svg": "image/svg+xml"
-}
-
 def gzipFile(file):
     with open(file, 'rb') as f_in:
         with gzip.open(file + '.gz', 'wb') as f_out:
@@ -31,6 +20,7 @@ def flagExists(flag):
             return True
 
 def buildProgMem():
+    mimetypes.init()
     progmem = open('../lib/framework/WWWData.h', 'w')
     progmem.write('#include <Arduino.h>\n')
 
@@ -43,14 +33,14 @@ def buildProgMem():
         asset_path = path.relative_to("build").as_posix()
         print("Converting " + str(asset_path))
 
-        asset_var = 'ESP_REACT_DATA_' + str(progmemCounter)
-        asset_mime = mimeLookup[asset_path.split('.')[-1]]
+        asset_var = 'ESP_SVELTEKIT_DATA_' + str(progmemCounter)
+        asset_mime = mimetypes.types_map['.' + asset_path.split('.')[-1]]
 
         progmem.write('// ' + str(asset_path) + '\n')
         progmem.write('const uint8_t ' + asset_var + '[] PROGMEM = {\n  ')
         progmemCounter += 1
         
-        # Open path as binary file and read into byte array
+        # Open path as binary file, compress and read into byte array
         size = 0
         with open(path, "rb") as f:
             zipBuffer = gzip.compress(f.read()) 
@@ -94,7 +84,7 @@ def buildWeb():
                 for file in files:
                     gzipFile(os.path.join(currentpath, file))
         else:
-            print("Converting assets to PROGMEM")
+            print("Converting interface to PROGMEM")
             buildProgMem()
 
     finally:
