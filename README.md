@@ -719,3 +719,7 @@ esp8266React.getWiFiSettingsService()->addUpdateHandler(
 - [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
 - [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)
 - [AsyncMqttClient](https://github.com/marvinroger/async-mqtt-client)
+
+## Licensing
+
+ESP32 SvelteKit is distributed with two licenses for different sections of the code. The back end code inherits the GNU LESSER GENERAL PUBLIC LICENSE Version 3 and is therefore distributed said license. The front end code is distributed under the MIT License. See the [LICENSE](LICENSE) for a full text of both licenses.
