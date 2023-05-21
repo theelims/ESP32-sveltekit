@@ -25,7 +25,6 @@ String ArduinoJsonJWT::sign(String &payload)
 {
     unsigned char hmacResult[32];
     {
-#ifdef ESP32
         mbedtls_md_context_t ctx;
         mbedtls_md_type_t md_type = MBEDTLS_MD_SHA256;
         mbedtls_md_init(&ctx);
@@ -34,14 +33,6 @@ String ArduinoJsonJWT::sign(String &payload)
         mbedtls_md_hmac_update(&ctx, (unsigned char *)payload.c_str(), payload.length());
         mbedtls_md_hmac_finish(&ctx, hmacResult);
         mbedtls_md_free(&ctx);
-#elif defined(ESP8266)
-        br_hmac_key_context keyCtx;
-        br_hmac_key_init(&keyCtx, &br_sha256_vtable, _secret.c_str(), _secret.length());
-        br_hmac_context hmacCtx;
-        br_hmac_init(&hmacCtx, &keyCtx, 0);
-        br_hmac_update(&hmacCtx, payload.c_str(), payload.length());
-        br_hmac_out(&hmacCtx, hmacResult);
-#endif
     }
     return encode((char *)hmacResult, 32);
 }
@@ -104,13 +95,8 @@ String ArduinoJsonJWT::encode(const char *cstr, int inputLen)
 {
     // prepare encoder
     base64_encodestate _state;
-#ifdef ESP32
     base64_init_encodestate(&_state);
     size_t encodedLength = base64_encode_expected_len(inputLen) + 1;
-#elif defined(ESP8266)
-    base64_init_encodestate_nonewlines(&_state);
-    size_t encodedLength = base64_encode_expected_len_nonewlines(inputLen) + 1;
-#endif
     // prepare buffer of correct length, returning an empty string on failure
     char *buffer = (char *)malloc(encodedLength * sizeof(char));
     if (buffer == nullptr)

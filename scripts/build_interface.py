@@ -28,7 +28,7 @@ def buildProgMem():
 
     assetMap = {}
 
-    # Iterate over all files in the data/www directory
+    # Iterate over all files in the build directory
     for path in Path("build").rglob("*.*"):
         asset_path = path.relative_to("build").as_posix()
         print("Converting " + str(asset_path))

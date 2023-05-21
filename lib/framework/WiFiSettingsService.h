@@ -102,14 +102,9 @@ private:
     FSPersistence<WiFiSettings> _fsPersistence;
     unsigned long _lastConnectionAttempt;
 
-#ifdef ESP32
     bool _stopping;
     void onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info);
     void onStationModeStop(WiFiEvent_t event, WiFiEventInfo_t info);
-#elif defined(ESP8266)
-    WiFiEventHandler _onStationModeDisconnectedHandler;
-    void onStationModeDisconnected(const WiFiEventStationModeDisconnected &event);
-#endif
 
     void reconfigureWiFiConnection();
     void manageSTA();

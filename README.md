@@ -22,7 +22,7 @@ First Step - recreate the Front End with SvelteKit:
 - [x] Serve from LittleFS
 - [x] Serve from PROGMEM
 - [ ] Docs with material for mkdocs on gh-pages
-- [ ] Depreciate support for ESP8266
+- [x] Depreciate support for ESP8266
 - [ ] Copyright LGPL for backend code, MIT for frontend code
 - [ ] Enhance User/Dev Experience
   - [ ] menu as store
@@ -31,6 +31,7 @@ First Step - recreate the Front End with SvelteKit:
   - [x] +error.svelte page
   - [ ] focus trap for modal.svelte
   - [x] Toast notifications for parameter changes
+  - [ ] Scrolling behavior on modal Scan.svelte
 
 Second Step - extend the features:
 

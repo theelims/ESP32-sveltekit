@@ -14,11 +14,11 @@
 #endif
 
 #ifndef FACTORY_AP_SSID
-#define FACTORY_AP_SSID "ESP8266-React-#{unique_id}"
+#define FACTORY_AP_SSID "ESP32-Sveltekit-#{unique_id}"
 #endif
 
 #ifndef FACTORY_AP_PASSWORD
-#define FACTORY_AP_PASSWORD "esp-react"
+#define FACTORY_AP_PASSWORD "esp-sveltekit"
 #endif
 
 #ifndef FACTORY_AP_LOCAL_IP

@@ -1,16 +1,16 @@
-#include <ESP8266React.h>
+#include <ESP32SvelteKit.h>
 #include <LightMqttSettingsService.h>
 #include <LightStateService.h>
 
 #define SERIAL_BAUD_RATE 115200
 
 AsyncWebServer server(80);
-ESP8266React esp8266React(&server);
+ESP32SvelteKit esp32sveltekit(&server);
 LightMqttSettingsService lightMqttSettingsService =
-    LightMqttSettingsService(&server, esp8266React.getFS(), esp8266React.getSecurityManager());
+    LightMqttSettingsService(&server, esp32sveltekit.getFS(), esp32sveltekit.getSecurityManager());
 LightStateService lightStateService = LightStateService(&server,
-                                                        esp8266React.getSecurityManager(),
-                                                        esp8266React.getMqttClient(),
+                                                        esp32sveltekit.getSecurityManager(),
+                                                        esp32sveltekit.getMqttClient(),
                                                         &lightMqttSettingsService);
 
 void setup()
@@ -19,7 +19,7 @@ void setup()
     Serial.begin(SERIAL_BAUD_RATE);
 
     // start the framework and demo project
-    esp8266React.begin();
+    esp32sveltekit.begin();
 
     // load the initial light settings
     lightStateService.begin();
@@ -34,5 +34,5 @@ void setup()
 void loop()
 {
     // run the framework's loop function
-    esp8266React.loop();
+    esp32sveltekit.loop();
 }

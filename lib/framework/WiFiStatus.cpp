@@ -6,18 +6,11 @@ WiFiStatus::WiFiStatus(AsyncWebServer *server, SecurityManager *securityManager)
                HTTP_GET,
                securityManager->wrapRequest(std::bind(&WiFiStatus::wifiStatus, this, std::placeholders::_1),
                                             AuthenticationPredicates::IS_AUTHENTICATED));
-#ifdef ESP32
     WiFi.onEvent(onStationModeConnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_CONNECTED);
     WiFi.onEvent(onStationModeDisconnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
     WiFi.onEvent(onStationModeGotIP, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
-#elif defined(ESP8266)
-    _onStationModeConnectedHandler = WiFi.onStationModeConnected(onStationModeConnected);
-    _onStationModeDisconnectedHandler = WiFi.onStationModeDisconnected(onStationModeDisconnected);
-    _onStationModeGotIPHandler = WiFi.onStationModeGotIP(onStationModeGotIP);
-#endif
 }
 
-#ifdef ESP32
 void WiFiStatus::onStationModeConnected(WiFiEvent_t event, WiFiEventInfo_t info)
 {
     Serial.println(F("WiFi Connected."));
@@ -34,25 +27,6 @@ void WiFiStatus::onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
     Serial.printf_P(
         PSTR("WiFi Got IP. localIP=%s, hostName=%s\r\n"), WiFi.localIP().toString().c_str(), WiFi.getHostname());
 }
-#elif defined(ESP8266)
-void WiFiStatus::onStationModeConnected(const WiFiEventStationModeConnected &event)
-{
-    Serial.print(F("WiFi Connected. SSID="));
-    Serial.println(event.ssid);
-}
-
-void WiFiStatus::onStationModeDisconnected(const WiFiEventStationModeDisconnected &event)
-{
-    Serial.print(F("WiFi Disconnected. Reason code="));
-    Serial.println(event.reason);
-}
-
-void WiFiStatus::onStationModeGotIP(const WiFiEventStationModeGotIP &event)
-{
-    Serial.printf_P(
-        PSTR("WiFi Got IP. localIP=%s, hostName=%s\r\n"), event.ip.toString().c_str(), WiFi.hostname().c_str());
-}
-#endif
 
 void WiFiStatus::wifiStatus(AsyncWebServerRequest *request)
 {

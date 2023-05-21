@@ -4,13 +4,8 @@ OTASettingsService::OTASettingsService(AsyncWebServer *server, FS *fs, SecurityM
                                                                                                            _fsPersistence(OTASettings::read, OTASettings::update, this, fs, OTA_SETTINGS_FILE),
                                                                                                            _arduinoOTA(nullptr)
 {
-#ifdef ESP32
     WiFi.onEvent(std::bind(&OTASettingsService::onStationModeGotIP, this, std::placeholders::_1, std::placeholders::_2),
                  WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
-#elif defined(ESP8266)
-    _onStationModeGotIPHandler =
-        WiFi.onStationModeGotIP(std::bind(&OTASettingsService::onStationModeGotIP, this, std::placeholders::_1));
-#endif
     addUpdateHandler([&](const String &originId)
                      { configureArduinoOTA(); },
                      false);
@@ -34,9 +29,7 @@ void OTASettingsService::configureArduinoOTA()
 {
     if (_arduinoOTA)
     {
-#ifdef ESP32
         _arduinoOTA->end();
-#endif
         delete _arduinoOTA;
         _arduinoOTA = nullptr;
     }
@@ -69,14 +62,7 @@ void OTASettingsService::configureArduinoOTA()
     }
 }
 
-#ifdef ESP32
 void OTASettingsService::onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
 {
     configureArduinoOTA();
 }
-#elif defined(ESP8266)
-void OTASettingsService::onStationModeGotIP(const WiFiEventStationModeGotIP &event)
-{
-    configureArduinoOTA();
-}
-#endif

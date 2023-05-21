@@ -13,9 +13,6 @@ UploadFirmwareService::UploadFirmwareService(AsyncWebServer *server, SecurityMan
                          std::placeholders::_4,
                          std::placeholders::_5,
                          std::placeholders::_6));
-#ifdef ESP8266
-    Update.runAsync(true);
-#endif
 }
 
 void UploadFirmwareService::handleUpload(AsyncWebServerRequest *request,
@@ -94,9 +91,5 @@ void UploadFirmwareService::handleError(AsyncWebServerRequest *request, int code
 
 void UploadFirmwareService::handleEarlyDisconnect()
 {
-#ifdef ESP32
     Update.abort();
-#elif defined(ESP8266)
-    Update.end();
-#endif
 }

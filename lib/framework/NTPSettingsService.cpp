@@ -10,18 +10,11 @@ NTPSettingsService::NTPSettingsService(AsyncWebServer *server, FS *fs, SecurityM
     _timeHandler.setMethod(HTTP_POST);
     _timeHandler.setMaxContentLength(MAX_TIME_SIZE);
     server->addHandler(&_timeHandler);
-#ifdef ESP32
     WiFi.onEvent(
         std::bind(&NTPSettingsService::onStationModeDisconnected, this, std::placeholders::_1, std::placeholders::_2),
         WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
     WiFi.onEvent(std::bind(&NTPSettingsService::onStationModeGotIP, this, std::placeholders::_1, std::placeholders::_2),
                  WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
-#elif defined(ESP8266)
-    _onStationModeDisconnectedHandler = WiFi.onStationModeDisconnected(
-        std::bind(&NTPSettingsService::onStationModeDisconnected, this, std::placeholders::_1));
-    _onStationModeGotIPHandler =
-        WiFi.onStationModeGotIP(std::bind(&NTPSettingsService::onStationModeGotIP, this, std::placeholders::_1));
-#endif
     addUpdateHandler([&](const String &originId)
                      { configureNTP(); },
                      false);
@@ -33,7 +26,6 @@ void NTPSettingsService::begin()
     configureNTP();
 }
 
-#ifdef ESP32
 void NTPSettingsService::onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
 {
     Serial.println(F("Got IP address, starting NTP Synchronization"));
@@ -45,39 +37,18 @@ void NTPSettingsService::onStationModeDisconnected(WiFiEvent_t event, WiFiEventI
     Serial.println(F("WiFi connection dropped, stopping NTP."));
     configureNTP();
 }
-#elif defined(ESP8266)
-void NTPSettingsService::onStationModeGotIP(const WiFiEventStationModeGotIP &event)
-{
-    Serial.println(F("Got IP address, starting NTP Synchronization"));
-    configureNTP();
-}
-
-void NTPSettingsService::onStationModeDisconnected(const WiFiEventStationModeDisconnected &event)
-{
-    Serial.println(F("WiFi connection dropped, stopping NTP."));
-    configureNTP();
-}
-#endif
 
 void NTPSettingsService::configureNTP()
 {
     if (WiFi.isConnected() && _state.enabled)
     {
         Serial.println(F("Starting NTP..."));
-#ifdef ESP32
         configTzTime(_state.tzFormat.c_str(), _state.server.c_str());
-#elif defined(ESP8266)
-        configTime(_state.tzFormat.c_str(), _state.server.c_str());
-#endif
     }
     else
     {
-#ifdef ESP32
         setenv("TZ", _state.tzFormat.c_str(), 1);
         tzset();
-#elif defined(ESP8266)
-        setTZ(_state.tzFormat.c_str());
-#endif
         sntp_stop();
     }
 }

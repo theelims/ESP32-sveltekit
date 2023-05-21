@@ -1,15 +1,10 @@
-#ifndef ESP8266React_h
-#define ESP8266React_h
+#ifndef ESP32SvelteKit_h
+#define ESP32SvelteKit_h
 
 #include <Arduino.h>
 
-#ifdef ESP32
 #include <AsyncTCP.h>
 #include <WiFi.h>
-#elif defined(ESP8266)
-#include <ESP8266WiFi.h>
-#include <ESPAsyncTCP.h>
-#endif
 
 #include <FeaturesService.h>
 #include <APSettingsService.h>
@@ -38,10 +33,10 @@
 #define CORS_ORIGIN "*"
 #endif
 
-class ESP8266React
+class ESP32SvelteKit
 {
 public:
-    ESP8266React(AsyncWebServer *server);
+    ESP32SvelteKit(AsyncWebServer *server);
 
     void begin();
     void loop();

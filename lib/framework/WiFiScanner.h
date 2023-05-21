@@ -1,13 +1,8 @@
 #ifndef WiFiScanner_h
 #define WiFiScanner_h
 
-#ifdef ESP32
 #include <WiFi.h>
 #include <AsyncTCP.h>
-#elif defined(ESP8266)
-#include <ESP8266WiFi.h>
-#include <ESPAsyncTCP.h>
-#endif
 
 #include <ArduinoJson.h>
 #include <AsyncJson.h>
@@ -27,10 +22,6 @@ public:
 private:
     void scanNetworks(AsyncWebServerRequest *request);
     void listNetworks(AsyncWebServerRequest *request);
-
-#ifdef ESP8266
-    uint8_t convertEncryptionType(uint8_t encryptionType);
-#endif
 };
 
 #endif // end WiFiScanner_h

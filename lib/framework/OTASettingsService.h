@@ -4,11 +4,7 @@
 #include <HttpEndpoint.h>
 #include <FSPersistence.h>
 
-#ifdef ESP32
 #include <ESPmDNS.h>
-#elif defined(ESP8266)
-#include <ESP8266mDNS.h>
-#endif
 
 #include <ArduinoOTA.h>
 #include <WiFiUdp.h>
@@ -18,7 +14,7 @@
 #endif
 
 #ifndef FACTORY_OTA_PASSWORD
-#define FACTORY_OTA_PASSWORD "esp-react"
+#define FACTORY_OTA_PASSWORD "esp-sveltekit"
 #endif
 
 #ifndef FACTORY_OTA_ENABLED
@@ -65,12 +61,7 @@ private:
     ArduinoOTAClass *_arduinoOTA;
 
     void configureArduinoOTA();
-#ifdef ESP32
     void onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t info);
-#elif defined(ESP8266)
-    WiFiEventHandler _onStationModeGotIPHandler;
-    void onStationModeGotIP(const WiFiEventStationModeGotIP &event);
-#endif
 };
 
 #endif // end OTASettingsService_h

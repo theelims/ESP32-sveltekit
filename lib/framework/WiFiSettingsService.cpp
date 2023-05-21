@@ -14,7 +14,7 @@ WiFiSettingsService::WiFiSettingsService(AsyncWebServer *server, FS *fs, Securit
     // Disable WiFi config persistance and auto reconnect
     WiFi.persistent(false);
     WiFi.setAutoReconnect(false);
-#ifdef ESP32
+
     // Init the wifi driver on ESP32
     WiFi.mode(WIFI_MODE_MAX);
     WiFi.mode(WIFI_MODE_NULL);
@@ -23,10 +23,6 @@ WiFiSettingsService::WiFiSettingsService(AsyncWebServer *server, FS *fs, Securit
         WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
     WiFi.onEvent(std::bind(&WiFiSettingsService::onStationModeStop, this, std::placeholders::_1, std::placeholders::_2),
                  WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_STOP);
-#elif defined(ESP8266)
-    _onStationModeDisconnectedHandler = WiFi.onStationModeDisconnected(
-        std::bind(&WiFiSettingsService::onStationModeDisconnected, this, std::placeholders::_1));
-#endif
 
     addUpdateHandler([&](const String &originId)
                      { reconfigureWiFiConnection(); },
@@ -44,15 +40,11 @@ void WiFiSettingsService::reconfigureWiFiConnection()
     // reset last connection attempt to force loop to reconnect immediately
     _lastConnectionAttempt = 0;
 
-// disconnect and de-configure wifi
-#ifdef ESP32
+    // disconnect and de-configure wifi
     if (WiFi.disconnect(true))
     {
         _stopping = true;
     }
-#elif defined(ESP8266)
-    WiFi.disconnect(true);
-#endif
 }
 
 void WiFiSettingsService::loop()
@@ -84,20 +76,14 @@ void WiFiSettingsService::manageSTA()
         else
         {
             // configure for DHCP
-#ifdef ESP32
             WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
             WiFi.setHostname(_state.hostname.c_str());
-#elif defined(ESP8266)
-            WiFi.config(INADDR_ANY, INADDR_ANY, INADDR_ANY);
-            WiFi.hostname(_state.hostname);
-#endif
         }
         // attempt to connect to the network
         WiFi.begin(_state.ssid.c_str(), _state.password.c_str());
     }
 }
 
-#ifdef ESP32
 void WiFiSettingsService::onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info)
 {
     WiFi.disconnect(true);
@@ -110,9 +96,3 @@ void WiFiSettingsService::onStationModeStop(WiFiEvent_t event, WiFiEventInfo_t i
         _stopping = false;
     }
 }
-#elif defined(ESP8266)
-void WiFiSettingsService::onStationModeDisconnected(const WiFiEventStationModeDisconnected &event)
-{
-    WiFi.disconnect(true);
-}
-#endif

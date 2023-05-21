@@ -1,32 +1,32 @@
-#include <ESP8266React.h>
+#include <ESP32SvelteKit.h>
 
-ESP8266React::ESP8266React(AsyncWebServer *server) : _featureService(server),
-                                                     _securitySettingsService(server, &ESPFS),
-                                                     _wifiSettingsService(server, &ESPFS, &_securitySettingsService),
-                                                     _wifiScanner(server, &_securitySettingsService),
-                                                     _wifiStatus(server, &_securitySettingsService),
-                                                     _apSettingsService(server, &ESPFS, &_securitySettingsService),
-                                                     _apStatus(server, &_securitySettingsService, &_apSettingsService),
+ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server),
+                                                         _securitySettingsService(server, &ESPFS),
+                                                         _wifiSettingsService(server, &ESPFS, &_securitySettingsService),
+                                                         _wifiScanner(server, &_securitySettingsService),
+                                                         _wifiStatus(server, &_securitySettingsService),
+                                                         _apSettingsService(server, &ESPFS, &_securitySettingsService),
+                                                         _apStatus(server, &_securitySettingsService, &_apSettingsService),
 #if FT_ENABLED(FT_NTP)
-                                                     _ntpSettingsService(server, &ESPFS, &_securitySettingsService),
-                                                     _ntpStatus(server, &_securitySettingsService),
+                                                         _ntpSettingsService(server, &ESPFS, &_securitySettingsService),
+                                                         _ntpStatus(server, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_OTA)
-                                                     _otaSettingsService(server, &ESPFS, &_securitySettingsService),
+                                                         _otaSettingsService(server, &ESPFS, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_UPLOAD_FIRMWARE)
-                                                     _uploadFirmwareService(server, &_securitySettingsService),
+                                                         _uploadFirmwareService(server, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_MQTT)
-                                                     _mqttSettingsService(server, &ESPFS, &_securitySettingsService),
-                                                     _mqttStatus(server, &_mqttSettingsService, &_securitySettingsService),
+                                                         _mqttSettingsService(server, &ESPFS, &_securitySettingsService),
+                                                         _mqttStatus(server, &_mqttSettingsService, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_SECURITY)
-                                                     _authenticationService(server, &_securitySettingsService),
+                                                         _authenticationService(server, &_securitySettingsService),
 #endif
-                                                     _restartService(server, &_securitySettingsService),
-                                                     _factoryResetService(server, &ESPFS, &_securitySettingsService),
-                                                     _systemStatus(server, &_securitySettingsService)
+                                                         _restartService(server, &_securitySettingsService),
+                                                         _factoryResetService(server, &ESPFS, &_securitySettingsService),
+                                                         _systemStatus(server, &_securitySettingsService)
 {
 #ifdef PROGMEM_WWW
     // Serve static resources from PROGMEM
@@ -80,13 +80,9 @@ ESP8266React::ESP8266React(AsyncWebServer *server) : _featureService(server),
 #endif
 }
 
-void ESP8266React::begin()
+void ESP32SvelteKit::begin()
 {
-#ifdef ESP32
     ESPFS.begin(true);
-#elif defined(ESP8266)
-    ESPFS.begin();
-#endif
     _wifiSettingsService.begin();
     _apSettingsService.begin();
 #if FT_ENABLED(FT_NTP)
@@ -103,7 +99,7 @@ void ESP8266React::begin()
 #endif
 }
 
-void ESP8266React::loop()
+void ESP32SvelteKit::loop()
 {
     _wifiSettingsService.loop();
     _apSettingsService.loop();

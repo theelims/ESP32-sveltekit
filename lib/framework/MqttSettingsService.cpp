@@ -33,18 +33,11 @@ MqttSettingsService::MqttSettingsService(AsyncWebServer *server, FS *fs, Securit
                                                                                                              _disconnectReason(AsyncMqttClientDisconnectReason::TCP_DISCONNECTED),
                                                                                                              _mqttClient()
 {
-#ifdef ESP32
     WiFi.onEvent(
         std::bind(&MqttSettingsService::onStationModeDisconnected, this, std::placeholders::_1, std::placeholders::_2),
         WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
     WiFi.onEvent(std::bind(&MqttSettingsService::onStationModeGotIP, this, std::placeholders::_1, std::placeholders::_2),
                  WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
-#elif defined(ESP8266)
-    _onStationModeDisconnectedHandler = WiFi.onStationModeDisconnected(
-        std::bind(&MqttSettingsService::onStationModeDisconnected, this, std::placeholders::_1));
-    _onStationModeGotIPHandler =
-        WiFi.onStationModeGotIP(std::bind(&MqttSettingsService::onStationModeGotIP, this, std::placeholders::_1));
-#endif
     _mqttClient.onConnect(std::bind(&MqttSettingsService::onMqttConnect, this, std::placeholders::_1));
     _mqttClient.onDisconnect(std::bind(&MqttSettingsService::onMqttDisconnect, this, std::placeholders::_1));
     addUpdateHandler([&](const String &originId)
@@ -126,7 +119,6 @@ void MqttSettingsService::onConfigUpdated()
     _disconnectedAt = 0;
 }
 
-#ifdef ESP32
 void MqttSettingsService::onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
 {
     if (_state.enabled)
@@ -144,25 +136,6 @@ void MqttSettingsService::onStationModeDisconnected(WiFiEvent_t event, WiFiEvent
         onConfigUpdated();
     }
 }
-#elif defined(ESP8266)
-void MqttSettingsService::onStationModeGotIP(const WiFiEventStationModeGotIP &event)
-{
-    if (_state.enabled)
-    {
-        Serial.println(F("WiFi connection dropped, starting MQTT client."));
-        onConfigUpdated();
-    }
-}
-
-void MqttSettingsService::onStationModeDisconnected(const WiFiEventStationModeDisconnected &event)
-{
-    if (_state.enabled)
-    {
-        Serial.println(F("WiFi connection dropped, stopping MQTT client."));
-        onConfigUpdated();
-    }
-}
-#endif
 
 void MqttSettingsService::configureMqtt()
 {

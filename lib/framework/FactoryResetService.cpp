@@ -21,7 +21,6 @@ void FactoryResetService::handleRequest(AsyncWebServerRequest *request)
  */
 void FactoryResetService::factoryReset()
 {
-#ifdef ESP32
     File root = fs->open(FS_CONFIG_DIRECTORY);
     File file;
     while (file = root.openNextFile())
@@ -30,15 +29,5 @@ void FactoryResetService::factoryReset()
         file.close();
         fs->remove(path);
     }
-#elif defined(ESP8266)
-    Dir configDirectory = fs->openDir(FS_CONFIG_DIRECTORY);
-    while (configDirectory.next())
-    {
-        String path = FS_CONFIG_DIRECTORY;
-        path.concat("/");
-        path.concat(configDirectory.fileName());
-        fs->remove(path);
-    }
-#endif
     RestartService::restartNow();
 }
