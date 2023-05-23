@@ -13,7 +13,7 @@
 		>
 		<span class="px-2 text-xl font-bold lg:text-2xl">{$page.data.title}</span>
 	</div>
-	<div class="indicator flex-none">
+	<!-- <div class="indicator flex-none">
 		<button class="btn btn-square btn-ghost">
 			<span
 				class="indicator-item indicator-top indicator-center badge badge-info badge-xs top-2 scale-75 lg:top-1"
@@ -24,5 +24,5 @@
 	</div>
 	<div class="flex-none">
 		<WiFi class="h-9 w-9" />
-	</div>
+	</div> -->
 </div>

@@ -1,6 +1,6 @@
-ESP32-SvelteKit is distributed with two licenses for different sections of the
+ESP32 SvelteKit is distributed with two licenses for different sections of the
 code. The back end code inherits the GNU LESSER GENERAL PUBLIC LICENSE Version 3
-and is therefore distributed said license. The front end code is distributed
+and is therefore distributed with said license. The front end code is distributed
 under the MIT License.
 
 MIT License

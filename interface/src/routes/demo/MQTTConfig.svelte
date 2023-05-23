@@ -97,7 +97,7 @@
 	}
 </script>
 
-<SettingsCard collapsable={true} open={false}>
+<SettingsCard collapsible={true} open={false}>
 	<MQTT slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">MQTT Broker Settings</span>
 	<div class="w-full overflow-x-auto">

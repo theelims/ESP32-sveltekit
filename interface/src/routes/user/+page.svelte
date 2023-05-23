@@ -142,7 +142,7 @@
 	class="mx-8 my-8 flex
      flex-col gap-4"
 >
-	<SettingsCard collapsable={false}>
+	<SettingsCard collapsible={false}>
 		<Users slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 		<span slot="title">Manage Users</span>
 		{#await getSecuritySettings()}

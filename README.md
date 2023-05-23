@@ -23,7 +23,7 @@ First Step - recreate the Front End with SvelteKit:
 - [x] Serve from PROGMEM
 - [ ] Docs with material for mkdocs on gh-pages
 - [x] Depreciate support for ESP8266
-- [ ] Copyright LGPL for backend code, MIT for frontend code
+- [x] Copyright LGPL for backend code, MIT for frontend code
 - [ ] Enhance User/Dev Experience
   - [ ] menu as store
   - [x] Collapsible as svelte component with animations
@@ -161,28 +161,6 @@ The following steps can get you up and running for local interface development:
 - [Configuring the dev proxy](#configuring-the-dev-proxy) with device's IP in interface/package.json
 - [Start the development server](#starting-the-development-server) with "npm run dev"
 - Develop interface locally
-
-#### Configuring the dev proxy
-
-The interface has a development environment which is enabled when running the development server using `npm run dev`. The [vite.config.ts](interface/vite.config.ts) file defines the location of the services which the development server will proxy. This is defined by the "target" property, which will need to be changed to the the IP address or hostname of the device running the firmware. Change this for both, "http://" and "ws://".
-
-```ts
-        proxy: {
-          // Proxying REST: http://localhost:5173/rest/bar -> http://192.168.1.83/rest/bar
-          '/rest': {
-            target: 'http://192.168.1.83',
-            changeOrigin: true,
-          },
-          // Proxying websockets ws://localhost:5173/ws -> ws://192.168.1.83/ws
-          '/ws': {
-            target: 'ws://192.168.1.83',
-            changeOrigin: true,
-            ws: true,
-          },
-        },
-```
-
-> **Tip**: You must restart the development server for changes to the proxy location to come into effect.
 
 #### Starting the development server
 
@@ -722,4 +700,4 @@ esp8266React.getWiFiSettingsService()->addUpdateHandler(
 
 ## Licensing
 
-ESP32 SvelteKit is distributed with two licenses for different sections of the code. The back end code inherits the GNU LESSER GENERAL PUBLIC LICENSE Version 3 and is therefore distributed said license. The front end code is distributed under the MIT License. See the [LICENSE](LICENSE) for a full text of both licenses.
+ESP32 SvelteKit is distributed with two licenses for different sections of the code. The back end code inherits the GNU LESSER GENERAL PUBLIC LICENSE Version 3 and is therefore distributed with said license. The front end code is distributed under the MIT License. See the [LICENSE](LICENSE) for a full text of both licenses.

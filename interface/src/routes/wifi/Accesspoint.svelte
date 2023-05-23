@@ -8,7 +8,7 @@
 	import { page } from '$app/stores';
 	import { notifications } from '$lib/stores/notifications';
 	import Spinner from '$lib/components/Spinner.svelte';
-	import Collapsable from '$lib/components/Collapsable.svelte';
+	import Collapsible from '$lib/components/Collapsible.svelte';
 	import AP from '~icons/tabler/access-point';
 	import MAC from '~icons/tabler/dna-2';
 	import Home from '~icons/tabler/home';
@@ -191,7 +191,7 @@
 	}
 </script>
 
-<SettingsCard collapsable={false}>
+<SettingsCard collapsible={false}>
 	<AP slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">Access Point</span>
 	<div class="w-full overflow-x-auto">
@@ -262,7 +262,7 @@
 	</div>
 
 	{#if !$page.data.features.security || $user.admin}
-		<Collapsable open={false} class="bg-base-200 shadow-lg" on:closed={getAPSettings}>
+		<Collapsible open={false} class="bg-base-200 shadow-lg" on:closed={getAPSettings}>
 			<span slot="title">Change AP Settings</span>
 			<form
 				class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2"
@@ -437,6 +437,6 @@
 					<button class="btn btn-primary" type="submit">Apply Settings</button>
 				</div>
 			</form>
-		</Collapsable>
+		</Collapsible>
 	{/if}
 </SettingsCard>

@@ -107,7 +107,7 @@
 	}
 </script>
 
-<SettingsCard collapsable={false}>
+<SettingsCard collapsible={false}>
 	<CPU slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">System Status</span>
 

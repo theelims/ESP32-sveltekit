@@ -3,7 +3,7 @@
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
-	import Collapsable from '$lib/components/Collapsable.svelte';
+	import Collapsible from '$lib/components/Collapsible.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
@@ -160,7 +160,7 @@
 	}
 </script>
 
-<SettingsCard collapsable={false}>
+<SettingsCard collapsible={false}>
 	<Clock slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">Network Time</span>
 	<div class="w-full overflow-x-auto">
@@ -250,7 +250,7 @@
 	</div>
 
 	{#if !$page.data.features.security || $user.admin}
-		<Collapsable open={false} class="shadow-lg" on:closed={getNTPSettings}>
+		<Collapsible open={false} class="shadow-lg" on:closed={getNTPSettings}>
 			<span slot="title">Change NTP Settings</span>
 			<form
 				class="form-control w-full"
@@ -298,6 +298,6 @@
 					<button class="btn btn-primary" type="submit">Apply Settings</button>
 				</div>
 			</form>
-		</Collapsable>
+		</Collapsible>
 	{/if}
 </SettingsCard>

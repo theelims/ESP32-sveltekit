@@ -8,7 +8,7 @@
 	import { notifications } from '$lib/stores/notifications';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import InputPassword from '$lib/components/InputPassword.svelte';
-	import Collapsable from '$lib/components/Collapsable.svelte';
+	import Collapsible from '$lib/components/Collapsible.svelte';
 	import ScanNetworks from './Scan.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import AP from '~icons/tabler/access-point';
@@ -216,7 +216,7 @@
 	}
 </script>
 
-<SettingsCard collapsable={false}>
+<SettingsCard collapsible={false}>
 	<WiFi slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">Wi-Fi</span>
 	<div class="w-full overflow-x-auto">
@@ -367,7 +367,7 @@
 		{/await}
 	</div>
 	{#if !$page.data.features.security || $user.admin}
-		<Collapsable open={false} class="bg-base-200 shadow-lg" on:closed={getWifiSettings}>
+		<Collapsible open={false} class="bg-base-200 shadow-lg" on:closed={getWifiSettings}>
 			<span slot="title">Change Wi-Fi Settings</span>
 			<form on:submit|preventDefault={handleSubmitWiFi} novalidate bind:this={formField}>
 				<div class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2">
@@ -555,6 +555,6 @@
 					<button class="btn btn-primary" type="submit">Apply Settings</button>
 				</div>
 			</form>
-		</Collapsable>
+		</Collapsible>
 	{/if}
 </SettingsCard>

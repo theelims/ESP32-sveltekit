@@ -8,7 +8,7 @@
 	import { page } from '$app/stores';
 	import { notifications } from '$lib/stores/notifications';
 	import Spinner from '$lib/components/Spinner.svelte';
-	import Collapsable from '$lib/components/Collapsable.svelte';
+	import Collapsible from '$lib/components/Collapsible.svelte';
 	import MQTT from '~icons/tabler/topology-star-3';
 	import Client from '~icons/tabler/robot';
 
@@ -163,7 +163,7 @@
 	}
 </script>
 
-<SettingsCard collapsable={false}>
+<SettingsCard collapsible={false}>
 	<MQTT slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">MQTT</span>
 	<div class="w-full overflow-x-auto">
@@ -216,7 +216,7 @@
 	</div>
 
 	{#if !$page.data.features.security || $user.admin}
-		<Collapsable open={false} class="shadow-lg" on:closed={getMQTTSettings}>
+		<Collapsible open={false} class="shadow-lg" on:closed={getMQTTSettings}>
 			<span slot="title">Change MQTT Settings</span>
 
 			<form on:submit|preventDefault={handleSubmitMQTT} novalidate bind:this={formField}>
@@ -371,6 +371,6 @@
 					<button class="btn btn-primary" type="submit">Apply Settings</button>
 				</div>
 			</form>
-		</Collapsable>
+		</Collapsible>
 	{/if}
 </SettingsCard>

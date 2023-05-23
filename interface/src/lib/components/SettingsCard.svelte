@@ -3,10 +3,10 @@
 	import { cubicOut } from 'svelte/easing';
 	import Down from '~icons/tabler/chevron-down';
 	export let open = true;
-	export let collapsable = true;
+	export let collapsible = true;
 </script>
 
-{#if collapsable}
+{#if collapsible}
 	<div
 		class="bg-base-200 rounded-box shadow-primary/50 relative grid w-full max-w-2xl self-center overflow-hidden shadow-lg"
 	>

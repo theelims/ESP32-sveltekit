@@ -2,12 +2,17 @@ site_name: ESP32 SvelteKit
 
 nav:
   - Home: index.md
-  - "Toolings":
-      - toolings.md
+  - "Build Tools":
+      - gettingstarted.md
+      - buildprocess.md
   - "Front End":
-      - frontend.md
+      - sveltekit.md
+      - structure.md
+      - stores.md
+      - components.md
   - "Back End":
-      - backend.md
+      - statefulservice.md
+      - restfulapi.md
   - "Documentation":
       - mkdocs.md
 
@@ -21,8 +26,8 @@ repo_url: https://github.com/theelims/ESP32-sveltekit
 
 theme:
   name: material
-  # logo: assets/logo.svg
-  # favicon: assets/logo.png
+  logo: media/svelte-logo.png
+  favicon: media/favicon.png
   icon:
     repo: fontawesome/brands/github
   palette:
@@ -41,8 +46,8 @@ theme:
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
-      primary: blue
-      accent: blue
+      primary: indigo
+      accent: indigo
 
   features:
     - navigation.instant
@@ -52,6 +57,7 @@ theme:
     - navigation.indexes
     - toc.follow
     - navigation.top
+    - content.code.copy
 
 markdown_extensions:
   - attr_list
@@ -59,7 +65,11 @@ markdown_extensions:
   - tables
   - admonition
   - pymdownx.details
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
