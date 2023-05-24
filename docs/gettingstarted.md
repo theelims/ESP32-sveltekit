@@ -76,7 +76,7 @@ If your board is not listed in the platformio.ini you may look in the [official 
 
 After you've changed [platformio.ini](../platformio.ini) to suit your board you can upload the sample code to your board. This will download all ESP32 libraries and execute `node install` to install all node packages as well. Select your board's environment under the PlatformIO tab and hit `Upload and Monitor`.
 
-![PIO Build](/media/PIO-upload.png)
+![PIO Build](media/PIO-upload.png)
 
 The first build process will take a while. After a couple of minutes you can see the EPS32 outputting information on the terminal.
 
@@ -127,7 +127,7 @@ Follow the link to access the front end in your browser.
 Material for MkDocs allows you to create great technical documentation pages just from markup. If you don't want to use it just delete the `.github` and `docs` folder, as well as `mkdocs.yaml`.
 
 Otherwise initiate the github CI pipeline by committing and pushing to your repository once. This triggers the automatic build. After a few minutes a new branch `gh-pages` containing the static website with your documentation should appear. To deploy it go to your github repository go under settings and complete the following steps.
-![Deploy on gh-pages](/media/mkdocs_gh-pages.PNG)
+![Deploy on gh-pages](media/mkdocs_gh-pages.PNG)
 
 ### Development Server
 
