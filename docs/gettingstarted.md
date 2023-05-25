@@ -30,16 +30,16 @@ pip install mkdocs-material
 
 ### Project Structure
 
-| Resource                            | Description                                                      |
-| ----------------------------------- | ---------------------------------------------------------------- |
-| [.github/](../.github)              | Github CI pipeline to deploy MkDocs to gh-pages                  |
-| [docs/](../docs)                    | MkDocs documentation files                                       |
-| [interface/](../interface)          | SvelteKit based front end                                        |
-| [lib/framework/](../lib/framework)  | C++ back end for the ESP32 device                                |
-| [src/](../src)                      | The main.cpp and demo project to get you started                 |
-| [scripts/](../scripts)              | Scripts that build the interface as part of the platformio build |
-| [platformio.ini](../platformio.ini) | PlatformIO project configuration file                            |
-| [mkdocs.yaml](../mkdosc.yaml)       | MkDocs project configuration file                                |
+| Resource                                                                                                                         | Description                                                      |
+| -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| [.github/](https://github.com/theelims/ESP32-sveltekit/blob/main/.github)                                                        | Github CI pipeline to deploy MkDocs to gh-pages                  |
+| [docs/](https://github.com/theelims/ESP32-sveltekit/blob/main/docs)                                                              | MkDocs documentation files                                       |
+| [interface/](https://github.com/theelims/ESP32-sveltekit/blob/mahttps://github.com/theelims/ESP32-sveltekit/blob/main/interface) | SvelteKit based front end                                        |
+| [lib/framework/](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework)                                            | C++ back end for the ESP32 device                                |
+| [src/](https://github.com/theelims/ESP32-sveltekit/blob/main/src)                                                                | The main.cpp and demo project to get you started                 |
+| [scripts/](https://github.com/theelims/ESP32-sveltekit/tree/main/scripts)                                                        | Scripts that build the interface as part of the platformio build |
+| [platformio.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/platformio.ini)                                           | PlatformIO project configuration file                            |
+| [mkdocs.yaml](https://github.com/theelims/ESP32-sveltekit/blob/main/mkdosc.yaml)                                                 | MkDocs project configuration file                                |
 
 ## Setting up PlatformIO
 
@@ -49,7 +49,7 @@ pip install mkdocs-material
 
     It is tempting to use the PlatformIO user interface to add dependencies or parameters to platformio.ini. However, doing so will remove all "irrelevant" information like comments from the file. Please edit the file directly in the editor.
 
-[platformio.ini](../platformio.ini) is the central file controlling the whole build process. It comes pre-configure with a few boards which have different ESP32 chips. It needs to be adapted to the board you want to program.
+[platformio.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/platformio.ini) is the central file controlling the whole build process. It comes pre-configure with a few boards which have different ESP32 chips. It needs to be adapted to the board you want to program.
 
 ```ini
 [platformio]
@@ -74,7 +74,7 @@ If your board is not listed in the platformio.ini you may look in the [official 
 
 ### Build & Upload Process
 
-After you've changed [platformio.ini](../platformio.ini) to suit your board you can upload the sample code to your board. This will download all ESP32 libraries and execute `node install` to install all node packages as well. Select your board's environment under the PlatformIO tab and hit `Upload and Monitor`.
+After you've changed [platformio.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/platformio.ini) to suit your board you can upload the sample code to your board. This will download all ESP32 libraries and execute `node install` to install all node packages as well. Select your board's environment under the PlatformIO tab and hit `Upload and Monitor`.
 
 ![PIO Build](media/PIO-upload.png)
 
@@ -89,7 +89,7 @@ The first build process will take a while. After a couple of minutes you can see
 ### Setup Proxy for Development
 
 To ease the frontend development you can deploy the back end code on an ESP32 board and pass the websocket and REST API calls through the development server's proxy.
-The [vite.config.ts](../interface/vite.config.ts) file defines the location of the services which the development server will proxy. This is defined by the "target" property, which will need to be changed to the the IP address or hostname of the device running the firmware. Change this for both, "http://" and "ws://".
+The [vite.config.ts](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/vite.config.ts) file defines the location of the services which the development server will proxy. This is defined by the "target" property, which will need to be changed to the the IP address or hostname of the device running the firmware. Change this for both, "http://" and "ws://".
 
 ```ts
         proxy: {
