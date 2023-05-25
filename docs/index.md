@@ -53,6 +53,8 @@ The automated build chain takes out the pain and tears of getting all the bits a
 
 The code runs on all variants of the ESP32 chip family. From the plain old ESP32, the ESP32-S2 and ESP32-S3, to the ESP32-C3. Sorry, no support for the older ESP8266. Go with one of the ESP32's instead.
 
+[Let's get started!](gettingstarted.md)
+
 ## License
 
 ESP32 SvelteKit is distributed with two licenses for different sections of the code. The back end code inherits the GNU LESSER GENERAL PUBLIC LICENSE Version 3 and is therefore distributed with said license. The front end code is distributed under the MIT License. See the [LICENSE](https://github.com/theelims/ESP32-sveltekit/LICENSE) for a full text of both licenses.

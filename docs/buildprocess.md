@@ -1,10 +1,10 @@
 # Build Process
 
+The build process is controlled by [platformio.ini](https://github.com/theelims/ESP32-sveltekit/platformio.ini) and automates the build of the front end website with Vite as well as the binary compilation for the ESP32 firmware. Whenever PlatformIO is triggered with the `upload` command this process will call the python script [build_interface.py](https://github.com/theelims/ESP32-sveltekit/scripts/build_interface.py) to action. It will start the Vite build and gzip the resulting files either to the `data/` directory or embed them into a header file. If necessary a file system image for the flash is created and upload to the ESP32 prior to compiling the firmware binary.
+
 ## Serving from Flash or PROGMEM
 
-### Build Flags
-
-The build process will compile the filesystem image from the `data/` directory and upload it to the device automatically.
+The front end website can be served either from the SPIFFS partition of the flash, or embedded into the firmware binary from PROGMEM (default). Later has the advantage that only one binary needs to be distributed easing the OTA process. Further more this is desirable if you like to preserve the settings stored in the SPIFFS partition, or have other files there that need to survive a firmware update. To serve from the SPIFFS partition instead please uncomment the following build flag:
 
 ```ini
 build_flags =
@@ -16,7 +16,7 @@ build_flags =
 
 If you choose to serve the frontend from PROGMEM (default) it becomes part of the firmware binary. As many ESP32 modules only come with 4MB built-in flash this results in the binary being too large for the reserved flash. Therefor a partition scheme with a larger section for the executable code is selected. However, this limits the SPIFFS partition to 200kb. There are a great number of [default partition tables](https://github.com/espressif/arduino-esp32/tree/master/tools/partitions) for Arduino-ESP32 to choose from. If you have 8MB or 16MB flash this would be your first choice. If you don't need OTA you can choose a partition scheme without OTA.
 
-Should you want to deploy the frontend from the flash's SPIFFS partition on a 4MB chip you need to comment out the following two lines. Otherwise the 200kb will be not large enough to host the front end code.
+Should you want to deploy the frontend from the flash's SPIFFS partition on a 4MB chip you need to comment out the following two lines. Otherwise the 200kb will not be large enough to host the front end code.
 
 ```ini
 board_build.partitions = min_spiffs.csv
@@ -95,13 +95,8 @@ Various settings support placeholder substitution, indicated by comments in [fac
 | #{unique_id} | A unique identifier derived from the MAC address, e.g. "0b0a859d6816" |
 | #{random}    | A random number encoded as a hex string, e.g. "55722f94"              |
 
-You may use SettingValue::format in your own code if you require the use of these placeholders. This is demonstrated in the demo project:
+## Other Build Flags
 
-```cpp
-  static StateUpdateResult update(JsonObject& root, LightMqttSettings& settings) {
-    settings.mqttPath = root["mqtt_path"] | SettingValue::format("homeassistant/light/#{unique_id}");
-    settings.name = root["name"] | SettingValue::format("light-#{unique_id}");
-    settings.uniqueId = root["unique_id"] | SettingValue::format("light-#{unique_id}");
-    return StateUpdateResult::CHANGED;
-  }
-```
+### Cross-Origin Resource Sharing
+
+### ESP32 `CORE_DEBUG_LEVEL`

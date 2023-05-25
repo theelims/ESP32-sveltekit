@@ -53,9 +53,11 @@ theme:
     - navigation.instant
     - navigation.tracking
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.sections
-    - navigation.indexes
+    - navigation.expand
     - toc.follow
+    - toc.integrate
     - navigation.top
     - content.code.copy
 
