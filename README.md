@@ -17,7 +17,7 @@ It was forked from the fabulous [rjwats/esp8266-react](https://github.com/rjwats
 
 Beautiful, responsive UI which works equally well on desktop and on mobile. Gently animated for a snappy and modern feeling without ever being obtrusive or in the way. Easy theming with DaisyUI and media-queries to respect the users wish for a light or dark theme.
 
-### :feather: Low Memory Footprint and Easy Customization by Courtesy of SvelteKit
+### :t-rex: Low Memory Footprint and Easy Customization by Courtesy of SvelteKit
 
 SvelteKit is ideally suited to be served from constrained devices like an ESP32. It's unique approach leads to very slim files. No bloatware like other popular JS frameworks. Not only the low memory footprint make it ideal but the developer experience is also outstanding letting you customize the front end with ease. Adapt and add functionality as you need it. The back end has you covered as well.
 
@@ -29,7 +29,7 @@ Comes with a rich set of communication interfaces to cover most standard needs o
 
 Naturally ESP32 SvelteKit comes with rich features to manage all your WiFi needs. From pulling up an access point for provisioning or as fall back, to fully manage your WiFi networks. Scan for available networks and connect to them. Advanced configuration options like static IP are on board as well.
 
-### :people_with_bunny_ears_partying: Secured API and User Management
+### :old_key: Secured API and User Management
 
 Manage different user of your app with two authorization levels. An administrator and a guest user. Authenticate their API calls with a JWT token. Manage the user's profile from the admin interface. Use at own risk, as it is neither secure without the ability to use TLS/SSL encryption on the ESP32 server, nor very convenient, as only an admin can change passwords.
 
