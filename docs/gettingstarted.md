@@ -24,7 +24,7 @@ Please install the following mandatory VSCode Plugins:
 
 Lastly, if you want to make use of Materials for MkDocs as your documentation engine, install [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) by typing the following into the VSCode terminal:
 
-```
+```bash
 pip install mkdocs-material
 ```
 
@@ -82,7 +82,7 @@ After you've changed [platformio.ini](https://github.com/theelims/ESP32-svelteki
 
 ![PIO Build](media/PIO-upload.png)
 
-The first build process will take a while. After a couple of minutes you can see the EPS32 outputting information on the terminal.
+The first build process will take a while. After a couple of minutes you can see the ESP32 outputting information on the terminal.
 
 !!! tip "Use several terminals in parallel"
 
@@ -96,30 +96,34 @@ To ease the frontend development you can deploy the back end code on an ESP32 bo
 The [vite.config.ts](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/vite.config.ts) file defines the location of the services which the development server will proxy. This is defined by the "target" property, which will need to be changed to the the IP address or hostname of the device running the firmware. Change this for both, "http://" and "ws://".
 
 ```ts
-        proxy: {
-          // Proxying REST: http://localhost:5173/rest/bar -> http://192.168.1.83/rest/bar
-          '/rest': {
-            target: 'http://192.168.1.83',
-            changeOrigin: true,
-          },
-          // Proxying websockets ws://localhost:5173/ws -> ws://192.168.1.83/ws
-          '/ws': {
-            target: 'ws://192.168.1.83',
-            changeOrigin: true,
-            ws: true,
-          },
-        },
+proxy: {
+    // Proxying REST: http://localhost:5173/rest/bar -> http://192.168.1.83/rest/bar
+    '/rest': {
+    target: 'http://192.168.1.83',
+    changeOrigin: true,
+    },
+    // Proxying websockets ws://localhost:5173/ws -> ws://192.168.1.83/ws
+    '/ws': {
+    target: 'ws://192.168.1.83',
+    changeOrigin: true,
+    ws: true,
+    },
+},
 ```
 
 !!! tip
 
     You must restart the development server for changes of the proxy location to come into effect.
 
+!!! tip
+
+    You can (optionally) speed up the build by commenting out the call to build_interface.py under "extra scripts" during local development. This will prevent the npm process from building the production release every time the firmware is compiled significantly decreasing the build time.
+
 ### Development Server
 
 The interface comes with Vite as a development server. It allows hot module reloading reflecting code changes to the front end instantly in your browser. Open a new terminal session and execute the following commands:
 
-```
+```bash
 cd interface
 npm run dev
 ```
