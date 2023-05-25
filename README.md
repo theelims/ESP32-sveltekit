@@ -1,8 +1,8 @@
 # ESP32 SvelteKit - Create Amazing IoT Projects
 
 <div style="flex">
-<img src="media/Screenshot_light.png" style="height:480px"> 
-<img src="media/Screenshot_mobile.png" style="height:480px"> 
+<img src="/docs/media/Screenshot_light.png" style="height:480px"> 
+<img src="/docs/media/Screenshot_mobile.png" style="height:480px"> 
 </div>
 
 A simple and extensible framework for ESP32 based IoT projects with a feature-rich, beautiful, and responsive front-end build with [Sveltekit](https://kit.svelte.dev/), [TailwindCSS](https://tailwindcss.com/) and [DaisyUI](https://daisyui.com/). This is a project template to get you started in no time backed by a powerful back end service, an amazing front end served from the ESP32 and an easy to use build chain to get everything going.
