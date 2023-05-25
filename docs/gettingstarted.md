@@ -27,6 +27,9 @@ Lastly, if you want to make use of Materials for MkDocs as your documentation en
 ```
 pip install mkdocs-material
 ```
+!!! tip
+    
+    You might need to run this as administrator, if you getting an error message.
 
 ### Project Structure
 
