@@ -37,7 +37,7 @@ Manage different user of your app with two authorization levels. An administrato
 
 The framework can provide two different channels for Over-the-Air updates. Either an Arduino OTA port for updates directly from the IDE. Or by uploading a \*.bin file from the web interface.
 
-### :construction_site: Automated Build Chain
+### :building_construction: Automated Build Chain
 
 The automated build chain takes out the pain and tears of getting all the bits and pieces play nice together. The repository contains a PlatformIO project at its heart. A SvelteKit project for the frontend code and a mkdocs project for the documentation go alongside. The PlatformIO build tools not only build the SvelteKit frontend with Vite, but also ensure that the build results are gzipped and find their way into the flash memory of the ESP32. You have two choices to serve the frontend either from the flash partition, or embedded into the firmware binary from PROGMEM. The latter is much more friendly if your frontend code should be distributed OTA as well, leaving all configuration files intact.
 
