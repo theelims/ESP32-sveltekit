@@ -27,22 +27,23 @@ Lastly, if you want to make use of Materials for MkDocs as your documentation en
 ```
 pip install mkdocs-material
 ```
+
 !!! tip
-    
+
     You might need to run this as administrator, if you getting an error message.
 
 ### Project Structure
 
-| Resource                                                                                                                         | Description                                                      |
-| -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| [.github/](https://github.com/theelims/ESP32-sveltekit/blob/main/.github)                                                        | Github CI pipeline to deploy MkDocs to gh-pages                  |
-| [docs/](https://github.com/theelims/ESP32-sveltekit/blob/main/docs)                                                              | MkDocs documentation files                                       |
-| [interface/](https://github.com/theelims/ESP32-sveltekit/blob/mahttps://github.com/theelims/ESP32-sveltekit/blob/main/interface) | SvelteKit based front end                                        |
-| [lib/framework/](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework)                                            | C++ back end for the ESP32 device                                |
-| [src/](https://github.com/theelims/ESP32-sveltekit/blob/main/src)                                                                | The main.cpp and demo project to get you started                 |
-| [scripts/](https://github.com/theelims/ESP32-sveltekit/tree/main/scripts)                                                        | Scripts that build the interface as part of the platformio build |
-| [platformio.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/platformio.ini)                                           | PlatformIO project configuration file                            |
-| [mkdocs.yaml](https://github.com/theelims/ESP32-sveltekit/blob/main/mkdosc.yaml)                                                 | MkDocs project configuration file                                |
+| Resource                                                                               | Description                                                      |
+| -------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| [.github/](https://github.com/theelims/ESP32-sveltekit/blob/main/.github)              | Github CI pipeline to deploy MkDocs to gh-pages                  |
+| [docs/](https://github.com/theelims/ESP32-sveltekit/blob/main/docs)                    | MkDocs documentation files                                       |
+| [interface/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface)          | SvelteKit based front end                                        |
+| [lib/framework/](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework)  | C++ back end for the ESP32 device                                |
+| [src/](https://github.com/theelims/ESP32-sveltekit/blob/main/src)                      | The main.cpp and demo project to get you started                 |
+| [scripts/](https://github.com/theelims/ESP32-sveltekit/tree/main/scripts)              | Scripts that build the interface as part of the platformio build |
+| [platformio.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/platformio.ini) | PlatformIO project configuration file                            |
+| [mkdocs.yaml](https://github.com/theelims/ESP32-sveltekit/blob/main/mkdosc.yaml)       | MkDocs project configuration file                                |
 
 ## Setting up PlatformIO
 
