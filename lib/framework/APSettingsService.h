@@ -28,7 +28,7 @@
 #endif
 
 #ifndef FACTORY_AP_SSID
-#define FACTORY_AP_SSID "ESP32-Sveltekit-#{unique_id}"
+#define FACTORY_AP_SSID "ESP32-SvelteKit-#{unique_id}"
 #endif
 
 #ifndef FACTORY_AP_PASSWORD
