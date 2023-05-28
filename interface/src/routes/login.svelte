@@ -1,5 +1,5 @@
 <script lang="ts">
-	import logo from '$lib/assets/svelte-logo.png';
+	import logo from '$lib/assets/logo.png';
 	import InputPassword from '$lib/components/InputPassword.svelte';
 	import type { userProfile } from '$lib/stores/user';
 	import { user } from '$lib/stores/user';

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import logo from '$lib/assets/svelte-logo.png';
+	import logo from '$lib/assets/logo.png';
 	import { notifications } from '$lib/stores/notifications';
 
 	export let data: PageData;

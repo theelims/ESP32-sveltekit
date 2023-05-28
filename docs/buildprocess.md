@@ -98,5 +98,23 @@ Various settings support placeholder substitution, indicated by comments in [fac
 ## Other Build Flags
 
 ### Cross-Origin Resource Sharing
-
+If you need to enable Cross-Origin Resource Sharing (CORS) on the ESP32 server just uncomment the following build flags:
+```ini
+build_flags = 
+...
+  ; Uncomment to configure Cross-Origin Resource Sharing
+  -D ENABLE_CORS
+  -D CORS_ORIGIN=\"*\"
+```
+This will add the `Access-Control-Allow-Origin` and `Access-Control-Allow-Credentials` headers to any request made.
 ### ESP32 `CORE_DEBUG_LEVEL`
+The ESP32 Arduino Core and many other libraries use the ESP Logging tools. To enable these debug and error messages from deep inside your libraries uncomment the following build flag.
+```ini
+build_flags = 
+...
+	-DCORE_DEBUG_LEVEL=5
+```
+It accepts values from 1 (Verbose) to 5 (Errors) for different information depths to be logged on the serial terminal.
+
+## Vite and LittleFS 32 Character Limit
+The static files for the website are build using vite. By default vite adds a unique hash value to all filenames for improved caching performance. However, LittleFS on the ESP32 is limited to 32 characters. This restricts the number of characters available for the user to name svelte files. To give a little bit more headroom a vite-plugin removes all hash values, as they offer no benefit on an ESP32. However, have the 32 character limit in mind when naming files. Excessively long names may still cause some issues when building the LittleFS binary.
