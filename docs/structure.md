@@ -1,5 +1,92 @@
-# Project Structure
+# Adapting the Front End
 
-## Menu
+The actual code for the front end is located under [interface/src/](https://github.com/theelims/ESP32-sveltekit/tree/main/interface/src) and divided into the file based "routes" folder and a "lib" folder for assets, stores and components.
+
+| Resource                                                                                                       | Description                                                    |
+| -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| [routes/](https://github.com/theelims/ESP32-sveltekit/tree/main/interface/src/routes/)                         | Root of the routing system                                     |
+| [routes/connections/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/connections/) | Setting and status pages for MQTT server and NTP time sync     |
+| [routes/demo/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/demo/)               | The lightstate demo                                            |
+| [routes/system/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/system/)           | Status page for ESP32 and OTA settings                         |
+| [routes/user/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/user/)               | Edit and add users and change passwords                        |
+| [routes/wifi/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/wifi/)               | Status and settings for WiFi station and AP                    |
+| [lib/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/)                               | Library folder for stores, components and assets               |
+| [lib/assets/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/assets/)                 | Assets like pictures                                           |
+| [lib/components/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/components/)         | Reusable components like modals, password input or collapsible |
+| [lib/stores](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/stores/)                  | Svelte stores for common access to data                        |
 
 ## Features
+
+The back end provides a JSON which features of the back end are enabled by the [feature selection](buildprocess.md#selecting-features). It is fetched with the page load and made available in the `$pages`-store and can be accessed on any site with `$page.data.features`. It is used to hide any disabled setting element.
+
+## Delete `demo/` Project
+
+The light state demo project is included by default to demonstrate the use of the backend and front end. It demonstrates the use of the MQTT-API, websocket API and REST API to switch on the build in LED of the board. Use it as an example how to create your own custom API and access it from the front end. It can be deleted safely after it has been [removed from the menu](#adapt-the-menu) as well.
+
+## Create your root `+page.svelte`
+
+The root page of the front end is located under [routes/+page.svelte](https://github.com/theelims/ESP32-sveltekit/tree/main/interface/src/routes/+page.svelte). This should be the central place of your app and can be accessed at any time by pressing the logo and app name in the side menu. Just override it to suit your needs.
+
+## Adapt the Main Menu
+
+The main menu is located in [routes/menu.svelte](https://github.com/theelims/ESP32-sveltekit/tree/main/interface/src/routes/menu.svelte) as a svelte component and defines the main menu including a menu footer.
+
+### Menu Footer
+
+The main menu comes with a small footer to add your copyright notice plus links to github and your discord server where users can find help. The `active`-flag is used to disable an element in the UI.
+
+```ts
+const appName = "ESP32 SvelteKit";
+
+const copyright = "2023 theelims";
+
+const github = {
+  href: "https://github.com/theelims/ESP32-sveltekit",
+  active: true,
+};
+
+const discord = { href: ".", active: false };
+```
+
+### Menu Structure
+
+The menu consists of an array of menu items. These are defined as follows:
+
+```ts
+{
+    title: 'Demo App',
+    icon: Control,
+    href: '/demo',
+    feature: $page.data.features.project,
+    active: false
+},
+```
+
+- Where `title` refers to the page title. It must be identical to `$page.data.title` as defined in the `+page.ts` in any of your routes. If they do not match the corresponding menu item is not highlighted on first page load or a page refresh. A minimum `+page.ts` looks like this:
+
+```ts
+import type { PageLoad } from "./$types";
+
+export const load = (async ({ fetch }) => {
+  return {
+    title: "Demo App",
+  };
+}) satisfies PageLoad;
+```
+
+- `icon` must be an icon component giving the menu items icon.
+- `href` is the link to the route the menu item refers to.
+- `feature` takes a bool and should be set to `true`. It is used by the [feature selector](#features) to hide a menu entry of it is not present on the back end.
+- `active` takes a bool as well and should be set to `false` by default. It is automatically set to `true` to highlight a menu entry as active.
+
+## Advanced Customizations
+
+On the root level there are two more files which you can customize to your needs.
+
+### Login Page
+
+`login.svelte` is a component showing the login screen, when the security features are enabled. By default is shows the app's logo and the login prompt. Change it as you need it.
+
+### Status Bar
+
+`statusbar.svelte` contains the top menu bar which you can customize to show state information about your app and IoT device. By default is only shows the active menu title and the hamburger icon on small screens.
