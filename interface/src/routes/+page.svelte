@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import logo from '$lib/assets/logo.png';
-	import { notifications } from '$lib/stores/notifications';
+	import { notifications } from '$lib/components/toasts/notifications';
 
 	export let data: PageData;
 </script>

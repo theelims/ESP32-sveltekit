@@ -6,7 +6,7 @@
 	import { user } from '$lib/stores/user';
 	import type { userProfile } from '$lib/stores/user';
 	import { page } from '$app/stores';
-	import { notifications } from '$lib/stores/notifications';
+	import { notifications } from '$lib/components/toasts/notifications';
 	import InputPassword from '$lib/components/InputPassword.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';

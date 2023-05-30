@@ -2,7 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
-	import { notifications } from '$lib/stores/notifications';
+	import { notifications } from '$lib/components/toasts/notifications';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import Light from '~icons/tabler/bulb';
 	import Info from '~icons/tabler/info-circle';

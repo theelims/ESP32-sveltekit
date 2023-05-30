@@ -1,9 +1,8 @@
 <script lang="ts">
 	import logo from '$lib/assets/logo.png';
 	import InputPassword from '$lib/components/InputPassword.svelte';
-	import type { userProfile } from '$lib/stores/user';
 	import { user } from '$lib/stores/user';
-	import { notifications } from '$lib/stores/notifications';
+	import { notifications } from '$lib/components/toasts/notifications';
 	import { fade, fly } from 'svelte/transition';
 	import Login from '~icons/tabler/login';
 

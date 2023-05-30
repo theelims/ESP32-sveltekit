@@ -7,7 +7,7 @@
 	import Spinner from '$lib/components/Spinner.svelte';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
-	import { notifications } from '$lib/stores/notifications';
+	import { notifications } from '$lib/components/toasts/notifications';
 	import type { TimeZones } from './timezones';
 	import { TIME_ZONES } from './timezones';
 	import NTP from '~icons/tabler/clock-check';

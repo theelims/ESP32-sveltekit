@@ -13,7 +13,6 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { user } from '$lib/stores/user';
-	import { goto } from '$app/navigation';
 
 	const appName = 'ESP32 SvelteKit';
 
@@ -102,7 +101,6 @@
 			<div
 				class="btn btn-ghost"
 				on:click={() => {
-					goto('/');
 					user.invalidate();
 				}}
 			>

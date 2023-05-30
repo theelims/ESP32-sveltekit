@@ -3,7 +3,7 @@
 	import { openModal, closeModal } from 'svelte-modals';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
-	import { notifications } from '$lib/stores/notifications';
+	import { notifications } from '$lib/components/toasts/notifications';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import InputPassword from '$lib/components/InputPassword.svelte';

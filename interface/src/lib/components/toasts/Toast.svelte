@@ -1,7 +1,7 @@
 <script>
 	import { flip } from 'svelte/animate';
 	import { fly } from 'svelte/transition';
-	import { notifications } from '$lib/stores/notifications';
+	import { notifications } from '$lib/components/toasts/notifications';
 	import error from '~icons/tabler/circle-x';
 	import success from '~icons/tabler/circle-check';
 	import warning from '~icons/tabler/alert-triangle';

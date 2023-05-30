@@ -5,7 +5,7 @@
 	import type { userProfile } from '$lib/stores/user';
 	import { page } from '$app/stores';
 	import { Modals, closeModal } from 'svelte-modals';
-	import Toast from '$lib/components/Toast.svelte';
+	import Toast from '$lib/components/toasts/Toast.svelte';
 	import { fade } from 'svelte/transition';
 	import '../app.css';
 	import Menu from './menu.svelte';

@@ -3,7 +3,6 @@
 	import { fly } from 'svelte/transition';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
-	import WiFi from '~icons/tabler/wifi';
 	import Network from '~icons/tabler/router';
 	import AP from '~icons/tabler/access-point';
 	import Cancel from '~icons/tabler/x';

@@ -5,7 +5,7 @@
 	import { cubicOut } from 'svelte/easing';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
-	import { notifications } from '$lib/stores/notifications';
+	import { notifications } from '$lib/components/toasts/notifications';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import InputPassword from '$lib/components/InputPassword.svelte';
 	import Collapsible from '$lib/components/Collapsible.svelte';

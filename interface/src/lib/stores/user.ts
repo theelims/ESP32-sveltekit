@@ -1,4 +1,5 @@
-import { writable, derived } from 'svelte/store';
+import { writable } from 'svelte/store';
+import { goto } from '$app/navigation';
 import jwt_decode from 'jwt-decode';
 
 export type userProfile = {
@@ -40,6 +41,8 @@ function createStore() {
 			set(empty);
 			// remove localStorage "user"
 			localStorage.removeItem('user');
+			// redirect to login page
+			goto('/');
 		}
 	};
 }

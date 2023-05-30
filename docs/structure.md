@@ -1,6 +1,6 @@
-# Adapting the Front End
+# Customizing the Front End
 
-The actual code for the front end is located under [interface/src/](https://github.com/theelims/ESP32-sveltekit/tree/main/interface/src) and divided into the file based "routes" folder and a "lib" folder for assets, stores and components.
+The actual code for the front end is located under [interface/src/](https://github.com/theelims/ESP32-sveltekit/tree/main/interface/src) and divided into the "routes" folder and a "lib" folder for assets, stores and components.
 
 | Resource                                                                                                       | Description                                                    |
 | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
@@ -27,7 +27,7 @@ The light state demo project is included by default to demonstrate the use of th
 
 The root page of the front end is located under [routes/+page.svelte](https://github.com/theelims/ESP32-sveltekit/tree/main/interface/src/routes/+page.svelte). This should be the central place of your app and can be accessed at any time by pressing the logo and app name in the side menu. Just override it to suit your needs.
 
-## Adapt the Main Menu
+## Customize the Main Menu
 
 The main menu is located in [routes/menu.svelte](https://github.com/theelims/ESP32-sveltekit/tree/main/interface/src/routes/menu.svelte) as a svelte component and defines the main menu including a menu footer.
 
@@ -85,7 +85,7 @@ On the root level there are two more files which you can customize to your needs
 
 ### Login Page
 
-`login.svelte` is a component showing the login screen, when the security features are enabled. By default is shows the app's logo and the login prompt. Change it as you need it.
+`login.svelte` is a component showing the login screen, when the security features are enabled. By default it shows the app's logo and the login prompt. Change it as you need it.
 
 ### Status Bar
 
