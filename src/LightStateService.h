@@ -21,16 +21,9 @@
 #include <MqttPubSub.h>
 #include <WebSocketTxRx.h>
 
-#define LED_PIN 2
-
 #define DEFAULT_LED_STATE false
 #define OFF_STATE "OFF"
 #define ON_STATE "ON"
-
-// Note that the built-in LED is on when the pin is low on most NodeMCU boards.
-// This is because the anode is tied to VCC and the cathode to the GPIO 4 (Arduino pin 2).
-#define LED_ON 0x1
-#define LED_OFF 0x0
 
 #define LIGHT_SETTINGS_ENDPOINT_PATH "/rest/lightState"
 #define LIGHT_SETTINGS_SOCKET_PATH "/ws/lightState"

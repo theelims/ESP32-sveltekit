@@ -1,6 +1,6 @@
 # Components
 
-The project includes a number of components to create the user interface. Generally it is beneficial to use Svelte's tools over many native DaisyUI components. Even though DaisyUI has a huge set of components, it is often beneficial to recreate them as a Svelte component. This offers a much better integration into the Svelte way of doing things, is less troublesome with animations and results in a overall better user experience.
+The project includes a number of components to create the user interface. Even though DaisyUI has a huge set of components, it is often beneficial to recreate them as a Svelte component. This offers a much better integration into the Svelte way of doing things, is less troublesome with animations and results in a overall better user experience.
 
 ## Collapsible
 
@@ -31,7 +31,7 @@ The collapsible component dispatches two events. `on:closed` when the collapsibl
 
 ## InputPassword
 
-This is an input field specifically for passwords. It comes with a "eye"-button on the right border to toggle the visibility of the password. It natively blends into the style from DaisyUI.
+This is an input field specifically for passwords. It comes with an "eye"-button on the right border to toggle the visibility of the password. It natively blends into the style from DaisyUI.
 
 ```ts
 import InputPassword from "$lib/components/InputPassword.svelte";
@@ -45,7 +45,7 @@ You may use it like any other form element:
 
 ## RSSIIndicator
 
-This shows the popular WiFi strength indicator icon with different highlighted circles depending on the received signal strength (RSSI) of the WiFi signal. In addition it can display the signal strength in raw "dBm" as an indicator badge.
+This shows the popular WiFi strength indicator icon with differently highlighted circles depending on the received signal strength (RSSI) of the WiFi signal. In addition it can display the signal strength in raw "dBm" as an indicator badge.
 
 ```ts
 import RssiIndicator from "$lib/components/RSSIIndicator.svelte";
