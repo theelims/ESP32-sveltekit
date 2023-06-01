@@ -13,8 +13,6 @@ nav:
   - "Back End":
       - statefulservice.md
       - restfulapi.md
-  - "Documentation":
-      - mkdocs.md
 
 site_author: elims
 site_description: >-
