@@ -255,7 +255,7 @@ The demo project allows the user to modify the MQTT topics via the UI so they ca
 
 The framework has security features to prevent unauthorized use of the device. This is driven by [SecurityManager.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/SecurityManager.h).
 
-On successful authentication, the /rest/signIn endpoint issues a [JSON Web Token (JWT)](https://jwt.io/) which is then sent using Bearer Authentication. The framework come with built-in predicates for verifying a users access privileges. The built in AuthenticationPredicates can be found in [SecurityManager.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/SecurityManager.h) and are as follows:
+On successful authentication, the /rest/signIn endpoint issues a [JSON Web Token (JWT)](https://jwt.io/) which is then sent using Bearer Authentication. For this add an `Authorization`-Header to the request with the Content `Bearer {JWT-Secret}`. The framework come with built-in predicates for verifying a users access privileges. The built in AuthenticationPredicates can be found in [SecurityManager.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/SecurityManager.h) and are as follows:
 
 | Predicate        | Description                                   |
 | ---------------- | --------------------------------------------- |
