@@ -30,10 +30,8 @@
 			in:fly={{ y: 100, duration: 400 }}
 			out:fly={{ x: 100, duration: 400 }}
 		>
-			<div>
-				<svelte:component this={icon[notification.type]} class="h-6 w-6 flex-shrink-0" />
-				<span>{notification.message}</span>
-			</div>
+			<svelte:component this={icon[notification.type]} class="h-6 w-6 flex-shrink-0" />
+			<span>{notification.message}</span>
 		</div>
 	{/each}
 </div>
