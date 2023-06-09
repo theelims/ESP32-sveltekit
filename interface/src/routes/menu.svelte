@@ -1,5 +1,6 @@
 <script lang="ts">
 	import logo from '$lib/assets/logo.png';
+	import type icon from '~icons/tabler';
 	import Github from '~icons/tabler/brand-github';
 	import Discord from '~icons/tabler/brand-discord';
 	import Users from '~icons/tabler/users';
@@ -10,6 +11,8 @@
 	import Avatar from '~icons/tabler/user-circle';
 	import Logout from '~icons/tabler/logout';
 	import Copyright from '~icons/tabler/copyright';
+	import MQTT from '~icons/tabler/topology-star-3';
+	import NTP from '~icons/tabler/clock-check';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { user } from '$lib/stores/user';
@@ -21,6 +24,22 @@
 	const github = { href: 'https://github.com/theelims/ESP32-sveltekit', active: true };
 
 	const discord = { href: '.', active: false };
+	type menuItem = {
+		title: string;
+		icon: object;
+		href?: string;
+		feature: boolean;
+		active?: boolean;
+		submenu?: subMenuItem[];
+	};
+
+	type subMenuItem = {
+		title: string;
+		icon: object;
+		href: string;
+		feature: boolean;
+		active: boolean;
+	};
 
 	let menuItems = [
 		{
@@ -33,9 +52,24 @@
 		{
 			title: 'Connections',
 			icon: Remote,
-			href: '/connections',
 			feature: $page.data.features.mqtt || $page.data.features.ntp,
-			active: false
+			active: true,
+			submenu: [
+				{
+					title: 'MQTT',
+					icon: MQTT,
+					href: '/connections/mqtt',
+					feature: $page.data.features.mqtt,
+					active: false
+				},
+				{
+					title: 'NTP',
+					icon: NTP,
+					href: '/connections/ntp',
+					feature: $page.data.features.ntp,
+					active: false
+				}
+			]
 		},
 		{ title: 'Wi-Fi', icon: WiFi, href: '/wifi', feature: true, active: false },
 		{ title: 'System', icon: Settings, href: '/system', feature: true, active: false },
@@ -48,45 +82,84 @@
 		}
 	];
 
-	function handleMenuClick(i: number) {
-		// clear border for each menu item
-		menuItems.forEach((item) => {
-			item.active = false;
-		});
+	function setActiveMenuItem(menuItems: menuItem[], targetTitle: string) {
+		for (let i = 0; i < menuItems.length; i++) {
+			const menuItem = menuItems[i];
 
-		// set clicked menu item active, but not the Home link
-		if (i > -1) {
-			menuItems[i].active = true;
+			// Clear any previous set active flags
+			menuItem.active = false;
+
+			// Check if the current menu item's title matches the target title
+			if (menuItem.title === targetTitle) {
+				menuItem.active = true; // Set the active property to true
+			}
+
+			// Check if the current menu item has a submenu
+			if (menuItem.submenu && menuItem.submenu.length > 0) {
+				// Recursively call the function for each submenu item
+				setActiveMenuItem(menuItem.submenu, targetTitle);
+			}
 		}
 		menuItems = menuItems;
 	}
 
 	onMount(() => {
-		const index = menuItems.findIndex((item) => item.title === $page.data.title);
-		handleMenuClick(index);
+		setActiveMenuItem(menuItems, $page.data.title);
+		menuItems = menuItems;
+		console.log(menuItems);
 	});
 </script>
 
-<ul class="menu bg-base-200 text-base-content w-80 p-4">
+<ul class="menu bg-base-200 text-base-content rounded-box h-full w-80 p-4">
 	<!-- Sidebar content here -->
 	<a
 		href="/"
 		class="rounded-box mb-4 flex items-center hover:scale-[1.02] active:scale-[0.98]"
-		on:click={() => handleMenuClick(-1)}
+		on:click={() => setActiveMenuItem(menuItems, '')}
 	>
 		<img src={logo} alt="Logo" class="h-12 w-12" />
 		<h1 class="px-4 text-2xl font-bold">{appName}</h1>
 	</a>
 	{#each menuItems as menuItem, i (menuItem.title)}
 		{#if menuItem.feature}
-			<li class="hover-bordered">
-				<a
-					href={menuItem.href}
-					class="text-lg font-bold {menuItem.active ? 'bg-base-100' : ''}"
-					on:click={() => handleMenuClick(i)}
-					><svelte:component this={menuItem.icon} class="h-6 w-6" />{menuItem.title}</a
-				>
-			</li>
+			{#if menuItem.submenu}
+				<li>
+					<details>
+						<summary class="text-lg font-bold"
+							><svelte:component this={menuItem.icon} class="h-6 w-6" />{menuItem.title}</summary
+						>
+						<ul>
+							{#each menuItem.submenu as subMenuItem}
+								<li class="hover-bordered">
+									<a
+										href={subMenuItem.href}
+										class="text-ml font-bold {subMenuItem.active ? 'bg-base-100' : ''}"
+										on:click={() => {
+											setActiveMenuItem(menuItems, subMenuItem.title);
+											menuItems = menuItems;
+										}}
+										><svelte:component
+											this={subMenuItem.icon}
+											class="h-5 w-5"
+										/>{subMenuItem.title}</a
+									>
+								</li>
+							{/each}
+						</ul>
+					</details>
+				</li>
+			{:else}
+				<li class="hover-bordered">
+					<a
+						href={menuItem.href}
+						class="text-lg font-bold {menuItem.active ? 'bg-base-100' : ''}"
+						on:click={() => {
+							setActiveMenuItem(menuItems, menuItem.title);
+							menuItems = menuItems;
+						}}><svelte:component this={menuItem.icon} class="h-6 w-6" />{menuItem.title}</a
+					>
+				</li>
+			{/if}
 		{/if}
 	{/each}
 
