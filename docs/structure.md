@@ -2,18 +2,19 @@
 
 The actual code for the front end is located under [interface/src/](https://github.com/theelims/ESP32-sveltekit/tree/main/interface/src) and divided into the "routes" folder and a "lib" folder for assets, stores and components.
 
-| Resource                                                                                                       | Description                                                    |
-| -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| [routes/](https://github.com/theelims/ESP32-sveltekit/tree/main/interface/src/routes/)                         | Root of the routing system                                     |
-| [routes/connections/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/connections/) | Setting and status pages for MQTT server and NTP time sync     |
-| [routes/demo/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/demo/)               | The lightstate demo                                            |
-| [routes/system/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/system/)           | Status page for ESP32 and OTA settings                         |
-| [routes/user/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/user/)               | Edit and add users and change passwords                        |
-| [routes/wifi/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/wifi/)               | Status and settings for WiFi station and AP                    |
-| [lib/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/)                               | Library folder for stores, components and assets               |
-| [lib/assets/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/assets/)                 | Assets like pictures                                           |
-| [lib/components/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/components/)         | Reusable components like modals, password input or collapsible |
-| [lib/stores](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/stores/)                  | Svelte stores for common access to data                        |
+| Resource                                                                                                               | Description                                                             |
+| ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| [routes/](https://github.com/theelims/ESP32-sveltekit/tree/main/interface/src/routes/)                                 | Root of the routing system                                              |
+| [routes/connections/mqtt](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/connections/mqtt) | Setting and status pages for MQTT server and topics of the demo project |
+| [routes/connections/ntp](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/connections/ntp)   | Setting and status pages for NTP time sync                              |
+| [routes/demo/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/demo/)                       | The lightstate demo                                                     |
+| [routes/system/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/system/)                   | Status page for ESP32 and OTA settings                                  |
+| [routes/user/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/user/)                       | Edit and add users and change passwords                                 |
+| [routes/wifi/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/wifi/)                       | Status and settings for WiFi station and AP                             |
+| [lib/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/)                                       | Library folder for stores, components and assets                        |
+| [lib/assets/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/assets/)                         | Assets like pictures                                                    |
+| [lib/components/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/components/)                 | Reusable components like modals, password input or collapsible          |
+| [lib/stores](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/stores/)                          | Svelte stores for common access to data                                 |
 
 ## Features
 
@@ -21,7 +22,7 @@ The back end provides a JSON which features of the back end are enabled by the [
 
 ## Delete `demo/` Project
 
-The light state demo project is included by default to demonstrate the use of the backend and front end. It demonstrates the use of the MQTT-API, websocket API and REST API to switch on the build in LED of the board. Use it as an example how to create your own custom API and access it from the front end. It can be deleted safely after it has been [removed from the menu](#adapt-the-menu) as well.
+The light state demo project is included by default to demonstrate the use of the backend and front end. It demonstrates the use of the MQTT-API, websocket API and REST API to switch on the build in LED of the board. [routes/connections/mqtt/MQTTConfig.svelte](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/connections/mqtt/MQTTConfig.svelte) is also part of the 'demo/' Project. You can reuse this to set your own MQTT topics, or delete it. Do not forget to adjust `+page.svelte` as well. Use it as an example how to create your own custom API and access it from the front end. It can be deleted safely after it has been [removed from the menu](#adapt-the-menu) as well.
 
 ## Create your root `+page.svelte`
 
