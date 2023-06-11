@@ -36,7 +36,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"daisyui": "^3.0.20",
+		"daisyui": "^3.1.0",
 		"jwt-decode": "^3.1.2",
 		"svelte-modals": "^1.2.1"
 	}

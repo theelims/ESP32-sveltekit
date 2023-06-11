@@ -60,21 +60,19 @@
 {#if isOpen}
 	<div
 		role="dialog"
-		class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center overflow-y-auto"
+		class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center"
 		transition:fly={{ y: 50 }}
 		on:introstart
 		on:outroend
 	>
 		<div
-			class="bg-base-100 shadow-secondary/30 rounded-box pointer-events-auto flex min-w-fit max-w-md flex-col justify-between p-4 shadow-lg"
+			class="bg-base-100 shadow-secondary/30 rounded-box pointer-events-auto flex max-h-full min-w-fit max-w-md flex-col justify-between p-4 shadow-lg"
 		>
 			<h2 class="text-base-content text-start text-2xl font-bold">Scan Networks</h2>
 			<div class="divider my-2" />
-			<div>
-				{#if scanActive}<div
-						class="bg-base-100 flex h-full w-full flex-col items-center justify-center p-6"
-					>
-						<AP class="text-secondary h-32 w-32 animate-ping stroke-2" />
+			<div class="overflow-y-auto">
+				{#if scanActive}<div class="bg-base-100 flex flex-col items-center justify-center p-6">
+						<AP class="text-secondary h-32 w-32 shrink animate-ping stroke-2" />
 						<p class="mt-8 text-2xl">Scanning ...</p>
 					</div>
 				{:else}

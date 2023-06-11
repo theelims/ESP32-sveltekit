@@ -158,10 +158,8 @@
 	{#if $page.data.features.upload_firmware}
 		<span class="text-lg font-semibold">Upload Firmware</span>
 		<div class="alert alert-warning shadow-lg">
-			<div>
-				<Warning class="h-6 w-6 flex-shrink-0" />
-				<span>Uploading a new firmware (.bin) file will replace the existing firmware.</span>
-			</div>
+			<Warning class="h-6 w-6 flex-shrink-0" />
+			<span>Uploading a new firmware (.bin) file will replace the existing firmware.</span>
 		</div>
 
 		<input

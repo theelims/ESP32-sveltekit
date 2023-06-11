@@ -200,13 +200,11 @@
 
 			<span class="pb-2 text-xl font-medium">Security Settings</span>
 			<div class="alert alert-warning shadow-lg">
-				<div>
-					<Warning class="h-6 w-6 flex-shrink-0" />
-					<span
-						>The JWT secret is used to sign authentication tokens. If you modify the JWT Secret, all
-						users will be signed out.</span
-					>
-				</div>
+				<Warning class="h-6 w-6 flex-shrink-0" />
+				<span
+					>The JWT secret is used to sign authentication tokens. If you modify the JWT Secret, all
+					users will be signed out.</span
+				>
 			</div>
 			<label class="label" for="secret">
 				<span class="label-text text-md">JWT Secret</span>

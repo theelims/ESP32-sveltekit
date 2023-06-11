@@ -106,11 +106,10 @@
 	onMount(() => {
 		setActiveMenuItem(menuItems, $page.data.title);
 		menuItems = menuItems;
-		console.log(menuItems);
 	});
 </script>
 
-<ul class="menu bg-base-200 text-base-content rounded-box h-full w-80 p-4">
+<div class="bg-base-200 text-base-content rounded-box flex h-full w-80 flex-col p-4">
 	<!-- Sidebar content here -->
 	<a
 		href="/"
@@ -120,48 +119,50 @@
 		<img src={logo} alt="Logo" class="h-12 w-12" />
 		<h1 class="px-4 text-2xl font-bold">{appName}</h1>
 	</a>
-	{#each menuItems as menuItem, i (menuItem.title)}
-		{#if menuItem.feature}
-			{#if menuItem.submenu}
-				<li>
-					<details>
-						<summary class="text-lg font-bold"
-							><svelte:component this={menuItem.icon} class="h-6 w-6" />{menuItem.title}</summary
+	<ul class="menu rounded-box menu-vertical flex-nowrap overflow-y-auto">
+		{#each menuItems as menuItem, i (menuItem.title)}
+			{#if menuItem.feature}
+				{#if menuItem.submenu}
+					<li>
+						<details>
+							<summary class="text-lg font-bold"
+								><svelte:component this={menuItem.icon} class="h-6 w-6" />{menuItem.title}</summary
+							>
+							<ul>
+								{#each menuItem.submenu as subMenuItem}
+									<li class="hover-bordered">
+										<a
+											href={subMenuItem.href}
+											class="text-ml font-bold {subMenuItem.active ? 'bg-base-100' : ''}"
+											on:click={() => {
+												setActiveMenuItem(menuItems, subMenuItem.title);
+												menuItems = menuItems;
+											}}
+											><svelte:component
+												this={subMenuItem.icon}
+												class="h-5 w-5"
+											/>{subMenuItem.title}</a
+										>
+									</li>
+								{/each}
+							</ul>
+						</details>
+					</li>
+				{:else}
+					<li class="hover-bordered">
+						<a
+							href={menuItem.href}
+							class="text-lg font-bold {menuItem.active ? 'bg-base-100' : ''}"
+							on:click={() => {
+								setActiveMenuItem(menuItems, menuItem.title);
+								menuItems = menuItems;
+							}}><svelte:component this={menuItem.icon} class="h-6 w-6" />{menuItem.title}</a
 						>
-						<ul>
-							{#each menuItem.submenu as subMenuItem}
-								<li class="hover-bordered">
-									<a
-										href={subMenuItem.href}
-										class="text-ml font-bold {subMenuItem.active ? 'bg-base-100' : ''}"
-										on:click={() => {
-											setActiveMenuItem(menuItems, subMenuItem.title);
-											menuItems = menuItems;
-										}}
-										><svelte:component
-											this={subMenuItem.icon}
-											class="h-5 w-5"
-										/>{subMenuItem.title}</a
-									>
-								</li>
-							{/each}
-						</ul>
-					</details>
-				</li>
-			{:else}
-				<li class="hover-bordered">
-					<a
-						href={menuItem.href}
-						class="text-lg font-bold {menuItem.active ? 'bg-base-100' : ''}"
-						on:click={() => {
-							setActiveMenuItem(menuItems, menuItem.title);
-							menuItems = menuItems;
-						}}><svelte:component this={menuItem.icon} class="h-6 w-6" />{menuItem.title}</a
-					>
-				</li>
+					</li>
+				{/if}
 			{/if}
-		{/if}
-	{/each}
+		{/each}
+	</ul>
 
 	<div class="flex-col" />
 	<div class="flex-grow" />
@@ -198,4 +199,4 @@
 			<Copyright class="h-4 w-4" /><span class="px-2">{copyright}</span>
 		</div>
 	</div>
-</ul>
+</div>
