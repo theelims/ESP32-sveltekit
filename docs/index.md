@@ -51,7 +51,7 @@ The automated build chain takes out the pain and tears of getting all the bits a
 
 ### :fontawesome-solid-microchip: Compatible with all ESP32 Flavours
 
-The code runs on all variants of the ESP32 chip family. From the plain old ESP32, the ESP32-S2 and ESP32-S3, to the ESP32-C3. Sorry, no support for the older ESP8266. Go with one of the ESP32's instead.
+The code runs on all variants of the ESP32 chip family. From the plain old ESP32, the ESP32-S3 and ESP32-C3. Other ESP32 variants might work, but haven't been tested. Sorry, no support for the older ESP8266. Go with one of the ESP32's instead.
 
 [Let's get started!](gettingstarted.md)
 

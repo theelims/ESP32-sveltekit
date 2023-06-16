@@ -1,7 +1,15 @@
 import { writable, derived } from 'svelte/store';
 
+type State = {
+	id: string;
+	type: string;
+	message: string;
+	timeout: number;
+};
+
 function createNotificationStore() {
-	const _notifications = writable([]);
+	const state: State[] = [];
+	const _notifications = writable(state);
 
 	function send(message: string, type = 'info', timeout: number) {
 		_notifications.update((state) => {
@@ -30,10 +38,10 @@ function createNotificationStore() {
 	return {
 		subscribe,
 		send,
-		error: (msg, timeout) => send(msg, 'error', timeout),
-		warning: (msg, timeout) => send(msg, 'warning', timeout),
-		info: (msg, timeout) => send(msg, 'info', timeout),
-		success: (msg, timeout) => send(msg, 'success', timeout)
+		error: (msg: string, timeout: number) => send(msg, 'error', timeout),
+		warning: (msg: string, timeout: number) => send(msg, 'warning', timeout),
+		info: (msg: string, timeout: number) => send(msg, 'info', timeout),
+		success: (msg: string, timeout: number) => send(msg, 'success', timeout)
 	};
 }
 

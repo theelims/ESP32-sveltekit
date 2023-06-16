@@ -31,7 +31,7 @@
 
 	type SecuritySettings = {
 		jwt_secret: string;
-		users: [userSetting];
+		users: userSetting[];
 	};
 
 	let securitySettings: SecuritySettings;
@@ -109,9 +109,9 @@
 			},
 			onConfirm: () => {
 				securitySettings.users.splice(index, 1);
-				console.log(securitySettings);
 				securitySettings = securitySettings;
 				closeModal();
+				postSecuritySettings(securitySettings);
 			}
 		});
 	}
@@ -123,6 +123,7 @@
 			onSaveUser: (editedUser: userSetting) => {
 				securitySettings.users[index] = editedUser;
 				closeModal();
+				postSecuritySettings(securitySettings);
 			}
 		});
 	}
@@ -133,8 +134,10 @@
 			onSaveUser: (newUser: userSetting) => {
 				securitySettings.users = [...securitySettings.users, newUser];
 				closeModal();
+				postSecuritySettings(securitySettings);
 			}
 		});
+		//
 	}
 </script>
 

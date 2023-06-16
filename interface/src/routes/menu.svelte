@@ -16,6 +16,7 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { user } from '$lib/stores/user';
+	import { createEventDispatcher } from 'svelte';
 
 	const appName = 'ESP32 SvelteKit';
 
@@ -82,6 +83,8 @@
 		}
 	];
 
+	const dispatch = createEventDispatcher();
+
 	function setActiveMenuItem(menuItems: menuItem[], targetTitle: string) {
 		for (let i = 0; i < menuItems.length; i++) {
 			const menuItem = menuItems[i];
@@ -92,6 +95,7 @@
 			// Check if the current menu item's title matches the target title
 			if (menuItem.title === targetTitle) {
 				menuItem.active = true; // Set the active property to true
+				dispatch('menuClicked');
 			}
 
 			// Check if the current menu item has a submenu
@@ -99,6 +103,9 @@
 				// Recursively call the function for each submenu item
 				setActiveMenuItem(menuItem.submenu, targetTitle);
 			}
+		}
+		if (targetTitle == '') {
+			dispatch('menuClicked');
 		}
 		menuItems = menuItems;
 	}

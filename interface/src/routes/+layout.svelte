@@ -20,6 +20,7 @@
 		if ($user.bearer_token !== '') {
 			validateUser($user);
 		}
+		menuOpen = false;
 	});
 
 	async function validateUser(userdata: userProfile) {
@@ -39,6 +40,8 @@
 		}
 		return;
 	}
+
+	let menuOpen = false;
 </script>
 
 <svelte:head>
@@ -49,7 +52,7 @@
 	<Login />
 {:else}
 	<div class="drawer lg:drawer-open">
-		<input id="main-menu" type="checkbox" class="drawer-toggle" />
+		<input id="main-menu" type="checkbox" class="drawer-toggle" bind:checked={menuOpen} />
 		<div class="drawer-content flex flex-col">
 			<!-- Status bar content here -->
 			<Statusbar />
@@ -60,7 +63,11 @@
 		<!-- Side Navigation -->
 		<div class="drawer-side z-50 shadow-lg">
 			<label for="main-menu" class="drawer-overlay bg-black/20 backdrop-blur" />
-			<Menu />
+			<Menu
+				on:menuClicked={() => {
+					menuOpen = false;
+				}}
+			/>
 		</div>
 	</div>
 {/if}

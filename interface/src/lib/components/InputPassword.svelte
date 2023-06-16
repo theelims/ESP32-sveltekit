@@ -11,10 +11,11 @@
 
 <div class="relative">
 	<input {type} class="input input-bordered w-full" {value} on:input={handleInput} {id} />
-	<div class="absolute inset-y-0 right-0 pr-1 flex items-center">
+	<div class="absolute inset-y-0 right-0 flex items-center pr-1">
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
-			class="h-6 text-base-content/50 {show ? 'block' : 'hidden'}"
+			class="text-base-content/50 h-6 {show ? 'block' : 'hidden'}"
 			on:click={() => (show = false)}
 			width="40"
 			height="40"
@@ -33,9 +34,10 @@
 			<path d="M3 3l18 18" />
 		</svg>
 
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
-			class="h-6 text-base-content/50 {show ? 'hidden' : 'block'}"
+			class="text-base-content/50 h-6 {show ? 'hidden' : 'block'}"
 			on:click={() => (show = true)}
 			width="40"
 			height="40"

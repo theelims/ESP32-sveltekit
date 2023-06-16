@@ -8,6 +8,11 @@ export type userProfile = {
 	bearer_token: string;
 };
 
+type decodedJWT = {
+	username: string;
+	admin: boolean;
+};
+
 let empty = {
 	username: '',
 	admin: false,
@@ -26,7 +31,7 @@ function createStore() {
 	return {
 		subscribe,
 		init: (access_token: string) => {
-			const decoded = jwt_decode(access_token);
+			const decoded: decodedJWT = jwt_decode(access_token);
 			const userdata = {
 				bearer_token: access_token,
 				username: decoded.username,
