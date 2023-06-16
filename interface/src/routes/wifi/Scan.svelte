@@ -7,7 +7,7 @@
 	import AP from '~icons/tabler/access-point';
 	import Cancel from '~icons/tabler/x';
 	import Reload from '~icons/tabler/reload';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import RssiIndicator from '$lib/components/RSSIIndicator.svelte';
 
 	// provided by <Modals />
@@ -26,9 +26,19 @@
 		'WAPI PSK'
 	];
 
-	let listOfNetworks = [];
+	type networkItem = {
+		rssi: number;
+		ssid: string;
+		bssid: string;
+		channel: number;
+		encryption_type: number;
+	};
+
+	let listOfNetworks: networkItem[] = [];
 
 	let scanActive = false;
+
+	let pollingId: number;
 
 	async function scanNetworks() {
 		scanActive = true;
@@ -39,6 +49,13 @@
 				'Content-Type': 'application/json'
 			}
 		});
+		if ((await pollingResults()) == false) {
+			pollingId = setInterval(() => pollingResults(), 1000);
+		}
+		return;
+	}
+
+	async function pollingResults() {
 		const response = await fetch('/rest/listNetworks', {
 			method: 'GET',
 			headers: {
@@ -46,14 +63,27 @@
 				'Content-Type': 'application/json'
 			}
 		});
-		const result = await response.json();
-		listOfNetworks = result.networks;
-		scanActive = false;
-		return;
+		try {
+			const result = await response.json();
+			listOfNetworks = result.networks;
+			scanActive = false;
+			clearInterval(pollingId);
+			pollingId = 0;
+			return true;
+		} catch {
+			return false;
+		}
 	}
 
 	onMount(() => {
 		scanNetworks();
+	});
+
+	onDestroy(() => {
+		if (pollingId) {
+			clearInterval(pollingId);
+			pollingId = 0;
+		}
 	});
 </script>
 
