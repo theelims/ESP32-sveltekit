@@ -61,7 +61,7 @@
 			<slot />
 		</div>
 		<!-- Side Navigation -->
-		<div class="drawer-side z-50 shadow-lg">
+		<div class="drawer-side z-30 shadow-lg">
 			<label for="main-menu" class="drawer-overlay bg-black/20 backdrop-blur" />
 			<Menu
 				on:menuClicked={() => {
@@ -76,7 +76,7 @@
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<div
 		slot="backdrop"
-		class="fixed inset-0 z-10 max-h-full max-w-full bg-black/20 backdrop-blur"
+		class="fixed inset-0 z-40 max-h-full max-w-full bg-black/20 backdrop-blur"
 		transition:fade
 		on:click={closeModal}
 	/>

@@ -1,5 +1,10 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+
+	if ($page.status == 404) {
+		goto('/');
+	}
 </script>
 
 <div class="min-w-screen flex h-screen">

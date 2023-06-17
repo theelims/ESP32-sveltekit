@@ -1,6 +1,5 @@
 <script lang="ts">
 	import logo from '$lib/assets/logo.png';
-	import type icon from '~icons/tabler';
 	import Github from '~icons/tabler/brand-github';
 	import Discord from '~icons/tabler/brand-discord';
 	import Users from '~icons/tabler/users';

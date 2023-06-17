@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { closeModal } from 'svelte-modals';
+	import { focusTrap } from 'svelte-focus-trap';
 	import { fly } from 'svelte/transition';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
@@ -66,10 +67,15 @@
 		try {
 			const result = await response.json();
 			listOfNetworks = result.networks;
-			scanActive = false;
-			clearInterval(pollingId);
-			pollingId = 0;
-			return true;
+			if (listOfNetworks.length) {
+				scanActive = false;
+				clearInterval(pollingId);
+				pollingId = 0;
+				return true;
+			} else {
+				scanActive = false;
+				return false;
+			}
 		} catch {
 			return false;
 		}
@@ -94,6 +100,7 @@
 		transition:fly={{ y: 50 }}
 		on:introstart
 		on:outroend
+		use:focusTrap
 	>
 		<div
 			class="bg-base-100 shadow-secondary/30 rounded-box pointer-events-auto flex max-h-full min-w-fit max-w-md flex-col justify-between p-4 shadow-lg"
