@@ -1,10 +1,10 @@
 # Build Process
 
-The build process is controlled by [platformio.ini](https://github.com/theelims/ESP32-sveltekit/platformio.ini) and automates the build of the front end website with Vite as well as the binary compilation for the ESP32 firmware. Whenever PlatformIO is triggered with the `upload` command this process will call the python script [build_interface.py](https://github.com/theelims/ESP32-sveltekit/scripts/build_interface.py) to action. It will start the Vite build and gzip the resulting files either to the `data/` directory or embed them into a header file. If necessary a file system image for the flash is created and upload to the ESP32 prior to compiling the firmware binary.
+The build process is controlled by [platformio.ini](https://github.com/theelims/ESP32-sveltekit/platformio.ini) and automates the build of the front end website with Vite as well as the binary compilation for the ESP32 firmware. Whenever PlatformIO is triggered with the `upload` command this process will call the python script [build_interface.py](https://github.com/theelims/ESP32-sveltekit/scripts/build_interface.py) to action. It will start the Vite build and gzip the resulting files either to the `data/` directory or embed them into a header file. If necessary a file system image for the flash is created for the default build environment and upload to the ESP32 prior to compiling the firmware binary.
 
 ## Serving from Flash or PROGMEM
 
-The front end website can be served either from the SPIFFS partition of the flash, or embedded into the firmware binary from PROGMEM (default). Later has the advantage that only one binary needs to be distributed easing the OTA process. Further more this is desirable if you like to preserve the settings stored in the SPIFFS partition, or have other files there that need to survive a firmware update. To serve from the SPIFFS partition instead please uncomment the following build flag:
+The front end website can be served either from the SPIFFS partition of the flash, or embedded into the firmware binary from PROGMEM (default). Later has the advantage that only one binary needs to be distributed easing the OTA process. Further more this is desirable if you like to preserve the settings stored in the SPIFFS partition, or have other files there that need to survive a firmware update. To serve from the SPIFFS partition instead please comment the following build flag out:
 
 ```ini
 build_flags =

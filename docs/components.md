@@ -57,11 +57,11 @@ Just use and style as you please. It doesn't have any slots or events.
 <RssiIndicator showDBm={true} rssi_dbm={-85} class="text-base-content h-10 w-10" />
 ```
 
-Two exports control the behavior of the component. `rssi_dbm` accepts a negative number of the rawa RSSI in dBm and is used to determine how many circles of reception should be shown. An optional boolean `showDBm` (defaults to `false`) shows the indicator badge with the dBm value.
+Two exports control the behavior of the component. `rssi_dbm` accepts a negative number of the raw RSSI in dBm and is used to determine how many circles of reception should be shown. An optional boolean `showDBm` (defaults to `false`) shows the indicator badge with the dBm value.
 
 ## Settings Card
 
-A Settings Card is in many ways similar to a [collapsible](#collapsible). However, it is styled and is the main element of many settings menus. It also accepts an icon in a dedicate slot and unlike collapsibles has no events.
+A Settings Card is in many ways similar to a [collapsible](#collapsible). However, it is styled and is the main element of many settings menus. It also accepts an icon in a dedicate slot and unlike collapsible has no events.
 
 ```ts
 import SettingsCard from "$lib/components/SettingsCard.svelte";

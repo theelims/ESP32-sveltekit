@@ -71,4 +71,4 @@ The overall theme of the front end is defined by [DaisyUI](https://daisyui.com/d
 
 #### Opinionated use of Shadows
 
-The front end makes some use of colored shadows with the `shadow-primary` and `shadow-secondary` DaisyUI classes. Just use the search and replace function to change this to a more neutral look, if you find teh color too much.
+The front end makes some use of colored shadows with the `shadow-primary` and `shadow-secondary` DaisyUI classes. Just use the search and replace function to change this to a more neutral look, if you find the color too much.
