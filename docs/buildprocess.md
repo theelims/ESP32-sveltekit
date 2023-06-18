@@ -29,7 +29,6 @@ Many of the framework's built in features may be enabled or disabled as required
 Customize the settings as you see fit. A value of 0 will disable the specified feature:
 
 ```ini
-  -D FT_PROJECT=1
   -D FT_SECURITY=1
   -D FT_MQTT=1
   -D FT_NTP=1
@@ -39,7 +38,6 @@ Customize the settings as you see fit. A value of 0 will disable the specified f
 
 | Flag               | Description                                                                                                                                                                                                              |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| FT_PROJECT         | Controls whether the "project" section of the UI is enabled. Disable this if you don't intend to have your own screens in the UI.                                                                                        |
 | FT_SECURITY        | Controls whether the [security features](statefulservice.md#security-features) are enabled. Disabling this means you won't need to authenticate to access the device and all authentication predicates will be bypassed. |
 | FT_MQTT            | Controls whether the MQTT features are enabled. Disable this if your project does not require MQTT support.                                                                                                              |
 | FT_NTP             | Controls whether network time protocol synchronization features are enabled. Disable this if your project does not require accurate time.                                                                                |

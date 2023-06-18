@@ -13,6 +13,7 @@
  **/
 
 #include <SystemStatus.h>
+#include <esp32-hal.h>
 
 SystemStatus::SystemStatus(AsyncWebServer *server, SecurityManager *securityManager)
 {
@@ -39,7 +40,7 @@ void SystemStatus::systemStatus(AsyncWebServerRequest *request)
     root["flash_chip_speed"] = ESP.getFlashChipSpeed();
     root["fs_total"] = ESPFS.totalBytes();
     root["fs_used"] = ESPFS.usedBytes();
-
+    root["core_temp"] = temperatureRead();
     response->setLength();
     request->send(response);
 }

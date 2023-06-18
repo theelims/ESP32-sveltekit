@@ -18,6 +18,7 @@
 	import Folder from '~icons/tabler/folder';
 	import Heap from '~icons/tabler/box-model';
 	import Cancel from '~icons/tabler/x';
+	import Temperature from '~icons/tabler/temperature';
 
 	type SystemStatus = {
 		esp_platform: string;
@@ -216,6 +217,18 @@
 								>({(systemStatus.fs_total - systemStatus.fs_used).toLocaleString('en-US')}
 								bytes free)</span
 							>
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
+						<Temperature class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Core Temperature</div>
+						<div class="text-sm opacity-75">
+							{systemStatus.core_temp.toFixed(2)} °C
 						</div>
 					</div>
 				</div>
