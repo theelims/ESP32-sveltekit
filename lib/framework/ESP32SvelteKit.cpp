@@ -97,7 +97,14 @@ ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server)
 void ESP32SvelteKit::begin()
 {
     ESPFS.begin(true);
+
     _wifiSettingsService.begin();
+
+    MDNS.begin(_wifiSettingsService.getHostname().c_str());
+    MDNS.setInstanceName(_appName);
+    MDNS.addService("http", "tcp", 80);
+    MDNS.addServiceTxt("http", "tcp", "Firmware Version", FIRMWARE_VERSION);
+
     _apSettingsService.begin();
 #if FT_ENABLED(FT_NTP)
     _ntpSettingsService.begin();

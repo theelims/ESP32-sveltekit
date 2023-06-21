@@ -34,6 +34,7 @@ void setup()
 
     // start the framework and demo project
     esp32sveltekit.begin();
+    esp32sveltekit.setAppName("ESP32 SvelteKit Demo App");
 
     // load the initial light settings
     lightStateService.begin();

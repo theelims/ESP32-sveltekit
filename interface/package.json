@@ -1,6 +1,6 @@
 {
 	"name": "ESP32-Sveltekit Template",
-	"version": "0.0.1",
+	"version": "0.2.0",
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",

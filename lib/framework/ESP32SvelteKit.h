@@ -19,7 +19,7 @@
 
 #include <AsyncTCP.h>
 #include <WiFi.h>
-
+#include <ESPmDNS.h>
 #include <FeaturesService.h>
 #include <APSettingsService.h>
 #include <APStatus.h>
@@ -45,6 +45,10 @@
 
 #ifndef CORS_ORIGIN
 #define CORS_ORIGIN "*"
+#endif
+
+#ifndef FIRMWARE_VERSION
+#define FIRMWARE_VERSION "demo"
 #endif
 
 class ESP32SvelteKit
@@ -113,6 +117,16 @@ public:
         _factoryResetService.factoryReset();
     }
 
+    void setAppName(String name)
+    {
+        _appName = name;
+    }
+
+    void recoveryMode()
+    {
+        _apSettingsService.recoveryMode();
+    }
+
 private:
     FeaturesService _featureService;
     SecuritySettingsService _securitySettingsService;
@@ -141,6 +155,7 @@ private:
     RestartService _restartService;
     FactoryResetService _factoryResetService;
     SystemStatus _systemStatus;
+    String _appName = "ESP32 SvelteKit Demo";
 };
 
 #endif

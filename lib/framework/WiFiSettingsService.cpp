@@ -71,6 +71,11 @@ void WiFiSettingsService::loop()
     }
 }
 
+String WiFiSettingsService::getHostname()
+{
+    return _state.hostname;
+}
+
 void WiFiSettingsService::manageSTA()
 {
     // Abort if already connected, or if we have no SSID
@@ -91,8 +96,8 @@ void WiFiSettingsService::manageSTA()
         {
             // configure for DHCP
             WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
-            WiFi.setHostname(_state.hostname.c_str());
         }
+        WiFi.setHostname(_state.hostname.c_str());
         // attempt to connect to the network
         WiFi.begin(_state.ssid.c_str(), _state.password.c_str());
     }

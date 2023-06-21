@@ -46,6 +46,8 @@ void OTASettingsService::configureArduinoOTA()
         _arduinoOTA->end();
         delete _arduinoOTA;
         _arduinoOTA = nullptr;
+        MDNS.disableArduino();
+        Serial.println(F("Ending OTA Update Service"));
     }
     if (_state.enabled)
     {
@@ -53,6 +55,8 @@ void OTASettingsService::configureArduinoOTA()
         _arduinoOTA = new ArduinoOTAClass;
         _arduinoOTA->setPort(_state.port);
         _arduinoOTA->setPassword(_state.password.c_str());
+        _arduinoOTA->setMdnsEnabled(false);
+        MDNS.enableArduino(_state.port, (_state.password.length() > 0));
         _arduinoOTA->onStart([]()
                              { Serial.println(F("Starting")); });
         _arduinoOTA->onEnd([]()

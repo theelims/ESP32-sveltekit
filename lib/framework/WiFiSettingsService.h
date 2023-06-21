@@ -110,9 +110,11 @@ public:
 
     void begin();
     void loop();
+    String getHostname();
 
 private:
-    HttpEndpoint<WiFiSettings> _httpEndpoint;
+    HttpEndpoint<WiFiSettings>
+        _httpEndpoint;
     FSPersistence<WiFiSettings> _fsPersistence;
     unsigned long _lastConnectionAttempt;
 

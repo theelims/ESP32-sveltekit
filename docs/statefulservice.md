@@ -24,6 +24,7 @@ void setup() {
 
   // start the framework and demo project
   esp32sveltekit.begin();
+  esp32sveltekit.setAppName("ESP32 SvelteKit Demo App");
 
   // start the server
   server.begin();
