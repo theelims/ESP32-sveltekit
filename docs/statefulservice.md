@@ -23,8 +23,8 @@ void setup() {
   Serial.begin(SERIAL_BAUD_RATE);
 
   // start the framework and demo project
+  esp32sveltekit.setMDNSAppName("ESP32 SvelteKit Demo App");
   esp32sveltekit.begin();
-  esp32sveltekit.setAppName("ESP32 SvelteKit Demo App");
 
   // start the server
   server.begin();
@@ -339,3 +339,35 @@ esp32sveltekit.getWiFiSettingsService()->addUpdateHandler(
   }
 );
 ```
+
+## Other functions provided
+
+### MDNS Instance Name
+
+ESP32 SvelteKit uses mDNS / Bonjour to advertise its services into the local network. You can set the mDNS instance name property by calling
+
+```cpp
+esp32sveltekit.setMDNSAppName("ESP32 SvelteKit Demo App");
+```
+
+making the entry a little bit more verbose. This must be called before `esp32sveltekit.begin();`. If you want to advertise further services just include `#include <ESPmNDS.h>` and use `MDNS.addService()` regularly.
+
+### Factory Reset
+
+A factory reset can not only be evoked from the API, but also by calling
+
+```cpp
+esp32sveltekit.factoryReset();
+```
+
+from your code. This will erase the complete settings folder, wiping out all settings. This can be a last fall back mode if somebody has forgotten his credentials.
+
+### Recovery Mode
+
+There is also a recovery mode present which will for the creation of an access point. By calling
+
+```cpp
+esp32sveltekit.recoveryMode();
+```
+
+will force a start of the AP regardless of the AP settings. It will not change the the AP settings. To exit the recovery mode restart the device or change the AP settings in the UI.

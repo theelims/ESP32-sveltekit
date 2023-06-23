@@ -117,7 +117,7 @@ public:
         _factoryResetService.factoryReset();
     }
 
-    void setAppName(String name)
+    void setMDNSAppName(String name)
     {
         _appName = name;
     }

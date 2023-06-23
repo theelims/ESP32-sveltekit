@@ -35,12 +35,15 @@ void APSettingsService::reconfigureAP()
 {
     _lastManaged = millis() - MANAGE_NETWORK_DELAY;
     _reconfigureAp = true;
+    _recoveryMode = false;
 }
 
 void APSettingsService::recoveryMode()
 {
+    Serial.println(F("Recovery Mode needed"));
     _lastManaged = millis() - MANAGE_NETWORK_DELAY;
     _recoveryMode = true;
+    _reconfigureAp = true;
 }
 
 void APSettingsService::loop()
@@ -61,7 +64,7 @@ void APSettingsService::manageAP()
     if (_state.provisionMode == AP_MODE_ALWAYS ||
         (_state.provisionMode == AP_MODE_DISCONNECTED && WiFi.status() != WL_CONNECTED) || _recoveryMode)
     {
-        if (_reconfigureAp || currentWiFiMode == WIFI_OFF || currentWiFiMode == WIFI_STA || _recoveryMode)
+        if (_reconfigureAp || currentWiFiMode == WIFI_OFF || currentWiFiMode == WIFI_STA)
         {
             startAP();
         }
@@ -72,7 +75,6 @@ void APSettingsService::manageAP()
         stopAP();
     }
     _reconfigureAp = false;
-    _recoveryMode = false;
 }
 
 void APSettingsService::startAP()
