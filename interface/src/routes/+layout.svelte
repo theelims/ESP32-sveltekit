@@ -101,7 +101,7 @@
 		</div>
 		<!-- Side Navigation -->
 		<div class="drawer-side z-30 shadow-lg">
-			<label for="main-menu" class="drawer-overlay bg-black/20 backdrop-blur" />
+			<label for="main-menu" class="drawer-overlay" />
 			<Menu
 				on:menuClicked={() => {
 					menuOpen = false;

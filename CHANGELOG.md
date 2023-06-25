@@ -20,6 +20,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Fixed drawer issue introduced with DaisyUI 3.1.6
+
 ### Security
 
 ## [0.1.0] - 2023-05-18
@@ -34,6 +36,7 @@ This is the initial release of ESP32-sveltekit. With this it is feature complete
 
 - Renaming into ESP32-sveltekit
 - Small changes to reflect the slightly different file structure of sveltekit
+- Build process for sveltekit
 
 ### Removed
 
