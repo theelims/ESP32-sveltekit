@@ -371,3 +371,13 @@ esp32sveltekit.recoveryMode();
 ```
 
 will force a start of the AP regardless of the AP settings. It will not change the the AP settings. To exit the recovery mode restart the device or change the AP settings in the UI.
+
+### Push Notifications to All Clients
+
+It is possibly to send push notifications to all clients by using Server Side Events. These will be displayed as toasts an the client side. Either directly call
+
+```cpp
+esp32sveltekit.getNotificationEvents()->pushNotification("Pushed a message!", INFO, millis());
+```
+
+or keep a local pointer to the `NotificationEvents` instance. It is possible to send `INFO`, `WARNING`, `ERROR` and `SUCCESS` events to all clients. The HTTP endpoint for this service is at `/events/notifications`.

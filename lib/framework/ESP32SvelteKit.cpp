@@ -21,6 +21,7 @@ ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server)
                                                          _wifiStatus(server, &_securitySettingsService),
                                                          _apSettingsService(server, &ESPFS, &_securitySettingsService),
                                                          _apStatus(server, &_securitySettingsService, &_apSettingsService),
+                                                         _notificationEvents(server),
 #if FT_ENABLED(FT_NTP)
                                                          _ntpSettingsService(server, &ESPFS, &_securitySettingsService),
                                                          _ntpStatus(server, &_securitySettingsService),

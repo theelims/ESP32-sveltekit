@@ -27,6 +27,7 @@
 #include <FactoryResetService.h>
 #include <MqttSettingsService.h>
 #include <MqttStatus.h>
+#include <NotificationEvents.h>
 #include <NTPSettingsService.h>
 #include <NTPStatus.h>
 #include <OTASettingsService.h>
@@ -67,6 +68,11 @@ public:
     SecurityManager *getSecurityManager()
     {
         return &_securitySettingsService;
+    }
+
+    NotificationEvents *getNotificationEvents()
+    {
+        return &_notificationEvents;
     }
 
 #if FT_ENABLED(FT_SECURITY)
@@ -135,6 +141,7 @@ private:
     WiFiStatus _wifiStatus;
     APSettingsService _apSettingsService;
     APStatus _apStatus;
+    NotificationEvents _notificationEvents;
 #if FT_ENABLED(FT_NTP)
     NTPSettingsService _ntpSettingsService;
     NTPStatus _ntpStatus;

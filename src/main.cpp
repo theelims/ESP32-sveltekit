@@ -50,4 +50,12 @@ void loop()
 {
     // run the framework's loop function
     esp32sveltekit.loop();
+
+    // periodic push a test message
+    unsigned long currentMillis = millis();
+    if (currentMillis - previousMillis >= interval)
+    {
+        previousMillis = currentMillis;
+        esp32sveltekit.getNotificationEvents()->pushNotification("Pushed a message!", INFO, millis());
+    }
 }

@@ -31,7 +31,7 @@
 			<a
 				class="btn btn-primary"
 				href="/demo"
-				on:click={() => notifications.success('You did it!', 3000)}>Start Demo</a
+				on:click={() => notifications.success('You did it!', 1000)}>Start Demo</a
 			>
 		</div>
 	</div>
