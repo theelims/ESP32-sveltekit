@@ -46,7 +46,7 @@
 			title: 'Demo App',
 			icon: Control,
 			href: '/demo',
-			feature: $page.data.features.project,
+			feature: true,
 			active: false
 		},
 		{

@@ -23,11 +23,6 @@ void FeaturesService::features(AsyncWebServerRequest *request)
 {
     AsyncJsonResponse *response = new AsyncJsonResponse(false, MAX_FEATURES_SIZE);
     JsonObject root = response->getRoot();
-#if FT_ENABLED(FT_PROJECT)
-    root["project"] = true;
-#else
-    root["project"] = false;
-#endif
 #if FT_ENABLED(FT_SECURITY)
     root["security"] = true;
 #else

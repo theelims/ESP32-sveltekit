@@ -17,11 +17,6 @@
 
 #define FT_ENABLED(feature) feature
 
-// project feature off by default
-#ifndef FT_PROJECT
-#define FT_PROJECT 0
-#endif
-
 // security feature on by default
 #ifndef FT_SECURITY
 #define FT_SECURITY 1
@@ -37,7 +32,7 @@
 #define FT_NTP 1
 #endif
 
-// mqtt feature on by default
+// OTA feature on by default
 #ifndef FT_OTA
 #define FT_OTA 1
 #endif

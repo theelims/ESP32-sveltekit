@@ -19,6 +19,8 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 
+- `FT_PROJECT` feature flag removed.
+
 ### Fixed
 
 - Fixed drawer issue introduced with DaisyUI 3.1.6
@@ -41,4 +43,4 @@ This is the initial release of ESP32-sveltekit. With this it is feature complete
 
 ### Removed
 
-- Dropping support for the ESP8266
+- Dropping support for ESP8266
