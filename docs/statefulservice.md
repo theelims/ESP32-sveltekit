@@ -381,3 +381,9 @@ esp32sveltekit.getNotificationEvents()->pushNotification("Pushed a message!", IN
 ```
 
 or keep a local pointer to the `NotificationEvents` instance. It is possible to send `INFO`, `WARNING`, `ERROR` and `SUCCESS` events to all clients. The HTTP endpoint for this service is at `/events/notifications`.
+
+In addition the raw `send()` function is mapped out as well:
+```cpp
+esp32sveltekit.getNotificationEvents()->send("Pushed a message!", "event", millis());
+```
+This allows you to send your own Server-Sent Events without opening a new HTTP connection.

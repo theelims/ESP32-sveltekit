@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Added recovery mode which forces AP to spin up regardless from its settings
 - Added push notification service to show notification toasts an all clients
 - Introduced CHANGELOG.md
+- Added SSE to update RSSI in status bar on client
 
 ### Changed
 

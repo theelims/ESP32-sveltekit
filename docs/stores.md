@@ -21,3 +21,18 @@ In addition to the properties it provides two methods for initializing the user 
 !!! warning "User credentials are stored in the browsers local storage"
 
     The user credentials including the JWT token are stored in the browsers local storage. Any javascript executed on the browser can access this making it extremely vulnerable to XSS attacks. Also the HTTP connection between ESP32 and front end is not encrypted making it possible for everyone to read the JWT token in the same network. Fixing these severe security issues is on the todo list for upcoming releases.
+
+## Telemetry
+
+The telemetry store can be used to update telemetry data like RSSI via Server-Sent Events. The corresponding `eventListener` functions are located in `+layout.svelte`.
+
+```ts
+import { telemetry } from "$lib/stores/telemetry";
+```
+
+It exposes the following properties you can subscribe to:
+
+| Property                    | Type      | Description                                |
+| --------------------------- | --------- | ------------------------------------------ |
+| `$telemetry.rssi.rssi`      | `Number`  | The RSSI signal strengt of the WiFi in dBm |
+| `$telemetry.rssi.connected` | `Boolean` | Connection status of the WiFi              |

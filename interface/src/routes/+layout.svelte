@@ -2,6 +2,7 @@
 	import type { LayoutData } from './$types';
 	import { onDestroy, onMount } from 'svelte';
 	import { user } from '$lib/stores/user';
+	import { telemetry } from '$lib/stores/telemetry';
 	import type { userProfile } from '$lib/stores/user';
 	import { page } from '$app/stores';
 	import { Modals, closeModal } from 'svelte-modals';
@@ -48,7 +49,7 @@
 
 	let menuOpen = false;
 
-	let NotificationSource = new EventSource('/events/notifications');
+	let NotificationSource = new EventSource('/events');
 
 	NotificationSource.addEventListener(
 		'info',
@@ -78,6 +79,14 @@
 		'error',
 		(event) => {
 			notifications.error(event.data, 5000);
+		},
+		false
+	);
+
+	NotificationSource.addEventListener(
+		'rssi',
+		(event) => {
+			telemetry.setRSSI(event.data);
 		},
 		false
 	);

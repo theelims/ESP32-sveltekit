@@ -16,7 +16,7 @@
 
 ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server),
                                                          _securitySettingsService(server, &ESPFS),
-                                                         _wifiSettingsService(server, &ESPFS, &_securitySettingsService),
+                                                         _wifiSettingsService(server, &ESPFS, &_securitySettingsService, &_notificationEvents),
                                                          _wifiScanner(server, &_securitySettingsService),
                                                          _wifiStatus(server, &_securitySettingsService),
                                                          _apSettingsService(server, &ESPFS, &_securitySettingsService),

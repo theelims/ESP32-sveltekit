@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { telemetry } from '$lib/stores/telemetry';
 	import CPU from '~icons/tabler/cpu';
-	import WiFi from '~icons/tabler/wifi';
+	import WiFiOff from '~icons/tabler/wifi-off';
 	import Hamburger from '~icons/tabler/menu-2';
+	import RssiIndicator from '$lib/components/RSSIIndicator.svelte';
 </script>
 
 <div class="navbar bg-base-300 sticky top-0 z-10 h-12 min-h-fit drop-shadow-lg lg:h-16">
@@ -21,8 +23,12 @@
 			>
 			<CPU class="h-8 w-8" />
 		</button>
-	</div>
-	<div class="flex-none">
-		<WiFi class="h-9 w-9" />
 	</div> -->
+	<div class="flex-none">
+		{#if $telemetry.rssi.disconnected}
+			<WiFiOff class="h-9 w-9" />
+		{:else}
+			<RssiIndicator showDBm={true} rssi_dbm={$telemetry.rssi.rssi} class="h-9 w-9" />
+		{/if}
+	</div>
 </div>

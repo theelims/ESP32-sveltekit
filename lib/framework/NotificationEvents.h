@@ -20,8 +20,7 @@
 #include <AsyncJson.h>
 #include <ESPAsyncWebServer.h>
 
-#define MAX_EVENT_NOTIFICATION_SIZE 1024
-#define EVENT_NOTIFICATION_SERVICE_PATH "/events/notifications"
+#define EVENT_NOTIFICATION_SERVICE_PATH "/events"
 
 enum pushEvent
 {
@@ -66,5 +65,10 @@ public:
             return;
         }
         _eventSource.send(message.c_str(), eventType.c_str(), id);
+    };
+
+    void send(String message, String event, int id = 0)
+    {
+        _eventSource.send(message.c_str(), event.c_str(), id);
     };
 };

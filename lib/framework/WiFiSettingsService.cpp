@@ -14,9 +14,9 @@
 
 #include <WiFiSettingsService.h>
 
-WiFiSettingsService::WiFiSettingsService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager) : _httpEndpoint(WiFiSettings::read, WiFiSettings::update, this, server, WIFI_SETTINGS_SERVICE_PATH, securityManager),
-                                                                                                             _fsPersistence(WiFiSettings::read, WiFiSettings::update, this, fs, WIFI_SETTINGS_FILE),
-                                                                                                             _lastConnectionAttempt(0)
+WiFiSettingsService::WiFiSettingsService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager, NotificationEvents *notificationEvents) : _httpEndpoint(WiFiSettings::read, WiFiSettings::update, this, server, WIFI_SETTINGS_SERVICE_PATH, securityManager),
+                                                                                                                                                     _fsPersistence(WiFiSettings::read, WiFiSettings::update, this, fs, WIFI_SETTINGS_FILE),
+                                                                                                                                                     _lastConnectionAttempt(0)
 {
     // We want the device to come up in opmode=0 (WIFI_OFF), when erasing the flash this is not the default.
     // If needed, we save opmode=0 before disabling persistence so the device boots with WiFi disabled in the future.
@@ -24,6 +24,9 @@ WiFiSettingsService::WiFiSettingsService(AsyncWebServer *server, FS *fs, Securit
     {
         WiFi.mode(WIFI_OFF);
     }
+
+    // Store SSE
+    _notificationEvents = notificationEvents;
 
     // Disable WiFi config persistance and auto reconnect
     WiFi.persistent(false);
@@ -69,6 +72,12 @@ void WiFiSettingsService::loop()
         _lastConnectionAttempt = currentMillis;
         manageSTA();
     }
+
+    if (!_lastRssiUpdate || (unsigned long)(currentMillis - _lastRssiUpdate) >= RSSI_EVENT_DELAY)
+    {
+        _lastRssiUpdate = currentMillis;
+        updateRSSI();
+    }
 }
 
 String WiFiSettingsService::getHostname()
@@ -100,6 +109,21 @@ void WiFiSettingsService::manageSTA()
         WiFi.setHostname(_state.hostname.c_str());
         // attempt to connect to the network
         WiFi.begin(_state.ssid.c_str(), _state.password.c_str());
+    }
+}
+
+void WiFiSettingsService::updateRSSI()
+{
+    // if WiFi is disconnected send disconnect
+    if (WiFi.isConnected())
+    {
+        String rssi = String(WiFi.RSSI());
+        _notificationEvents->send(rssi, "rssi", millis());
+        // Serial.printf("SSE RSSI: %i \n", rssi.toInt());
+    }
+    else
+    {
+        _notificationEvents->send("disconnected", "rssi", millis());
     }
 }
 
