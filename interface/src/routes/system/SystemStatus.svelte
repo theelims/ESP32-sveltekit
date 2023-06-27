@@ -9,6 +9,7 @@
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import CPU from '~icons/tabler/cpu';
+	import CPP from '~icons/tabler/brand-cpp';
 	import Power from '~icons/tabler/power';
 	import FactoryReset from '~icons/tabler/refresh-dot';
 	import Speed from '~icons/tabler/activity';
@@ -34,6 +35,7 @@
 		flash_chip_speed: number;
 		fs_total: number;
 		fs_used: number;
+		firmware_version: string;
 	};
 
 	async function getSystemStatus() {
@@ -128,6 +130,18 @@
 						<div class="font-bold">Device (Platform / SDK)</div>
 						<div class="text-sm opacity-75">
 							{systemStatus.esp_platform} / {systemStatus.sdk_version}
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10">
+						<CPP class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Firmware Version</div>
+						<div class="text-sm opacity-75">
+							{systemStatus.firmware_version}
 						</div>
 					</div>
 				</div>

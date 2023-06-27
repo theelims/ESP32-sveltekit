@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Added push notification service to show notification toasts an all clients
 - Introduced CHANGELOG.md
 - Added SSE to update RSSI in status bar on client
+- Added firmware version to System Status API
 
 ### Changed
 

@@ -28,6 +28,7 @@ void SystemStatus::systemStatus(AsyncWebServerRequest *request)
     AsyncJsonResponse *response = new AsyncJsonResponse(false, MAX_ESP_STATUS_SIZE);
     JsonObject root = response->getRoot();
     root["esp_platform"] = "esp32";
+    root["firmware_version"] = FIRMWARE_VERSION;
     root["max_alloc_heap"] = ESP.getMaxAllocHeap();
     root["psram_size"] = ESP.getPsramSize();
     root["free_psram"] = ESP.getFreePsram();
