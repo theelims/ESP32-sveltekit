@@ -39,6 +39,9 @@ ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server)
 #if FT_ENABLED(FT_SECURITY)
                                                          _authenticationService(server, &_securitySettingsService),
 #endif
+#if FT_ENABLED(FT_SLEEP)
+                                                         _sleepService(server, &_securitySettingsService),
+#endif
                                                          _restartService(server, &_securitySettingsService),
                                                          _factoryResetService(server, &ESPFS, &_securitySettingsService),
                                                          _systemStatus(server, &_securitySettingsService)
@@ -110,14 +113,14 @@ void ESP32SvelteKit::begin()
 #if FT_ENABLED(FT_NTP)
     _ntpSettingsService.begin();
 #endif
-#if FT_ENABLED(FT_OTA)
-    _otaSettingsService.begin();
-#endif
 #if FT_ENABLED(FT_MQTT)
     _mqttSettingsService.begin();
 #endif
 #if FT_ENABLED(FT_SECURITY)
     _securitySettingsService.begin();
+#endif
+#if FT_ENABLED(FT_OTA)
+    _otaSettingsService.begin();
 #endif
 }
 

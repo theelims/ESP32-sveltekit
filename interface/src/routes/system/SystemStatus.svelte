@@ -10,7 +10,8 @@
 	import { cubicOut } from 'svelte/easing';
 	import CPU from '~icons/tabler/cpu';
 	import CPP from '~icons/tabler/brand-cpp';
-	import Power from '~icons/tabler/power';
+	import Power from '~icons/tabler/reload';
+	import Sleep from '~icons/tabler/zzz';
 	import FactoryReset from '~icons/tabler/refresh-dot';
 	import Speed from '~icons/tabler/activity';
 	import Flash from '~icons/tabler/device-sd-card';
@@ -105,6 +106,30 @@
 			onConfirm: () => {
 				closeModal();
 				postFactoryReset();
+			}
+		});
+	}
+
+	async function postSleep() {
+		const response = await fetch('/rest/sleep', {
+			method: 'POST',
+			headers: {
+				Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic'
+			}
+		});
+	}
+
+	function confirmSleep() {
+		openModal(ConfirmDialog, {
+			title: 'Confirm Going to Sleep',
+			message: 'Are you sure you want to put the device into sleep?',
+			labels: {
+				cancel: { label: 'Abort', icon: Cancel },
+				confirm: { label: 'Sleep', icon: Sleep }
+			},
+			onConfirm: () => {
+				closeModal();
+				postSleep();
 			}
 		});
 	}
@@ -249,14 +274,20 @@
 			</div>
 		{/await}
 	</div>
-	{#if !$page.data.features.security || $user.admin}
-		<div class="mt-4 flex flex-wrap justify-end gap-2">
+
+	<div class="mt-4 flex flex-wrap justify-end gap-2">
+		{#if $page.data.features.sleep}
+			<button class="btn btn-primary inline-flex items-center" on:click={confirmSleep}
+				><Sleep class="mr-2 h-5 w-5" /><span>Sleep</span></button
+			>
+		{/if}
+		{#if !$page.data.features.security || $user.admin}
 			<button class="btn btn-primary inline-flex items-center" on:click={confirmRestart}
 				><Power class="mr-2 h-5 w-5" /><span>Restart</span></button
 			>
 			<button class="btn btn-secondary inline-flex items-center" on:click={confirmReset}
 				><FactoryReset class="mr-2 h-5 w-5" /><span>Factory Reset</span></button
 			>
-		</div>
-	{/if}
+		{/if}
+	</div>
 </SettingsCard>

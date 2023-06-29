@@ -308,6 +308,8 @@ The framework supplies access to various features via getter functions:
 | getOTASettingsService()      | Configures and manages the Over-The-Air update feature |
 | getMqttSettingsService()     | Configures and manages the MQTT connection             |
 | getMqttClient()              | Provides direct access to the MQTT client instance     |
+| getNotificationEvents()      | Provides direct access to the MQTT client instance     |
+| getSleepService()            | Provides direct access to the MQTT client instance     |
 
 The core features use the [StatefulService.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/StatefulService.h) class and can therefore you can change settings or observe changes to settings through the read/update API.
 
@@ -364,7 +366,7 @@ from your code. This will erase the complete settings folder, wiping out all set
 
 ### Recovery Mode
 
-There is also a recovery mode present which will for the creation of an access point. By calling
+There is also a recovery mode present which will force the creation of an access point. By calling
 
 ```cpp
 esp32sveltekit.recoveryMode();
@@ -383,7 +385,33 @@ esp32sveltekit.getNotificationEvents()->pushNotification("Pushed a message!", IN
 or keep a local pointer to the `NotificationEvents` instance. It is possible to send `INFO`, `WARNING`, `ERROR` and `SUCCESS` events to all clients. The HTTP endpoint for this service is at `/events/notifications`.
 
 In addition the raw `send()` function is mapped out as well:
+
 ```cpp
 esp32sveltekit.getNotificationEvents()->send("Pushed a message!", "event", millis());
 ```
+
 This allows you to send your own Server-Sent Events without opening a new HTTP connection.
+
+### Power Down with Deep Sleep
+
+This API service can place the ESP32 in the lowest power deep sleep mode consuming only a few µA. It uses the EXT1 wakeup source, so the ESP32 can be woken up with a button or from a peripherals interrupt. Consult the [ESP-IDF Api Reference](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/sleep_modes.html#_CPPv428esp_sleep_enable_ext1_wakeup8uint64_t28esp_sleep_ext1_wakeup_mode_t) which GPIOs can be used for this. The RTC will also be powered down, so an external pull-up or pull-down resistor is required. It is not possible to persist variable state through the deep sleep.
+
+The settings wakeup pin definition and the signal polarity need to be defined in [factory_settings.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini):
+
+```ini
+; Deep Sleep Configuration
+-D WAKEUP_PIN_NUMBER=38 ; pin number to wake up the ESP
+-D WAKEUP_SIGNAL=0 ; 1 for wakeup on HIGH, 0 for wakeup on LOW
+```
+
+A callback function can be attached and triggers when the ESP32 is requested to go into deep sleep. This allows you to safely deal with the power down event. Like persisting software state by writing to the flash, tiding up or notify a remote server about the immanent disappearance.
+
+```cpp
+esp32sveltekit.getSleepService()->attachOnSleepCallback();
+```
+
+Also the code can initiate the power down deep sleep sequence by calling:
+
+```cpp
+esp32sveltekit.getSleepService()->sleepNow();
+```

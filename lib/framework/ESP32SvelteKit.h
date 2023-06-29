@@ -34,6 +34,7 @@
 #include <UploadFirmwareService.h>
 #include <RestartService.h>
 #include <SecuritySettingsService.h>
+#include <SleepService.h>
 #include <SystemStatus.h>
 #include <WiFiScanner.h>
 #include <WiFiSettingsService.h>
@@ -118,6 +119,13 @@ public:
     }
 #endif
 
+#if FT_ENABLED(FT_SLEEP)
+    SleepService *getSleepService()
+    {
+        return &_sleepService;
+    }
+#endif
+
     void factoryReset()
     {
         _factoryResetService.factoryReset();
@@ -158,6 +166,9 @@ private:
 #endif
 #if FT_ENABLED(FT_SECURITY)
     AuthenticationService _authenticationService;
+#endif
+#if FT_ENABLED(FT_SLEEP)
+    SleepService _sleepService;
 #endif
     RestartService _restartService;
     FactoryResetService _factoryResetService;

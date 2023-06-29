@@ -43,7 +43,7 @@ pip install mkdocs-material
 | [src/](https://github.com/theelims/ESP32-sveltekit/blob/main/src)                      | The main.cpp and demo project to get you started                 |
 | [scripts/](https://github.com/theelims/ESP32-sveltekit/tree/main/scripts)              | Scripts that build the interface as part of the platformio build |
 | [platformio.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/platformio.ini) | PlatformIO project configuration file                            |
-| [mkdocs.yaml](https://github.com/theelims/ESP32-sveltekit/blob/main/mkdosc.yaml)       | MkDocs project configuration file                                |
+| [mkdocs.yaml](https://github.com/theelims/ESP32-sveltekit/blob/main/mkdocs.yaml)       | MkDocs project configuration file                                |
 
 ## Setting up PlatformIO
 

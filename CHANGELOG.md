@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Introduced CHANGELOG.md
 - Added SSE to update RSSI in status bar on client
 - Added firmware version to System Status API
+- Added sleep service to send ESP32 into deep sleep. Wake-up with button using EXT1
 
 ### Changed
 
