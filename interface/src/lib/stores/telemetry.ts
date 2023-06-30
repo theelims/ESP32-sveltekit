@@ -4,6 +4,10 @@ let telemetry_data = {
 	rssi: {
 		rssi: 0,
 		disconnected: true
+	},
+	battery: {
+		soc: 100,
+		charging: false
 	}
 };
 
@@ -21,6 +25,13 @@ function createTelemetry() {
 			} else {
 				update((telemerty_data) => ({ ...telemerty_data, rssi: { rssi: 0, disconnected: true } }));
 			}
+		},
+		setBattery: (data: string) => {
+			const content = JSON.parse(data);
+			update((telemerty_data) => ({
+				...telemerty_data,
+				battery: { soc: content.soc, charging: content.charging }
+			}));
 		}
 	};
 }

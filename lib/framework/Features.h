@@ -47,4 +47,9 @@
 #define FT_SLEEP 0
 #endif
 
+// ESP32 battery state off by default
+#ifndef FT_BATTERY
+#define FT_BATTERY 0
+#endif
+
 #endif

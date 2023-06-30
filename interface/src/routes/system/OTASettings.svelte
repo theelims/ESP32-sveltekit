@@ -116,7 +116,7 @@
 
 <SettingsCard open={false}>
 	<OTA slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end rounded-full" />
-	<span slot="title">OTA Firmware Update</span>
+	<span slot="title">Firmware Update</span>
 	{#if $page.data.features.ota}
 		<label class="label cursor-pointer justify-start gap-4">
 			<input type="checkbox" bind:checked={otaSettings.enabled} class="checkbox checkbox-primary" />

@@ -90,6 +90,14 @@
 		},
 		false
 	);
+
+	NotificationSource.addEventListener(
+		'battery',
+		(event) => {
+			telemetry.setBattery(event.data);
+		},
+		false
+	);
 </script>
 
 <svelte:head>

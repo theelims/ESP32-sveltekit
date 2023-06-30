@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - Added SSE to update RSSI in status bar on client
 - Added firmware version to System Status API
 - Added sleep service to send ESP32 into deep sleep. Wake-up with button using EXT1
+- Added battery service to show battery state of charge in the status bar. Uses SSE.
 
 ### Changed
 

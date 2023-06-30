@@ -53,6 +53,11 @@ void FeaturesService::features(AsyncWebServerRequest *request)
 #else
     root["sleep"] = false;
 #endif
+#if FT_ENABLED(FT_BATTERY)
+    root["battery"] = true;
+#else
+    root["battery"] = false;
+#endif
     response->setLength();
     request->send(response);
 }

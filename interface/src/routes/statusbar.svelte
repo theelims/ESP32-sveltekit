@@ -5,11 +5,13 @@
 	import { user } from '$lib/stores/user';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import CPU from '~icons/tabler/cpu';
+	import Battery from '~icons/tabler/battery-charging-2';
 	import WiFiOff from '~icons/tabler/wifi-off';
 	import Hamburger from '~icons/tabler/menu-2';
 	import Power from '~icons/tabler/power';
 	import Cancel from '~icons/tabler/x';
 	import RssiIndicator from '$lib/components/RSSIIndicator.svelte';
+	import BatteryIndicator from '$lib/components/BatteryIndicator.svelte';
 
 	async function postSleep() {
 		const response = await fetch('/rest/sleep', {
@@ -44,27 +46,40 @@
 		>
 		<span class="px-2 text-xl font-bold lg:text-2xl">{$page.data.title}</span>
 	</div>
-	<!-- <div class="indicator flex-none">
-		<button class="btn btn-square btn-ghost">
-			<span
-				class="indicator-item indicator-top indicator-center badge badge-info badge-xs top-2 scale-75 lg:top-1"
-				>v0.2.1</span
-			>
-			<CPU class="h-8 w-8" />
-		</button>
-	</div> -->
+	<!-- {#if false}
+		<div class="indicator flex-none">
+			<button class="btn btn-square btn-ghost h-9 w-9">
+				<span
+					class="indicator-item indicator-top indicator-center badge badge-info badge-xs top-2 scale-75 lg:top-1"
+					>v0.2.1</span
+				>
+				<CPU class="h-7 w-7" />
+			</button>
+		</div>
+	{/if} -->
 	<div class="flex-none">
 		{#if $telemetry.rssi.disconnected}
-			<WiFiOff class="h-9 w-9" />
+			<WiFiOff class="h-7 w-7" />
 		{:else}
-			<RssiIndicator showDBm={false} rssi_dbm={$telemetry.rssi.rssi} class="h-9 w-9" />
+			<RssiIndicator showDBm={false} rssi_dbm={$telemetry.rssi.rssi} class="h-7 w-7" />
 		{/if}
 	</div>
-	<div class="flex-none">
-		{#if $page.data.features.sleep}
-			<button class="btn btn-square btn-ghost" on:click={confirmSleep}>
-				<Power class="text-error h-7 w-7" />
+
+	{#if $page.data.features.battery}
+		<div class="flex-none">
+			<BatteryIndicator
+				charging={$telemetry.battery.charging}
+				soc={$telemetry.battery.soc}
+				class="h-7 w-7"
+			/>
+		</div>
+	{/if}
+
+	{#if $page.data.features.sleep}
+		<div class="flex-none">
+			<button class="btn btn-square btn-ghost h-9 w-10" on:click={confirmSleep}>
+				<Power class="text-error h-9 w-9" />
 			</button>
-		{/if}
-	</div>
+		</div>
+	{/if}
 </div>

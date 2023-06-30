@@ -24,6 +24,7 @@
 #include <APSettingsService.h>
 #include <APStatus.h>
 #include <AuthenticationService.h>
+#include <BatteryService.h>
 #include <FactoryResetService.h>
 #include <MqttSettingsService.h>
 #include <MqttStatus.h>
@@ -126,6 +127,13 @@ public:
     }
 #endif
 
+#if FT_ENABLED(FT_BATTERY)
+    BatteryService *getBatteryService()
+    {
+        return &_batteryService;
+    }
+#endif
+
     void factoryReset()
     {
         _factoryResetService.factoryReset();
@@ -169,6 +177,9 @@ private:
 #endif
 #if FT_ENABLED(FT_SLEEP)
     SleepService _sleepService;
+#endif
+#if FT_ENABLED(FT_BATTERY)
+    BatteryService _batteryService;
 #endif
     RestartService _restartService;
     FactoryResetService _factoryResetService;
