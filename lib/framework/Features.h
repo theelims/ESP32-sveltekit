@@ -42,6 +42,11 @@
 #define FT_UPLOAD_FIRMWARE 0
 #endif
 
+// download firmware feature off by default
+#ifndef FT_DOWNLOAD_FIRMWARE
+#define FT_DOWNLOAD_FIRMWARE 0
+#endif
+
 // ESP32 sleep states off by default
 #ifndef FT_SLEEP
 #define FT_SLEEP 0

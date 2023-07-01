@@ -48,6 +48,11 @@ void FeaturesService::features(AsyncWebServerRequest *request)
 #else
     root["upload_firmware"] = false;
 #endif
+#if FT_ENABLED(FT_DOWNLOAD_FIRMWARE)
+    root["download_firmware"] = true;
+#else
+    root["download_firmware"] = false;
+#endif
 #if FT_ENABLED(FT_SLEEP)
     root["sleep"] = true;
 #else

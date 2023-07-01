@@ -4,6 +4,8 @@
 	import Discord from '~icons/tabler/brand-discord';
 	import Users from '~icons/tabler/users';
 	import Settings from '~icons/tabler/settings';
+	import Health from '~icons/tabler/stethoscope';
+	import Update from '~icons/tabler/binary';
 	import WiFi from '~icons/tabler/wifi';
 	import Remote from '~icons/tabler/network';
 	import Control from '~icons/tabler/adjustments';
@@ -72,7 +74,30 @@
 			]
 		},
 		{ title: 'Wi-Fi', icon: WiFi, href: '/wifi', feature: true, active: false },
-		{ title: 'System', icon: Settings, href: '/system', feature: true, active: false },
+		{
+			title: 'System',
+			icon: Settings,
+			feature: true,
+			submenu: [
+				{
+					title: 'System Status',
+					icon: Health,
+					href: '/system/status',
+					feature: true,
+					active: false
+				},
+				{
+					title: 'Firmware Update',
+					icon: Update,
+					href: '/system/update',
+					feature:
+						$page.data.features.ota ||
+						$page.data.features.upload_firmware ||
+						$page.data.features.download_firmware,
+					active: false
+				}
+			]
+		},
 		{
 			title: 'Users',
 			icon: Users,

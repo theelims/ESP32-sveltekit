@@ -9,7 +9,7 @@
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import CPU from '~icons/tabler/cpu';
-	import CPP from '~icons/tabler/brand-cpp';
+	import CPP from '~icons/tabler/binary';
 	import Power from '~icons/tabler/reload';
 	import Sleep from '~icons/tabler/zzz';
 	import FactoryReset from '~icons/tabler/refresh-dot';
@@ -21,6 +21,7 @@
 	import Heap from '~icons/tabler/box-model';
 	import Cancel from '~icons/tabler/x';
 	import Temperature from '~icons/tabler/temperature';
+	import Health from '~icons/tabler/stethoscope';
 
 	type SystemStatus = {
 		esp_platform: string;
@@ -136,7 +137,7 @@
 </script>
 
 <SettingsCard collapsible={false}>
-	<CPU slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+	<Health slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">System Status</span>
 
 	<div class="w-full overflow-x-auto">
