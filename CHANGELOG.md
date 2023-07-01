@@ -18,6 +18,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Improved system status with more meaningful presentation of available data
+
 ### Depreciated
 
 ### Removed

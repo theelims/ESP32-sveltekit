@@ -217,11 +217,18 @@
 						<Sketch class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">Sketch (Size / Free)</div>
+						<div class="font-bold">Sketch (Used / Free)</div>
 						<div class="text-sm opacity-75">
-							{systemStatus.sketch_size.toLocaleString('en-US')} / {systemStatus.free_sketch_space.toLocaleString(
-								'en-US'
-							)} bytes
+							<span>
+								{((systemStatus.sketch_size / systemStatus.free_sketch_space) * 100).toFixed(1)} % of
+								{(systemStatus.free_sketch_space / 1000000).toLocaleString('en-US')} MB used
+							</span>
+							<span>
+								({(
+									(systemStatus.free_sketch_space - systemStatus.sketch_size) /
+									1000000
+								).toLocaleString('en-US')} MB free)</span
+							>
 						</div>
 					</div>
 				</div>
@@ -233,7 +240,7 @@
 					<div>
 						<div class="font-bold">Flash Chip (Size / Speed)</div>
 						<div class="text-sm opacity-75">
-							{systemStatus.flash_chip_size.toLocaleString('en-US')} bytes / {(
+							{(systemStatus.flash_chip_size / 1000000).toLocaleString('en-US')} MB / {(
 								systemStatus.flash_chip_speed / 1000000
 							).toLocaleString('en-US')} MHz
 						</div>
@@ -248,14 +255,16 @@
 						<div class="font-bold">File System (Used / Total)</div>
 						<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
 							<span
-								>{systemStatus.fs_used.toLocaleString('en-US')} / {systemStatus.fs_total.toLocaleString(
-									'en-US'
-								)} bytes</span
+								>{((systemStatus.fs_used / systemStatus.fs_total) * 100).toFixed(1)} % of {(
+									systemStatus.fs_total / 1000000
+								).toLocaleString('en-US')} MB used</span
 							>
 
 							<span
-								>({(systemStatus.fs_total - systemStatus.fs_used).toLocaleString('en-US')}
-								bytes free)</span
+								>({((systemStatus.fs_total - systemStatus.fs_used) / 1000000).toLocaleString(
+									'en-US'
+								)}
+								MB free)</span
 							>
 						</div>
 					</div>
