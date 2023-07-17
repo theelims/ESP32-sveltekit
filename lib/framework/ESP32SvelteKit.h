@@ -26,6 +26,7 @@
 #include <AuthenticationService.h>
 #include <BatteryService.h>
 #include <FactoryResetService.h>
+#include <DownloadFirmwareService.h>
 #include <MqttSettingsService.h>
 #include <MqttStatus.h>
 #include <NotificationEvents.h>
@@ -167,6 +168,9 @@ private:
 #endif
 #if FT_ENABLED(FT_UPLOAD_FIRMWARE)
     UploadFirmwareService _uploadFirmwareService;
+#endif
+#if FT_ENABLED(FT_DOWNLOAD_FIRMWARE)
+    DownloadFirmwareService _downloadFirmwareService;
 #endif
 #if FT_ENABLED(FT_MQTT)
     MqttSettingsService _mqttSettingsService;

@@ -98,6 +98,14 @@
 		},
 		false
 	);
+
+	NotificationSource.addEventListener(
+		'github_update',
+		(event) => {
+			telemetry.setGithubUpdate(event.data);
+		},
+		false
+	);
 </script>
 
 <svelte:head>

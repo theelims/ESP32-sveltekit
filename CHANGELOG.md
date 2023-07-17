@@ -6,19 +6,22 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Added core temperature to the System Status API
+- Introduced CHANGELOG.md
+- Added core temperature to the system status API
 - Added mDNS / Bonjour / zeroConf for better discoverability in local network
 - Added recovery mode which forces AP to spin up regardless from its settings
-- Added push notification service to show notification toasts an all clients
-- Introduced CHANGELOG.md
+- Added push notification service to show notification toasts on all clients
 - Added SSE to update RSSI in status bar on client
 - Added firmware version to System Status API
 - Added sleep service to send ESP32 into deep sleep. Wake-up with button using EXT1
 - Added battery service to show battery state of charge in the status bar. Uses SSE.
+- Added Github firmware manager to pull firmware binaries from github release pages
 
 ### Changed
 
 - Improved system status with more meaningful presentation of available data
+- Improved layout on small screens
+- Increased queue size for SSE and WS to 64 instead of 32
 
 ### Depreciated
 

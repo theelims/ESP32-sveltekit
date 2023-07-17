@@ -48,9 +48,14 @@ void SleepService::sleepNow()
 
     // Prepare ESP for sleep
     uint64_t bitmask = (uint64_t)1 << (WAKEUP_PIN_NUMBER);
+
+// special treatment for ESP32-C3 because of the RISC-V architecture
+#ifdef CONFIG_IDF_TARGET_ESP32C3
+    esp_deep_sleep_enable_gpio_wakeup(bitmask, (esp_deepsleep_gpio_wake_up_mode_t)WAKEUP_SIGNAL);
+#else
     esp_sleep_enable_ext1_wakeup(bitmask, (esp_sleep_ext1_wakeup_mode_t)WAKEUP_SIGNAL);
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
-
+#endif
     Serial.println("Good by!");
 
     // Just to be sure

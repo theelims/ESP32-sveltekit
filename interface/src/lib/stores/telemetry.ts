@@ -8,6 +8,11 @@ let telemetry_data = {
 	battery: {
 		soc: 100,
 		charging: false
+	},
+	github_update: {
+		status: 'none',
+		progress: 0,
+		error: ''
 	}
 };
 
@@ -31,6 +36,13 @@ function createTelemetry() {
 			update((telemerty_data) => ({
 				...telemerty_data,
 				battery: { soc: content.soc, charging: content.charging }
+			}));
+		},
+		setGithubUpdate: (data: string) => {
+			const content = JSON.parse(data);
+			update((telemerty_data) => ({
+				...telemerty_data,
+				github_update: { status: content.status, progress: content.progress, error: content.error }
 			}));
 		}
 	};

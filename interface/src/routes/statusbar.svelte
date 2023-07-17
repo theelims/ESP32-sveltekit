@@ -3,15 +3,58 @@
 	import { telemetry } from '$lib/stores/telemetry';
 	import { openModal, closeModal } from 'svelte-modals';
 	import { user } from '$lib/stores/user';
+	import { notifications } from '$lib/components/toasts/notifications';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
-	import CPU from '~icons/tabler/cpu';
-	import Battery from '~icons/tabler/battery-charging-2';
+	import Firmware from '~icons/tabler/refresh-alert';
 	import WiFiOff from '~icons/tabler/wifi-off';
 	import Hamburger from '~icons/tabler/menu-2';
 	import Power from '~icons/tabler/power';
 	import Cancel from '~icons/tabler/x';
 	import RssiIndicator from '$lib/components/RSSIIndicator.svelte';
 	import BatteryIndicator from '$lib/components/BatteryIndicator.svelte';
+	import { compareVersions } from 'compare-versions';
+	import { onMount } from 'svelte';
+
+	let update = false;
+
+	let firmwareVersion: string;
+
+	// async function getGithubAPI() {
+	// 	try {
+	// 		const response = await fetch(
+	// 			'https://api.github.com/repos/' +
+	// 				$page.data.features.github_repository +
+	// 				'/releases/latest',
+	// 			{
+	// 				method: 'GET',
+	// 				headers: {
+	// 					accept: 'application/vnd.github+json',
+	// 					'X-GitHub-Api-Version': '2022-11-28'
+	// 				}
+	// 			}
+	// 		);
+	// 		const results = await response.json();
+	// 		if (compareVersions(results.tag_name, $page.data.features.firmware_version) === 1) {
+	// 			update = true;
+	// 			firmwareVersion = results.tag_name;
+	// 			notifications.info('Firmware update available.', 5000);
+	// 		} else {
+	// 			update = false;
+	// 			firmwareVersion = '';
+	// 		}
+	// 	} catch (error) {
+	// 		console.error('Error:', error);
+	// 	}
+	// }
+
+	// onMount(() => {
+	// 	if ($page.data.features.download_firmware && (!$page.data.features.security || $user.admin)) {
+	// 		getGithubAPI();
+	// 		const interval = setInterval(async () => {
+	// 			getGithubAPI();
+	// 		}, 600000);
+	// 	}
+	// });
 
 	async function postSleep() {
 		const response = await fetch('/rest/sleep', {
@@ -46,17 +89,17 @@
 		>
 		<span class="px-2 text-xl font-bold lg:text-2xl">{$page.data.title}</span>
 	</div>
-	<!-- {#if false}
+	{#if update}
 		<div class="indicator flex-none">
-			<button class="btn btn-square btn-ghost h-9 w-9">
+			<a class="btn btn-square btn-ghost h-9 w-9" href="/system/update">
 				<span
 					class="indicator-item indicator-top indicator-center badge badge-info badge-xs top-2 scale-75 lg:top-1"
-					>v0.2.1</span
+					>{firmwareVersion}</span
 				>
-				<CPU class="h-7 w-7" />
-			</button>
+				<Firmware class="h-7 w-7" />
+			</a>
 		</div>
-	{/if} -->
+	{/if}
 	<div class="flex-none">
 		{#if $telemetry.rssi.disconnected}
 			<WiFiOff class="h-7 w-7" />

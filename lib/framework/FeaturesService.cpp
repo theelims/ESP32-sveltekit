@@ -63,6 +63,7 @@ void FeaturesService::features(AsyncWebServerRequest *request)
 #else
     root["battery"] = false;
 #endif
+    root["firmware_version"] = FIRMWARE_VERSION;
     response->setLength();
     request->send(response);
 }

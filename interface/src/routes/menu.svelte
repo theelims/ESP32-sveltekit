@@ -5,7 +5,7 @@
 	import Users from '~icons/tabler/users';
 	import Settings from '~icons/tabler/settings';
 	import Health from '~icons/tabler/stethoscope';
-	import Update from '~icons/tabler/binary';
+	import Update from '~icons/tabler/refresh-alert';
 	import WiFi from '~icons/tabler/wifi';
 	import Remote from '~icons/tabler/network';
 	import Control from '~icons/tabler/adjustments';
@@ -75,6 +75,13 @@
 		},
 		{ title: 'Wi-Fi', icon: WiFi, href: '/wifi', feature: true, active: false },
 		{
+			title: 'Users',
+			icon: Users,
+			href: '/user',
+			feature: $page.data.features.security && $user.admin,
+			active: false
+		},
+		{
 			title: 'System',
 			icon: Settings,
 			feature: true,
@@ -91,19 +98,13 @@
 					icon: Update,
 					href: '/system/update',
 					feature:
-						$page.data.features.ota ||
-						$page.data.features.upload_firmware ||
-						$page.data.features.download_firmware,
+						($page.data.features.ota ||
+							$page.data.features.upload_firmware ||
+							$page.data.features.download_firmware) &&
+						(!$page.data.features.security || $user.admin),
 					active: false
 				}
 			]
-		},
-		{
-			title: 'Users',
-			icon: Users,
-			href: '/user',
-			feature: $page.data.features.security && $user.admin,
-			active: false
 		}
 	];
 
@@ -161,20 +162,22 @@
 							>
 							<ul>
 								{#each menuItem.submenu as subMenuItem}
-									<li class="hover-bordered">
-										<a
-											href={subMenuItem.href}
-											class="text-ml font-bold {subMenuItem.active ? 'bg-base-100' : ''}"
-											on:click={() => {
-												setActiveMenuItem(menuItems, subMenuItem.title);
-												menuItems = menuItems;
-											}}
-											><svelte:component
-												this={subMenuItem.icon}
-												class="h-5 w-5"
-											/>{subMenuItem.title}</a
-										>
-									</li>
+									{#if subMenuItem.feature}
+										<li class="hover-bordered">
+											<a
+												href={subMenuItem.href}
+												class="text-ml font-bold {subMenuItem.active ? 'bg-base-100' : ''}"
+												on:click={() => {
+													setActiveMenuItem(menuItems, subMenuItem.title);
+													menuItems = menuItems;
+												}}
+												><svelte:component
+													this={subMenuItem.icon}
+													class="h-5 w-5"
+												/>{subMenuItem.title}</a
+											>
+										</li>
+									{/if}
 								{/each}
 							</ul>
 						</details>

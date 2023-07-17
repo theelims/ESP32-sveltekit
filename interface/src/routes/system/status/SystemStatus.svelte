@@ -149,7 +149,7 @@
 				transition:slide|local={{ duration: 300, easing: cubicOut }}
 			>
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
 						<CPU class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -161,7 +161,7 @@
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
 						<CPP class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -173,7 +173,7 @@
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
 						<Speed class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -185,7 +185,7 @@
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
 						<Heap class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -199,7 +199,7 @@
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
 						<Pyramid class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -213,28 +213,29 @@
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
 						<Sketch class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
 						<div class="font-bold">Sketch (Used / Free)</div>
-						<div class="text-sm opacity-75">
+						<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
 							<span>
 								{((systemStatus.sketch_size / systemStatus.free_sketch_space) * 100).toFixed(1)} % of
 								{(systemStatus.free_sketch_space / 1000000).toLocaleString('en-US')} MB used
 							</span>
+
 							<span>
 								({(
 									(systemStatus.free_sketch_space - systemStatus.sketch_size) /
 									1000000
-								).toLocaleString('en-US')} MB free)</span
-							>
+								).toLocaleString('en-US')} MB free)
+							</span>
 						</div>
 					</div>
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
 						<Flash class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>

@@ -17,8 +17,7 @@
 			const response = await fetch('/rest/uploadFirmware', {
 				method: 'POST',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
-					'Content-Type': 'application/json'
+					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic'
 				},
 				body: formData
 			});

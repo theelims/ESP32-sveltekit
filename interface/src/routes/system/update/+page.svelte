@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import OtaSettings from './OTASettings.svelte';
-    import UploadFirmware from './UploadFirmware.svelte';
+	import UploadFirmware from './UploadFirmware.svelte';
+	import GithubFirmwareManager from './GithubFirmwareManager.svelte';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
 
@@ -9,9 +10,13 @@
 </script>
 
 <div
-	class="mx-8 my-8 flex
-     flex-col space-y-4"
+	class="mx-0 my-1 flex flex-col space-y-4
+     sm:mx-8 sm:my-8"
 >
+	{#if $page.data.features.download_firmware && (!$page.data.features.security || $user.admin)}
+		<GithubFirmwareManager />
+	{/if}
+
 	{#if $page.data.features.ota && (!$page.data.features.security || $user.admin)}
 		<OtaSettings />
 	{/if}

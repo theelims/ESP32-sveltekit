@@ -32,6 +32,9 @@ ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server)
 #if FT_ENABLED(FT_UPLOAD_FIRMWARE)
                                                          _uploadFirmwareService(server, &_securitySettingsService),
 #endif
+#if FT_ENABLED(FT_DOWNLOAD_FIRMWARE)
+                                                         _downloadFirmwareService(server, &_securitySettingsService),
+#endif
 #if FT_ENABLED(FT_MQTT)
                                                          _mqttSettingsService(server, &ESPFS, &_securitySettingsService),
                                                          _mqttStatus(server, &_mqttSettingsService, &_securitySettingsService),
@@ -70,6 +73,7 @@ ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server)
                     if (request->method() == HTTP_GET) {
                         requestHandler(request);
                     } else if (request->method() == HTTP_OPTIONS) {
+                        // CORS Pre-flight
                         request->send(200);
                     } else {
                         request->send(404);
@@ -112,6 +116,8 @@ void ESP32SvelteKit::begin()
     MDNS.addService("http", "tcp", 80);
     MDNS.addServiceTxt("http", "tcp", "Firmware Version", FIRMWARE_VERSION);
 
+    Serial.printf("Running Firmware Version: %s\n", FIRMWARE_VERSION);
+
     _apSettingsService.begin();
 #if FT_ENABLED(FT_NTP)
     _ntpSettingsService.begin();
@@ -129,12 +135,12 @@ void ESP32SvelteKit::begin()
 
 void ESP32SvelteKit::loop()
 {
-    _wifiSettingsService.loop();
-    _apSettingsService.loop();
+    _wifiSettingsService.loop(); // 30 seconds
+    _apSettingsService.loop();   // 10 seconds
 #if FT_ENABLED(FT_OTA)
-    _otaSettingsService.loop();
+    _otaSettingsService.loop(); // fast --> separate task
 #endif
 #if FT_ENABLED(FT_MQTT)
-    _mqttSettingsService.loop();
+    _mqttSettingsService.loop(); // 5 seconds
 #endif
 }
