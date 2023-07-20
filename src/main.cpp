@@ -48,6 +48,6 @@ void setup()
 
 void loop()
 {
-    // run the framework's loop function
-    esp32sveltekit.loop();
+    // Delete Arduino loop task, as it is not needed in this example
+    vTaskDelete(NULL);
 }

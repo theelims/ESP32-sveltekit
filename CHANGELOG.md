@@ -15,13 +15,16 @@ All notable changes to this project will be documented in this file.
 - Added firmware version to System Status API
 - Added sleep service to send ESP32 into deep sleep. Wake-up with button using EXT1
 - Added battery service to show battery state of charge in the status bar. Uses SSE.
-- Added Github firmware manager to pull firmware binaries from github release pages
+- Added download firmware manager to pull firmware binaries e.g. from github release pages
 
 ### Changed
 
 - Improved system status with more meaningful presentation of available data
 - Improved layout on small screens
 - Increased queue size for SSE and WS to 64 instead of 32
+- ESP32-SvelteKit loop()-function is its own task now
+- ArduinoOTA handle runs in own task now
+- AsyncTCP tasks run on Core 0 to move all networking related stuff to Core 1
 
 ### Depreciated
 

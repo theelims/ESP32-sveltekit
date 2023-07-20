@@ -31,11 +31,12 @@ void OTASettingsService::begin()
     configureArduinoOTA();
 }
 
-void OTASettingsService::loop()
+void OTASettingsService::_loop()
 {
-    if (_state.enabled && _arduinoOTA)
+    while (1)
     {
         _arduinoOTA->handle();
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
 
@@ -48,6 +49,11 @@ void OTASettingsService::configureArduinoOTA()
         _arduinoOTA = nullptr;
         MDNS.disableArduino();
         Serial.println(F("Ending OTA Update Service"));
+        if (_loopHandle != NULL)
+        {
+            vTaskDelete(_loopHandle);
+            _loopHandle = NULL;
+        }
     }
     if (_state.enabled)
     {
@@ -78,6 +84,23 @@ void OTASettingsService::configureArduinoOTA()
 
         _arduinoOTA->begin();
         MDNS.enableArduino(_state.port, (_state.password.length() > 0));
+
+        if (_loopHandle == NULL)
+        {
+            xTaskCreateUniversal(
+                this->_loopImpl,        // Function that should be called
+                "ArduinoOTA loop",      // Name of the task (for debugging)
+                4096,                   // Stack size (bytes)
+                this,                   // Pass reference to this class instance
+                (tskIDLE_PRIORITY + 2), // task priority
+                &_loopHandle,           // Task handle
+                0                       // Pin to application core
+            );
+        }
+        else
+        {
+            vTaskResume(_loopHandle);
+        }
     }
 }
 

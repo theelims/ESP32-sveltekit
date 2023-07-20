@@ -100,9 +100,9 @@
 	);
 
 	NotificationSource.addEventListener(
-		'github_update',
+		'download_ota',
 		(event) => {
-			telemetry.setGithubUpdate(event.data);
+			telemetry.setDownloadOTA(event.data);
 		},
 		false
 	);

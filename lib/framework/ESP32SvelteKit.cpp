@@ -33,7 +33,7 @@ ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server)
                                                          _uploadFirmwareService(server, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_DOWNLOAD_FIRMWARE)
-                                                         _downloadFirmwareService(server, &_securitySettingsService),
+                                                         _downloadFirmwareService(server, &_securitySettingsService, &_notificationEvents),
 #endif
 #if FT_ENABLED(FT_MQTT)
                                                          _mqttSettingsService(server, &ESPFS, &_securitySettingsService),
@@ -131,16 +131,27 @@ void ESP32SvelteKit::begin()
 #if FT_ENABLED(FT_OTA)
     _otaSettingsService.begin();
 #endif
+
+    xTaskCreateUniversal(
+        this->_loopImpl,        // Function that should be called
+        "ESP32 SvelteKit Loop", // Name of the task (for debugging)
+        4096,                   // Stack size (bytes)
+        this,                   // Pass reference to this class instance
+        (tskIDLE_PRIORITY + 1), // task priority
+        NULL,                   // Task handle
+        0                       // Pin to application core
+    );
 }
 
-void ESP32SvelteKit::loop()
+void ESP32SvelteKit::_loop()
 {
-    _wifiSettingsService.loop(); // 30 seconds
-    _apSettingsService.loop();   // 10 seconds
-#if FT_ENABLED(FT_OTA)
-    _otaSettingsService.loop(); // fast --> separate task
-#endif
+    while (1)
+    {
+        _wifiSettingsService.loop(); // 30 seconds
+        _apSettingsService.loop();   // 10 seconds
 #if FT_ENABLED(FT_MQTT)
-    _mqttSettingsService.loop(); // 5 seconds
+        _mqttSettingsService.loop(); // 5 seconds
 #endif
+        vTaskDelay(20 / portTICK_PERIOD_MS);
+    }
 }

@@ -61,7 +61,6 @@ public:
     ESP32SvelteKit(AsyncWebServer *server);
 
     void begin();
-    void loop();
 
     FS *getFS()
     {
@@ -188,7 +187,12 @@ private:
     RestartService _restartService;
     FactoryResetService _factoryResetService;
     SystemStatus _systemStatus;
+
     String _appName = "ESP32 SvelteKit Demo";
+
+protected:
+    static void _loopImpl(void *_this) { static_cast<ESP32SvelteKit *>(_this)->_loop(); }
+    void _loop();
 };
 
 #endif

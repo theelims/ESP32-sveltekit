@@ -26,8 +26,6 @@
 		cors_proxy: string;
 	};
 
-	let githubSettings: GithubSettings;
-
 	async function getGithubAPI() {
 		try {
 			const githubResponse = await fetch(

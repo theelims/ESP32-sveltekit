@@ -9,7 +9,7 @@ let telemetry_data = {
 		soc: 100,
 		charging: false
 	},
-	github_update: {
+	download_ota: {
 		status: 'none',
 		progress: 0,
 		error: ''
@@ -38,11 +38,11 @@ function createTelemetry() {
 				battery: { soc: content.soc, charging: content.charging }
 			}));
 		},
-		setGithubUpdate: (data: string) => {
+		setDownloadOTA: (data: string) => {
 			const content = JSON.parse(data);
 			update((telemerty_data) => ({
 				...telemerty_data,
-				github_update: { status: content.status, progress: content.progress, error: content.error }
+				download_ota: { status: content.status, progress: content.progress, error: content.error }
 			}));
 		}
 	};

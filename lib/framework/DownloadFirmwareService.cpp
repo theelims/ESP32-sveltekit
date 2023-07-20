@@ -12,63 +12,67 @@
  **/
 
 #include <DownloadFirmwareService.h>
+static const char *TAG = "Download OTA";
 
-const char *github_certificate PROGMEM = R"CERT(
------BEGIN CERTIFICATE-----
-MIIDrzCCApegAwIBAgIQCDvgVpBCRrGhdWrJWZHHSjANBgkqhkiG9w0BAQUFADBh
-MQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3
-d3cuZGlnaWNlcnQuY29tMSAwHgYDVQQDExdEaWdpQ2VydCBHbG9iYWwgUm9vdCBD
-QTAeFw0wNjExMTAwMDAwMDBaFw0zMTExMTAwMDAwMDBaMGExCzAJBgNVBAYTAlVT
-MRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNVBAsTEHd3dy5kaWdpY2VydC5j
-b20xIDAeBgNVBAMTF0RpZ2lDZXJ0IEdsb2JhbCBSb290IENBMIIBIjANBgkqhkiG
-9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4jvhEXLeqKTTo1eqUKKPC3eQyaKl7hLOllsB
-CSDMAZOnTjC3U/dDxGkAV53ijSLdhwZAAIEJzs4bg7/fzTtxRuLWZscFs3YnFo97
-nh6Vfe63SKMI2tavegw5BmV/Sl0fvBf4q77uKNd0f3p4mVmFaG5cIzJLv07A6Fpt
-43C/dxC//AH2hdmoRBBYMql1GNXRor5H4idq9Joz+EkIYIvUX7Q6hL+hqkpMfT7P
-T19sdl6gSzeRntwi5m3OFBqOasv+zbMUZBfHWymeMr/y7vrTC0LUq7dBMtoM1O/4
-gdW7jVg/tRvoSSiicNoxBN33shbyTApOB6jtSj1etX+jkMOvJwIDAQABo2MwYTAO
-BgNVHQ8BAf8EBAMCAYYwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUA95QNVbR
-TLtm8KPiGxvDl7I90VUwHwYDVR0jBBgwFoAUA95QNVbRTLtm8KPiGxvDl7I90VUw
-DQYJKoZIhvcNAQEFBQADggEBAMucN6pIExIK+t1EnE9SsPTfrgT1eXkIoyQY/Esr
-hMAtudXH/vTBH1jLuG2cenTnmCmrEbXjcKChzUyImZOMkXDiqw8cvpOp/2PV5Adg
-06O/nVsJ8dWO41P0jmP6P6fbtGbfYmbW0W5BjfIttep3Sp+dWOIrWcBAI+0tKIJF
-PnlUkiaY4IBIqDfv8NZ5YBberOgOzW6sRBc4L0na4UU+Krk2U886UAb3LujEV0ls
-YSEY1QSteDwsOoBrp+uvFRTp2InBuThs4pFsiv9kuXclVzDAGySj4dzp30d8tbQk
-CAUw7C29C79Fv1C5qfPrmAESrciIxpg0X40KPMbp1ZWVbd4=
------END CERTIFICATE-----
-)CERT";
+extern const uint8_t github_root_ca_crt_start[] asm("_binary_src_certs_github_root_ca_crt_start");
+
+static NotificationEvents *_notificationEvents = nullptr;
+static int previousProgress = 0;
+StaticJsonDocument<128> doc;
 
 void update_started()
 {
-    Serial.println("CALLBACK:  HTTP update process started");
+    String output;
+    doc["status"] = "preparing";
+    serializeJson(doc, output);
+    _notificationEvents->send(output, "download_ota", millis());
 }
 
 void update_finished()
 {
-    Serial.println("CALLBACK:  HTTP update process finished");
+    String output;
+    doc["status"] = "finished";
+    serializeJson(doc, output);
+    _notificationEvents->send(output, "download_ota", millis());
+
+    // delay to allow the event to be sent out
+    vTaskDelay(100 / portTICK_PERIOD_MS);
 }
 
-void update_progress(int cur, int total)
+void update_progress(int currentBytes, int totalBytes)
 {
-    Serial.printf("CALLBACK:  HTTP update process at %d of %d bytes...\n", cur, total);
+    String output;
+    doc["status"] = "progress";
+    int progress = ((currentBytes * 100) / totalBytes);
+    if (progress > previousProgress)
+    {
+        doc["progress"] = progress;
+        serializeJson(doc, output);
+        _notificationEvents->send(output, "download_ota", millis());
+        ESP_LOGV(TAG, "HTTP update process at %d of %d bytes... (%d %%)", currentBytes, totalBytes, progress);
+    }
+    previousProgress = progress;
 }
 
 void update_error(int err)
 {
-    Serial.printf("CALLBACK:  HTTP update fatal error code %d\n", err);
+    String output;
+    doc["status"] = "error";
+    doc["error"] = httpUpdate.getLastErrorString().c_str();
+    serializeJson(doc, output);
+    _notificationEvents->send(output, "download_ota", millis());
 }
 
 void updateTask(void *param)
 {
     WiFiClientSecure client;
-    // client.setInsecure(); // for quick testing only
-    client.setCACert(github_certificate);
+    client.setCACert((char *)github_root_ca_crt_start);
     client.setTimeout(10);
+
     httpUpdate.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
     httpUpdate.rebootOnUpdate(true);
 
     String url = *((String *)param);
-    Serial.println(url);
 
     httpUpdate.onStart(update_started);
     httpUpdate.onEnd(update_finished);
@@ -92,12 +96,14 @@ void updateTask(void *param)
     vTaskDelete(NULL);
 }
 
-DownloadFirmwareService::DownloadFirmwareService(AsyncWebServer *server, SecurityManager *securityManager) : _securityManager(securityManager),
-                                                                                                             _downloadHandler(GITHUB_FIRMWARE_PATH,
-                                                                                                                              _securityManager->wrapCallback(
-                                                                                                                                  std::bind(&DownloadFirmwareService::downloadUpdate, this, std::placeholders::_1, std::placeholders::_2),
-                                                                                                                                  AuthenticationPredicates::IS_ADMIN))
+DownloadFirmwareService::DownloadFirmwareService(AsyncWebServer *server, SecurityManager *securityManager, NotificationEvents *notificationEvents) : _securityManager(securityManager),
+                                                                                                                                                     _downloadHandler(GITHUB_FIRMWARE_PATH,
+                                                                                                                                                                      _securityManager->wrapCallback(
+                                                                                                                                                                          std::bind(&DownloadFirmwareService::downloadUpdate, this, std::placeholders::_1, std::placeholders::_2),
+                                                                                                                                                                          AuthenticationPredicates::IS_ADMIN))
+
 {
+    _notificationEvents = notificationEvents;
     _downloadHandler.setMethod(HTTP_POST);
     _downloadHandler.setMaxContentLength(MAX_GITHUB_SIZE);
     server->addHandler(&_downloadHandler);
@@ -108,17 +114,27 @@ void DownloadFirmwareService::downloadUpdate(AsyncWebServerRequest *request, Jso
     String downloadURL = json["download_url"];
     Serial.println("Starting OTA from: " + downloadURL);
 
-    if (xTaskCreatePinnedToCore(
-            &updateTask,         // Function that should be called
-            "Update",            // Name of the task (for debugging)
-            OTA_TASK_STACK_SIZE, // Stack size (bytes)
-            &downloadURL,        // Pass reference to this class instance
-            20,                  // Pretty high task priority
-            NULL,                // Task handle
-            1                    // Have it on application core
+    doc["status"] = "preparing";
+    doc["progress"] = 0;
+    doc["error"] = "";
+
+    String output;
+    serializeJson(doc, output);
+    _notificationEvents->send(output, "download_ota", millis());
+
+    if (xTaskCreateUniversal(
+            &updateTask,                // Function that should be called
+            "Update",                   // Name of the task (for debugging)
+            OTA_TASK_STACK_SIZE,        // Stack size (bytes)
+            &downloadURL,               // Pass reference to this class instance
+            (configMAX_PRIORITIES - 1), // Pretty high task priority
+            NULL,                       // Task handle
+            1                           // Have it on application core
             ) != pdPASS)
     {
-        log_e("Couldn't create ota task\n");
+        ESP_LOGE(TAG, "Couldn't create download OTA task");
+        request->send(500);
+        return;
     }
     request->send(200);
 }

@@ -35,7 +35,7 @@
 class DownloadFirmwareService
 {
 public:
-    DownloadFirmwareService(AsyncWebServer *server, SecurityManager *securityManager);
+    DownloadFirmwareService(AsyncWebServer *server, SecurityManager *securityManager, NotificationEvents *notificationEvents);
 
 private:
     SecurityManager *_securityManager;
