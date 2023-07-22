@@ -24,10 +24,13 @@ export const load = (async () => {
 	const item = await result.json();
 	return {
 		features: item,
-		title: 'ESP32-SvelteKit'
+		title: 'ESP32-SvelteKit',
+        github: 'theelims/ESP32-sveltekit'
 	};
 }) satisfies LayoutLoad;
 ```
+
+While you're at it update `github` to your repository. It will be used by the link to your repository by the menu footer, as well querying the Github API for firmware updates.
 
 Then change the app name in the [menu.svelte](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/menu.svelte) file as well.
 

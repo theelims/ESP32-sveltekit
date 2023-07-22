@@ -24,17 +24,17 @@ All notable changes to this project will be documented in this file.
 - Increased queue size for SSE and WS to 64 instead of 32
 - ESP32-SvelteKit loop()-function is its own task now
 - ArduinoOTA handle runs in own task now
-- AsyncTCP tasks run on Core 0 to move all networking related stuff to Core 1
+- AsyncTCP tasks run on Core 0 to move all networking related stuff to Core 0 and free up Core 1 for business logic
 
 ### Depreciated
+
+- Spinner Component as it is available through DaisyUI now
 
 ### Removed
 
 - `FT_PROJECT` feature flag removed.
 
 ### Fixed
-
-- Fixed drawer issue introduced with DaisyUI 3.1.6
 
 ### Security
 

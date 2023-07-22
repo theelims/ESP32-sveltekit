@@ -23,9 +23,10 @@
 
 	const copyright = '2023 theelims';
 
-	const github = { href: 'https://github.com/theelims/ESP32-sveltekit', active: true };
+	const github = { href: 'https://github.com/' + $page.data.github, active: true };
 
 	const discord = { href: '.', active: false };
+
 	type menuItem = {
 		title: string;
 		icon: object;

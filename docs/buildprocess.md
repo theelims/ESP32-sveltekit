@@ -34,15 +34,21 @@ Customize the settings as you see fit. A value of 0 will disable the specified f
   -D FT_NTP=1
   -D FT_OTA=1
   -D FT_UPLOAD_FIRMWARE=1
+  -D FT_DOWNLOAD_FIRMWARE=1
+  -D FT_SLEEP=1
+  -D FT_BATTERY=1
 ```
 
-| Flag               | Description                                                                                                                                                                                                              |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| FT_SECURITY        | Controls whether the [security features](statefulservice.md#security-features) are enabled. Disabling this means you won't need to authenticate to access the device and all authentication predicates will be bypassed. |
-| FT_MQTT            | Controls whether the MQTT features are enabled. Disable this if your project does not require MQTT support.                                                                                                              |
-| FT_NTP             | Controls whether network time protocol synchronization features are enabled. Disable this if your project does not require accurate time.                                                                                |
-| FT_OTA             | Controls whether OTA update support is enabled. Disable this if you won't be using the remote update feature.                                                                                                            |
-| FT_UPLOAD_FIRMWARE | Controls the whether the manual upload firmware feature is enabled. Disable this if you won't be manually uploading firmware.                                                                                            |
+| Flag                 | Description                                                                                                                                                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| FT_SECURITY          | Controls whether the [security features](statefulservice.md#security-features) are enabled. Disabling this means you won't need to authenticate to access the device and all authentication predicates will be bypassed. |
+| FT_MQTT              | Controls whether the MQTT features are enabled. Disable this if your project does not require MQTT support.                                                                                                              |
+| FT_NTP               | Controls whether network time protocol synchronization features are enabled. Disable this if your project does not require accurate time.                                                                                |
+| FT_OTA               | Controls whether ArduinoOTA update support is enabled. Disable this if you won't be using the remote update feature.                                                                                                     |
+| FT_UPLOAD_FIRMWARE   | Controls whether the manual upload firmware feature is enabled. Disable this if you won't be manually uploading firmware.                                                                                                |
+| FT_DOWNLOAD_FIRMWARE | Controls whether the firmware download feature is enabled. Disable this if you won't firmware pulled from a server.                                                                                                      |
+| FT_SLEEP             | Controls whether the deep sleep feature is enabled. Disable this if your device is not battery operated or you don't need to place it in deep sleep to save energy.                                                      |
+| FT_BATTERY           | Controls whether the battery state of charge shall be reported to the clients. Disable this if your device is not battery operated.                                                                                      |
 
 ## Factory Settings
 
@@ -120,6 +126,15 @@ build_flags =
 ```
 
 It accepts values from 1 (Verbose) to 5 (Errors) for different information depths to be logged on the serial terminal.
+
+### SSL Root Certificate for Download OTA
+
+The firmware download feature requires a SSL connection. By default it is used to pull firmware images from the Github release page and hence contains the Github Root CA certificate file. To enable SSL the feature `FT_NTP=1` must be enabled as well. If you have a custom update server with SSL you can exchange the content of the [cert-file](https://github.com/theelims/ESP32-sveltekit/blob/main/src/certs/github_root_ca.crt) to verify your server.
+
+```ini
+board_build.embed_txtfiles =
+  src/certs/github_root_ca.crt
+```
 
 ## Vite and LittleFS 32 Character Limit
 

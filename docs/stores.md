@@ -32,7 +32,12 @@ import { telemetry } from "$lib/stores/telemetry";
 
 It exposes the following properties you can subscribe to:
 
-| Property                    | Type      | Description                                |
-| --------------------------- | --------- | ------------------------------------------ |
-| `$telemetry.rssi.rssi`      | `Number`  | The RSSI signal strengt of the WiFi in dBm |
-| `$telemetry.rssi.connected` | `Boolean` | Connection status of the WiFi              |
+| Property                           | Type      | Description                                |
+| ---------------------------------- | --------- | ------------------------------------------ |
+| `$telemetry.rssi.rssi`             | `Number`  | The RSSI signal strengt of the WiFi in dBm |
+| `$telemetry.rssi.connected`        | `Boolean` | Connection status of the WiFi              |
+| `$telemetry.battery.soc`           | `Number`  | Battery state of charge                    |
+| `$telemetry.battery.charging`      | `Boolean` | Is battery connected to charger            |
+| `$telemetry.download_ota.status`   | `String`  | Status of OTA                              |
+| `$telemetry.download_ota.progress` | `Number`  | Progress of OTA                            |
+| `$telemetry.download_ota.error`    | `String`  | Error Message of OTA                       |

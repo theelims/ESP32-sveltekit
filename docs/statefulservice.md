@@ -425,3 +425,44 @@ A small helper class let's you update the battery icon in the status bar. This i
 esp32sveltekit.getBatteryService()->updateSOC(float stateOfCharge); // update state of charge in percent (0 - 100%)
 esp32sveltekit.getBatteryService()->setCharging(boolean isCharging); // notify the client that the device is charging
 ```
+
+## OTA Firmware Updates
+
+ESP32-SvelteKit offers three different ways to roll out firmware updates to field devices. Except for ArduinoOTA all other OTA possibilities cannot update the file system. If the frontend should be updated as well it is necessary to serve it from PROGMEM by activating `-D PROGMEM_WWW`.
+
+### ArduinoOTA
+
+Using the ArduinoOTA firmware update service can be enabled by setting `FT_OTA=1` in [features.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/features.ini). It creates an update server and advertises it's service through mDNS. This can then be used by the Arduino IDE or Platform.io to flash new firmware directly from the IDE.
+The defaults are defined in [factory_settings.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini), but can be changed at any time through the frontend.
+
+```ini
+  ; OTA settings
+  -D FACTORY_OTA_PORT=8266
+  -D FACTORY_OTA_PASSWORD=\"esp-sveltekit\"
+  -D FACTORY_OTA_ENABLED=true
+```
+
+### Firmware Upload
+
+Enabling `FT_UPLOAD_FIRMWARE=1` in [features.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/features.ini) creates a REST endpoint that one can post a firmware binary to. The frontend has a file drop zone to upload a new firmware binary from the browser.
+
+### Firmware Download from Update Server
+
+By enabling `FT_DOWNLOAD_FIRMWARE=1` in [features.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/features.ini) one can POST a link to a firmware binary which is downloaded for the OTA process. This feature requires SSL and is thus dependent on `FT_NTP=1`. The Frontend contains an implementation which uses GitHub's Releases section as teh update server. By specifying a firmware version in [factory_settings.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini) one can make use of semantic versioning to determine the correct firmware:
+
+```ini
+  -D FIRMWARE_VERSION=\"0.2.0\"
+```
+
+Attaching the firmware binary from `.pio/build/{env}/firmware.bin` to the right version tag on GitHub allows anyone to easily upgrade to the latest version.
+
+!!! info
+
+    This feature could be unstable on single-core members of the ESP32 family.
+
+#### Custom Update Server
+
+If Github is not desired as the update server this can be easily modified to any other custom server. The REST API will accept any valid HTTPS-Link. However, SSL is mandatory and may require a different Root CA Certificate then Github to validate correctly.
+Follow the instructions here how to change the [SSL CA Certificate](buildprocess.md#ssl-root-certificate-for-download-ota).
+
+If you use a custom update server you must also adapt the [frontend](structure.md#custom-update-server) code to suit your needs.

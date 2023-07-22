@@ -35,7 +35,7 @@ Manage different user of your app with two authorization levels. An administrato
 
 ### :airplane: OTA Upgrade Service
 
-The framework can provide two different channels for Over-the-Air updates. Either an Arduino OTA port for updates directly from the IDE. Or by uploading a \*.bin file from the web interface.
+The framework can provide three different channels for Over-the-Air updates. Either an ArduinoOTA port for updates directly from the IDE, by uploading a \*.bin file from the web interface. Or by pulling a firmware image from an update server. This is implemented with the github release page as an example.
 
 ### :building_construction: Automated Build Chain
 

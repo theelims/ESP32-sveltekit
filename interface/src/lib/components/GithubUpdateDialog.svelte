@@ -27,16 +27,13 @@
 	} else if ($telemetry.download_ota.status == 'error') {
 		message = $telemetry.download_ota.error;
 	} else if ($telemetry.download_ota.status == 'finished') {
-		// Catch interval triggering reactive statement over and over
-		if (message != 'Restarting ...') {
-			message = 'Restarting ...';
-			progress = 0;
-			// Reload page after 5 sec
-			timerId = setTimeout(() => {
-				closeAllModals();
-				location.reload();
-			}, 5000);
-		}
+		message = 'Restarting ...';
+		progress = 0;
+		// Reload page after 5 sec
+		timerId = setTimeout(() => {
+			closeAllModals();
+			location.reload();
+		}, 5000);
 	}
 
 	onBeforeClose(() => {

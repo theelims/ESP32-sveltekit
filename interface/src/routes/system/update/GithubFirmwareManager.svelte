@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
-	import { notifications } from '$lib/components/toasts/notifications';
-	import { openModal, closeModal, closeAllModals } from 'svelte-modals';
+	import { openModal, closeAllModals } from 'svelte-modals';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
@@ -17,19 +15,10 @@
 	import { compareVersions } from 'compare-versions';
 	import GithubUpdateDialog from '$lib/components/GithubUpdateDialog.svelte';
 
-	type GithubSettings = {
-		firmware_version: string;
-		github_repository: string;
-		update_filesystem: boolean;
-		binary_filename: string;
-		filesystem_filename: string;
-		cors_proxy: string;
-	};
-
 	async function getGithubAPI() {
 		try {
 			const githubResponse = await fetch(
-				'https://api.github.com/repos/theelims/ESP32-sveltekit/releases',
+				'https://api.github.com/repos/' + $page.data.github + '/releases',
 				{
 					method: 'GET',
 					headers: {
