@@ -278,7 +278,9 @@
 					<div>
 						<div class="font-bold">Core Temperature</div>
 						<div class="text-sm opacity-75">
-							{systemStatus.core_temp.toFixed(2)} °C
+							{systemStatus.core_temp.toFixed(2) == 53.33
+								? 'NaN'
+								: systemStatus.core_temp.toFixed(2) + ' °C'}
 						</div>
 					</div>
 				</div>
