@@ -14,7 +14,9 @@
 #include <DownloadFirmwareService.h>
 static const char *TAG = "Download OTA";
 
-extern const uint8_t github_root_ca_crt_start[] asm("_binary_src_certs_github_root_ca_crt_start");
+// extern const uint8_t github_root_ca_crt_start[] asm("_binary_src_certs_github_root_ca_crt_start");
+
+extern const uint8_t rootca_crt_bundle_start[] asm("_binary_src_certs_x509_crt_bundle_bin_start");
 
 static NotificationEvents *_notificationEvents = nullptr;
 static int previousProgress = 0;
@@ -57,7 +59,8 @@ void update_finished()
 void updateTask(void *param)
 {
     WiFiClientSecure client;
-    client.setCACert((char *)github_root_ca_crt_start);
+    // client.setCACert((char *)github_root_ca_crt_start);
+    client.setCACertBundle(rootca_crt_bundle_start);
     client.setTimeout(10);
 
     httpUpdate.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
