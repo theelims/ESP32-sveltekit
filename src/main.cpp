@@ -20,8 +20,10 @@
 
 AsyncWebServer server(80);
 ESP32SvelteKit esp32sveltekit(&server);
+
 LightMqttSettingsService lightMqttSettingsService =
     LightMqttSettingsService(&server, esp32sveltekit.getFS(), esp32sveltekit.getSecurityManager());
+
 LightStateService lightStateService = LightStateService(&server,
                                                         esp32sveltekit.getSecurityManager(),
                                                         esp32sveltekit.getMqttClient(),

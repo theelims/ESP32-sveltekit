@@ -28,17 +28,6 @@ void update_started()
     _notificationEvents->send(output, "download_ota", millis());
 }
 
-void update_finished()
-{
-    String output;
-    doc["status"] = "finished";
-    serializeJson(doc, output);
-    _notificationEvents->send(output, "download_ota", millis());
-
-    // delay to allow the event to be sent out
-    vTaskDelay(100 / portTICK_PERIOD_MS);
-}
-
 void update_progress(int currentBytes, int totalBytes)
 {
     String output;
@@ -54,13 +43,15 @@ void update_progress(int currentBytes, int totalBytes)
     previousProgress = progress;
 }
 
-void update_error(int err)
+void update_finished()
 {
     String output;
-    doc["status"] = "error";
-    doc["error"] = httpUpdate.getLastErrorString().c_str();
+    doc["status"] = "finished";
     serializeJson(doc, output);
     _notificationEvents->send(output, "download_ota", millis());
+
+    // delay to allow the event to be sent out
+    vTaskDelay(100 / portTICK_PERIOD_MS);
 }
 
 void updateTask(void *param)
@@ -73,24 +64,35 @@ void updateTask(void *param)
     httpUpdate.rebootOnUpdate(true);
 
     String url = *((String *)param);
-
+    String output;
     httpUpdate.onStart(update_started);
-    httpUpdate.onEnd(update_finished);
     httpUpdate.onProgress(update_progress);
-    httpUpdate.onError(update_error);
+    httpUpdate.onEnd(update_finished);
 
     t_httpUpdate_return ret = httpUpdate.update(client, url.c_str());
 
     switch (ret)
     {
     case HTTP_UPDATE_FAILED:
-        Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+
+        doc["status"] = "error";
+        doc["error"] = httpUpdate.getLastErrorString().c_str();
+        serializeJson(doc, output);
+        _notificationEvents->send(output, "download_ota", millis());
+
+        Serial.printf("HTTP Update failed with error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
         break;
     case HTTP_UPDATE_NO_UPDATES:
-        Serial.println("HTTP_UPDATE_NO_UPDATES");
+
+        doc["status"] = "error";
+        doc["error"] = "Update failed, has same firmware version";
+        serializeJson(doc, output);
+        _notificationEvents->send(output, "download_ota", millis());
+
+        Serial.println("HTTP Update failed, has same firmware version");
         break;
     case HTTP_UPDATE_OK:
-        Serial.println("HTTP_UPDATE_OK");
+        Serial.println("HTTP Update successful - Restarting");
         break;
     }
     vTaskDelete(NULL);
@@ -122,7 +124,7 @@ void DownloadFirmwareService::downloadUpdate(AsyncWebServerRequest *request, Jso
     serializeJson(doc, output);
     _notificationEvents->send(output, "download_ota", millis());
 
-    if (xTaskCreateUniversal(
+    if (xTaskCreatePinnedToCore(
             &updateTask,                // Function that should be called
             "Update",                   // Name of the task (for debugging)
             OTA_TASK_STACK_SIZE,        // Stack size (bytes)

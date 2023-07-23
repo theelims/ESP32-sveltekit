@@ -40,6 +40,11 @@
 		if (updating) {
 			// prevents modal from closing
 			return false;
+		} else {
+			$telemetry.download_ota.status = 'idle';
+			$telemetry.download_ota.error = '';
+			$telemetry.download_ota.progress = 0;
+			return true;
 		}
 	});
 </script>

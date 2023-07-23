@@ -25,10 +25,12 @@ All notable changes to this project will be documented in this file.
 - ESP32-SvelteKit loop()-function is its own task now
 - ArduinoOTA handle runs in own task now
 - AsyncTCP tasks run on Core 0 to move all networking related stuff to Core 0 and free up Core 1 for business logic
+- Compiler flag on which core ESP32-sveltekit tasks should run
+- Renamed WebSocketRxTx.h to WebSocketServer.h to create a distinction between WS Client and WS Server interfaces
+- Made code of LightStateExample slightly more verbose
+- getServer() returning a pointer to the AsnycWebServer instance.
 
 ### Depreciated
-
-- Spinner Component as it is available through DaisyUI now
 
 ### Removed
 

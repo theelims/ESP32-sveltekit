@@ -87,14 +87,14 @@ void OTASettingsService::configureArduinoOTA()
 
         if (_loopHandle == NULL)
         {
-            xTaskCreateUniversal(
-                this->_loopImpl,        // Function that should be called
-                "ArduinoOTA loop",      // Name of the task (for debugging)
-                4096,                   // Stack size (bytes)
-                this,                   // Pass reference to this class instance
-                (tskIDLE_PRIORITY + 2), // task priority
-                &_loopHandle,           // Task handle
-                0                       // Pin to application core
+            xTaskCreatePinnedToCore(
+                this->_loopImpl,            // Function that should be called
+                "ArduinoOTA loop",          // Name of the task (for debugging)
+                4096,                       // Stack size (bytes)
+                this,                       // Pass reference to this class instance
+                (tskIDLE_PRIORITY + 2),     // task priority
+                &_loopHandle,               // Task handle
+                ESP32SVELTEKIT_RUNNING_CORE // Pin to application core
             );
         }
         else

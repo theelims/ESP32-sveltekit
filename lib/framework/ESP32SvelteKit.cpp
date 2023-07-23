@@ -52,6 +52,8 @@ ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server)
                                                          _factoryResetService(server, &ESPFS, &_securitySettingsService),
                                                          _systemStatus(server, &_securitySettingsService)
 {
+    _server = server;
+
 #ifdef PROGMEM_WWW
     // Serve static resources from PROGMEM
     WWWData::registerRoutes(
@@ -132,14 +134,14 @@ void ESP32SvelteKit::begin()
     _otaSettingsService.begin();
 #endif
 
-    xTaskCreateUniversal(
-        this->_loopImpl,        // Function that should be called
-        "ESP32 SvelteKit Loop", // Name of the task (for debugging)
-        4096,                   // Stack size (bytes)
-        this,                   // Pass reference to this class instance
-        (tskIDLE_PRIORITY + 1), // task priority
-        NULL,                   // Task handle
-        0                       // Pin to application core
+    xTaskCreatePinnedToCore(
+        this->_loopImpl,            // Function that should be called
+        "ESP32 SvelteKit Loop",     // Name of the task (for debugging)
+        4096,                       // Stack size (bytes)
+        this,                       // Pass reference to this class instance
+        (tskIDLE_PRIORITY + 1),     // task priority
+        NULL,                       // Task handle
+        ESP32SVELTEKIT_RUNNING_CORE // Pin to application core
     );
 }
 

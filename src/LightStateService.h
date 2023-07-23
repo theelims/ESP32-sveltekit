@@ -19,7 +19,7 @@
 
 #include <HttpEndpoint.h>
 #include <MqttPubSub.h>
-#include <WebSocketTxRx.h>
+#include <WebSocketServer.h>
 
 #define DEFAULT_LED_STATE false
 #define OFF_STATE "OFF"
@@ -49,12 +49,12 @@ public:
         return StateUpdateResult::UNCHANGED;
     }
 
-    static void haRead(LightState &settings, JsonObject &root)
+    static void homeAssistRead(LightState &settings, JsonObject &root)
     {
         root["state"] = settings.ledOn ? ON_STATE : OFF_STATE;
     }
 
-    static StateUpdateResult haUpdate(JsonObject &root, LightState &lightState)
+    static StateUpdateResult homeAssistUpdate(JsonObject &root, LightState &lightState)
     {
         String state = root["state"];
         // parse new led state
@@ -89,7 +89,7 @@ public:
 private:
     HttpEndpoint<LightState> _httpEndpoint;
     MqttPubSub<LightState> _mqttPubSub;
-    WebSocketTxRx<LightState> _webSocket;
+    WebSocketServer<LightState> _webSocketServer;
     AsyncMqttClient *_mqttClient;
     LightMqttSettingsService *_lightMqttSettingsService;
 

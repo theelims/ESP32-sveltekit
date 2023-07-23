@@ -76,7 +76,7 @@
 	{:then githubReleases}
 		<div class="relative w-full overflow-visible">
 			<div class="overflow-x-auto" transition:slide|local={{ duration: 300, easing: cubicOut }}>
-				<table class="table w-full table-auto">
+				<table class="table table w-full table-auto">
 					<thead>
 						<tr class="font-bold">
 							<th align="left">Release</th>
@@ -90,7 +90,7 @@
 							<tr
 								class={compareVersions($page.data.features.firmware_version, release.tag_name) === 0
 									? 'bg-primary text-primary-content'
-									: 'bg-base-100'}
+									: 'bg-base-100 h-14'}
 							>
 								<td align="left" class="text-base font-semibold">
 									<a
@@ -100,10 +100,12 @@
 										rel="noopener noreferrer">{release.name}</a
 									></td
 								>
-								<td align="center" class="hidden text-sm sm:block">
-									{new Intl.DateTimeFormat('en-GB', {
-										dateStyle: 'medium'
-									}).format(new Date(release.published_at))}
+								<td align="center" class="hidden min-h-full align-middle sm:block">
+									<div class="my-2">
+										{new Intl.DateTimeFormat('en-GB', {
+											dateStyle: 'medium'
+										}).format(new Date(release.published_at))}
+									</div>
 								</td>
 								<td align="center">
 									{#if release.prerelease}

@@ -80,11 +80,11 @@ lightStateService.removeUpdateHandler(myUpdateHandler);
 
 An "originId" is passed to the update handler which may be used to identify the origin of an update. The default origin values the framework provides are:
 
-| Origin               | Description                                   |
-| -------------------- | --------------------------------------------- |
-| http                 | An update sent over REST (HttpEndpoint)       |
-| mqtt                 | An update sent over MQTT (MqttPubSub)         |
-| websocket:{clientId} | An update sent over WebSocket (WebSocketRxTx) |
+| Origin                     | Description                                     |
+| -------------------------- | ----------------------------------------------- |
+| http                       | An update sent over REST (HttpEndpoint)         |
+| mqtt                       | An update sent over MQTT (MqttPubSub)           |
+| websocketserver:{clientId} | An update sent over WebSocket (WebSocketServer) |
 
 StatefulService exposes a read function which you may use to safely read the state. This function takes care of protecting against parallel access to the state in multi-core environments such as the ESP32.
 

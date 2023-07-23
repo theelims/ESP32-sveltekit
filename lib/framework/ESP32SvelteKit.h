@@ -55,6 +55,10 @@
 #define FIRMWARE_VERSION "demo"
 #endif
 
+#ifndef ESP32SVELTEKIT_RUNNING_CORE
+#define ESP32SVELTEKIT_RUNNING_CORE -1
+#endif
+
 class ESP32SvelteKit
 {
 public:
@@ -65,6 +69,11 @@ public:
     FS *getFS()
     {
         return &ESPFS;
+    }
+
+    AsyncWebServer *getServer()
+    {
+        return _server;
     }
 
     SecurityManager *getSecurityManager()
@@ -150,6 +159,7 @@ public:
     }
 
 private:
+    AsyncWebServer *_server;
     FeaturesService _featureService;
     SecuritySettingsService _securitySettingsService;
     WiFiSettingsService _wifiSettingsService;
