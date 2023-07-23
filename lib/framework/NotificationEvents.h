@@ -50,16 +50,16 @@ public:
         switch (event)
         {
         case (ERROR):
-            eventType = "error";
+            eventType = "errorToast";
             break;
         case (WARNING):
-            eventType = "warning";
+            eventType = "warningToast";
             break;
         case (INFO):
-            eventType = "info";
+            eventType = "infoToast";
             break;
         case (SUCCESS):
-            eventType = "success";
+            eventType = "successToast";
             break;
         default:
             return;

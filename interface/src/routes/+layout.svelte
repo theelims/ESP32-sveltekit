@@ -52,7 +52,18 @@
 	let NotificationSource = new EventSource('/events');
 
 	NotificationSource.addEventListener(
-		'info',
+		'error',
+		(event) => {
+			if (NotificationSource.readyState === EventSource.CLOSED) {
+				notifications.error('Connection to device lost', 5000);
+				console.log('Connection to device lost');
+			}
+		},
+		false
+	);
+
+	NotificationSource.addEventListener(
+		'infoToast',
 		(event) => {
 			notifications.info(event.data, 5000);
 		},
@@ -60,7 +71,7 @@
 	);
 
 	NotificationSource.addEventListener(
-		'success',
+		'successToast',
 		(event) => {
 			notifications.success(event.data, 5000);
 		},
@@ -68,7 +79,7 @@
 	);
 
 	NotificationSource.addEventListener(
-		'warning',
+		'warningToast',
 		(event) => {
 			notifications.warning(event.data, 5000);
 		},
@@ -76,7 +87,7 @@
 	);
 
 	NotificationSource.addEventListener(
-		'error',
+		'errorToast',
 		(event) => {
 			notifications.error(event.data, 5000);
 		},

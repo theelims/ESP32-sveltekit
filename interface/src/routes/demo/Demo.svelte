@@ -37,9 +37,18 @@
 	const ws_token = $page.data.features.security ? '?access_token=' + $user.bearer_token : '';
 
 	const lightStateSocket = new WebSocket('ws://' + $page.url.host + '/ws/lightState' + ws_token);
+
 	lightStateSocket.onopen = (event) => {
 		lightStateSocket.send('Hello');
 	};
+
+	lightStateSocket.addEventListener('close', (event) => {
+		const closeCode = event.code;
+		const closeReason = event.reason;
+		console.log('WebSocket closed with code:', closeCode);
+		console.log('Close reason:', closeReason);
+		notifications.error('Websocket disconnected', 5000);
+	});
 
 	lightStateSocket.onmessage = (event) => {
 		const message = JSON.parse(event.data);
