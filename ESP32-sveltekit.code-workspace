@@ -8,7 +8,8 @@
     "files.associations": {
       "*.tcc": "cpp",
       "algorithm": "cpp",
-      "esp32-hal-misc.c": "cpp"
+      "esp32-hal-misc.c": "cpp",
+      "esp_crt_bundle.h": "c"
     }
   }
 }

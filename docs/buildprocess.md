@@ -127,14 +127,22 @@ build_flags =
 
 It accepts values from 1 (Verbose) to 5 (Errors) for different information depths to be logged on the serial terminal.
 
-### SSL Root Certificate for Download OTA
+## SSL Root Certificate Store
 
-The firmware download feature requires a SSL connection. By default it is used to pull firmware images from the Github release page and hence contains the Github Root CA certificate file. To enable SSL the feature `FT_NTP=1` must be enabled as well. If you have a custom update server with SSL you can exchange the content of the [cert-file](https://github.com/theelims/ESP32-sveltekit/blob/main/src/certs/github_root_ca.crt) to verify your server.
+Some features like firmware download require a SSL connection. For that the SSL Root CA certificate must be known to the ESP32. The build system contains a python script derived from Espressif ESP-IDF building a certificate store containing one or more certificates. In order to create the store you must uncomment the three lines below in `platformio.ini`.
 
 ```ini
-board_build.embed_txtfiles =
-  src/certs/github_root_ca.crt
+extra_scripts =
+    pre:scripts/generate_cert_bundle.py
+board_build.embed_files = src/certs/x509_crt_bundle.bin
+board_ssl_cert_source = mozilla
 ```
+
+The script will download a public certificate store from Mozilla, builds a binary containing all certs and embeds this into the firmware. This will add ~65kb to the firmware image. Should you only need a few known certificates you can place their `*.pem` or `*.der` files in the [ssl_certs](https://github.com/theelims/ESP32-sveltekit/blob/main/ssl_certs) folder and change `board_ssl_cert_source = folder`. Then only these certificates will be included in the store. This is especially useful, if you only need to connect to know servers and need to shave some kb off the firmware image:
+
+!!! info
+
+        To enable SSL the feature `FT_NTP=1` must be enabled as well.
 
 ## Vite and LittleFS 32 Character Limit
 

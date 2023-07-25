@@ -20,18 +20,20 @@ import sys
 import requests
 from io import open
 
+Import("env")
+
 try:
     from cryptography import x509
     from cryptography.hazmat.backends import default_backend
     from cryptography.hazmat.primitives import serialization
 except ImportError:
-    print('The cryptography package is not installed.'
-          'Please run \"pip install cryptography\" in the VSCode terminal.')
-    raise
+    env.Execute("$PYTHONEXE -m pip install cryptography")
+
 
 ca_bundle_bin_file = 'x509_crt_bundle.bin'
 mozilla_cacert_url = 'https://curl.se/ca/cacert.pem'
-working_dir = Path("./src/certs")
+certs_dir = Path("./ssl_certs")
+binary_dir = Path("./src/certs")
 
 quiet = False
 
@@ -41,18 +43,18 @@ def download_cacert_file():
     if response.status_code == 200:
 
         # Ensure the directory exists, create it if necessary
-        os.makedirs(working_dir, exist_ok=True)
+        os.makedirs(certs_dir, exist_ok=True)
 
         # Generate the full path to the output file
-        output_file = os.path.join(working_dir, "cacert.pem")
+        output_file = os.path.join(certs_dir, "cacert.pem")
 
         # Write the certificate bundle to the output file with utf-8 encoding
         with open(output_file, "w", encoding="utf-8") as f:
             f.write(response.text)
 
-        print(f"Certificate bundle downloaded to: {output_file}")
+        status('Certificate bundle downloaded to: %s' % output_file)
     else:
-        print("Failed to fetch the certificate bundle.")
+        status('Failed to fetch the certificate bundle.')
 
 def status(msg):
     """ Print status message to stderr """
@@ -62,7 +64,7 @@ def status(msg):
 
 def critical(msg):
     """ Print critical message to stderr """
-    sys.stderr.write('gen_crt_bundle.py: ')
+    sys.stderr.write('SSL Cert Store: ')
     sys.stderr.write(msg)
     sys.stderr.write('\n')
 
@@ -167,15 +169,26 @@ def main():
 
     bundle = CertificateBundle()
 
-    download_cacert_file()
+    try:
+        cert_source = env.GetProjectOption("board_ssl_cert_source")
 
-    bundle.add_from_file(os.path.join(working_dir, "cacert.pem"))
+        if (cert_source == "mozilla"):
+            download_cacert_file()
+            bundle.add_from_file(os.path.join(certs_dir, "cacert.pem"))
+        elif (cert_source == "folder"):
+            bundle.add_from_path(certs_dir)
+    except ValueError:
+        critical('Invalid configuration option: use \'board_ssl_cert_source\' parameter in platformio.ini' )
+        raise InputError('Invalid certificate')
 
     status('Successfully added %d certificates in total' % len(bundle.certificates))
 
     crt_bundle = bundle.create_bundle()
 
-    output_file = os.path.join(working_dir, ca_bundle_bin_file)
+    # Ensure the directory exists, create it if necessary
+    os.makedirs(binary_dir, exist_ok=True)
+
+    output_file = os.path.join(binary_dir, ca_bundle_bin_file)
 
     with open(output_file, 'wb') as f:
         f.write(crt_bundle)

@@ -10,7 +10,7 @@
 .vscode
 node_modules
 /releases
-/scr/certs
+/src/certs
 /temp
-
+/ssl_certs
 

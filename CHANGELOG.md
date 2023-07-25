@@ -16,7 +16,7 @@ All notable changes to this project will be documented in this file.
 - Added sleep service to send ESP32 into deep sleep. Wake-up with button using EXT1
 - Added battery service to show battery state of charge in the status bar. Uses SSE.
 - Added download firmware manager to pull firmware binaries e.g. from github release pages
-- modified generate_cert_bundle.py from Espressif included into the build process to create SSL Root CA Bundle
+- modified generate_cert_bundle.py from Espressif included into the build process to automatically create SSL Root CA Bundle
 
 ### Changed
 
