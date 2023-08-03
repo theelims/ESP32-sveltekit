@@ -2,7 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [next]
+
+### Added
+
+### Changed
+
+### Depreciated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.2.0] - 2023-08-03
 
 ### Added
 
@@ -39,10 +53,6 @@ All notable changes to this project will be documented in this file.
 ### Removed
 
 - `FT_PROJECT` feature flag removed.
-
-### Fixed
-
-### Security
 
 ## [0.1.0] - 2023-05-18
 
