@@ -29,22 +29,26 @@ Many of the framework's built in features may be enabled or disabled as required
 Customize the settings as you see fit. A value of 0 will disable the specified feature:
 
 ```ini
-  -D FT_PROJECT=1
   -D FT_SECURITY=1
   -D FT_MQTT=1
   -D FT_NTP=1
   -D FT_OTA=1
   -D FT_UPLOAD_FIRMWARE=1
+  -D FT_DOWNLOAD_FIRMWARE=1
+  -D FT_SLEEP=1
+  -D FT_BATTERY=1
 ```
 
-| Flag               | Description                                                                                                                                                                                                              |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| FT_PROJECT         | Controls whether the "project" section of the UI is enabled. Disable this if you don't intend to have your own screens in the UI.                                                                                        |
-| FT_SECURITY        | Controls whether the [security features](statefulservice.md#security-features) are enabled. Disabling this means you won't need to authenticate to access the device and all authentication predicates will be bypassed. |
-| FT_MQTT            | Controls whether the MQTT features are enabled. Disable this if your project does not require MQTT support.                                                                                                              |
-| FT_NTP             | Controls whether network time protocol synchronization features are enabled. Disable this if your project does not require accurate time.                                                                                |
-| FT_OTA             | Controls whether OTA update support is enabled. Disable this if you won't be using the remote update feature.                                                                                                            |
-| FT_UPLOAD_FIRMWARE | Controls the whether the manual upload firmware feature is enabled. Disable this if you won't be manually uploading firmware.                                                                                            |
+| Flag                 | Description                                                                                                                                                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| FT_SECURITY          | Controls whether the [security features](statefulservice.md#security-features) are enabled. Disabling this means you won't need to authenticate to access the device and all authentication predicates will be bypassed. |
+| FT_MQTT              | Controls whether the MQTT features are enabled. Disable this if your project does not require MQTT support.                                                                                                              |
+| FT_NTP               | Controls whether network time protocol synchronization features are enabled. Disable this if your project does not require accurate time.                                                                                |
+| FT_OTA               | Controls whether ArduinoOTA update support is enabled. Disable this if you won't be using the remote update feature.                                                                                                     |
+| FT_UPLOAD_FIRMWARE   | Controls whether the manual upload firmware feature is enabled. Disable this if you won't be manually uploading firmware.                                                                                                |
+| FT_DOWNLOAD_FIRMWARE | Controls whether the firmware download feature is enabled. Disable this if you won't firmware pulled from a server.                                                                                                      |
+| FT_SLEEP             | Controls whether the deep sleep feature is enabled. Disable this if your device is not battery operated or you don't need to place it in deep sleep to save energy.                                                      |
+| FT_BATTERY           | Controls whether the battery state of charge shall be reported to the clients. Disable this if your device is not battery operated.                                                                                      |
 
 ## Factory Settings
 
@@ -122,6 +126,23 @@ build_flags =
 ```
 
 It accepts values from 1 (Verbose) to 5 (Errors) for different information depths to be logged on the serial terminal.
+
+## SSL Root Certificate Store
+
+Some features like firmware download require a SSL connection. For that the SSL Root CA certificate must be known to the ESP32. The build system contains a python script derived from Espressif ESP-IDF building a certificate store containing one or more certificates. In order to create the store you must uncomment the three lines below in `platformio.ini`.
+
+```ini
+extra_scripts =
+    pre:scripts/generate_cert_bundle.py
+board_build.embed_files = src/certs/x509_crt_bundle.bin
+board_ssl_cert_source = folder
+```
+
+The script will download a public certificate store from Mozilla, builds a binary containing all certs and embeds this into the firmware. This will add ~65kb to the firmware image. Should you only need a few known certificates you can place their `*.pem` or `*.der` files in the [ssl_certs](https://github.com/theelims/ESP32-sveltekit/blob/main/ssl_certs) folder and change `board_ssl_cert_source = folder`. Then only these certificates will be included in the store. This is especially useful, if you only need to connect to know servers and need to shave some kb off the firmware image:
+
+!!! info
+
+        To enable SSL the feature `FT_NTP=1` must be enabled as well.
 
 ## Vite and LittleFS 32 Character Limit
 

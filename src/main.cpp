@@ -20,8 +20,10 @@
 
 AsyncWebServer server(80);
 ESP32SvelteKit esp32sveltekit(&server);
+
 LightMqttSettingsService lightMqttSettingsService =
     LightMqttSettingsService(&server, esp32sveltekit.getFS(), esp32sveltekit.getSecurityManager());
+
 LightStateService lightStateService = LightStateService(&server,
                                                         esp32sveltekit.getSecurityManager(),
                                                         esp32sveltekit.getMqttClient(),
@@ -33,6 +35,7 @@ void setup()
     Serial.begin(SERIAL_BAUD_RATE);
 
     // start the framework and demo project
+    esp32sveltekit.setMDNSAppName("ESP32 SvelteKit Demo App");
     esp32sveltekit.begin();
 
     // load the initial light settings
@@ -47,6 +50,6 @@ void setup()
 
 void loop()
 {
-    // run the framework's loop function
-    esp32sveltekit.loop();
+    // Delete Arduino loop task, as it is not needed in this example
+    vTaskDelete(NULL);
 }

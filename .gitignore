@@ -9,4 +9,7 @@
 /interface/.eslintcache
 .vscode
 node_modules
+/releases
+/src/certs
+/temp
 

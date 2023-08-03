@@ -20,6 +20,7 @@
 #include <FSPersistence.h>
 #include <HttpEndpoint.h>
 #include <JsonUtils.h>
+#include <NotificationEvents.h>
 
 #ifndef FACTORY_WIFI_SSID
 #define FACTORY_WIFI_SSID ""
@@ -37,6 +38,7 @@
 #define WIFI_SETTINGS_SERVICE_PATH "/rest/wifiSettings"
 
 #define WIFI_RECONNECTION_DELAY 1000 * 30
+#define RSSI_EVENT_DELAY 200
 
 class WiFiSettings
 {
@@ -106,15 +108,19 @@ public:
 class WiFiSettingsService : public StatefulService<WiFiSettings>
 {
 public:
-    WiFiSettingsService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager);
+    WiFiSettingsService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager, NotificationEvents *notificationEvents);
 
     void begin();
     void loop();
+    String getHostname();
 
 private:
-    HttpEndpoint<WiFiSettings> _httpEndpoint;
+    HttpEndpoint<WiFiSettings>
+        _httpEndpoint;
     FSPersistence<WiFiSettings> _fsPersistence;
+    NotificationEvents *_notificationEvents;
     unsigned long _lastConnectionAttempt;
+    unsigned long _lastRssiUpdate;
 
     bool _stopping;
     void onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info);
@@ -122,6 +128,7 @@ private:
 
     void reconfigureWiFiConnection();
     void manageSTA();
+    void updateRSSI();
 };
 
 #endif // end WiFiSettingsService_h

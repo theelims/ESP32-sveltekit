@@ -1,11 +1,13 @@
 <script lang="ts">
 	import type { LayoutData } from './$types';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { user } from '$lib/stores/user';
+	import { telemetry } from '$lib/stores/telemetry';
 	import type { userProfile } from '$lib/stores/user';
 	import { page } from '$app/stores';
 	import { Modals, closeModal } from 'svelte-modals';
 	import Toast from '$lib/components/toasts/Toast.svelte';
+	import { notifications } from '$lib/components/toasts/notifications';
 	import { fade } from 'svelte/transition';
 	import '../app.css';
 	import Menu from './menu.svelte';
@@ -21,6 +23,10 @@
 			validateUser($user);
 		}
 		menuOpen = false;
+	});
+
+	onDestroy(() => {
+		NotificationSource.close();
 	});
 
 	async function validateUser(userdata: userProfile) {
@@ -42,6 +48,75 @@
 	}
 
 	let menuOpen = false;
+
+	let NotificationSource = new EventSource('/events');
+
+	NotificationSource.addEventListener(
+		'error',
+		(event) => {
+			if (NotificationSource.readyState === EventSource.CLOSED) {
+				notifications.error('Connection to device lost', 5000);
+				console.log('Connection to device lost');
+			}
+		},
+		false
+	);
+
+	NotificationSource.addEventListener(
+		'infoToast',
+		(event) => {
+			notifications.info(event.data, 5000);
+		},
+		false
+	);
+
+	NotificationSource.addEventListener(
+		'successToast',
+		(event) => {
+			notifications.success(event.data, 5000);
+		},
+		false
+	);
+
+	NotificationSource.addEventListener(
+		'warningToast',
+		(event) => {
+			notifications.warning(event.data, 5000);
+		},
+		false
+	);
+
+	NotificationSource.addEventListener(
+		'errorToast',
+		(event) => {
+			notifications.error(event.data, 5000);
+		},
+		false
+	);
+
+	NotificationSource.addEventListener(
+		'rssi',
+		(event) => {
+			telemetry.setRSSI(event.data);
+		},
+		false
+	);
+
+	NotificationSource.addEventListener(
+		'battery',
+		(event) => {
+			telemetry.setBattery(event.data);
+		},
+		false
+	);
+
+	NotificationSource.addEventListener(
+		'download_ota',
+		(event) => {
+			telemetry.setDownloadOTA(event.data);
+		},
+		false
+	);
 </script>
 
 <svelte:head>
@@ -62,7 +137,7 @@
 		</div>
 		<!-- Side Navigation -->
 		<div class="drawer-side z-30 shadow-lg">
-			<label for="main-menu" class="drawer-overlay bg-black/20 backdrop-blur" />
+			<label for="main-menu" class="drawer-overlay" />
 			<Menu
 				on:menuClicked={() => {
 					menuOpen = false;

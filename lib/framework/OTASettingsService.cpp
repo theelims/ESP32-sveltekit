@@ -31,11 +31,12 @@ void OTASettingsService::begin()
     configureArduinoOTA();
 }
 
-void OTASettingsService::loop()
+void OTASettingsService::_loop()
 {
-    if (_state.enabled && _arduinoOTA)
+    while (1)
     {
         _arduinoOTA->handle();
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
 
@@ -46,6 +47,13 @@ void OTASettingsService::configureArduinoOTA()
         _arduinoOTA->end();
         delete _arduinoOTA;
         _arduinoOTA = nullptr;
+        MDNS.disableArduino();
+        Serial.println(F("Ending OTA Update Service"));
+        if (_loopHandle != NULL)
+        {
+            vTaskDelete(_loopHandle);
+            _loopHandle = NULL;
+        }
     }
     if (_state.enabled)
     {
@@ -53,6 +61,7 @@ void OTASettingsService::configureArduinoOTA()
         _arduinoOTA = new ArduinoOTAClass;
         _arduinoOTA->setPort(_state.port);
         _arduinoOTA->setPassword(_state.password.c_str());
+        _arduinoOTA->setMdnsEnabled(false);
         _arduinoOTA->onStart([]()
                              { Serial.println(F("Starting")); });
         _arduinoOTA->onEnd([]()
@@ -72,7 +81,26 @@ void OTASettingsService::configureArduinoOTA()
         Serial.println(F("Receive Failed"));
       else if (error == OTA_END_ERROR)
         Serial.println(F("End Failed")); });
+
         _arduinoOTA->begin();
+        MDNS.enableArduino(_state.port, (_state.password.length() > 0));
+
+        if (_loopHandle == NULL)
+        {
+            xTaskCreatePinnedToCore(
+                this->_loopImpl,            // Function that should be called
+                "ArduinoOTA loop",          // Name of the task (for debugging)
+                4096,                       // Stack size (bytes)
+                this,                       // Pass reference to this class instance
+                (tskIDLE_PRIORITY + 2),     // task priority
+                &_loopHandle,               // Task handle
+                ESP32SVELTEKIT_RUNNING_CORE // Pin to application core
+            );
+        }
+        else
+        {
+            vTaskResume(_loopHandle);
+        }
     }
 }
 

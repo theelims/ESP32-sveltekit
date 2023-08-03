@@ -16,11 +16,12 @@
 
 ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server),
                                                          _securitySettingsService(server, &ESPFS),
-                                                         _wifiSettingsService(server, &ESPFS, &_securitySettingsService),
+                                                         _wifiSettingsService(server, &ESPFS, &_securitySettingsService, &_notificationEvents),
                                                          _wifiScanner(server, &_securitySettingsService),
                                                          _wifiStatus(server, &_securitySettingsService),
                                                          _apSettingsService(server, &ESPFS, &_securitySettingsService),
                                                          _apStatus(server, &_securitySettingsService, &_apSettingsService),
+                                                         _notificationEvents(server),
 #if FT_ENABLED(FT_NTP)
                                                          _ntpSettingsService(server, &ESPFS, &_securitySettingsService),
                                                          _ntpStatus(server, &_securitySettingsService),
@@ -31,6 +32,9 @@ ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server)
 #if FT_ENABLED(FT_UPLOAD_FIRMWARE)
                                                          _uploadFirmwareService(server, &_securitySettingsService),
 #endif
+#if FT_ENABLED(FT_DOWNLOAD_FIRMWARE)
+                                                         _downloadFirmwareService(server, &_securitySettingsService, &_notificationEvents),
+#endif
 #if FT_ENABLED(FT_MQTT)
                                                          _mqttSettingsService(server, &ESPFS, &_securitySettingsService),
                                                          _mqttStatus(server, &_mqttSettingsService, &_securitySettingsService),
@@ -38,10 +42,18 @@ ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server)
 #if FT_ENABLED(FT_SECURITY)
                                                          _authenticationService(server, &_securitySettingsService),
 #endif
+#if FT_ENABLED(FT_SLEEP)
+                                                         _sleepService(server, &_securitySettingsService),
+#endif
+#if FT_ENABLED(FT_BATTERY)
+                                                         _batteryService(&_notificationEvents),
+#endif
                                                          _restartService(server, &_securitySettingsService),
                                                          _factoryResetService(server, &ESPFS, &_securitySettingsService),
                                                          _systemStatus(server, &_securitySettingsService)
 {
+    _server = server;
+
 #ifdef PROGMEM_WWW
     // Serve static resources from PROGMEM
     WWWData::registerRoutes(
@@ -63,6 +75,7 @@ ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server)
                     if (request->method() == HTTP_GET) {
                         requestHandler(request);
                     } else if (request->method() == HTTP_OPTIONS) {
+                        // CORS Pre-flight
                         request->send(200);
                     } else {
                         request->send(404);
@@ -97,13 +110,19 @@ ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server)
 void ESP32SvelteKit::begin()
 {
     ESPFS.begin(true);
+
     _wifiSettingsService.begin();
+
+    MDNS.begin(_wifiSettingsService.getHostname().c_str());
+    MDNS.setInstanceName(_appName);
+    MDNS.addService("http", "tcp", 80);
+    MDNS.addServiceTxt("http", "tcp", "Firmware Version", FIRMWARE_VERSION);
+
+    Serial.printf("Running Firmware Version: %s\n", FIRMWARE_VERSION);
+
     _apSettingsService.begin();
 #if FT_ENABLED(FT_NTP)
     _ntpSettingsService.begin();
-#endif
-#if FT_ENABLED(FT_OTA)
-    _otaSettingsService.begin();
 #endif
 #if FT_ENABLED(FT_MQTT)
     _mqttSettingsService.begin();
@@ -111,16 +130,30 @@ void ESP32SvelteKit::begin()
 #if FT_ENABLED(FT_SECURITY)
     _securitySettingsService.begin();
 #endif
+#if FT_ENABLED(FT_OTA)
+    _otaSettingsService.begin();
+#endif
+
+    xTaskCreatePinnedToCore(
+        this->_loopImpl,            // Function that should be called
+        "ESP32 SvelteKit Loop",     // Name of the task (for debugging)
+        4096,                       // Stack size (bytes)
+        this,                       // Pass reference to this class instance
+        (tskIDLE_PRIORITY + 1),     // task priority
+        NULL,                       // Task handle
+        ESP32SVELTEKIT_RUNNING_CORE // Pin to application core
+    );
 }
 
-void ESP32SvelteKit::loop()
+void ESP32SvelteKit::_loop()
 {
-    _wifiSettingsService.loop();
-    _apSettingsService.loop();
-#if FT_ENABLED(FT_OTA)
-    _otaSettingsService.loop();
-#endif
+    while (1)
+    {
+        _wifiSettingsService.loop(); // 30 seconds
+        _apSettingsService.loop();   // 10 seconds
 #if FT_ENABLED(FT_MQTT)
-    _mqttSettingsService.loop();
+        _mqttSettingsService.loop(); // 5 seconds
 #endif
+        vTaskDelay(20 / portTICK_PERIOD_MS);
+    }
 }

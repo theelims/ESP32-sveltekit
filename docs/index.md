@@ -43,7 +43,7 @@ Manage different user of your app with two authorization levels. An administrato
 
 ### :airplane: OTA Upgrade Service
 
-The framework can provide two different channels for Over-the-Air updates. Either an Arduino OTA port for updates directly from the IDE. Or by uploading a \*.bin file from the web interface.
+The framework can provide three different channels for Over-the-Air updates. Either an ArduinoOTA port for updates directly from the IDE, by uploading a \*.bin file from the web interface. Or by pulling a firmware image from an update server. This is implemented with the github release page as an example.
 
 ### :construction_site: Automated Build Chain
 
@@ -57,4 +57,4 @@ The code runs on all variants of the ESP32 chip family. From the plain old ESP32
 
 ## License
 
-ESP32 SvelteKit is distributed with two licenses for different sections of the code. The back end code inherits the GNU LESSER GENERAL PUBLIC LICENSE Version 3 and is therefore distributed with said license. The front end code is distributed under the MIT License. See the [LICENSE](https://github.com/theelims/ESP32-sveltekit/LICENSE) for a full text of both licenses.
+ESP32 SvelteKit is distributed with two licenses for different sections of the code. The back end code inherits the GNU LESSER GENERAL PUBLIC LICENSE Version 3 and is therefore distributed with said license. The front end code is distributed under the MIT License. See the [LICENSE](https://github.com/theelims/ESP32-sveltekit/blob/main/LICENSE) for a full text of both licenses.

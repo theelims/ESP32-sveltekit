@@ -67,7 +67,6 @@ public:
     OTASettingsService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager);
 
     void begin();
-    void loop();
 
 private:
     HttpEndpoint<OTASettings> _httpEndpoint;
@@ -76,6 +75,10 @@ private:
 
     void configureArduinoOTA();
     void onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t info);
+
+    static void _loopImpl(void *_this) { static_cast<OTASettingsService *>(_this)->_loop(); }
+    void _loop();
+    TaskHandle_t _loopHandle = NULL;
 };
 
 #endif // end OTASettingsService_h

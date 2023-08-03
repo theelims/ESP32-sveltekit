@@ -142,8 +142,8 @@
 </script>
 
 <div
-	class="mx-8 my-8 flex
-     flex-col gap-4"
+	class="mx-0 my-1 flex flex-col space-y-4
+     sm:mx-8 sm:my-8"
 >
 	<SettingsCard collapsible={false}>
 		<Users slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />

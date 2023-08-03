@@ -9,7 +9,9 @@
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import CPU from '~icons/tabler/cpu';
-	import Power from '~icons/tabler/power';
+	import CPP from '~icons/tabler/binary';
+	import Power from '~icons/tabler/reload';
+	import Sleep from '~icons/tabler/zzz';
 	import FactoryReset from '~icons/tabler/refresh-dot';
 	import Speed from '~icons/tabler/activity';
 	import Flash from '~icons/tabler/device-sd-card';
@@ -18,6 +20,8 @@
 	import Folder from '~icons/tabler/folder';
 	import Heap from '~icons/tabler/box-model';
 	import Cancel from '~icons/tabler/x';
+	import Temperature from '~icons/tabler/temperature';
+	import Health from '~icons/tabler/stethoscope';
 
 	type SystemStatus = {
 		esp_platform: string;
@@ -33,6 +37,7 @@
 		flash_chip_speed: number;
 		fs_total: number;
 		fs_used: number;
+		firmware_version: string;
 	};
 
 	async function getSystemStatus() {
@@ -105,10 +110,34 @@
 			}
 		});
 	}
+
+	async function postSleep() {
+		const response = await fetch('/rest/sleep', {
+			method: 'POST',
+			headers: {
+				Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic'
+			}
+		});
+	}
+
+	function confirmSleep() {
+		openModal(ConfirmDialog, {
+			title: 'Confirm Going to Sleep',
+			message: 'Are you sure you want to put the device into sleep?',
+			labels: {
+				cancel: { label: 'Abort', icon: Cancel },
+				confirm: { label: 'Sleep', icon: Sleep }
+			},
+			onConfirm: () => {
+				closeModal();
+				postSleep();
+			}
+		});
+	}
 </script>
 
 <SettingsCard collapsible={false}>
-	<CPU slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+	<Health slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">System Status</span>
 
 	<div class="w-full overflow-x-auto">
@@ -120,7 +149,7 @@
 				transition:slide|local={{ duration: 300, easing: cubicOut }}
 			>
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
 						<CPU class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -132,7 +161,19 @@
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
+						<CPP class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Firmware Version</div>
+						<div class="text-sm opacity-75">
+							{systemStatus.firmware_version}
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
 						<Speed class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -144,7 +185,7 @@
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
 						<Heap class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -158,7 +199,7 @@
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
 						<Pyramid class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -172,27 +213,35 @@
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
 						<Sketch class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">Sketch (Size / Free)</div>
-						<div class="text-sm opacity-75">
-							{systemStatus.sketch_size.toLocaleString('en-US')} / {systemStatus.free_sketch_space.toLocaleString(
-								'en-US'
-							)} bytes
+						<div class="font-bold">Sketch (Used / Free)</div>
+						<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
+							<span>
+								{((systemStatus.sketch_size / systemStatus.free_sketch_space) * 100).toFixed(1)} % of
+								{(systemStatus.free_sketch_space / 1000000).toLocaleString('en-US')} MB used
+							</span>
+
+							<span>
+								({(
+									(systemStatus.free_sketch_space - systemStatus.sketch_size) /
+									1000000
+								).toLocaleString('en-US')} MB free)
+							</span>
 						</div>
 					</div>
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
 						<Flash class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
 						<div class="font-bold">Flash Chip (Size / Speed)</div>
 						<div class="text-sm opacity-75">
-							{systemStatus.flash_chip_size.toLocaleString('en-US')} bytes / {(
+							{(systemStatus.flash_chip_size / 1000000).toLocaleString('en-US')} MB / {(
 								systemStatus.flash_chip_speed / 1000000
 							).toLocaleString('en-US')} MHz
 						</div>
@@ -207,29 +256,51 @@
 						<div class="font-bold">File System (Used / Total)</div>
 						<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
 							<span
-								>{systemStatus.fs_used.toLocaleString('en-US')} / {systemStatus.fs_total.toLocaleString(
-									'en-US'
-								)} bytes</span
+								>{((systemStatus.fs_used / systemStatus.fs_total) * 100).toFixed(1)} % of {(
+									systemStatus.fs_total / 1000000
+								).toLocaleString('en-US')} MB used</span
 							>
 
 							<span
-								>({(systemStatus.fs_total - systemStatus.fs_used).toLocaleString('en-US')}
-								bytes free)</span
+								>({((systemStatus.fs_total - systemStatus.fs_used) / 1000000).toLocaleString(
+									'en-US'
+								)}
+								MB free)</span
 							>
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
+						<Temperature class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Core Temperature</div>
+						<div class="text-sm opacity-75">
+							{systemStatus.core_temp.toFixed(2) == 53.33
+								? 'NaN'
+								: systemStatus.core_temp.toFixed(2) + ' °C'}
 						</div>
 					</div>
 				</div>
 			</div>
 		{/await}
 	</div>
-	{#if !$page.data.features.security || $user.admin}
-		<div class="mt-4 flex flex-wrap justify-end gap-2">
+
+	<div class="mt-4 flex flex-wrap justify-end gap-2">
+		{#if $page.data.features.sleep}
+			<button class="btn btn-primary inline-flex items-center" on:click={confirmSleep}
+				><Sleep class="mr-2 h-5 w-5" /><span>Sleep</span></button
+			>
+		{/if}
+		{#if !$page.data.features.security || $user.admin}
 			<button class="btn btn-primary inline-flex items-center" on:click={confirmRestart}
 				><Power class="mr-2 h-5 w-5" /><span>Restart</span></button
 			>
 			<button class="btn btn-secondary inline-flex items-center" on:click={confirmReset}
 				><FactoryReset class="mr-2 h-5 w-5" /><span>Factory Reset</span></button
 			>
-		</div>
-	{/if}
+		{/if}
+	</div>
 </SettingsCard>

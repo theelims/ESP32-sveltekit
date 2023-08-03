@@ -13,6 +13,7 @@
  **/
 
 #include <SystemStatus.h>
+#include <esp32-hal.h>
 
 SystemStatus::SystemStatus(AsyncWebServer *server, SecurityManager *securityManager)
 {
@@ -27,6 +28,7 @@ void SystemStatus::systemStatus(AsyncWebServerRequest *request)
     AsyncJsonResponse *response = new AsyncJsonResponse(false, MAX_ESP_STATUS_SIZE);
     JsonObject root = response->getRoot();
     root["esp_platform"] = "esp32";
+    root["firmware_version"] = FIRMWARE_VERSION;
     root["max_alloc_heap"] = ESP.getMaxAllocHeap();
     root["psram_size"] = ESP.getPsramSize();
     root["free_psram"] = ESP.getFreePsram();
@@ -39,7 +41,7 @@ void SystemStatus::systemStatus(AsyncWebServerRequest *request)
     root["flash_chip_speed"] = ESP.getFlashChipSpeed();
     root["fs_total"] = ESPFS.totalBytes();
     root["fs_used"] = ESPFS.usedBytes();
-
+    root["core_temp"] = temperatureRead();
     response->setLength();
     request->send(response);
 }

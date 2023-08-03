@@ -2,19 +2,18 @@
 
 The actual code for the front end is located under [interface/src/](https://github.com/theelims/ESP32-sveltekit/tree/main/interface/src) and divided into the "routes" folder and a "lib" folder for assets, stores and components.
 
-| Resource                                                                                                               | Description                                                             |
-| ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| [routes/](https://github.com/theelims/ESP32-sveltekit/tree/main/interface/src/routes/)                                 | Root of the routing system                                              |
-| [routes/connections/mqtt](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/connections/mqtt) | Setting and status pages for MQTT server and topics of the demo project |
-| [routes/connections/ntp](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/connections/ntp)   | Setting and status pages for NTP time sync                              |
-| [routes/demo/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/demo/)                       | The lightstate demo                                                     |
-| [routes/system/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/system/)                   | Status page for ESP32 and OTA settings                                  |
-| [routes/user/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/user/)                       | Edit and add users and change passwords                                 |
-| [routes/wifi/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/wifi/)                       | Status and settings for WiFi station and AP                             |
-| [lib/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/)                                       | Library folder for stores, components and assets                        |
-| [lib/assets/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/assets/)                         | Assets like pictures                                                    |
-| [lib/components/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/components/)                 | Reusable components like modals, password input or collapsible          |
-| [lib/stores](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/stores/)                          | Svelte stores for common access to data                                 |
+| Resource                                                                                                      | Description                                                    |
+| ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| [routes/](https://github.com/theelims/ESP32-sveltekit/tree/main/interface/src/routes/)                        | Root of the routing system                                     |
+| [routes/connections/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/connections) | Setting and status pages for MQTT, NTP, etc.                   |
+| [routes/demo/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/demo/)              | The lightstate demo                                            |
+| [routes/system/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/system/)          | Status page for ESP32 and OTA settings                         |
+| [routes/user/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/user/)              | Edit and add users and change passwords                        |
+| [routes/wifi/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/wifi/)              | Status and settings for WiFi station and AP                    |
+| [lib/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/)                              | Library folder for stores, components and assets               |
+| [lib/assets/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/assets/)                | Assets like pictures                                           |
+| [lib/components/](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/components/)        | Reusable components like modals, password input or collapsible |
+| [lib/stores](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/stores/)                 | Svelte stores for common access to data                        |
 
 ## Features
 
@@ -42,7 +41,7 @@ const appName = "ESP32 SvelteKit";
 const copyright = "2023 theelims";
 
 const github = {
-  href: "https://github.com/theelims/ESP32-sveltekit",
+  href: "https://github.com/" + $page.data.github,
   active: true,
 };
 
@@ -90,4 +89,18 @@ On the root level there are two more files which you can customize to your needs
 
 ### Status Bar
 
-`statusbar.svelte` contains the top menu bar which you can customize to show state information about your app and IoT device. By default is only shows the active menu title and the hamburger icon on small screens.
+`statusbar.svelte` contains the top menu bar which you can customize to show state information about your app and IoT device. By default it shows the active menu title and the hamburger icon on small screens.
+
+## Github Firmware Update
+
+If the feature `FT_DOWNLOAD_FIRMWARE` is enabled, ESP32 SvelteKit pulls the Github Release section through the Github API for firmware updates (stable only) once per hour. Also the firmware update menu shows all available firmware releases allowing the user to up- and downgrade has he pleases. If you're using the Github releases section you must first tell the frontend your correct path to your github repository as described [here](sveltekit.md#changing-the-app-name).
+
+Also you must make use of the '-D FIRMWARE_VERSION=' flag in [factory_settings.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini) and give it the same semantic version number as the release tag on Github. On Github create a new release with the matching tag name. Attach the firmware binary file found under `.pio/build/{env}/firmware.bin`. The frontend searches for the first attachment found and uses this as the update link. If you upload further attachments the binary must be the first element, otherwise the update will fail.
+
+### Custom Update Server
+
+The frontend and backend code can be easily adjusted to suit a custom update server. For the backend the changes are described [here](statefulservice.md#custom-update-server). On the frontend only two files must be adapted and changed to switch to a custom update server: [/lib/components/UpdateIndicator.svelte](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/components/UpdateIndicator.svelte) and [/routes/system/update/GithubFirmwareManager.svelte](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/system/update/GithubFirmwareManager.svelte).
+
+!!! info
+
+    The update server must provide the firmware download through SSL encryption.

@@ -121,7 +121,7 @@ public:
         case AP_MODE_NEVER:
             break;
         default:
-            newSettings.provisionMode = AP_MODE_ALWAYS;
+            newSettings.provisionMode = AP_MODE_DISCONNECTED;
         }
         newSettings.ssid = root["ssid"] | SettingValue::format(FACTORY_AP_SSID);
         newSettings.password = root["password"] | FACTORY_AP_PASSWORD;
@@ -150,6 +150,7 @@ public:
     void begin();
     void loop();
     APNetworkStatus getAPNetworkStatus();
+    void recoveryMode();
 
 private:
     HttpEndpoint<APSettings> _httpEndpoint;
@@ -161,6 +162,7 @@ private:
     // for the mangement delay loop
     volatile unsigned long _lastManaged;
     volatile boolean _reconfigureAp;
+    volatile boolean _recoveryMode = false;
 
     void reconfigureAP();
     void manageAP();

@@ -11,7 +11,7 @@
 		error: 'alert-error',
 		success: 'alert-success',
 		warning: 'alert-warning',
-		info: 'alert-error'
+		info: 'alert-info'
 	};
 
 	export let icon = {

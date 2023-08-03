@@ -4,6 +4,8 @@
 	import Discord from '~icons/tabler/brand-discord';
 	import Users from '~icons/tabler/users';
 	import Settings from '~icons/tabler/settings';
+	import Health from '~icons/tabler/stethoscope';
+	import Update from '~icons/tabler/refresh-alert';
 	import WiFi from '~icons/tabler/wifi';
 	import Remote from '~icons/tabler/network';
 	import Control from '~icons/tabler/adjustments';
@@ -21,9 +23,10 @@
 
 	const copyright = '2023 theelims';
 
-	const github = { href: 'https://github.com/theelims/ESP32-sveltekit', active: true };
+	const github = { href: 'https://github.com/' + $page.data.github, active: true };
 
 	const discord = { href: '.', active: false };
+
 	type menuItem = {
 		title: string;
 		icon: object;
@@ -46,7 +49,7 @@
 			title: 'Demo App',
 			icon: Control,
 			href: '/demo',
-			feature: $page.data.features.project,
+			feature: true,
 			active: false
 		},
 		{
@@ -72,13 +75,37 @@
 			]
 		},
 		{ title: 'Wi-Fi', icon: WiFi, href: '/wifi', feature: true, active: false },
-		{ title: 'System', icon: Settings, href: '/system', feature: true, active: false },
 		{
 			title: 'Users',
 			icon: Users,
 			href: '/user',
 			feature: $page.data.features.security && $user.admin,
 			active: false
+		},
+		{
+			title: 'System',
+			icon: Settings,
+			feature: true,
+			submenu: [
+				{
+					title: 'System Status',
+					icon: Health,
+					href: '/system/status',
+					feature: true,
+					active: false
+				},
+				{
+					title: 'Firmware Update',
+					icon: Update,
+					href: '/system/update',
+					feature:
+						($page.data.features.ota ||
+							$page.data.features.upload_firmware ||
+							$page.data.features.download_firmware) &&
+						(!$page.data.features.security || $user.admin),
+					active: false
+				}
+			]
 		}
 	];
 
@@ -136,20 +163,22 @@
 							>
 							<ul>
 								{#each menuItem.submenu as subMenuItem}
-									<li class="hover-bordered">
-										<a
-											href={subMenuItem.href}
-											class="text-ml font-bold {subMenuItem.active ? 'bg-base-100' : ''}"
-											on:click={() => {
-												setActiveMenuItem(menuItems, subMenuItem.title);
-												menuItems = menuItems;
-											}}
-											><svelte:component
-												this={subMenuItem.icon}
-												class="h-5 w-5"
-											/>{subMenuItem.title}</a
-										>
-									</li>
+									{#if subMenuItem.feature}
+										<li class="hover-bordered">
+											<a
+												href={subMenuItem.href}
+												class="text-ml font-bold {subMenuItem.active ? 'bg-base-100' : ''}"
+												on:click={() => {
+													setActiveMenuItem(menuItems, subMenuItem.title);
+													menuItems = menuItems;
+												}}
+												><svelte:component
+													this={subMenuItem.icon}
+													class="h-5 w-5"
+												/>{subMenuItem.title}</a
+											>
+										</li>
+									{/if}
 								{/each}
 							</ul>
 						</details>
