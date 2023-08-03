@@ -33,7 +33,11 @@ LightStateService::LightStateService(AsyncWebServer *server,
                                                                                                             securityManager,
                                                                                                             AuthenticationPredicates::IS_AUTHENTICATED),
                                                                                            _mqttClient(mqttClient),
-                                                                                           _lightMqttSettingsService(lightMqttSettingsService)
+                                                                                           _lightMqttSettingsService(lightMqttSettingsService),
+                                                                                           _webSocketClient(LightState::read,
+                                                                                                            LightState::update,
+                                                                                                            this,
+                                                                                                            LIGHT_SETTINGS_SOCKET_PATH)
 {
     // configure led to be output
     pinMode(LED_BUILTIN, OUTPUT);
