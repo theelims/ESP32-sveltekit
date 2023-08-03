@@ -27,7 +27,7 @@
 
 #include <HTTPClient.h>
 #include <HTTPUpdate.h>
-#include <SSLCertBundle.h>
+// #include <SSLCertBundle.h>
 
 #define GITHUB_FIRMWARE_PATH "/rest/downloadUpdate"
 #define MAX_GITHUB_SIZE 192

@@ -339,7 +339,6 @@ protected:
     }
 
 private:
-    AsyncWebSocket *_webSocket;
     TimerHandle_t timerHandle;
 };
 
