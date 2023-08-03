@@ -30,8 +30,11 @@ All notable changes to this project will be documented in this file.
 - Renamed WebSocketRxTx.h to WebSocketServer.h to create a distinction between WS Client and WS Server interfaces
 - Made code of LightStateExample slightly more verbose
 - getServer() returning a pointer to the AsnycWebServer instance.
+- Updated frontend dependencies and packages to newest version.
 
 ### Depreciated
+
+- ArduinoOTA feature is set to depreciate. It is unstable with mDNS causing some reset loops until it finally settles.
 
 ### Removed
 

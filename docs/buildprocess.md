@@ -135,7 +135,7 @@ Some features like firmware download require a SSL connection. For that the SSL 
 extra_scripts =
     pre:scripts/generate_cert_bundle.py
 board_build.embed_files = src/certs/x509_crt_bundle.bin
-board_ssl_cert_source = mozilla
+board_ssl_cert_source = folder
 ```
 
 The script will download a public certificate store from Mozilla, builds a binary containing all certs and embeds this into the firmware. This will add ~65kb to the firmware image. Should you only need a few known certificates you can place their `*.pem` or `*.der` files in the [ssl_certs](https://github.com/theelims/ESP32-sveltekit/blob/main/ssl_certs) folder and change `board_ssl_cert_source = folder`. Then only these certificates will be included in the store. This is especially useful, if you only need to connect to know servers and need to shave some kb off the firmware image:
