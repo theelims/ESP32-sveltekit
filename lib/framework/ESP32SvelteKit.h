@@ -20,6 +20,7 @@
 #include <AsyncTCP.h>
 #include <WiFi.h>
 #include <ESPmDNS.h>
+#include <AnalyticsService.h>
 #include <FeaturesService.h>
 #include <APSettingsService.h>
 #include <APStatus.h>
@@ -143,6 +144,11 @@ public:
     }
 #endif
 
+    FeaturesService *getFeatureService()
+    {
+        return &_featureService;
+    }
+
     void factoryReset()
     {
         _factoryResetService.factoryReset();
@@ -193,6 +199,9 @@ private:
 #endif
 #if FT_ENABLED(FT_BATTERY)
     BatteryService _batteryService;
+#endif
+#if FT_ENABLED(FT_ANALYTICS)
+    AnalyticsService _analyticsService;
 #endif
     RestartService _restartService;
     FactoryResetService _factoryResetService;

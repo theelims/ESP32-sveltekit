@@ -48,6 +48,9 @@ ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server)
 #if FT_ENABLED(FT_BATTERY)
                                                          _batteryService(&_notificationEvents),
 #endif
+#if FT_ENABLED(FT_ANALYTICS)
+                                                         _analyticsService(&_notificationEvents),
+#endif
                                                          _restartService(server, &_securitySettingsService),
                                                          _factoryResetService(server, &ESPFS, &_securitySettingsService),
                                                          _systemStatus(server, &_securitySettingsService)
@@ -98,6 +101,9 @@ ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server)
             request->send(404);
         } });
 #endif
+#ifdef SERVE_CONFIG_FILES
+    server->serveStatic("/config/", ESPFS, "/config/");
+#endif
 
 // Enable CORS if required
 #if defined(ENABLE_CORS)
@@ -116,6 +122,7 @@ void ESP32SvelteKit::begin()
     MDNS.begin(_wifiSettingsService.getHostname().c_str());
     MDNS.setInstanceName(_appName);
     MDNS.addService("http", "tcp", 80);
+    MDNS.addService("ws", "tcp", 80);
     MDNS.addServiceTxt("http", "tcp", "Firmware Version", FIRMWARE_VERSION);
 
     Serial.printf("Running Firmware Version: %s\n", FIRMWARE_VERSION);
@@ -132,6 +139,9 @@ void ESP32SvelteKit::begin()
 #endif
 #if FT_ENABLED(FT_OTA)
     _otaSettingsService.begin();
+#endif
+#if FT_ENABLED(FT_ANALYTICS)
+    _analyticsService.begin();
 #endif
 
     xTaskCreatePinnedToCore(

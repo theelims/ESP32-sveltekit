@@ -57,4 +57,9 @@
 #define FT_BATTERY 0
 #endif
 
+// ESP32 analytics on by default
+#ifndef FT_ANALYTICS
+#define FT_ANALYTICS 1
+#endif
+
 #endif

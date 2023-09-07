@@ -142,7 +142,7 @@
 	});
 </script>
 
-<div class="bg-base-200 text-base-content rounded-box flex h-full w-80 flex-col p-4">
+<div class="bg-base-200 text-base-content flex h-full w-80 flex-col p-4">
 	<!-- Sidebar content here -->
 	<a
 		href="/"

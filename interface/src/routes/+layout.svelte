@@ -3,6 +3,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { user } from '$lib/stores/user';
 	import { telemetry } from '$lib/stores/telemetry';
+	import { analytics } from '$lib/stores/analytics';
 	import type { userProfile } from '$lib/stores/user';
 	import { page } from '$app/stores';
 	import { Modals, closeModal } from 'svelte-modals';
@@ -16,17 +17,18 @@
 
 	export let data: LayoutData;
 
-	//$: console.log($user);
+	//$: console.log($analytics);
 
 	onMount(() => {
 		if ($user.bearer_token !== '') {
 			validateUser($user);
 		}
 		menuOpen = false;
+		connectToEventSource();
 	});
 
 	onDestroy(() => {
-		NotificationSource.close();
+		NotificationSource?.close();
 	});
 
 	async function validateUser(userdata: userProfile) {
@@ -49,74 +51,122 @@
 
 	let menuOpen = false;
 
-	let NotificationSource = new EventSource('/events');
+	let NotificationSource: EventSource;
+	let reconnectIntervalId: number = 0;
+	let connectionLost = false;
+	let unresponsiveTimeout: number;
 
-	NotificationSource.addEventListener(
-		'error',
-		(event) => {
-			if (NotificationSource.readyState === EventSource.CLOSED) {
-				notifications.error('Connection to device lost', 5000);
-				console.log('Connection to device lost');
+	function connectToEventSource() {
+		NotificationSource = new EventSource('/events');
+		console.log('Attempting SSE connection.');
+
+		NotificationSource.addEventListener('open', () => {
+			clearInterval(reconnectIntervalId);
+			reconnectIntervalId = 0;
+			connectionLost = false;
+			console.log('SSE connection established');
+			notifications.success('Connection to device established', 5000);
+			telemetry.setRSSI('found'); // Update store and flag as server being available again
+		});
+
+		NotificationSource.addEventListener(
+			'rssi',
+			(event) => {
+				telemetry.setRSSI(event.data);
+				// Reset a timer to detect unresponsiveness
+				clearTimeout(unresponsiveTimeout);
+
+				unresponsiveTimeout = setTimeout(() => {
+					console.log('Server is unresponsive');
+					reconnectEventSource();
+				}, 2000); // Detect unresponsiveness after 2 seconds
+			},
+			false
+		);
+
+		NotificationSource.addEventListener(
+			'error',
+			(event) => {
+				reconnectEventSource();
+			},
+			false
+		);
+
+		NotificationSource.addEventListener(
+			'close',
+			(event) => {
+				reconnectEventSource();
+			},
+			false
+		);
+
+		NotificationSource.addEventListener(
+			'infoToast',
+			(event) => {
+				notifications.info(event.data, 5000);
+			},
+			false
+		);
+
+		NotificationSource.addEventListener(
+			'successToast',
+			(event) => {
+				notifications.success(event.data, 5000);
+			},
+			false
+		);
+
+		NotificationSource.addEventListener(
+			'warningToast',
+			(event) => {
+				notifications.warning(event.data, 5000);
+			},
+			false
+		);
+
+		NotificationSource.addEventListener(
+			'errorToast',
+			(event) => {
+				notifications.error(event.data, 5000);
+			},
+			false
+		);
+
+		NotificationSource.addEventListener(
+			'battery',
+			(event) => {
+				telemetry.setBattery(event.data);
+			},
+			false
+		);
+
+		NotificationSource.addEventListener(
+			'download_ota',
+			(event) => {
+				telemetry.setDownloadOTA(event.data);
+			},
+			false
+		);
+		NotificationSource.addEventListener(
+			'analytics',
+			(event) => {
+				analytics.addData(event.data);
+			},
+			false
+		);
+	}
+
+	function reconnectEventSource() {
+		if (connectionLost === false) {
+			NotificationSource.close;
+			notifications.error('Connection to device lost', 5000);
+			if (reconnectIntervalId === 0) {
+				reconnectIntervalId = setInterval(connectToEventSource, 2000);
+				console.log('SSE reconnect Timer ID: ' + reconnectIntervalId);
 			}
-		},
-		false
-	);
-
-	NotificationSource.addEventListener(
-		'infoToast',
-		(event) => {
-			notifications.info(event.data, 5000);
-		},
-		false
-	);
-
-	NotificationSource.addEventListener(
-		'successToast',
-		(event) => {
-			notifications.success(event.data, 5000);
-		},
-		false
-	);
-
-	NotificationSource.addEventListener(
-		'warningToast',
-		(event) => {
-			notifications.warning(event.data, 5000);
-		},
-		false
-	);
-
-	NotificationSource.addEventListener(
-		'errorToast',
-		(event) => {
-			notifications.error(event.data, 5000);
-		},
-		false
-	);
-
-	NotificationSource.addEventListener(
-		'rssi',
-		(event) => {
-			telemetry.setRSSI(event.data);
-		},
-		false
-	);
-
-	NotificationSource.addEventListener(
-		'battery',
-		(event) => {
-			telemetry.setBattery(event.data);
-		},
-		false
-	);
-
-	NotificationSource.addEventListener(
-		'download_ota',
-		(event) => {
-			telemetry.setDownloadOTA(event.data);
-		},
-		false
-	);
+		}
+		connectionLost = true;
+	}
 </script>
 
 <svelte:head>

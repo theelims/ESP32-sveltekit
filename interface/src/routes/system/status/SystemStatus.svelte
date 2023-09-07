@@ -22,6 +22,7 @@
 	import Cancel from '~icons/tabler/x';
 	import Temperature from '~icons/tabler/temperature';
 	import Health from '~icons/tabler/stethoscope';
+	import Stopwatch from '~icons/tabler/24-hours';
 
 	type SystemStatus = {
 		esp_platform: string;
@@ -133,6 +134,33 @@
 				postSleep();
 			}
 		});
+	}
+
+	function convertSeconds(seconds: number) {
+		// Calculate the number of seconds, minutes, hours, and days
+		let minutes = Math.floor(seconds / 60);
+		let hours = Math.floor(minutes / 60);
+		let days = Math.floor(hours / 24);
+
+		// Calculate the remaining hours, minutes, and seconds
+		hours = hours % 24;
+		minutes = minutes % 60;
+		seconds = seconds % 60;
+
+		// Create the formatted string
+		let result = '';
+		if (days > 0) {
+			result += days + ' day' + (days > 1 ? 's' : '') + ' ';
+		}
+		if (hours > 0) {
+			result += hours + ' hour' + (hours > 1 ? 's' : '') + ' ';
+		}
+		if (minutes > 0) {
+			result += minutes + ' minute' + (minutes > 1 ? 's' : '') + ' ';
+		}
+		result += seconds + ' second' + (seconds > 1 ? 's' : '');
+
+		return result;
 	}
 </script>
 
@@ -281,6 +309,30 @@
 							{systemStatus.core_temp.toFixed(2) == 53.33
 								? 'NaN'
 								: systemStatus.core_temp.toFixed(2) + ' °C'}
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10">
+						<Stopwatch class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Uptime</div>
+						<div class="text-sm opacity-75">
+							{convertSeconds(systemStatus.uptime)}
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
+						<Power class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Reset Reason</div>
+						<div class="text-sm opacity-75">
+							{systemStatus.cpu_reset_reason}
 						</div>
 					</div>
 				</div>

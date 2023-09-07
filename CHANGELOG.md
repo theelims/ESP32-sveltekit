@@ -6,7 +6,16 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Status reports reset reason & uptime.
+- AnalyticsService to draw graphs about heap usage and other time dependent values
+- Added ping to WebSocket Server
+- Use telemetry store with RSSI messages to gauge health of connection. Automatic reconnect for SSE and WS.
+- Added user supplied features to FeatureService
+- Compiler flag to let it serve the config JSONs for debug purposes
+
 ### Changed
+
+- Changed JSON format end removed "payload" property. JSON is the same as for MQTT or HTTP now.
 
 ### Depreciated
 

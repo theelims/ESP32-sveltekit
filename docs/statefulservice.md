@@ -31,15 +31,6 @@ void setup() {
 }
 ```
 
-Finally the loop calls the framework's loop function to service the frameworks features.
-
-```cpp
-void loop() {
-  // run the framework's loop function
-  esp32sveltekit.loop();
-}
-```
-
 ## Stateful Service
 
 The framework promotes a modular design and exposes features you may re-use to speed up the development of your project. Where possible it is recommended that you use the features the frameworks supplies. These are documented in this section and a comprehensive example is provided by the demo project.

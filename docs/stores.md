@@ -41,3 +41,25 @@ It exposes the following properties you can subscribe to:
 | `$telemetry.download_ota.status`   | `String`  | Status of OTA                              |
 | `$telemetry.download_ota.progress` | `Number`  | Progress of OTA                            |
 | `$telemetry.download_ota.error`    | `String`  | Error Message of OTA                       |
+
+## Analytics
+
+The analytics store holds a log of heap and other debug information via Server-Sent Events. The corresponding `eventListener` functions are located in `+layout.svelte`.
+
+```ts
+import { analytics } from "$lib/stores/analytics";
+```
+
+It exposes an array of the following properties you can subscribe to:
+
+| Property                    | Type     | Description                                    |
+| --------------------------- | -------- | ---------------------------------------------- |
+| `$analytics.uptime`         | `Number` | Uptime of the chip in seconds since last reset |
+| `$analytics.free_heap`      | `Number` | Current free heap                              |
+| `$analytics.min_free_heap`  | `Number` | Minimum free heap that has been                |
+| `$analytics.max_alloc_heap` | `Number` | Biggest continues free chunk of heap           |
+| `$analytics.fs_used`        | `Number` | Bytes used on the file system                  |
+| `$analytics.fs_total`       | `Number` | Total bytes of the file system                 |
+| `$analytics.core_temp`      | `Number` | Core temperature (on some chips)               |
+
+By default there is one data point every 2 seconds.
