@@ -19,6 +19,13 @@ WiFiSettingsService::WiFiSettingsService(AsyncWebServer *server, FS *fs, Securit
                                                                                                                                                      _lastConnectionAttempt(0),
                                                                                                                                                      _notificationEvents(notificationEvents)
 {
+    addUpdateHandler([&](const String &originId)
+                     { reconfigureWiFiConnection(); },
+                     false);
+}
+
+void WiFiSettingsService::begin()
+{
     // We want the device to come up in opmode=0 (WIFI_OFF), when erasing the flash this is not the default.
     // If needed, we save opmode=0 before disabling persistence so the device boots with WiFi disabled in the future.
     if (WiFi.getMode() != WIFI_OFF)
@@ -39,13 +46,6 @@ WiFiSettingsService::WiFiSettingsService(AsyncWebServer *server, FS *fs, Securit
     WiFi.onEvent(std::bind(&WiFiSettingsService::onStationModeStop, this, std::placeholders::_1, std::placeholders::_2),
                  WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_STOP);
 
-    addUpdateHandler([&](const String &originId)
-                     { reconfigureWiFiConnection(); },
-                     false);
-}
-
-void WiFiSettingsService::begin()
-{
     _fsPersistence.readFromFS();
     reconfigureWiFiConnection();
 }
