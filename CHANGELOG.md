@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2023-09-11
+
+### Fixed
+
+- Fixed the boot loop issue for Arduino 6.4.0
+
 ## [0.2.0] - 2023-08-03
 
 ### Added
