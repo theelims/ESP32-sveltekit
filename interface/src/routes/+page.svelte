@@ -2,6 +2,7 @@
 	import type { PageData } from './$types';
 	import logo from '$lib/assets/logo.png';
 	import { notifications } from '$lib/components/toasts/notifications';
+	import { t, locale, locales } from '$lib/i18n/i18n';
 
 	export let data: PageData;
 </script>
@@ -10,7 +11,20 @@
 	<div class="card md:card-side bg-base-200 shadow-primary shadow-2xl">
 		<figure class="bg-base-200"><img src={logo} alt="Logo" class="h-auto w-64" /></figure>
 		<div class="card-body w-80">
-			<h2 class="card-title text-center text-2xl">Welcome to ESP32-SvelteKit</h2>
+			<!-- <h2 class="card-title text-center text-2xl">Welcome to ESP32-SvelteKit</h2> -->
+			<h2 class="text-center text-2xl">
+				{$t('welcome')} <br />
+				{$t('kit')}!
+			</h2>
+			<!-- select language -->
+			<p class="py-6 text-center">
+				<select bind:value={$locale}>
+					{#each locales as l}
+						<option value={l}>{l}</option>
+					{/each}
+				</select>
+			</p>
+
 			<p class="py-6 text-center">
 				A simple, secure and extensible framework for IoT projects for ESP32 platforms with
 				responsive <a
