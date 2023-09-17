@@ -124,12 +124,12 @@ public:
         websocket_cfg.uri = "ws://192.168.1.91:1880/ws/request";
         //.uri = "wss://webhook.xtoys.app/ypFXRRx9kzkn?token=91ffdf3434946903a6d34acba97e9b69",
 
-        websocket_cfg.buffer_size = _bufferSize,
+        websocket_cfg.buffer_size = _bufferSize;
 
         // websocket_cfg.cert_pem = (const char *)root_CA;
         // websocket_cfg.cert_len = sizeof(root_CA);
 
-            client = esp_websocket_client_init(&websocket_cfg);
+        client = esp_websocket_client_init(&websocket_cfg);
 
         // Register event handler
         esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, &onWSEventStatic, (void *)client);

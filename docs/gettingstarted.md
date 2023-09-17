@@ -58,7 +58,7 @@ pip install mkdocs-material
 ```ini
 [platformio]
 ...
-default_envs = adafruit_feather_esp32_v2
+default_envs = esp32-s3-devkitc-1
 ...
 
 [env:adafruit_feather_esp32_v2]
@@ -75,6 +75,10 @@ board_build.mcu = esp32s3
 ```
 
 If your board is not listed in the platformio.ini you may look in the [official board list](https://docs.platformio.org/en/latest/boards/index.html#espressif-32) for supported boards and add their information accordingly. Either delete the obsolete `[env:...]` sections, or change your board as `default_envs = ...`.
+
+!!! info "Default setup is for an ESP32-S3-DevKitC/M board"
+
+    The projects platformio.ini defaults for an ESP32-S3-DevKitC/M board by Espressif connected to the UART USB port. If you use an other board and the projects shows undesired a behavior it is likely that some parts do not match with pin definitions.
 
 ### Build & Upload Process
 

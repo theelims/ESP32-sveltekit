@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Changed JSON format end removed "payload" property. JSON is the same as for MQTT or HTTP now.
+- Changed default wakeup pin in demo code to GPIO0 (Boot selection)
 
 ### Depreciated
 
@@ -24,6 +25,12 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 ### Security
+
+## [0.2.1] - 2023-09-11
+
+### Fixed
+
+- Fixed the boot loop issue for Arduino 6.4.0
 
 ## [0.2.0] - 2023-08-03
 
