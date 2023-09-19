@@ -11,6 +11,7 @@
 	import Collapsible from '$lib/components/Collapsible.svelte';
 	import MQTT from '~icons/tabler/topology-star-3';
 	import Client from '~icons/tabler/robot';
+	import { t, locale, locales } from '$lib/i18n/i18n';
 
 	type MQTTStatus = {
 		enabled: boolean;
@@ -37,14 +38,14 @@
 	let formField: any;
 
 	const disconnectReason = [
-		'TCP Disconnected',
-		'Unacceptable Protocol Version',
-		'Identifier Rejected',
-		'Server unavailable',
-		'Malformed Credentials',
-		'Not Authorized',
-		'Not Enough Memory',
-		'TLS Rejected'
+		$t('routes')['connections']['mqtt']['MQTT']['disconnectReason']['00'],
+		$t('routes')['connections']['mqtt']['MQTT']['disconnectReason']['01'],
+		$t('routes')['connections']['mqtt']['MQTT']['disconnectReason']['02'],
+		$t('routes')['connections']['mqtt']['MQTT']['disconnectReason']['03'],
+		$t('routes')['connections']['mqtt']['MQTT']['disconnectReason']['04'],
+		$t('routes')['connections']['mqtt']['MQTT']['disconnectReason']['05'],
+		$t('routes')['connections']['mqtt']['MQTT']['disconnectReason']['06'],
+		$t('routes')['connections']['mqtt']['MQTT']['disconnectReason']['07']
 	];
 
 	async function getMQTTStatus() {
@@ -58,7 +59,7 @@
 			});
 			mqttStatus = await response.json();
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 		return mqttStatus;
 	}
@@ -74,7 +75,7 @@
 			});
 			mqttSettings = await response.json();
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 		return mqttSettings;
 	}
@@ -109,13 +110,13 @@
 				body: JSON.stringify(data)
 			});
 			if (response.status == 200) {
-				notifications.success('Security settings updated.', 3000);
+				notifications.success($t('ntfc')['success']['securityupdated'], 3000);
 				mqttSettings = await response.json();
 			} else {
-				notifications.error('User not authorized.', 3000);
+				notifications.error($t('ntfc')['error']['usernotauth'], 3000);
 			}
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 		return;
 	}
@@ -187,12 +188,14 @@
 						/>
 					</div>
 					<div>
-						<div class="font-bold">Status</div>
+						<div class="font-bold">
+							{$t('status')}
+						</div>
 						<div class="text-sm opacity-75">
 							{#if mqttStatus.connected}
-								Connected
+								{$t('connected')}
 							{:else if !mqttStatus.enabled}
-								MQTT Disabled
+								{$t('routes')['connections']['mqtt']['MQTT']['disabled']}
 							{:else}
 								{disconnectReason[mqttStatus.disconnect_reason]}
 							{/if}
@@ -205,7 +208,9 @@
 						<Client class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">Client ID</div>
+						<div class="font-bold">
+							{$t('routes')['connections']['mqtt']['MQTT']['id']}
+						</div>
 						<div class="text-sm opacity-75">
 							{mqttStatus.client_id}
 						</div>
@@ -217,7 +222,9 @@
 
 	{#if !$page.data.features.security || $user.admin}
 		<Collapsible open={false} class="shadow-lg" on:closed={getMQTTSettings}>
-			<span slot="title">Change MQTT Settings</span>
+			<span slot="title">
+				{$t('routes')['connections']['mqtt']['MQTT']['change']}
+			</span>
 
 			<form on:submit|preventDefault={handleSubmitMQTT} novalidate bind:this={formField}>
 				<div class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2">
@@ -228,13 +235,17 @@
 							bind:checked={mqttSettings.enabled}
 							class="checkbox checkbox-primary"
 						/>
-						<span>Enable MQTT</span>
+						<span>
+							{$t('routes')['connections']['mqtt']['MQTT']['enable']}
+						</span>
 					</label>
 					<div class="hidden sm:block" />
 					<!-- Host -->
 					<div>
 						<label class="label" for="host">
-							<span class="label-text text-md">Host</span>
+							<span class="label-text text-md">
+								{$t('routes')['connections']['mqtt']['MQTT']['host']}
+							</span>
 						</label>
 						<input
 							type="text"
@@ -248,15 +259,17 @@
 							required
 						/>
 						<label class="label" for="host">
-							<span class="label-text-alt text-error {formErrors.host ? '' : 'hidden'}"
-								>Must be a valid IPv4 address or URL</span
-							>
-						</label>
+							<span class="label-text-alt text-error {formErrors.host ? '' : 'hidden'}">
+								{$t('routes')['connections']['ipmust']}
+							</span></label
+						>
 					</div>
 					<!-- Port -->
 					<div>
 						<label class="label" for="port">
-							<span class="label-text text-md">Port</span>
+							<span class="label-text text-md">
+								{$t('port')}
+							</span>
 						</label>
 						<input
 							type="number"
@@ -270,15 +283,17 @@
 							required
 						/>
 						<label for="port" class="label"
-							><span class="label-text-alt text-error {formErrors.port ? '' : 'hidden'}"
-								>Port number must be between 0 and 65536</span
-							></label
+							><span class="label-text-alt text-error {formErrors.port ? '' : 'hidden'}">
+								{$t('routes')['connections']['mqtt']['MQTT']['portmust']}
+							</span></label
 						>
 					</div>
 					<!-- Username -->
 					<div>
 						<label class="label" for="user">
-							<span class="label-text text-md">Username</span>
+							<span class="label-text text-md">
+								{$t('username')}
+							</span>
 						</label>
 						<input
 							type="text"
@@ -290,14 +305,18 @@
 					<!-- Password -->
 					<div>
 						<label class="label" for="pwd">
-							<span class="label-text text-md">Password</span>
+							<span class="label-text text-md">
+								{$t('password')}
+							</span>
 						</label>
 						<InputPassword bind:value={mqttSettings.password} id="pwd" />
 					</div>
 					<!-- Client ID -->
 					<div>
 						<label class="label" for="clientid">
-							<span class="label-text text-md">Client ID</span>
+							<span class="label-text text-md">
+								{$t('routes')['connections']['mqtt']['MQTT']['id']}
+							</span>
 						</label>
 						<input
 							type="text"
@@ -313,12 +332,16 @@
 							bind:checked={mqttSettings.clean_session}
 							class="checkbox checkbox-primary mt-2 sm:-mb-8 sm:mt-0"
 						/>
-						<span class="mt-2 sm:-mb-8 sm:mt-0">Clean Session?</span>
+						<span class="mt-2 sm:-mb-8 sm:mt-0">
+							{$t('routes')['connections']['mqtt']['MQTT']['clean']}
+						</span>
 					</label>
 					<!-- Keep Alive -->
 					<div>
 						<label class="label" for="keepalive">
-							<span class="label-text text-md">Keep Alive</span>
+							<span class="label-text text-md">
+								{$t('routes')['connections']['mqtt']['MQTT']['keep']}
+							</span>
 						</label>
 						<label for="keepalive" class="input-group">
 							<input
@@ -332,18 +355,22 @@
 								id="keepalive"
 								required
 							/>
-							<span>Seconds</span>
+							<span>
+								{$t('seconds')}
+							</span>
 						</label>
 						<label for="keepalive" class="label"
-							><span class="label-text-alt text-error {formErrors.keep_alive ? '' : 'hidden'}"
-								>Must be between 1 and 600 seconds</span
-							></label
+							><span class="label-text-alt text-error {formErrors.keep_alive ? '' : 'hidden'}">
+								{$t('routes')['connections']['mqtt']['MQTT']['secondsmust']}
+							</span></label
 						>
 					</div>
 					<!-- Max Topic Length -->
 					<div>
 						<label class="label" for="maxtopic">
-							<span class="label-text text-md">Max Topic Length</span>
+							<span class="label-text text-md">
+								{$t('routes')['connections']['mqtt']['MQTT']['length']}
+							</span>
 						</label>
 						<label for="maxtopic" class="input-group">
 							<input
@@ -357,18 +384,22 @@
 								id="maxtopic"
 								required
 							/>
-							<span>Chars</span>
+							<span>
+								{$t('chars')}
+							</span>
 						</label>
 						<label for="maxtopic" class="label"
-							><span class="label-text-alt text-error {formErrors.topic_length ? '' : 'hidden'}"
-								>Must be between 64 and 4096 characters</span
-							></label
+							><span class="label-text-alt text-error {formErrors.topic_length ? '' : 'hidden'}">
+								{$t('routes')['connections']['mqtt']['MQTT']['charmust']}
+							</span></label
 						>
 					</div>
 				</div>
 				<div class="divider mb-2 mt-0" />
 				<div class="mx-4 flex flex-wrap justify-end gap-2">
-					<button class="btn btn-primary" type="submit">Apply Settings</button>
+					<button class="btn btn-primary" type="submit">
+						{$t('applysettings')}
+					</button>
 				</div>
 			</form>
 		</Collapsible>

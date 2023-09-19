@@ -8,6 +8,7 @@
 	import Spinner from '$lib/components/Spinner.svelte';
 	import MQTT from '~icons/tabler/topology-star-3';
 	import Info from '~icons/tabler/info-circle';
+	import { t, locale, locales } from '$lib/i18n/i18n';
 
 	type BrokerSettings = {
 		mqtt_path: string;
@@ -30,7 +31,7 @@
 			});
 			brokerSettings = await response.json();
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 		return;
 	}
@@ -52,13 +53,13 @@
 				body: JSON.stringify(brokerSettings)
 			});
 			if (response.status == 200) {
-				notifications.success('Broker settings updated.', 3000);
+				notifications.success($t('ntfc')['success']['brokerupdated'], 3000);
 				brokerSettings = await response.json();
 			} else {
-				notifications.error('User not authorized.', 3000);
+				notifications.error($t('ntfc')['error']['usernotauth'], 3000);
 			}
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 		return;
 	}
@@ -99,7 +100,9 @@
 
 <SettingsCard collapsible={true} open={false}>
 	<MQTT slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">MQTT Broker Settings</span>
+	<span slot="title">
+		{$t('routes')['connections']['mqtt']['MQTTConfig']['title']}
+	</span>
 	<div class="w-full overflow-x-auto">
 		{#await getBrokerSettings()}
 			<Spinner />
@@ -112,15 +115,16 @@
 			>
 				<div class="alert alert-info my-2 shadow-lg">
 					<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
-					<span
-						>The LED is controllable via MQTT with the demo project designed to work with Home
-						Assistant's auto discovery feature.</span
-					>
+					<span>
+						{$t('routes')['connections']['mqtt']['MQTTConfig']['alert']}
+					</span>
 				</div>
 				<div class="grid w-full grid-cols-1 content-center gap-x-4 px-4">
 					<div>
 						<label class="label" for="uid">
-							<span class="label-text text-md">Unique ID</span>
+							<span class="label-text text-md">
+								{$t('routes')['connections']['mqtt']['MQTTConfig']['uniqueid']}
+							</span>
 						</label>
 						<input
 							type="text"
@@ -134,14 +138,16 @@
 							required
 						/>
 						<label class="label" for="uid">
-							<span class="label-text-alt text-error {formErrors.uid ? '' : 'hidden'}"
-								>Unique ID must be between 3 and 32 characters long</span
-							>
+							<span class="label-text-alt text-error {formErrors.uid ? '' : 'hidden'}">
+								{$t('routes')['connections']['mqtt']['MQTTConfig']['idmust']}
+							</span>
 						</label>
 					</div>
 					<div>
 						<label class="label" for="name">
-							<span class="label-text text-md">Name</span>
+							<span class="label-text text-md">
+								{$t('routes')['connections']['mqtt']['MQTTConfig']['name']}
+							</span>
 						</label>
 						<input
 							type="text"
@@ -155,14 +161,16 @@
 							required
 						/>
 						<label class="label" for="name">
-							<span class="label-text-alt text-error {formErrors.name ? '' : 'hidden'}"
-								>Name must be between 3 and 32 characters long</span
-							>
+							<span class="label-text-alt text-error {formErrors.name ? '' : 'hidden'}">
+								{$t('routes')['connections']['mqtt']['MQTTConfig']['namemust']}
+							</span>
 						</label>
 					</div>
 					<div>
 						<label class="label" for="path">
-							<span class="label-text text-md">MQTT Path</span>
+							<span class="label-text text-md">
+								{$t('routes')['connections']['mqtt']['MQTTConfig']['path']}
+							</span>
 						</label>
 						<input
 							type="text"
@@ -176,15 +184,17 @@
 							required
 						/>
 						<label class="label" for="path">
-							<span class="label-text-alt text-error {formErrors.path ? '' : 'hidden'}"
-								>MQTT path is limited to 64 characters</span
-							>
+							<span class="label-text-alt text-error {formErrors.path ? '' : 'hidden'}">
+								{$t('routes')['connections']['mqtt']['MQTTConfig']['pathlimited']}
+							</span>
 						</label>
 					</div>
 				</div>
 				<div class="divider mb-2 mt-0" />
 				<div class="mx-4 flex flex-wrap justify-end gap-2">
-					<button class="btn btn-primary" type="submit">Apply Settings</button>
+					<button class="btn btn-primary" type="submit">
+						{$t('applysettings')}
+					</button>
 				</div>
 			</form>
 		{/await}

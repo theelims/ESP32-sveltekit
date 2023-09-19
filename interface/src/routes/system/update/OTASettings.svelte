@@ -6,6 +6,7 @@
 	import InputPassword from '$lib/components/InputPassword.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import OTA from '~icons/tabler/cloud-code';
+	import { t, locale, locales } from '$lib/i18n/i18n';
 
 	type otaSettingsType = {
 		enabled: boolean;
@@ -27,7 +28,7 @@
 			otaSettings = await otaSettingsRes.json();
 			return otaSettings;
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 	}
 
@@ -44,13 +45,13 @@
 				body: JSON.stringify(data)
 			});
 			if (response.status == 200) {
-				notifications.success('OTA settings updated.', 3000);
+				notifications.success($t('ntfc')['success']['otaupdated'], 3000);
 				otaSettings = await response.json();
 			} else {
-				notifications.error('User not authorized.', 3000);
+				notifications.error($t('ntfc')['error']['usernotauth'], 3000);
 			}
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 	}
 
@@ -70,18 +71,24 @@
 
 <SettingsCard collapsible={false}>
 	<OTA slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end rounded-full" />
-	<span slot="title">OTA Firmware Update</span>
+	<span slot="title">
+		{$t('routes')['system']['update']['otatitle']}
+	</span>
 	{#await getOTASettings()}
 		<Spinner />
 	{:then systemStatus}
 		<label class="label cursor-pointer justify-start gap-4">
 			<input type="checkbox" bind:checked={otaSettings.enabled} class="checkbox checkbox-primary" />
-			<span class="">Enable Remote OTA Updates?</span>
+			<span class="">
+				{$t('routes')['system']['update']['otaenable']}
+			</span>
 		</label>
 
 		<form class="form-control w-full" on:submit|preventDefault={handleSubmitOTA} novalidate>
 			<label class="label" for="port">
-				<span class="label-text text-md">Port</span>
+				<span class="label-text text-md">
+					{$t('port')}
+				</span>
 			</label>
 			<input
 				type="number"
@@ -93,16 +100,20 @@
 				required
 			/>
 			<label for="port" class="label"
-				><span class="label-text-alt text-error {errorPort ? '' : 'hidden'}"
-					>Port number must be between 1025 and 65536</span
-				></label
+				><span class="label-text-alt text-error {errorPort ? '' : 'hidden'}">
+					{$t('routes')['system']['update']['portmust1025']}
+				</span></label
 			>
 			<label class="label" for="pwd">
-				<span class="label-text text-md">Password</span>
+				<span class="label-text text-md">
+					{$t('password')}
+				</span>
 			</label>
 			<InputPassword bind:value={otaSettings.password} id="pwd" />
 			<div class="mt-6 flex justify-end">
-				<button class="btn btn-primary" type="submit">Apply Settings</button>
+				<button class="btn btn-primary" type="submit">
+					{$t('applysettings')}
+				</button>
 			</div>
 		</form>
 	{/await}

@@ -14,6 +14,7 @@
 	import Error from '~icons/tabler/circle-x';
 	import { compareVersions } from 'compare-versions';
 	import GithubUpdateDialog from '$lib/components/GithubUpdateDialog.svelte';
+	import { t, locale, locales } from '$lib/i18n/i18n';
 
 	async function getGithubAPI() {
 		try {
@@ -30,7 +31,7 @@
 			const results = await githubResponse.json();
 			return results;
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 		return;
 	}
@@ -46,17 +47,17 @@
 				body: JSON.stringify({ download_url: url })
 			});
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 	}
 
 	function confirmGithubUpdate(url: string) {
 		openModal(ConfirmDialog, {
-			title: 'Confirm flashing new firmware to the device',
-			message: 'Are you sure you want to overwrite the existing firmware with a new one?',
+			title: $t('routes')['system']['update']['confirmflash'],
+			message: $t('routes')['system']['update']['messageflash'],
 			labels: {
-				cancel: { label: 'Abort', icon: Cancel },
-				confirm: { label: 'Update', icon: CloudDown }
+				cancel: { label: $t('abort'), icon: Cancel },
+				confirm: { label: $t('update'), icon: CloudDown }
 			},
 			onConfirm: () => {
 				postGithubDownload(url);
@@ -70,7 +71,9 @@
 
 <SettingsCard collapsible={false}>
 	<Github slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end rounded-full" />
-	<span slot="title">Github Firmware Manager</span>
+	<span slot="title">
+		{$t('routes')['system']['update']['githubtitle']}
+	</span>
 	{#await getGithubAPI()}
 		<Spinner />
 	{:then githubReleases}
@@ -79,10 +82,12 @@
 				<table class="table table w-full table-auto">
 					<thead>
 						<tr class="font-bold">
-							<th align="left">Release</th>
-							<th align="center" class="hidden sm:block">Release Date</th>
-							<th align="center">Experimental</th>
-							<th align="center">Install</th>
+							<th align="left">{$t('routes')['system']['update']['release']}</th>
+							<th align="center" class="hidden sm:block"
+								>{$t('routes')['system']['update']['releasedate']}</th
+							>
+							<th align="center">{$t('routes')['system']['update']['experimental']}</th>
+							<th align="center">{$t('routes')['system']['update']['install']}</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -131,7 +136,9 @@
 	{:catch error}
 		<div class="alert alert-error shadow-lg">
 			<Error class="h-6 w-6 flex-shrink-0" />
-			<span>Please connect to a network with internet access to perform a firmware update.</span>
+			<span>
+				{$t('routes')['system']['update']['pleaseconnect']}
+			</span>
 		</div>
 	{/await}
 </SettingsCard>

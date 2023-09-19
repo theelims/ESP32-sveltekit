@@ -7,6 +7,7 @@
 	import OTA from '~icons/tabler/file-upload';
 	import Warning from '~icons/tabler/alert-triangle';
 	import Cancel from '~icons/tabler/x';
+	import { t, locale, locales } from '$lib/i18n/i18n';
 
 	let files: FileList;
 
@@ -23,17 +24,17 @@
 			});
 			const result = await response.json();
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 	}
 
 	function confirmBinUpload() {
 		openModal(ConfirmDialog, {
-			title: 'Confirm Flashing the Device',
-			message: 'Are you sure you want to overwrite the existing firmware with a new one?',
+			title: $t('routes')['system']['update']['confirmupload'],
+			message: $t('routes')['system']['update']['messageupload'],
 			labels: {
-				cancel: { label: 'Abort', icon: Cancel },
-				confirm: { label: 'Upload', icon: OTA }
+				cancel: { label: $t('abort'), icon: Cancel },
+				confirm: { label: $t('upload'), icon: OTA }
 			},
 			onConfirm: () => {
 				closeModal();
@@ -45,10 +46,14 @@
 
 <SettingsCard collapsible={false}>
 	<OTA slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end rounded-full" />
-	<span slot="title">Upload Firmware</span>
+	<span slot="title">
+		{$t('routes')['system']['update']['uploadfirmware']}
+	</span>
 	<div class="alert alert-warning shadow-lg">
 		<Warning class="h-6 w-6 flex-shrink-0" />
-		<span>Uploading a new firmware (.bin) file will replace the existing firmware.</span>
+		<span>
+			{$t('routes')['system']['update']['uploadwill']}
+		</span>
 	</div>
 
 	<input

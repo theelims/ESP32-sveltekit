@@ -5,6 +5,7 @@
 	import InputPassword from '$lib/components/InputPassword.svelte';
 	import Cancel from '~icons/tabler/x';
 	import Save from '~icons/tabler/device-floppy';
+	import { t, locale, locales } from '$lib/i18n/i18n';
 
 	// provided by <Modals />
 	export let isOpen: boolean;
@@ -58,7 +59,9 @@
 				novalidate
 			>
 				<label class="label" for="username">
-					<span class="label-text text-md">Username</span>
+					<span class="label-text text-md">
+						{$t('username')}
+						</span>
 				</label>
 				<input
 					type="text"
@@ -71,16 +74,22 @@
 				/>
 				<label for="username" class="label"
 					><span class="label-text-alt text-error {errorUsername ? '' : 'hidden'}"
-						>Username must be between 3 and 32 characters long</span
+						>
+						{$t('routes')['edituser']['usernamemust']}
+						</span
 					></label
 				>
 				<label class="label" for="pwd">
-					<span class="label-text text-md">Password</span>
+					<span class="label-text text-md">
+						{$t('password')}
+						</span>
 				</label>
 				<InputPassword bind:value={user.password} id="pwd" />
 				<label class="label my-auto cursor-pointer justify-start gap-4">
 					<input type="checkbox" bind:checked={user.admin} class="checkbox checkbox-primary" />
-					<span class="">Is Admin?</span>
+					<span class="">
+						{$t('routes')['edituser']['isadmin']}
+						</span>
 				</label>
 				<div class="divider my-2" />
 				<div class="flex justify-end gap-2">
@@ -89,11 +98,15 @@
 						on:click={closeModal}
 						type="button"
 					>
-						<Cancel class="mr-2 h-5 w-5" /><span>Cancel</span></button
+						<Cancel class="mr-2 h-5 w-5" /><span>
+							{$t('cancel')}
+							</span></button
 					>
 					<button
 						class="btn btn-primary text-primary-content inline-flex items-center"
-						type="submit"><Save class="mr-2 h-5 w-5" /><span>Save</span></button
+						type="submit"><Save class="mr-2 h-5 w-5" /><span>
+							{$t('save')}
+							</span></button
 					>
 				</div>
 			</form>

@@ -10,13 +10,14 @@
 	import Reload from '~icons/tabler/reload';
 	import { onMount, onDestroy } from 'svelte';
 	import RssiIndicator from '$lib/components/RSSIIndicator.svelte';
+	import { t, locale, locales } from '$lib/i18n/i18n';
 
 	// provided by <Modals />
 	export let isOpen: boolean;
 	export let storeNetwork: any;
 
 	const encryptionType = [
-		'Open',
+		$t('routes')['wifi']['scan']['open'],
 		'WEP',
 		'WPA PSK',
 		'WPA2 PSK',
@@ -105,12 +106,16 @@
 		<div
 			class="bg-base-100 shadow-secondary/30 rounded-box pointer-events-auto flex max-h-full min-w-fit max-w-md flex-col justify-between p-4 shadow-lg"
 		>
-			<h2 class="text-base-content text-start text-2xl font-bold">Scan Networks</h2>
+			<h2 class="text-base-content text-start text-2xl font-bold">
+				{$t('routes')['wifi']['scannet']}
+			</h2>
 			<div class="divider my-2" />
 			<div class="overflow-y-auto">
 				{#if scanActive}<div class="bg-base-100 flex flex-col items-center justify-center p-6">
 						<AP class="text-secondary h-32 w-32 shrink animate-ping stroke-2" />
-						<p class="mt-8 text-2xl">Scanning ...</p>
+						<p class="mt-8 text-2xl">
+							{$t('routes')['wifi']['scan']['scanning']}
+						</p>
 					</div>
 				{:else}
 					<ul class="menu">
@@ -129,7 +134,9 @@
 									<div>
 										<div class="font-bold">{network.ssid}</div>
 										<div class="text-sm opacity-75">
-											Security: {encryptionType[network.encryption_type]}, Channel: {network.channel}
+											{$t('routes')['wifi']['scan']['security']}: {encryptionType[
+												network.encryption_type
+											]}, {$t('routes')['wifi']['channel']}: {network.channel}
 										</div>
 									</div>
 									<div class="flex-grow" />
@@ -149,13 +156,19 @@
 				<button
 					class="btn btn-primary inline-flex flex-none items-center"
 					disabled={scanActive}
-					on:click={scanNetworks}><Reload class="mr-2 h-5 w-5" /><span>Scan again</span></button
+					on:click={scanNetworks}
+					><Reload class="mr-2 h-5 w-5" /><span>
+						{$t('routes')['wifi']['scan']['again']}
+					</span></button
 				>
 
 				<div class="flex-grow" />
 				<button
 					class="btn btn-warning text-warning-content inline-flex flex-none items-center"
-					on:click={closeModal}><Cancel class="mr-2 h-5 w-5" /><span>Cancel</span></button
+					on:click={closeModal}
+					><Cancel class="mr-2 h-5 w-5" /><span>
+						{$t('cancel')}
+					</span></button
 				>
 			</div>
 		</div>

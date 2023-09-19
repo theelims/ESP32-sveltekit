@@ -18,6 +18,7 @@
 	import { onMount } from 'svelte';
 	import { user } from '$lib/stores/user';
 	import { createEventDispatcher } from 'svelte';
+	import { t, locale, locales } from '$lib/i18n/i18n';
 
 	const appName = 'ESP32 SvelteKit';
 
@@ -44,70 +45,85 @@
 		active: boolean;
 	};
 
-	let menuItems = [
-		{
-			title: 'Demo App',
-			icon: Control,
-			href: '/demo',
-			feature: true,
-			active: false
-		},
-		{
-			title: 'Connections',
-			icon: Remote,
-			feature: $page.data.features.mqtt || $page.data.features.ntp,
-			active: true,
-			submenu: [
-				{
-					title: 'MQTT',
-					icon: MQTT,
-					href: '/connections/mqtt',
-					feature: $page.data.features.mqtt,
-					active: false
-				},
-				{
-					title: 'NTP',
-					icon: NTP,
-					href: '/connections/ntp',
-					feature: $page.data.features.ntp,
-					active: false
-				}
-			]
-		},
-		{ title: 'Wi-Fi', icon: WiFi, href: '/wifi', feature: true, active: false },
-		{
-			title: 'Users',
-			icon: Users,
-			href: '/user',
-			feature: $page.data.features.security && $user.admin,
-			active: false
-		},
-		{
-			title: 'System',
-			icon: Settings,
-			feature: true,
-			submenu: [
-				{
-					title: 'System Status',
-					icon: Health,
-					href: '/system/status',
-					feature: true,
-					active: false
-				},
-				{
-					title: 'Firmware Update',
-					icon: Update,
-					href: '/system/update',
-					feature:
-						($page.data.features.ota ||
-							$page.data.features.upload_firmware ||
-							$page.data.features.download_firmware) &&
-						(!$page.data.features.security || $user.admin),
-					active: false
-				}
-			]
-		}
-	];
+	var menuItems: {
+		title: string;
+		icon: object;
+		href?: string | undefined;
+		feature: boolean;
+		active?: boolean | undefined;
+		submenu?:
+			| { title: string; icon: object; href: string; feature: boolean; active: boolean }[]
+			| undefined;
+	}[];
+
+	function setMenuItem() {
+		menuItems = [
+			{
+				title: $t('menu')['demo'],
+				icon: Control,
+				href: '/demo',
+				feature: true,
+				active: false
+			},
+			{
+				title: $t('menu')['connections'],
+				icon: Remote,
+				feature: $page.data.features.mqtt || $page.data.features.ntp,
+				active: true,
+				submenu: [
+					{
+						title: $t('menu')['connections.mqtt'],
+						icon: MQTT,
+						href: '/connections/mqtt',
+						feature: $page.data.features.mqtt,
+						active: false
+					},
+					{
+						title: $t('menu')['connections.ntp'],
+						icon: NTP,
+						href: '/connections/ntp',
+						feature: $page.data.features.ntp,
+						active: false
+					}
+				]
+			},
+			{ title: $t('menu')['wifi'], icon: WiFi, href: '/wifi', feature: true, active: false },
+			{
+				title: $t('menu')['users'],
+				icon: Users,
+				href: '/user',
+				feature: $page.data.features.security && $user.admin,
+				active: false
+			},
+			{
+				title: $t('menu')['system'],
+				icon: Settings,
+				feature: true,
+				submenu: [
+					{
+						title: $t('menu')['system.status'],
+						icon: Health,
+						href: '/system/status',
+						feature: true,
+						active: false
+					},
+					{
+						title: $t('menu')['firmware.update'],
+						icon: Update,
+						href: '/system/update',
+						feature:
+							($page.data.features.ota ||
+								$page.data.features.upload_firmware ||
+								$page.data.features.download_firmware) &&
+							(!$page.data.features.security || $user.admin),
+						active: false
+					}
+				]
+			}
+		];
+	}
+
+	setMenuItem();
 
 	const dispatch = createEventDispatcher();
 
@@ -139,6 +155,17 @@
 	onMount(() => {
 		setActiveMenuItem(menuItems, $page.data.title);
 		menuItems = menuItems;
+	});
+
+	t.subscribe((v) => {
+		//Se cambio idioma y terminó traducción
+		console.log('Traduction finished');
+		setMenuItem();
+	});
+
+	locale.subscribe((v) => {
+		//Se cambión idioma
+		console.log('Changed to ' + v);
 	});
 </script>
 

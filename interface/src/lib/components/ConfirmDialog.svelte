@@ -4,6 +4,8 @@
 	import { fly } from 'svelte/transition';
 	import Cancel from '~icons/tabler/x';
 	import Check from '~icons/tabler/check';
+	import { t, locale, locales } from '$lib/i18n/i18n';
+
 
 	// provided by <Modals />
 	export let isOpen: boolean;
@@ -12,8 +14,8 @@
 	export let message: string;
 	export let onConfirm: any;
 	export let labels = {
-		cancel: { label: 'Cancel', icon: Cancel },
-		confirm: { label: 'OK', icon: Check }
+		cancel: { label: $t('cancel'), icon: Cancel },
+		confirm: { label: $t('ok'), icon: Check }
 	};
 </script>
 

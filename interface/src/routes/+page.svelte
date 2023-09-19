@@ -13,8 +13,7 @@
 		<div class="card-body w-80">
 			<!-- <h2 class="card-title text-center text-2xl">Welcome to ESP32-SvelteKit</h2> -->
 			<h2 class="text-center text-2xl">
-				{$t('welcome')} <br />
-				{$t('kit')}!
+				{@html $t('welcome')}
 			</h2>
 			<!-- select language -->
 			<p class="py-6 text-center">
@@ -26,18 +25,18 @@
 			</p>
 
 			<p class="py-6 text-center">
-				A simple, secure and extensible framework for IoT projects for ESP32 platforms with
-				responsive <a
+				{$t("routes")['page']['s1']}
+				 <a
 					href="https://kit.svelte.dev/"
 					class="link"
 					target="_blank"
 					rel="noopener noreferrer">SvelteKit</a
 				>
-				front-end built with
+				{$t('built')}
 				<a href="https://tailwindcss.com/" class="link" target="_blank" rel="noopener noreferrer"
 					>TailwindCSS</a
 				>
-				and
+				{$t('and')}
 				<a href="https://daisyui.com/" class="link" target="_blank" rel="noopener noreferrer"
 					>DaisyUI</a
 				>.
@@ -45,7 +44,7 @@
 			<a
 				class="btn btn-primary"
 				href="/demo"
-				on:click={() => notifications.success('You did it!', 1000)}>Start Demo</a
+				on:click={() => notifications.success('You did it!', 1000)}>{$t("routes")['page']['s2']}</a
 			>
 		</div>
 	</div>

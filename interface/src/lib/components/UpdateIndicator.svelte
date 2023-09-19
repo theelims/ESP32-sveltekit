@@ -10,6 +10,8 @@
 	import GithubUpdateDialog from '$lib/components/GithubUpdateDialog.svelte';
 	import { compareVersions } from 'compare-versions';
 	import { onMount } from 'svelte';
+	import { t, locale, locales } from '$lib/i18n/i18n';
+
 
 	export let update = false;
 
@@ -33,13 +35,13 @@
 				update = true;
 				firmwareVersion = results.tag_name;
 				firmwareDownloadLink = results.assets[0].browser_download_url;
-				notifications.info('Firmware update available.', 5000);
+				notifications.info($t("lib")['components']['UpdateIndicator']["available"], 5000);
 			} else {
 				update = false;
 				firmwareVersion = '';
 			}
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 	}
 
@@ -69,11 +71,11 @@
 
 	function confirmGithubUpdate(url: string) {
 		openModal(ConfirmDialog, {
-			title: 'Confirm flashing new firmware to the device',
-			message: 'Are you sure you want to overwrite the existing firmware with a new one?',
+			title: $t("lib")['components']['UpdateIndicator']["confirmGithubUpdate"]["title"],
+			message: $t("lib")['components']['UpdateIndicator']["confirmGithubUpdate"]["message"],
 			labels: {
-				cancel: { label: 'Abort', icon: Cancel },
-				confirm: { label: 'Update', icon: CloudDown }
+				cancel: { label: $t('abort'), icon: Cancel },
+				confirm: { label: $t('update'), icon: CloudDown }
 			},
 			onConfirm: () => {
 				postGithubDownload(url);

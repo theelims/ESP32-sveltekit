@@ -22,6 +22,7 @@
 	import Cancel from '~icons/tabler/x';
 	import Temperature from '~icons/tabler/temperature';
 	import Health from '~icons/tabler/stethoscope';
+	import { t, locale, locales } from '$lib/i18n/i18n';
 
 	type SystemStatus = {
 		esp_platform: string;
@@ -74,11 +75,11 @@
 
 	function confirmRestart() {
 		openModal(ConfirmDialog, {
-			title: 'Confirm Restart',
-			message: 'Are you sure you want to restart the device?',
+			title: $t('routes')['system']['status']['confirmrestart'],
+			message: $t('routes')['system']['status']['messagerestart'],
 			labels: {
-				cancel: { label: 'Abort', icon: Cancel },
-				confirm: { label: 'Restart', icon: Power }
+				cancel: { label: $t('abort'), icon: Cancel },
+				confirm: { label: $t('restart'), icon: Power }
 			},
 			onConfirm: () => {
 				closeModal();
@@ -98,11 +99,11 @@
 
 	function confirmReset() {
 		openModal(ConfirmDialog, {
-			title: 'Confirm Factory Reset',
-			message: 'Are you sure you want to reset the device to its factory defaults?',
+			title: $t('routes')['system']['status']['confirmreset'],
+			message: $t('routes')['system']['status']['messagereset'],
 			labels: {
-				cancel: { label: 'Abort', icon: Cancel },
-				confirm: { label: 'Factory Reset', icon: FactoryReset }
+				cancel: { label: $t('abort'), icon: Cancel },
+				confirm: { label: $t('reset'), icon: FactoryReset }
 			},
 			onConfirm: () => {
 				closeModal();
@@ -122,11 +123,11 @@
 
 	function confirmSleep() {
 		openModal(ConfirmDialog, {
-			title: 'Confirm Going to Sleep',
-			message: 'Are you sure you want to put the device into sleep?',
+			title: $t('routes')['system']['status']['confirmsleep'],
+			message: $t('routes')['system']['status']['messagesleep'],
 			labels: {
-				cancel: { label: 'Abort', icon: Cancel },
-				confirm: { label: 'Sleep', icon: Sleep }
+				cancel: { label: $t('abort'), icon: Cancel },
+				confirm: { label: $t('sleep'), icon: Sleep }
 			},
 			onConfirm: () => {
 				closeModal();
@@ -138,7 +139,9 @@
 
 <SettingsCard collapsible={false}>
 	<Health slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">System Status</span>
+	<span slot="title">
+		{$t('routes')['system']['status']['title']}
+	</span>
 
 	<div class="w-full overflow-x-auto">
 		{#await getSystemStatus()}
@@ -153,7 +156,9 @@
 						<CPU class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">Device (Platform / SDK)</div>
+						<div class="font-bold">
+							{$t('routes')['system']['status']['device']}
+						</div>
 						<div class="text-sm opacity-75">
 							{systemStatus.esp_platform} / {systemStatus.sdk_version}
 						</div>
@@ -165,7 +170,9 @@
 						<CPP class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">Firmware Version</div>
+						<div class="font-bold">
+							{$t('routes')['system']['status']['firmware']}
+						</div>
 						<div class="text-sm opacity-75">
 							{systemStatus.firmware_version}
 						</div>
@@ -177,7 +184,9 @@
 						<Speed class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">CPU Frequency</div>
+						<div class="font-bold">
+							{$t('routes')['system']['status']['cpufr']}
+						</div>
 						<div class="text-sm opacity-75">
 							{systemStatus.cpu_freq_mhz} MHz
 						</div>
@@ -189,7 +198,9 @@
 						<Heap class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">Heap (Free / Max Alloc)</div>
+						<div class="font-bold">
+							{$t('routes')['system']['status']['heap']}
+						</div>
 						<div class="text-sm opacity-75">
 							{systemStatus.free_heap.toLocaleString('en-US')} / {systemStatus.max_alloc_heap.toLocaleString(
 								'en-US'
@@ -203,7 +214,9 @@
 						<Pyramid class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">PSRAM (Size / Free)</div>
+						<div class="font-bold">
+							{$t('routes')['system']['status']['psram']}
+						</div>
 						<div class="text-sm opacity-75">
 							{systemStatus.psram_size.toLocaleString('en-US')} / {systemStatus.psram_size.toLocaleString(
 								'en-US'
@@ -217,18 +230,22 @@
 						<Sketch class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">Sketch (Used / Free)</div>
+						<div class="font-bold">
+							{$t('routes')['system']['status']['sketch']}
+						</div>
 						<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
 							<span>
-								{((systemStatus.sketch_size / systemStatus.free_sketch_space) * 100).toFixed(1)} % of
-								{(systemStatus.free_sketch_space / 1000000).toLocaleString('en-US')} MB used
+								{((systemStatus.sketch_size / systemStatus.free_sketch_space) * 100).toFixed(1)} % {$t(
+									'of'
+								)}
+								{(systemStatus.free_sketch_space / 1000000).toLocaleString('en-US')} MB {$t('used')}
 							</span>
 
 							<span>
 								({(
 									(systemStatus.free_sketch_space - systemStatus.sketch_size) /
 									1000000
-								).toLocaleString('en-US')} MB free)
+								).toLocaleString('en-US')} MB {$t('free')})
 							</span>
 						</div>
 					</div>
@@ -239,7 +256,9 @@
 						<Flash class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">Flash Chip (Size / Speed)</div>
+						<div class="font-bold">
+							{$t('routes')['system']['status']['chip']}
+						</div>
 						<div class="text-sm opacity-75">
 							{(systemStatus.flash_chip_size / 1000000).toLocaleString('en-US')} MB / {(
 								systemStatus.flash_chip_speed / 1000000
@@ -253,19 +272,20 @@
 						<Folder class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">File System (Used / Total)</div>
+						<div class="font-bold">
+							{$t('routes')['system']['status']['files']}
+						</div>
 						<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
 							<span
-								>{((systemStatus.fs_used / systemStatus.fs_total) * 100).toFixed(1)} % of {(
-									systemStatus.fs_total / 1000000
-								).toLocaleString('en-US')} MB used</span
+								>{((systemStatus.fs_used / systemStatus.fs_total) * 100).toFixed(1)} % {$t('of')}
+								{(systemStatus.fs_total / 1000000).toLocaleString('en-US')} MB {$t('used')}</span
 							>
 
 							<span
 								>({((systemStatus.fs_total - systemStatus.fs_used) / 1000000).toLocaleString(
 									'en-US'
 								)}
-								MB free)</span
+								MB {$t('free')})</span
 							>
 						</div>
 					</div>
@@ -276,7 +296,9 @@
 						<Temperature class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">Core Temperature</div>
+						<div class="font-bold">
+							{$t('routes')['system']['status']['temperature']}
+						</div>
 						<div class="text-sm opacity-75">
 							{systemStatus.core_temp.toFixed(2) == 53.33
 								? 'NaN'
@@ -291,15 +313,21 @@
 	<div class="mt-4 flex flex-wrap justify-end gap-2">
 		{#if $page.data.features.sleep}
 			<button class="btn btn-primary inline-flex items-center" on:click={confirmSleep}
-				><Sleep class="mr-2 h-5 w-5" /><span>Sleep</span></button
+				><Sleep class="mr-2 h-5 w-5" /><span>
+					{$t('sleep')}
+				</span></button
 			>
 		{/if}
 		{#if !$page.data.features.security || $user.admin}
 			<button class="btn btn-primary inline-flex items-center" on:click={confirmRestart}
-				><Power class="mr-2 h-5 w-5" /><span>Restart</span></button
+				><Power class="mr-2 h-5 w-5" /><span>
+					{$t('restart')}
+				</span></button
 			>
 			<button class="btn btn-secondary inline-flex items-center" on:click={confirmReset}
-				><FactoryReset class="mr-2 h-5 w-5" /><span>Factory Reset</span></button
+				><FactoryReset class="mr-2 h-5 w-5" /><span>
+					{$t('reset')}
+				</span></button
 			>
 		{/if}
 	</div>
