@@ -15,6 +15,7 @@
 	import Clock from '~icons/tabler/clock';
 	import UTC from '~icons/tabler/clock-pin';
 	import Stopwatch from '~icons/tabler/24-hours';
+	import { t, locale, locales } from '$lib/i18n/i18n';
 
 	type NTPStatus = {
 		status: number;
@@ -45,7 +46,7 @@
 			});
 			ntpStatus = await response.json();
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 		return;
 	}
@@ -61,7 +62,7 @@
 			});
 			ntpSettings = await response.json();
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 		return;
 	}
@@ -96,13 +97,13 @@
 			});
 
 			if (response.status == 200) {
-				notifications.success('Security settings updated.', 3000);
+				notifications.success($t('ntfc')['success']['securityupdated'], 3000);
 				ntpSettings = await response.json();
 			} else {
-				notifications.error('User not authorized.', 3000);
+				notifications.error($t('ntfc')['error']['usernotauth'], 3000);
 			}
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 	}
 
@@ -146,15 +147,15 @@
 		// Create the formatted string
 		let result = '';
 		if (days > 0) {
-			result += days + ' day' + (days > 1 ? 's' : '') + ' ';
+			result += days + $t('day') + (days > 1 ? 's' : '') + ' ';
 		}
 		if (hours > 0) {
-			result += hours + ' hour' + (hours > 1 ? 's' : '') + ' ';
+			result += hours + $t('hour') + (hours > 1 ? 's' : '') + ' ';
 		}
 		if (minutes > 0) {
-			result += minutes + ' minute' + (minutes > 1 ? 's' : '') + ' ';
+			result += minutes + $t('minute') + (minutes > 1 ? 's' : '') + ' ';
 		}
-		result += seconds + ' second' + (seconds > 1 ? 's' : '');
+		result += seconds + $t('second') + (seconds > 1 ? 's' : '');
 
 		return result;
 	}
@@ -162,7 +163,9 @@
 
 <SettingsCard collapsible={false}>
 	<Clock slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">Network Time</span>
+	<span slot="title">
+		{$t('routes')['connections']['ntp']['time']}
+	</span>
 	<div class="w-full overflow-x-auto">
 		{#await getNTPStatus()}
 			<Spinner />
@@ -184,7 +187,9 @@
 						/>
 					</div>
 					<div>
-						<div class="font-bold">Status</div>
+						<div class="font-bold">
+							{$t('status')}
+						</div>
 						<div class="text-sm opacity-75">
 							{ntpStatus.status === 1 ? 'Active' : 'Inactive'}
 						</div>
@@ -196,7 +201,9 @@
 						<Server class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">NTP Server</div>
+						<div class="font-bold">
+							{$t('routes')['connections']['ntp']['server']}
+						</div>
 						<div class="text-sm opacity-75">
 							{ntpStatus.server}
 						</div>
@@ -208,7 +215,9 @@
 						<Clock class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">Local Time</div>
+						<div class="font-bold">
+							{$t('routes')['connections']['ntp']['localtime']}
+						</div>
 						<div class="text-sm opacity-75">
 							{new Intl.DateTimeFormat('en-GB', {
 								dateStyle: 'long',
@@ -223,7 +232,9 @@
 						<UTC class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">UTC Time</div>
+						<div class="font-bold">
+							{$t('routes')['connections']['ntp']['utctime']}
+						</div>
 						<div class="text-sm opacity-75">
 							{new Intl.DateTimeFormat('en-GB', {
 								dateStyle: 'long',
@@ -239,7 +250,9 @@
 						<Stopwatch class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">Uptime</div>
+						<div class="font-bold">
+							{$t('routes')['connections']['ntp']['uptime']}
+						</div>
 						<div class="text-sm opacity-75">
 							{convertSeconds(ntpStatus.uptime)}
 						</div>
@@ -251,7 +264,9 @@
 
 	{#if !$page.data.features.security || $user.admin}
 		<Collapsible open={false} class="shadow-lg" on:closed={getNTPSettings}>
-			<span slot="title">Change NTP Settings</span>
+			<span slot="title">
+				{$t('routes')['connections']['ntp']['changesettings']}
+			</span>
 			<form
 				class="form-control w-full"
 				on:submit|preventDefault={handleSubmitNTP}
@@ -264,10 +279,14 @@
 						bind:checked={ntpSettings.enabled}
 						class="checkbox checkbox-primary"
 					/>
-					<span class="">Enable NTP</span>
+					<span class="">
+						{$t('routes')['connections']['ntp']['enable']}
+					</span>
 				</label>
 				<label class="label" for="server">
-					<span class="label-text text-md">Server</span>
+					<span class="label-text text-md">
+						{$t('server')}
+					</span>
 				</label>
 				<input
 					type="text"
@@ -281,12 +300,14 @@
 					required
 				/>
 				<label class="label" for="subnet">
-					<span class="label-text-alt text-error {formErrors.server ? '' : 'hidden'}"
-						>Must be a valid IPv4 address or URL</span
-					>
+					<span class="label-text-alt text-error {formErrors.server ? '' : 'hidden'}">
+						{$t('routes')['connections']['ipmust']}
+					</span>
 				</label>
 				<label class="label" for="tz">
-					<span class="label-text text-md">Pick Time Zone</span>
+					<span class="label-text text-md">
+						{$t('routes')['connections']['ntp']['pick']}
+						</span>
 				</label>
 				<select class="select select-bordered" bind:value={ntpSettings.tz_label} id="tz">
 					{#each Object.entries(TIME_ZONES) as [tz_label, tz_format]}
@@ -295,7 +316,9 @@
 				</select>
 
 				<div class="mt-6 place-self-end">
-					<button class="btn btn-primary" type="submit">Apply Settings</button>
+					<button class="btn btn-primary" type="submit">
+						{$t('applysettings')}
+					</button>
 				</div>
 			</form>
 		</Collapsible>

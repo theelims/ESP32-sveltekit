@@ -13,6 +13,7 @@
 	import MAC from '~icons/tabler/dna-2';
 	import Home from '~icons/tabler/home';
 	import Devices from '~icons/tabler/devices';
+	import { t, locale, locales } from '$lib/i18n/i18n';
 
 	type ApStatus = {
 		status: number;
@@ -49,7 +50,7 @@
 			});
 			apStatus = await response.json();
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 		return apStatus;
 	}
@@ -65,7 +66,7 @@
 			});
 			apSettings = await response.json();
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 		return apSettings;
 	}
@@ -123,13 +124,13 @@
 				body: JSON.stringify(data)
 			});
 			if (response.status == 200) {
-				notifications.success('Access Point settings updated.', 3000);
+				notifications.success($t('ntfc')['success']['apupdated'], 3000);
 				apSettings = await response.json();
 			} else {
-				notifications.error('User not authorized.', 3000);
+				notifications.error($t('ntfc')['error']['usernotauth'], 3000);
 			}
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 	}
 
@@ -199,7 +200,9 @@
 
 <SettingsCard collapsible={false}>
 	<AP slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">Access Point</span>
+	<span slot="title">
+		{$t('routes')['wifi']['ap']['title']}
+	</span>
 	<div class="w-full overflow-x-auto">
 		{#await getAPStatus()}
 			<Spinner />
@@ -215,7 +218,9 @@
 						<AP class="h-auto w-full scale-75 {apStatusDescription[apStatus.status].text_color}" />
 					</div>
 					<div>
-						<div class="font-bold">Status</div>
+						<div class="font-bold">
+							{$t('status')}
+						</div>
 						<div class="text-sm opacity-75">
 							{apStatusDescription[apStatus.status].description}
 						</div>
@@ -227,7 +232,9 @@
 						<Home class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">IP Address</div>
+						<div class="font-bold">
+							{$t('routes')['wifi']['ip']}
+						</div>
 						<div class="text-sm opacity-75">
 							{apStatus.ip_address}
 						</div>
@@ -239,7 +246,9 @@
 						<MAC class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">MAC Address</div>
+						<div class="font-bold">
+							{$t('routes')['wifi']['mac']}
+						</div>
 						<div class="text-sm opacity-75">
 							{apStatus.mac_address}
 						</div>
@@ -251,7 +260,9 @@
 						<Devices class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">AP Clients</div>
+						<div class="font-bold">
+							{$t('routes')['wifi']['ap']['apclients']}
+						</div>
 						<div class="text-sm opacity-75">
 							{apStatus.station_num}
 						</div>
@@ -263,7 +274,9 @@
 
 	{#if !$page.data.features.security || $user.admin}
 		<Collapsible open={false} class="bg-base-200 shadow-lg" on:closed={getAPSettings}>
-			<span slot="title">Change AP Settings</span>
+			<span slot="title">
+				{$t('routes')['wifi']['ap']['change']}
+			</span>
 			<form
 				class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2"
 				on:submit|preventDefault={handleSubmitAP}
@@ -272,7 +285,9 @@
 			>
 				<div>
 					<label class="label" for="apmode">
-						<span class="label-text">Provide Access Point ...</span>
+						<span class="label-text">
+							{$t('routes')['wifi']['ap']['provideap']}
+						</span>
 					</label>
 					<select
 						class="select select-bordered w-full"
@@ -302,21 +317,25 @@
 						required
 					/>
 					<label class="label" for="ssid">
-						<span class="label-text-alt text-error {formErrors.ssid ? '' : 'hidden'}"
-							>SSID must be between 2 and 32 characters long</span
-						>
+						<span class="label-text-alt text-error {formErrors.ssid ? '' : 'hidden'}">
+							{$t('routes')['wifi']['ssidmust']}
+						</span>
 					</label>
 				</div>
 
 				<div>
 					<label class="label" for="pwd">
-						<span class="label-text text-md">Password</span>
+						<span class="label-text text-md">
+							{$t('password')}
+						</span>
 					</label>
 					<InputPassword bind:value={apSettings.password} id="pwd" />
 				</div>
 				<div>
 					<label class="label" for="channel">
-						<span class="label-text text-md">Preferred Channel</span>
+						<span class="label-text text-md">
+							{$t('routes')['wifi']['ap']['prefchannel']}
+						</span>
 					</label>
 					<input
 						type="number"
@@ -330,15 +349,17 @@
 						required
 					/>
 					<label class="label" for="channel">
-						<span class="label-text-alt text-error {formErrors.channel ? '' : 'hidden'}"
-							>Must be channel 1 to 13</span
-						>
+						<span class="label-text-alt text-error {formErrors.channel ? '' : 'hidden'}">
+							{$t('routes')['wifi']['ap']['channelmust']}
+						</span>
 					</label>
 				</div>
 
 				<div>
 					<label class="label" for="clients">
-						<span class="label-text text-md">Max Clients</span>
+						<span class="label-text text-md">
+							{$t('routes')['wifi']['ap']['maxcli']}
+						</span>
 					</label>
 					<input
 						type="number"
@@ -352,15 +373,17 @@
 						required
 					/>
 					<label class="label" for="clients">
-						<span class="label-text-alt text-error {formErrors.max_clients ? '' : 'hidden'}"
-							>Maximum 8 clients allowed</span
-						>
+						<span class="label-text-alt text-error {formErrors.max_clients ? '' : 'hidden'}">
+							{$t('routes')['wifi']['ap']['max8']}
+						</span>
 					</label>
 				</div>
 
 				<div>
 					<label class="label" for="localIP">
-						<span class="label-text text-md">Local IP</span>
+						<span class="label-text text-md">
+							{$t('routes')['wifi']['localip']}
+						</span>
 					</label>
 					<input
 						type="text"
@@ -373,15 +396,17 @@
 						required
 					/>
 					<label class="label" for="localIP">
-						<span class="label-text-alt text-error {formErrors.local_ip ? '' : 'hidden'}"
-							>Must be a valid IPv4 address</span
-						>
+						<span class="label-text-alt text-error {formErrors.local_ip ? '' : 'hidden'}">
+							{$t('routes')['wifi']['ipmust']}
+						</span>
 					</label>
 				</div>
 
 				<div>
 					<label class="label" for="gateway">
-						<span class="label-text text-md">Gateway IP</span>
+						<span class="label-text text-md">
+							{$t('routes')['wifi']['gateway']}
+						</span>
 					</label>
 					<input
 						type="text"
@@ -396,14 +421,16 @@
 						required
 					/>
 					<label class="label" for="gateway">
-						<span class="label-text-alt text-error {formErrors.gateway_ip ? '' : 'hidden'}"
-							>Must be a valid IPv4 address</span
-						>
+						<span class="label-text-alt text-error {formErrors.gateway_ip ? '' : 'hidden'}">
+							{$t('routes')['wifi']['ipmust']}
+						</span>
 					</label>
 				</div>
 				<div>
 					<label class="label" for="subnet">
-						<span class="label-text text-md">Subnet Mask</span>
+						<span class="label-text text-md">
+							{$t('routes')['wifi']['mask']}
+						</span>
 					</label>
 					<input
 						type="text"
@@ -418,9 +445,9 @@
 						required
 					/>
 					<label class="label" for="subnet">
-						<span class="label-text-alt text-error {formErrors.subnet_mask ? '' : 'hidden'}"
-							>Must be a valid IPv4 address</span
-						>
+						<span class="label-text-alt text-error {formErrors.subnet_mask ? '' : 'hidden'}">
+							{$t('routes')['wifi']['ipmust']}
+						</span>
 					</label>
 				</div>
 
@@ -430,11 +457,15 @@
 						bind:checked={apSettings.ssid_hidden}
 						class="checkbox checkbox-primary"
 					/>
-					<span class="">Hide SSID</span>
+					<span class="">
+						{$t('routes')['wifi']['ap']['hidessid']}
+					</span>
 				</label>
 
 				<div class="place-self-end">
-					<button class="btn btn-primary" type="submit">Apply Settings</button>
+					<button class="btn btn-primary" type="submit">
+						{$t('applysettings')}
+					</button>
 				</div>
 			</form>
 		</Collapsible>

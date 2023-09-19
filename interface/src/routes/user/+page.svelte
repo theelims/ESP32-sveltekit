@@ -20,6 +20,7 @@
 	import Warning from '~icons/tabler/alert-triangle';
 	import Cancel from '~icons/tabler/x';
 	import Check from '~icons/tabler/check';
+	import { t, locale, locales } from '$lib/i18n/i18n';
 
 	export let data: PageData;
 
@@ -47,7 +48,7 @@
 			});
 			securitySettings = await response.json();
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 		return;
 	}
@@ -66,13 +67,13 @@
 			securitySettings = await response.json();
 			if (response.status == 200) {
 				if (await validateUser($user)) {
-					notifications.success('Security settings updated.', 3000);
+					notifications.success( $t('ntfc')['success']['securityupdated'], 3000);
 				}
 			} else {
-				notifications.error('User not authorized.', 3000);
+				notifications.error($t('ntfc')['error']['usernotauth'], 3000);
 			}
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 		return;
 	}
@@ -91,21 +92,20 @@
 				return false;
 			}
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 		return true;
 	}
 
 	function confirmDelete(index: number) {
 		openModal(ConfirmDialog, {
-			title: 'Confirm Delete User',
-			message:
-				'Are you sure you want to delete the user "' +
+			title: $t('routes')['user']['confirmdel'],
+			message:$t('routes')['user']['messagedel'] +
 				securitySettings.users[index].username +
 				'"?',
 			labels: {
-				cancel: { label: 'Abort', icon: Cancel },
-				confirm: { label: 'Yes', icon: Check }
+				cancel: { label: $t('abort'), icon: Cancel },
+				confirm: { label: $t('yes') , icon: Check }
 			},
 			onConfirm: () => {
 				securitySettings.users.splice(index, 1);
@@ -118,7 +118,7 @@
 
 	function handleEdit(index: number) {
 		openModal(EditUser, {
-			title: 'Edit User',
+			title: $t('routes')['user']['edituser'] ,
 			user: { ...securitySettings.users[index] }, // Shallow Copy
 			onSaveUser: (editedUser: userSetting) => {
 				securitySettings.users[index] = editedUser;
@@ -130,7 +130,7 @@
 
 	function handleNewUser() {
 		openModal(EditUser, {
-			title: 'Add User',
+			title: $t('routes')['user']['adduser'],
 			onSaveUser: (newUser: userSetting) => {
 				securitySettings.users = [...securitySettings.users, newUser];
 				closeModal();
@@ -147,7 +147,9 @@
 >
 	<SettingsCard collapsible={false}>
 		<Users slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-		<span slot="title">Manage Users</span>
+		<span slot="title">
+			{$t('routes')['user']['title']}
+		</span>
 		{#await getSecuritySettings()}
 			<Spinner />
 		{:then nothing}
@@ -163,9 +165,15 @@
 					<table class="table w-full table-auto">
 						<thead>
 							<tr class="font-bold">
-								<th align="left">Username</th>
-								<th align="center">Admin</th>
-								<th align="right" class="pr-8">Edit</th>
+								<th align="left">
+									{$t('username')}
+								</th>
+								<th align="center">
+									{$t('routes')['user']['admin']}
+								</th>
+								<th align="right" class="pr-8">
+									{$t('routes')['user']['edit']}
+								</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -201,22 +209,25 @@
 			</div>
 			<div class="divider mb-0" />
 
-			<span class="pb-2 text-xl font-medium">Security Settings</span>
+			<span class="pb-2 text-xl font-medium">
+				{$t('routes')['user']['securitysettings']}
+			</span>
 			<div class="alert alert-warning shadow-lg">
 				<Warning class="h-6 w-6 flex-shrink-0" />
-				<span
-					>The JWT secret is used to sign authentication tokens. If you modify the JWT Secret, all
-					users will be signed out.</span
-				>
+				<span>
+					{$t('routes')['user']['jwt']}
+				</span>
 			</div>
 			<label class="label" for="secret">
-				<span class="label-text text-md">JWT Secret</span>
+				<span class="label-text text-md">
+					{$t('routes')['user']['jwtsecret']}
+				</span>
 			</label>
 			<InputPassword bind:value={securitySettings.jwt_secret} id="secret" />
 			<div class="mt-6 flex justify-end">
-				<button class="btn btn-primary" on:click={() => postSecuritySettings(securitySettings)}
-					>Apply Settings</button
-				>
+				<button class="btn btn-primary" on:click={() => postSecuritySettings(securitySettings)}>
+					{$t('applysettings')}
+				</button>
 			</div>
 		{/await}
 	</SettingsCard>

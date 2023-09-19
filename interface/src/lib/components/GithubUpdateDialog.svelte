@@ -4,6 +4,8 @@
 	import { fly } from 'svelte/transition';
 	import { telemetry } from '$lib/stores/telemetry';
 	import Cancel from '~icons/tabler/x';
+	import { t, locale, locales } from '$lib/i18n/i18n';
+
 
 	// provided by <Modals />
 	export let isOpen: boolean;
@@ -61,7 +63,7 @@
 		<div
 			class="bg-base-100 shadow-secondary/30 rounded-box pointer-events-auto flex max-h-full min-w-fit max-w-md flex-col justify-between p-4 shadow-lg"
 		>
-			<h2 class="text-base-content text-start text-2xl font-bold">Updating Firmware</h2>
+			<h2 class="text-base-content text-start text-2xl font-bold">{$t('updating.firmware')}</h2>
 			<div class="divider my-2" />
 			<div class="overflow-y-auto">
 				<div class="bg-base-100 flex flex-col items-center justify-center p-6">
@@ -84,7 +86,7 @@
 						location.reload();
 					}}
 				>
-					<Cancel class="mr-2 h-5 w-5" /><span>Close</span></button
+					<Cancel class="mr-2 h-5 w-5" /><span>{$t('close')}</span></button
 				>
 			</div>
 		</div>

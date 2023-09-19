@@ -21,6 +21,7 @@
 	import Gateway from '~icons/tabler/torii';
 	import Subnet from '~icons/tabler/grid-dots';
 	import Channel from '~icons/tabler/antenna';
+	import { t, locale, locales } from '$lib/i18n/i18n';
 
 	type WifiStatus = {
 		status: number;
@@ -76,7 +77,7 @@
 			});
 			wifiStatus = await response.json();
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 		return wifiStatus;
 	}
@@ -91,7 +92,7 @@
 			});
 			wifiSettings = await response.json();
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 		return wifiSettings;
 	}
@@ -119,13 +120,13 @@
 				body: JSON.stringify(data)
 			});
 			if (response.status == 200) {
-				notifications.success('Wi-Fi settings updated.', 3000);
+				notifications.success($t('ntfc')['success']['wifiupdated'], 3000);
 				wifiSettings = await response.json();
 			} else {
-				notifications.error('User not authorized.', 3000);
+				notifications.error($t('ntfc')['error']['usernotauth'], 3000);
 			}
 		} catch (error) {
-			console.error('Error:', error);
+			console.error($t('error'), error);
 		}
 	}
 
@@ -240,7 +241,9 @@
 						/>
 					</div>
 					<div>
-						<div class="font-bold">Status</div>
+						<div class="font-bold">
+							{$t('status')}
+						</div>
 						<div class="text-sm opacity-75">
 							{wifiStatus.status === 3 ? 'Connected' : 'Inactive'}
 						</div>
@@ -264,7 +267,9 @@
 						<Home class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">IP Address</div>
+						<div class="font-bold">
+							{$t('routes')['wifi']['ip']}
+						</div>
 						<div class="text-sm opacity-75">
 							{wifiStatus.local_ip}
 						</div>
@@ -276,7 +281,9 @@
 						<MAC class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">MAC Address</div>
+						<div class="font-bold">
+							{$t('routes')['wifi']['mac']}
+						</div>
 						<div class="text-sm opacity-75">
 							{wifiStatus.mac_address}
 						</div>
@@ -320,7 +327,9 @@
 							<Channel class="text-primary-content h-auto w-full scale-75" />
 						</div>
 						<div>
-							<div class="font-bold">Channel</div>
+							<div class="font-bold">
+								{$t('routes')['wifi']['channel']}
+							</div>
 							<div class="text-sm opacity-75">
 								{wifiStatus.channel}
 							</div>
@@ -332,7 +341,9 @@
 							<Gateway class="text-primary-content h-auto w-full scale-75" />
 						</div>
 						<div>
-							<div class="font-bold">Gateway IP</div>
+							<div class="font-bold">
+								{$t('routes')['wifi']['gateway']}
+							</div>
 							<div class="text-sm opacity-75">
 								{wifiStatus.gateway_ip}
 							</div>
@@ -344,7 +355,9 @@
 							<Subnet class="text-primary-content h-auto w-full scale-75" />
 						</div>
 						<div>
-							<div class="font-bold">Subnet Mask</div>
+							<div class="font-bold">
+								{$t('routes')['wifi']['mask']}
+							</div>
 							<div class="text-sm opacity-75">
 								{wifiStatus.subnet_mask}
 							</div>
@@ -368,7 +381,9 @@
 	</div>
 	{#if !$page.data.features.security || $user.admin}
 		<Collapsible open={false} class="bg-base-200 shadow-lg" on:closed={getWifiSettings}>
-			<span slot="title">Change Wi-Fi Settings</span>
+			<span slot="title">
+				{$t('routes')['wifi']['wifi']['change']}
+			</span>
 			<form on:submit|preventDefault={handleSubmitWiFi} novalidate bind:this={formField}>
 				<div class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2">
 					<div>
@@ -387,20 +402,24 @@
 							required
 						/>
 						<label class="label" for="ssid">
-							<span class="label-text-alt text-error {formErrors.ssid ? '' : 'hidden'}"
-								>SSID must be between 3 and 32 characters long</span
-							>
+							<span class="label-text-alt text-error {formErrors.ssid ? '' : 'hidden'}">
+								{$t('routes')['wifi']['ssidmust']}
+							</span>
 						</label>
 					</div>
 					<div>
 						<label class="label" for="pwd">
-							<span class="label-text text-md">Password</span>
+							<span class="label-text text-md">
+								{$t('password')}
+							</span>
 						</label>
 						<InputPassword bind:value={wifiSettings.password} id="pwd" />
 					</div>
 					<div>
 						<label class="label" for="channel">
-							<span class="label-text text-md">Host Name</span>
+							<span class="label-text text-md">
+								{$t('routes')['wifi']['wifi']['hostname']}
+							</span>
 						</label>
 						<input
 							type="text"
@@ -414,9 +433,9 @@
 							required
 						/>
 						<label class="label" for="channel">
-							<span class="label-text-alt text-error {formErrors.hostname ? '' : 'hidden'}"
-								>Host name must be between 2 and 32 characters long</span
-							>
+							<span class="label-text-alt text-error {formErrors.hostname ? '' : 'hidden'}">
+								{$t('routes')['wifi']['wifi']['hostnamemust']}
+							</span>
 						</label>
 					</div>
 					<label class="label inline-flex cursor-pointer content-end justify-start gap-4">
@@ -425,7 +444,9 @@
 							bind:checked={wifiSettings.static_ip_config}
 							class="checkbox checkbox-primary sm:-mb-5"
 						/>
-						<span class="sm:-mb-5">Static IP Config?</span>
+						<span class="sm:-mb-5">
+							{$t('routes')['wifi']['wifi']['staticip']}
+						</span>
 					</label>
 				</div>
 				{#if wifiSettings.static_ip_config}
@@ -435,7 +456,9 @@
 					>
 						<div>
 							<label class="label" for="localIP">
-								<span class="label-text text-md">Local IP</span>
+								<span class="label-text text-md">
+									{$t('routes')['wifi']['localip']}
+								</span>
 							</label>
 							<input
 								type="text"
@@ -450,15 +473,17 @@
 								required
 							/>
 							<label class="label" for="localIP">
-								<span class="label-text-alt text-error {formErrors.local_ip ? '' : 'hidden'}"
-									>Must be a valid IPv4 address</span
-								>
+								<span class="label-text-alt text-error {formErrors.local_ip ? '' : 'hidden'}">
+									{$t('routes')['wifi']['ipmust']}
+								</span>
 							</label>
 						</div>
 
 						<div>
 							<label class="label" for="gateway">
-								<span class="label-text text-md">Gateway IP</span>
+								<span class="label-text text-md">
+									{$t('routes')['wifi']['gateway']}
+								</span>
 							</label>
 							<input
 								type="text"
@@ -473,14 +498,16 @@
 								required
 							/>
 							<label class="label" for="gateway">
-								<span class="label-text-alt text-error {formErrors.gateway_ip ? '' : 'hidden'}"
-									>Must be a valid IPv4 address</span
-								>
+								<span class="label-text-alt text-error {formErrors.gateway_ip ? '' : 'hidden'}">
+									{$t('routes')['wifi']['ipmust']}
+								</span>
 							</label>
 						</div>
 						<div>
 							<label class="label" for="subnet">
-								<span class="label-text text-md">Subnet Mask</span>
+								<span class="label-text text-md">
+									{$t('routes')['wifi']['mask']}
+								</span>
 							</label>
 							<input
 								type="text"
@@ -495,9 +522,9 @@
 								required
 							/>
 							<label class="label" for="subnet">
-								<span class="label-text-alt text-error {formErrors.subnet_mask ? '' : 'hidden'}"
-									>Must be a valid IPv4 address</span
-								>
+								<span class="label-text-alt text-error {formErrors.subnet_mask ? '' : 'hidden'}">
+									{$t('routes')['wifi']['ipmust']}
+								</span>
 							</label>
 						</div>
 						<div>
@@ -517,9 +544,9 @@
 								required
 							/>
 							<label class="label" for="gateway">
-								<span class="label-text-alt text-error {formErrors.dns_1 ? '' : 'hidden'}"
-									>Must be a valid IPv4 address</span
-								>
+								<span class="label-text-alt text-error {formErrors.dns_1 ? '' : 'hidden'}">
+									{$t('routes')['wifi']['ipmust']}
+								</span>
 							</label>
 						</div>
 						<div>
@@ -539,9 +566,9 @@
 								required
 							/>
 							<label class="label" for="subnet">
-								<span class="label-text-alt text-error {formErrors.dns_2 ? '' : 'hidden'}"
-									>Must be a valid IPv4 address</span
-								>
+								<span class="label-text-alt text-error {formErrors.dns_2 ? '' : 'hidden'}">
+									{$t('routes')['wifi']['ipmust']}
+								</span>
 							</label>
 						</div>
 					</div>
@@ -549,10 +576,12 @@
 
 				<div class="divider mb-2 mt-0" />
 				<div class="mx-4 flex flex-wrap justify-end gap-2">
-					<button class="btn btn-primary" type="button" on:click={scanForNetworks}
-						>Scan Networks</button
-					>
-					<button class="btn btn-primary" type="submit">Apply Settings</button>
+					<button class="btn btn-primary" type="button" on:click={scanForNetworks}>
+						{$t('routes')['wifi']['scannet']}
+					</button>
+					<button class="btn btn-primary" type="submit">
+						{$t('applysettings')}
+					</button>
 				</div>
 			</form>
 		</Collapsible>
