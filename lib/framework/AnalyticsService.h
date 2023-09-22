@@ -56,6 +56,7 @@ protected:
             String message;
             doc["uptime"] = millis() / 1000;
             doc["free_heap"] = ESP.getFreeHeap();
+            doc["total_heap"] = ESP.getHeapSize();
             doc["min_free_heap"] = ESP.getMinFreeHeap();
             doc["max_alloc_heap"] = ESP.getMaxAllocHeap();
             doc["fs_used"] = ESPFS.usedBytes();

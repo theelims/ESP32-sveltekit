@@ -14,6 +14,7 @@
 	import Copyright from '~icons/tabler/copyright';
 	import MQTT from '~icons/tabler/topology-star-3';
 	import NTP from '~icons/tabler/clock-check';
+	import Metrics from '~icons/tabler/report-analytics';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { user } from '$lib/stores/user';
@@ -92,6 +93,13 @@
 					icon: Health,
 					href: '/system/status',
 					feature: true,
+					active: false
+				},
+				{
+					title: 'System Metrics',
+					icon: Metrics,
+					href: '/system/metrics',
+					feature: $page.data.features.analytics,
 					active: false
 				},
 				{
