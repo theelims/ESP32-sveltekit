@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [next]
+## [0.2.2]
 
 ### Added
 
@@ -19,14 +19,6 @@ All notable changes to this project will be documented in this file.
 - Changed JSON format for websocket server and removed "payload" property. JSON is the same as for MQTT or HTTP now.
 - Changed features.ini to default `FT_SLEEP=0`
 - Updated dependencies to latest version.
-
-### Depreciated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [0.2.1] - 2023-09-11
 

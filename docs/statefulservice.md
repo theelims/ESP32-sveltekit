@@ -417,6 +417,14 @@ esp32sveltekit.getBatteryService()->updateSOC(float stateOfCharge); // update st
 esp32sveltekit.getBatteryService()->setCharging(boolean isCharging); // notify the client that the device is charging
 ```
 
+### Custom Features
+
+You may use the compile time feature service also to enable or disable custom features at runtime and thus control the frontend. A custom feature can only be added during initializing the ESP32 and ESP32-SvelteKit. A feature can't be updated on runtime once it is set once.
+
+```cpp
+esp32sveltekit.getFeatureService()->addFeature("custom_feature", true); // or false to disable it
+```
+
 ## OTA Firmware Updates
 
 ESP32-SvelteKit offers three different ways to roll out firmware updates to field devices. Except for ArduinoOTA all other OTA possibilities cannot update the file system. If the frontend should be updated as well it is necessary to serve it from PROGMEM by activating `-D PROGMEM_WWW`.
