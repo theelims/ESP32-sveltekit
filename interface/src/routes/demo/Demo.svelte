@@ -52,8 +52,8 @@
 
 	lightStateSocket.onmessage = (event) => {
 		const message = JSON.parse(event.data);
-		if (message.type == 'payload') {
-			lightState = message.payload;
+		if (message.type != 'id') {
+			lightState = message;
 		}
 	};
 

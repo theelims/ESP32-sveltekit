@@ -20,6 +20,7 @@
 #include <HttpEndpoint.h>
 #include <MqttPubSub.h>
 #include <WebSocketServer.h>
+// #include <WebSocketClient.h>
 
 #define DEFAULT_LED_STATE false
 #define OFF_STATE "OFF"
@@ -90,6 +91,7 @@ private:
     HttpEndpoint<LightState> _httpEndpoint;
     MqttPubSub<LightState> _mqttPubSub;
     WebSocketServer<LightState> _webSocketServer;
+    // WebSocketClient<LightState> _webSocketClient;
     AsyncMqttClient *_mqttClient;
     LightMqttSettingsService *_lightMqttSettingsService;
 

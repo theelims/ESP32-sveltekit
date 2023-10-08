@@ -14,6 +14,7 @@
 	import Copyright from '~icons/tabler/copyright';
 	import MQTT from '~icons/tabler/topology-star-3';
 	import NTP from '~icons/tabler/clock-check';
+	import Metrics from '~icons/tabler/report-analytics';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { user } from '$lib/stores/user';
@@ -95,6 +96,13 @@
 					active: false
 				},
 				{
+					title: 'System Metrics',
+					icon: Metrics,
+					href: '/system/metrics',
+					feature: $page.data.features.analytics,
+					active: false
+				},
+				{
 					title: 'Firmware Update',
 					icon: Update,
 					href: '/system/update',
@@ -142,7 +150,7 @@
 	});
 </script>
 
-<div class="bg-base-200 text-base-content rounded-box flex h-full w-80 flex-col p-4">
+<div class="bg-base-200 text-base-content flex h-full w-80 flex-col p-4">
 	<!-- Sidebar content here -->
 	<a
 		href="/"

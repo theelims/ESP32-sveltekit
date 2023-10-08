@@ -31,15 +31,6 @@ void setup() {
 }
 ```
 
-Finally the loop calls the framework's loop function to service the frameworks features.
-
-```cpp
-void loop() {
-  // run the framework's loop function
-  esp32sveltekit.loop();
-}
-```
-
 ## Stateful Service
 
 The framework promotes a modular design and exposes features you may re-use to speed up the development of your project. Where possible it is recommended that you use the features the frameworks supplies. These are documented in this section and a comprehensive example is provided by the demo project.
@@ -424,6 +415,14 @@ A small helper class let's you update the battery icon in the status bar. This i
 ```cpp
 esp32sveltekit.getBatteryService()->updateSOC(float stateOfCharge); // update state of charge in percent (0 - 100%)
 esp32sveltekit.getBatteryService()->setCharging(boolean isCharging); // notify the client that the device is charging
+```
+
+### Custom Features
+
+You may use the compile time feature service also to enable or disable custom features at runtime and thus control the frontend. A custom feature can only be added during initializing the ESP32 and ESP32-SvelteKit. A feature can't be updated on runtime once it is set once.
+
+```cpp
+esp32sveltekit.getFeatureService()->addFeature("custom_feature", true); // or false to disable it
 ```
 
 ## OTA Firmware Updates

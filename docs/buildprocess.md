@@ -50,6 +50,8 @@ Customize the settings as you see fit. A value of 0 will disable the specified f
 | FT_SLEEP             | Controls whether the deep sleep feature is enabled. Disable this if your device is not battery operated or you don't need to place it in deep sleep to save energy.                                                      |
 | FT_BATTERY           | Controls whether the battery state of charge shall be reported to the clients. Disable this if your device is not battery operated.                                                                                      |
 
+In addition custom features might be added or removed at runtime. See [Custom Features](statefulservice.md#custom-features) on how to use this in your application.
+
 ## Factory Settings
 
 The framework has built-in factory settings which act as default values for the various configurable services where settings are not saved on the file system. These settings can be overridden using the build flags defined in [factory_settings.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini).
@@ -126,6 +128,16 @@ build_flags =
 ```
 
 It accepts values from 1 (Verbose) to 5 (Errors) for different information depths to be logged on the serial terminal.
+
+### Serve Config Files
+
+By enabling this build flag the ESP32 will serve all config files stored on the LittleFS flash partition under `http:\\[IP]\config\[filename].json`. This can be helpful to troubleshoot problems. However, it is strongly advised to disable this for production builds.
+
+```ini
+build_flags =
+...
+  -D SERVE_CONFIG_FILES
+```
 
 ## SSL Root Certificate Store
 

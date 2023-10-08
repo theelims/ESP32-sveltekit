@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2]
+
+### Added
+
+- Status reports reset-reason & uptime.
+- AnalyticsService to draw graphs about heap usage and other time dependent values
+- Added ping to WebSocket Server
+- Use telemetry store with RSSI messages to gauge health of connection. Automatic reconnect for SSE and WS.
+- Added user supplied features to FeatureService
+- Compiler flag to let it serve the config JSONs for debug purposes
+- Hard fork of ESPAsyncWebserver as it is unmaintained to fix bugs and add features
+
+### Changed
+
+- Changed JSON format for websocket server and removed "payload" property. JSON is the same as for MQTT or HTTP now.
+- Changed features.ini to default `FT_SLEEP=0`
+- Updated dependencies to latest version.
+
 ## [0.2.1] - 2023-09-11
 
 ### Fixed
@@ -45,10 +63,6 @@ All notable changes to this project will be documented in this file.
 ### Removed
 
 - `FT_PROJECT` feature flag removed.
-
-### Fixed
-
-### Security
 
 ## [0.1.0] - 2023-05-18
 
