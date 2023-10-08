@@ -63,3 +63,4 @@ It exposes an array of the following properties you can subscribe to:
 | `$analytics.core_temp`      | `Number` | Core temperature (on some chips)               |
 
 By default there is one data point every 2 seconds.
+
