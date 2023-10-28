@@ -1,0 +1,100 @@
+#######################################
+# Syntax Coloring Map for libCBOR
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Reader	KEYWORD1
+Writer	KEYWORD1
+BytesStream	KEYWORD1
+BytesPrint	KEYWORD1
+EEPROMStream	KEYWORD1
+EEPROMPrint	KEYWORD1
+DataType	KEYWORD1
+SyntaxError	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+getReadError	KEYWORD2
+readDataType	KEYWORD2
+getDataType	KEYWORD2
+readBytes	KEYWORD2
+readByte	KEYWORD2
+bytesAvailable	KEYWORD2
+getSyntaxError	KEYWORD2
+getRawValue	KEYWORD2
+isIndefiniteLength	KEYWORD2
+getLength	KEYWORD2
+getBoolean	KEYWORD2
+getFloat	KEYWORD2
+getDouble	KEYWORD2
+getUnsignedInt	KEYWORD2
+getInt	KEYWORD2
+isNegativeOverflow	KEYWORD2
+isUnsigned	KEYWORD2
+getSimpleValue	KEYWORD2
+getTag	KEYWORD2
+isFalse	KEYWORD2
+isTrue	KEYWORD2
+isNull	KEYWORD2
+isUndefined	KEYWORD2
+isBreak	KEYWORD2
+isWellFormed	KEYWORD2
+getReadSize	KEYWORD2
+available	KEYWORD2
+read	KEYWORD2
+peek	KEYWORD2
+write	KEYWORD2
+flush	KEYWORD2
+
+isEEPROMWellFormed	KEYWORD2
+
+reset	KEYWORD2
+getIndex	KEYWORD2
+
+getAddress	KEYWORD2
+
+expectValue	KEYWORD2
+expectUnsignedIntValue	KEYWORD2
+expectIntValue	KEYWORD2
+expectBytesLength	KEYWORD2
+expectTextLength	KEYWORD2
+expectArrayLength	KEYWORD2
+expectMapLength	KEYWORD2
+expectFloatValue	KEYWORD2
+expectDoubleValue	KEYWORD2
+expectBooleanValue	KEYWORD2
+expectTrue	KEYWORD2
+expectFalse	KEYWORD2
+expectTagValue	KEYWORD2
+expectUnsignedInt	KEYWORD2
+expectInt	KEYWORD2
+expectBytes	KEYWORD2
+expectDefiniteBytes KEYWORD2
+expectBytesOrBreak	KEYWORD2
+expectText	KEYWORD2
+expectDefiniteText KEYWORD2
+expectTextOrBreak	KEYWORD2
+expectArray	KEYWORD2
+expectMap	KEYWORD2
+expectBoolean	KEYWORD2
+expectFloat	KEYWORD2
+expectDouble	KEYWORD2
+expectNull	KEYWORD2
+expectUndefined	KEYWORD2
+expectSimpleValue	KEYWORD2
+expectTag	KEYWORD2
+readFully	KEYWORD2
+readUntilData	KEYWORD2
+
+#######################################
+# Instances (KEYWORD2)
+#######################################
+
+#######################################
+# Constants (LITERAL1)
+#######################################

@@ -8,6 +8,9 @@
 	import Hamburger from '~icons/tabler/menu-2';
 	import Power from '~icons/tabler/power';
 	import Cancel from '~icons/tabler/x';
+	import Ready from '~icons/tabler/mood-check';
+	import NotHomed from '~icons/tabler/home-off';
+	import Error from '~icons/tabler/alert-triangle-filled';
 	import RssiIndicator from '$lib/components/RSSIIndicator.svelte';
 	import BatteryIndicator from '$lib/components/BatteryIndicator.svelte';
 	import UpdateIndicator from '$lib/components/UpdateIndicator.svelte';
@@ -47,6 +50,16 @@
 	</div>
 	<div class="indicator flex-none">
 		<UpdateIndicator />
+	</div>
+	<div class="flex-none">
+		<button class="btn btn-square btn-ghost h-9 w-10">
+			<Error class="text-error h-7 w-7" />
+		</button>
+	</div>
+	<div class="flex-none">
+		<button class="btn btn-square btn-ghost h-9 w-10">
+			<NotHomed class="text-warning h-7 w-7" />
+		</button>
 	</div>
 	<div class="flex-none">
 		{#if $telemetry.rssi.disconnected}

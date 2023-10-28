@@ -1,0 +1,19 @@
+{
+  "name": "libCBOR",
+  "description": "A CBOR (RFC 7049) processing library. This implements basic read and write functionality. It also provides some parsing and EEPROM helper functions.",
+  "keywords": "cbor, structured-data, binary, arduino",
+  "authors": {
+    "name": "Shawn Silverman",
+    "email": "shawn@pobox.com",
+    "maintainer": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ssilverman/libCBOR"
+  },
+  "version": "1.6.1",
+  "license": "BSD-3-Clause",
+  "homepage": "https://github.com/ssilverman/libCBOR",
+  "frameworks": "arduino",
+  "platforms": "*"
+}

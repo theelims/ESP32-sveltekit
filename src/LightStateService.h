@@ -21,10 +21,13 @@
 #include <MqttPubSub.h>
 #include <WebSocketServer.h>
 // #include <WebSocketClient.h>
+#include <NeoPixelBus.h>
 
 #define DEFAULT_LED_STATE false
 #define OFF_STATE "OFF"
 #define ON_STATE "ON"
+
+#define NEOPIXEL 25
 
 #define LIGHT_SETTINGS_ENDPOINT_PATH "/rest/lightState"
 #define LIGHT_SETTINGS_SOCKET_PATH "/ws/lightState"
@@ -94,6 +97,8 @@ private:
     // WebSocketClient<LightState> _webSocketClient;
     AsyncMqttClient *_mqttClient;
     LightMqttSettingsService *_lightMqttSettingsService;
+
+    NeoPixelBus<NeoGrbFeature, NeoEsp32Rmt0Ws2812xMethod> logo = NeoPixelBus<NeoGrbFeature, NeoEsp32Rmt0Ws2812xMethod>(1, NEOPIXEL);
 
     void registerConfig();
     void onConfigUpdated();

@@ -9,6 +9,8 @@
 	import WiFi from '~icons/tabler/wifi';
 	import Remote from '~icons/tabler/network';
 	import Control from '~icons/tabler/adjustments';
+	import Safety from '~icons/tabler/lock-square-rounded';
+	import Config from '~icons/tabler/settings-automation';
 	import Avatar from '~icons/tabler/user-circle';
 	import Logout from '~icons/tabler/logout';
 	import Copyright from '~icons/tabler/copyright';
@@ -20,13 +22,13 @@
 	import { user } from '$lib/stores/user';
 	import { createEventDispatcher } from 'svelte';
 
-	const appName = 'ESP32 SvelteKit';
+	const appName = 'LUST-motion';
 
-	const copyright = '2023 theelims';
+	const copyright = '2023 LUST collective';
 
 	const github = { href: 'https://github.com/' + $page.data.github, active: true };
 
-	const discord = { href: '.', active: false };
+	const discord = { href: 'https://discord.gg/MmpT9xE', active: true };
 
 	type menuItem = {
 		title: string;
@@ -47,9 +49,9 @@
 
 	let menuItems = [
 		{
-			title: 'Demo App',
-			icon: Control,
-			href: '/demo',
+			title: 'Safety',
+			icon: Safety,
+			href: '/safety',
 			feature: true,
 			active: false
 		},
@@ -88,6 +90,13 @@
 			icon: Settings,
 			feature: true,
 			submenu: [
+				{
+					title: 'Configuration',
+					icon: Config,
+					href: '/system/config',
+					feature: true,
+					active: false
+				},
 				{
 					title: 'System Status',
 					icon: Health,

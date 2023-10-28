@@ -14,6 +14,8 @@
 
 #include <LightStateService.h>
 
+#define colorSaturation 128
+
 LightStateService::LightStateService(AsyncWebServer *server,
                                      SecurityManager *securityManager,
                                      AsyncMqttClient *mqttClient,
@@ -40,7 +42,7 @@ LightStateService::LightStateService(AsyncWebServer *server,
                    LIGHT_SETTINGS_SOCKET_PATH)*/
 {
     // configure led to be output
-    pinMode(LED_BUILTIN, OUTPUT);
+    logo.Begin();
 
     // configure MQTT callback
     _mqttClient->onConnect(std::bind(&LightStateService::registerConfig, this));
@@ -64,7 +66,10 @@ void LightStateService::begin()
 
 void LightStateService::onConfigUpdated()
 {
-    digitalWrite(LED_BUILTIN, _state.ledOn ? 1 : 0);
+    RgbColor stdby(colorSaturation);
+    RgbColor off(0);
+    logo.SetPixelColor(0, _state.ledOn ? stdby : off);
+    logo.Show();
 }
 
 void LightStateService::registerConfig()
