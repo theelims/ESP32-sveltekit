@@ -1,4 +1,4 @@
-#   ESP32 SvelteKit
+#   ESP32 SvelteKit --
 #
 #   A simple, secure and extensible framework for IoT projects for ESP32 platforms
 #   with responsive Sveltekit front-end built with TailwindCSS and DaisyUI.
@@ -6,6 +6,7 @@
 #
 #   Copyright (C) 2018 - 2023 rjwats
 #   Copyright (C) 2023 theelims
+#   Copyright (C) 2023 Maxtrium B.V. [ code available under dual license ]
 #
 #   All Rights Reserved. This software may be modified and distributed under
 #   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -13,11 +14,56 @@
 from pathlib import Path
 from shutil import copytree, rmtree, copyfileobj
 from subprocess import check_output, Popen, PIPE, STDOUT, CalledProcessError
+from os.path import exists
+from typing import Final
 import os
 import gzip
 import mimetypes
+import glob
 
 Import("env")
+
+#print("Current CLI targets", COMMAND_LINE_TARGETS)
+#print("Current Build targets", BUILD_TARGETS)
+
+OUTPUTFILE: Final[str] = env["PROJECT_DIR"] + "/lib/framework/WWWData.h"
+SOURCEWWWDIR: Final[str] = env["PROJECT_DIR"] + "/interface/src"
+
+def OutputFileExits():
+    return os.path.exists(OUTPUTFILE)
+
+def findLastestTimeStampWWWInterface():
+  list_of_files = glob.glob(SOURCEWWWDIR+'/**/*', recursive=True) 
+  #print(list_of_files)
+  latest_file = max(list_of_files, key=os.path.getctime)
+  #print(latest_file)
+  return os.path.getctime(latest_file)
+
+def timestampOutputFile():
+     return os.path.getctime(OUTPUTFILE)
+
+def needtoRegenerateOutputFile():
+    if not flagExists("PROGMEM_WWW"):
+        return True
+    else:
+        if (OutputFileExits()):
+            if not flagExists("SKIP_BUILDING_PROGMEM_WWW"): 
+                #x=findLastestTimeStampWWWInterface()
+                #print(f'My value is: {x:.2f}')
+                sourceEdited=( timestampOutputFile()<findLastestTimeStampWWWInterface() )
+                if (sourceEdited):
+                    print("Svelte source files are updated. Need to regenerate.")
+                    return True
+                else:
+                    print("Current outputfile is O.K. No need to regenerate.")
+                    return False
+            else:
+                print("Compiledef indicates skipping building PROGMEM")
+                return False
+
+        else:
+            print("WWW outputfile does not exists. Need to regenerate.")
+            return True
 
 def gzipFile(file):
     with open(file, 'rb') as f_in:
@@ -33,8 +79,15 @@ def flagExists(flag):
 
 def buildProgMem():
     mimetypes.init()
-    progmem = open('../lib/framework/WWWData.h', 'w')
-    progmem.write('#include <Arduino.h>\n')
+    progmem = open(OUTPUTFILE,"w")
+
+    progmem.write("#include <functional>\n")
+    progmem.write("\n")
+    progmem.write("#if defined(ARDUINO)\n")
+    progmem.write("  #include <Arduino.h>\n")
+    progmem.write("#else\n")
+    progmem.write("  #define PROGMEM\n")
+    progmem.write("#endif\n")
 
     progmemCounter = 0
 
@@ -66,6 +119,7 @@ def buildProgMem():
         progmem.write('\n};\n\n')
         assetMap[asset_path] = { "name": asset_var, "mime": asset_mime, "size": size }
     
+    progmem.write("#if defined(ARDUINO)\n")
     progmem.write('typedef std::function<void(const String& uri, const String& contentType, const uint8_t * content, size_t len)> RouteRegistrationHandler;\n\n')
     progmem.write('class WWWData {\n')
     progmem.write('  public:\n')
@@ -76,8 +130,30 @@ def buildProgMem():
 
     progmem.write('    }\n')
     progmem.write('};\n')
-
+    progmem.write("#endif\n")
+    if (False):
+      progmem.write('\n')
+      progmem.write('#define WWW_NR_PAGES ('+ str(len(assetMap.items())) + ')\n')
+      progmem.write('\n')
     
+
+    progmem.write('\n')
+    progmem.write('typedef struct {\n')
+    progmem.write('    const char*    szUrl;\n')
+    progmem.write('    const char*    szcontentType;\n')
+    progmem.write('    const uint8_t* pData;\n')
+    progmem.write('    const uint32_t uiLength;\n')
+    progmem.write('} page_entry_t;\n')
+    progmem.write('\n')
+    progmem.write('\n')
+
+    progmem.write('const page_entry_t wwwpages[] = {\n')
+    for asset_path, asset in assetMap.items():
+        progmem.write('      {"/' +  str(asset_path) + '", "' + asset['mime'] + '", ' + asset['name'] + ', ' + str(asset['size']) + '} ,\n')
+
+    progmem.write('};\n')
+    progmem.write('\n')
+    progmem.write('const uint16_t WWW_NR_PAGES (sizeof(wwwpages)/sizeof(page_entry_t));')
 
 def buildWeb():
     os.chdir("interface")
@@ -104,9 +180,22 @@ def buildWeb():
         if not flagExists("PROGMEM_WWW"):
             print("Build LittleFS file system image and upload to ESP32")
             env.Execute("pio run --target uploadfs")
-    
-if ("upload" in BUILD_TARGETS):
-    print(BUILD_TARGETS)
+
+print("running: build_interface.py")
+
+# Dump global construction environment (for debug purpose)
+#print(env.Dump())
+
+# Dump project construction environment (for debug purpose)
+#print(projenv.Dump())
+
+if (needtoRegenerateOutputFile()):
     buildWeb()
-else:
-    print("Skipping build interface step for target(s): " + ", ".join(BUILD_TARGETS))
+
+#env.AddPreAction("${BUILD_DIR}/src/HTTPServer.o", buildWebInterface)
+
+#if ("upload" in BUILD_TARGETS):
+#    print(BUILD_TARGETS)
+#    #buildWeb()
+#else:
+#    print("Skipping build interface step for target(s): " + ", ".join(BUILD_TARGETS))
