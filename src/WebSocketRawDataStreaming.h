@@ -46,7 +46,7 @@ public:
         cborWS.beginIndefiniteArray();
     }
 
-    void streamRawData(unsigned int time, float position, float speed)
+    void streamRawData(unsigned int time, float position, float speed, float voltage, float current)
     {
         cborWS.beginArray(3);
 
@@ -54,6 +54,8 @@ public:
         cborWS.writeUnsignedInt(time);
         cborWS.writeFloat(position);
         cborWS.writeFloat(speed);
+        cborWS.writeFloat(voltage);
+        cborWS.writeFloat(current);
         i++;
 
         if (i >= WS_PACKET_AGGREGATION_ARRAY - 1)

@@ -51,7 +51,7 @@ public:
   GenericStepperMotor() {}
 
   // Init
-  void begin(motorProperties *motor);
+  virtual void begin(motorProperties *motor);
 
   /**************************************************************************/
   /*!
@@ -115,7 +115,7 @@ public:
   float getPosition() { return float(_stepper->getCurrentPosition()) / float(_motor->stepsPerMillimeter); }
 
   // Misc
-  FastAccelStepperEngine &fastAccelStepperEngineReference(); // { return engine; }
+  // FastAccelStepperEngine &fastAccelStepperEngineReference();
 
 protected:
   /**************************************************************************/
@@ -141,6 +141,13 @@ protected:
 
   /**************************************************************************/
   /*!
+    @brief  Virtual function to setup the homing procedure in derived classes
+  */
+  /**************************************************************************/
+  virtual void _beginHoming() {}
+
+  /**************************************************************************/
+  /*!
     @brief  A virtual function the is called once the motor has found the home
     position. This can be used by derived motor drivers to perform something
     useful.
@@ -148,7 +155,14 @@ protected:
   /**************************************************************************/
   virtual void _atHome() {}
 
-private:
+  /**************************************************************************/
+  /*!
+    @brief  A virtual function that calls the motion point callback function
+  */
+  /**************************************************************************/
+  virtual void _callBackMotionPoint();
+
+  /**************************************************************************/
   FastAccelStepper *_stepper;
   motorProperties *_motor;
   int _minStep;
@@ -160,7 +174,7 @@ private:
   void _homingProcedure();
   int _homingSpeed;
   float _homePosition;
-  int _homingPin;
+  int _homingPin = -1;
   bool _homingActiveLow; /*> Polarity of the homing signal*/
   TaskHandle_t _taskHomingHandle = NULL;
   void (*_callBackHoming)(bool) = NULL;

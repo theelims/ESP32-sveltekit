@@ -202,6 +202,9 @@ bool GenericStepperMotor::_queryHome()
 
 void GenericStepperMotor::_homingProcedure()
 {
+    // Init homing
+    _beginHoming();
+
     // Set feedrate for homing
     _stepper->setSpeedInHz(_homingSpeed);
     _stepper->setAcceleration(_maxStepAcceleration / 10);
@@ -291,17 +294,23 @@ void GenericStepperMotor::_positionFeedbackTask()
     while (true)
     {
         // Return results of current motion point via the callback
-        _cbMotionPoint(
-            float(millis()),
-            getPosition(),
-            getSpeed());
+        _callBackMotionPoint();
 
         // Delay the task until the next tick count
         vTaskDelayUntil(&xLastWakeTime, _timeSliceInMs);
     }
 }
 
-FastAccelStepperEngine &GenericStepperMotor::fastAccelStepperEngineReference()
+void GenericStepperMotor::_callBackMotionPoint()
 {
-    return engine;
+    // Return results of current motion point via the callback
+    _cbMotionPoint(
+        millis(),
+        getPosition(),
+        getSpeed());
 }
+
+// FastAccelStepperEngine &GenericStepperMotor::fastAccelStepperEngineReference()
+// {
+//     return engine;
+// }

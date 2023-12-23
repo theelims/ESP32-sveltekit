@@ -193,10 +193,7 @@ public:
     /**************************************************************************/
     bool motionCompleted()
     {
-        if (_timeSliceInMs >= 50)
-        {
-            _currentSpeedAndPosition(millis());
-        }
+        _currentSpeedAndPosition(millis());
         return _motionCompleted;
     }
 

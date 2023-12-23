@@ -12,11 +12,9 @@
 #pragma once
 
 #include "Arduino.h"
-// #include <exception.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
-// #include "freertos/semphr.h"
 
 /**
  *  Motor
@@ -25,8 +23,6 @@
  *  speed = mm/s
  *  acceleration = mm/s^2
  */
-
-// class MotorException extends std::exception { }
 
 /**************************************************************************/
 /*!
@@ -83,26 +79,6 @@ public:
   */
   /**************************************************************************/
   virtual bool isActive() { return (_enabled && _homed); }
-
-  /*     SemaphoreHandle_t claimMotorControl() {
-        if (taskSemaphore == null) {
-          taskSemaphore = xSemaphoreCreateBinary();
-        }
-
-        if( xSemaphoreTake( taskSemaphore, 100 / portTICK_PERIOD_MS ) != pdTRUE ) {
-          throw new MotorBusyError("Unable to attach a new Motion Task, as one is already active!");
-        }
-
-        motionTask = xGetCurrentTaskHandle();
-      }
-      void releaseMotorControl(SemaphoreHandle_t semaphore) {
-        if (semaphore != taskSemaphore) {
-          throw new MotorGenericError("Attempted to release Semaphore using invalid handle!");
-        }
-
-        xSemaphoreGive(taskSemaphore);
-        motionTask = null;
-      } */
 
   /**************************************************************************/
   /*!
@@ -195,8 +171,8 @@ public:
     // Ensure in ACTIVE and valid movement state
     if (!_enabled || !_homed)
     {
-      // throw new MotorInvalidStateError("Unable to command motion while motor is not ENABLED or HOMED!");
       ESP_LOGE("AbstractMotor", "Unable to command motion while motor is not ENABLED or HOMED!");
+      return;
     }
 
     /*       // Take Semaphore for movement
@@ -272,10 +248,6 @@ public:
 protected:
   bool _enabled = false;
   bool _homed = false;
-
-  // TaskHandle_t motionTask; // Task which will provide movement commands to Motor
-  SemaphoreHandle_t taskSemaphore;     // Prevent more than one task being interfaced to a motor at a time
-  SemaphoreHandle_t movementSemaphore; // Prevent additional movement commands while in motion
 
   /**************************************************************************/
   /*!

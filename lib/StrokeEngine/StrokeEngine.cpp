@@ -23,7 +23,7 @@ void StrokeEngine::attachMotor(MotorInterface *motor)
 
 float StrokeEngine::setParameter(StrokeParameter parameter, float value, bool applyNow)
 {
-  String name;
+  String name = "";
   float debugValue;
   if (xSemaphoreTake(_parameterMutex, portMAX_DELAY) == pdTRUE)
   {
@@ -70,6 +70,9 @@ float StrokeEngine::setParameter(StrokeParameter parameter, float value, bool ap
     // return the actually used value after input sanitizing
     return debugValue;
   }
+
+  // Add a default return statement
+  return 0.0f;
 }
 
 // WARNING: This function must be called only within the scope of a Taken _parameterMutex

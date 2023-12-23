@@ -25,6 +25,7 @@
 #include <motor/virtualMotor.h>
 #else
 #include <motor/genericStepper.h>
+#include <motor/OSSMRefBoardV2.h>
 #endif
 
 /*#################################################################################################
@@ -36,7 +37,7 @@
 // StrokeEngine ###################################################################################
 // Calculation Aid:
 #define STEP_PER_REV 2000 // How many steps per revolution of the motor (S1 off, S2 on, S3 on, S4 off)
-#define PULLEY_TEETH 20   // How many teeth has the pulley
+#define PULLEY_TEETH 16   // How many teeth has the pulley
 #define BELT_PITCH 2      // What is the timing belt pitch in mm
 #define MAX_RPM 3000.0    // Maximum RPM of motor
 #define STEP_PER_MM STEP_PER_REV / (PULLEY_TEETH * BELT_PITCH)
@@ -47,15 +48,29 @@ static motorProperties servoMotor{
     .stepsPerMillimeter = STEP_PER_MM,
     .invertDirection = true,
     .enableActiveLow = true,
-    .stepPin = OSSM[0].pin.servoPul,
-    .directionPin = OSSM[0].pin.servoDir,
-    .enablePin = OSSM[0].pin.servoEna};
+    .stepPin = 14,
+    .directionPin = 27,
+    .enablePin = 26,
+};
+
+static OSSMRefBoardV2Properties OSSMBoardV2{
+    .alarmPin = 13,
+    .inPositionPin = 4,
+    .ADCPinCurrent = 36,
+    .AmperePermV = 2.5e-6,
+    .AmpereOffsetInmV = 1666,
+    .currentThreshold = 0.05,
+    .ADCPinVoltage = 39,
+    .VoltPermV = 4.0e-2,
+};
+
 #endif
 
 #ifdef VIRTUAL
 VirtualMotor motor;
 #else
 GenericStepperMotor motor;
+// OSSMRefBoardV2Motor motor;
 #endif
 
 StrokeEngine Stroker;
@@ -86,9 +101,9 @@ WebSocketRawDataStreamer PositionStream(&server);
 ##
 ##################################################################################################*/
 
-void printSpeedPositionOnSerial(unsigned int time, float position, float speed)
+void streamMotorData(unsigned int time, float position, float speed /*, float voltage = 0.0, float current = 0.0*/)
 {
-    PositionStream.streamRawData(time, position, speed);
+    PositionStream.streamRawData(time, position, speed /*, voltage, current*/, 0, 0);
 }
 
 /*#################################################################################################
@@ -127,11 +142,13 @@ void setup()
     Serial.begin(SERIAL_BAUD_RATE);
 
 #ifdef VIRTUAL
-    motor.begin(printSpeedPositionOnSerial, 20);
+    motor.begin(streamMotorData, 20);
 #else
-    motor.begin();
-    motor.attachPositionFeedback(printSpeedPositionOnSerial, 20);
-    motor.setSensoredHoming(OSSM[0].pin.lmt1, INPUT_PULLUP, true);
+    // motor.begin(&servoMotor, &OSSMBoardV2);
+    motor.begin(&servoMotor);
+    // motor.attachPositionFeedback(streamMotorData, 20);
+    motor.setSensoredHoming(12, INPUT_PULLUP, true);
+
 #endif
     motor.setMaxSpeed(MAX_SPEED);     // 2 m/s
     motor.setMaxAcceleration(100000); // 100 m/s^2
