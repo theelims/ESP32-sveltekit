@@ -81,7 +81,7 @@ Three slots are available. Besides the main slot for the content there is a name
 
 The component exports two properties to determine its behavior. `collapsible` is a boolean describing wether the component should behave like a collapsible in the first place. `open` is a boolean as well and if set true shows the full content of the body on mount.
 
-## Spinner
+## Spinner (OBSOLETE)
 
 A small component showing an animated spinner which can be used while waiting for data.
 
