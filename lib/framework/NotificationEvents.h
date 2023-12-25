@@ -24,10 +24,10 @@
 
 enum pushEvent
 {
-    ERROR,
-    WARNING,
-    INFO,
-    SUCCESS
+    PUSHERROR,
+    PUSHWARNING,
+    PUSHINFO,
+    PUSHSUCCESS
 };
 
 class NotificationEvents
@@ -49,16 +49,16 @@ public:
         String eventType;
         switch (event)
         {
-        case (ERROR):
+        case (PUSHERROR):
             eventType = "errorToast";
             break;
-        case (WARNING):
+        case (PUSHWARNING):
             eventType = "warningToast";
             break;
-        case (INFO):
+        case (PUSHINFO):
             eventType = "infoToast";
             break;
-        case (SUCCESS):
+        case (PUSHSUCCESS):
             eventType = "successToast";
             break;
         default:
