@@ -48,7 +48,7 @@ public:
 
     void streamRawData(unsigned int time, float position, float speed, float voltage, float current)
     {
-        cborWS.beginArray(3);
+        cborWS.beginArray(5);
 
         // write timestamp
         cborWS.writeUnsignedInt(time);

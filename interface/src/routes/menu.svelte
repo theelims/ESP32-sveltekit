@@ -22,9 +22,9 @@
 	import { user } from '$lib/stores/user';
 	import { createEventDispatcher } from 'svelte';
 
-	const appName = 'LUST-motion';
+	const appName = 'FuckIO';
 
-	const copyright = '2023 LUST collective';
+	const copyright = '2023 elims';
 
 	const github = { href: 'https://github.com/' + $page.data.github, active: true };
 

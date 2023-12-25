@@ -11,7 +11,7 @@
  *   the terms of the MIT license. See the LICENSE file for details.
  **/
 
-#define VIRTUAL
+// #define VIRTUAL
 
 #include <ESP32SvelteKit.h>
 #include <ESPmDNS.h>
@@ -21,12 +21,12 @@
 #include <SettingValue.h>
 #include <StrokeEngineControlService.h>
 #include <WebSocketRawDataStreaming.h>
-#ifdef VIRTUAL
+
 #include <motor/virtualMotor.h>
-#else
 #include <motor/genericStepper.h>
 #include <motor/OSSMRefBoardV2.h>
-#endif
+
+#include "ModbusClientRTU.h"
 
 /*#################################################################################################
 ##
@@ -43,8 +43,7 @@
 #define STEP_PER_MM STEP_PER_REV / (PULLEY_TEETH * BELT_PITCH)
 #define MAX_SPEED (MAX_RPM / 60.0) * PULLEY_TEETH *BELT_PITCH
 
-#ifndef VIRTUAL
-static motorProperties servoMotor{
+static motorProperties genericMotorProperties{
     .stepsPerMillimeter = STEP_PER_MM,
     .invertDirection = true,
     .enableActiveLow = true,
@@ -53,27 +52,31 @@ static motorProperties servoMotor{
     .enablePin = 26,
 };
 
-static OSSMRefBoardV2Properties OSSMBoardV2{
+static OSSMRefBoardV2Properties OSSMMotorProperties{
+    .stepsPerMillimeter = STEP_PER_MM,
+    .invertDirection = true,
+    .enableActiveLow = true,
+    .stepPin = 14,
+    .directionPin = 27,
+    .enablePin = 26,
     .alarmPin = 13,
     .inPositionPin = 4,
     .ADCPinCurrent = 36,
-    .AmperePermV = 2.5e-6,
+    .AmperePermV = 2.5e-3,
     .AmpereOffsetInmV = 1666,
     .currentThreshold = 0.05,
     .ADCPinVoltage = 39,
     .VoltPermV = 4.0e-2,
 };
 
-#endif
-
-#ifdef VIRTUAL
-VirtualMotor motor;
-#else
-GenericStepperMotor motor;
-// OSSMRefBoardV2Motor motor;
-#endif
+// VirtualMotor motor;
+// GenericStepperMotor motor;
+OSSMRefBoardV2Motor motor;
 
 StrokeEngine Stroker;
+
+ModbusClientRTU MB;
+uint32_t Token = 1111;
 
 // ESP32-SvelteKit #################################################################################
 AsyncWebServer server(80);
@@ -101,9 +104,12 @@ WebSocketRawDataStreamer PositionStream(&server);
 ##
 ##################################################################################################*/
 
-void streamMotorData(unsigned int time, float position, float speed /*, float voltage = 0.0, float current = 0.0*/)
+void streamMotorData(unsigned int time, float position, float speed, float voltage, float current)
 {
-    PositionStream.streamRawData(time, position, speed /*, voltage, current*/, 0, 0);
+    // float voltage = 0.0;
+    // float current = 0.0;
+    Serial.printf("Time: %d, Position: %f, Speed: %f, Voltage: %f, Current: %f\n", time, position, speed, voltage, current);
+    PositionStream.streamRawData(time, position, speed, voltage, current);
 }
 
 /*#################################################################################################
@@ -128,7 +134,23 @@ void streamMotorData(unsigned int time, float position, float speed /*, float vo
 ##
 ##################################################################################################*/
 
-// None
+// Mobus for RS232
+void handleData(ModbusMessage msg, uint32_t token)
+{
+    Serial.printf("Response: serverID=%d, FC=%d, Token=%08X, length=%d:\n", msg.getServerID(), msg.getFunctionCode(), token, msg.size());
+    for (auto &byte : msg)
+    {
+        Serial.printf("%02X ", byte);
+        Serial.println("");
+    }
+}
+
+void handleError(Error error, uint32_t token)
+{
+    // ModbusError wraps the error code and provides a readable error message for it
+    ModbusError me(error);
+    Serial.printf("Error response: %02X - %s\n", error, (const char *)me);
+}
 
 /*#################################################################################################
 ##
@@ -141,15 +163,16 @@ void setup()
     // start serial and filesystem
     Serial.begin(SERIAL_BAUD_RATE);
 
-#ifdef VIRTUAL
-    motor.begin(streamMotorData, 20);
-#else
-    // motor.begin(&servoMotor, &OSSMBoardV2);
-    motor.begin(&servoMotor);
-    // motor.attachPositionFeedback(streamMotorData, 20);
-    motor.setSensoredHoming(12, INPUT_PULLUP, true);
+    // Establish Modbus connection to servo
+    RTUutils::prepareHardwareSerial(Serial2);
+    Serial2.begin(57600, SERIAL_8E1, GPIO_NUM_16, GPIO_NUM_17);
 
-#endif
+    // motor.begin(streamMotorData, 20);
+    motor.begin(&OSSMMotorProperties);
+    // motor.begin(&genericMotorProperties);
+    motor.attachPositionFeedback(streamMotorData, 1000);
+    // motor.setSensoredHoming(12, INPUT_PULLUP, true);
+
     motor.setMaxSpeed(MAX_SPEED);     // 2 m/s
     motor.setMaxAcceleration(100000); // 100 m/s^2
     motor.setMachineGeometry(160.0, 5.0);
@@ -186,6 +209,18 @@ void setup()
 
     // Stroker.setParameter(StrokeParameter::SENSATION, 30.0, true);
     // Stroker.startPattern();
+
+    // MB.onDataHandler(&handleData);
+    MB.onErrorHandler(&handleError);
+    MB.setTimeout(2000);
+    MB.begin(Serial2);
+
+    Error err = MB.addRequest(Token++, 1, READ_HOLD_REGISTER, 0x01FE, 1);
+    if (err != pushEvent::SUCCESS)
+    {
+        ModbusError e(err);
+        Serial.printf("Error creating request: %02X - %s\n", (int)e, (const char *)e);
+    }
 }
 
 void loop()
