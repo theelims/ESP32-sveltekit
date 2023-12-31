@@ -67,10 +67,8 @@ public:
       reported in [ms]
     */
     /**************************************************************************/
-    void begin(void (*cbMotionPoint)(unsigned int, float, float), unsigned int timeInMs)
+    void begin()
     {
-        _cbMotionPoint = cbMotionPoint;
-        _timeSliceInMs = timeInMs / portTICK_PERIOD_MS;
         // Since it is virtual no homing needed
         home();
 
@@ -229,8 +227,11 @@ protected:
     }
 
 private:
-    void (*_cbMotionPoint)(unsigned int, float, float) = NULL;
     TickType_t _timeSliceInMs = 50;
+    void _reportMotionPoint()
+    { // Delete task, as it is not needed for the virtual motor
+        vTaskDelete(NULL);
+    }
     static void _motionSimulatorTaskImpl(void *_this) { static_cast<VirtualMotor *>(_this)->_motionSimulatorTask(); }
     void _motionSimulatorTask()
     {
@@ -257,7 +258,7 @@ private:
             }
 
             // Return results of current motion point via the callback
-            _cbMotionPoint(now, currentSpeedAndPosition.position, currentSpeedAndPosition.speed);
+            _cbMotionPoint(now, currentSpeedAndPosition.position, currentSpeedAndPosition.speed, 0.0, 0.0);
 
             // Delay the task until the next tick count
             vTaskDelayUntil(&xLastWakeTime, _timeSliceInMs);

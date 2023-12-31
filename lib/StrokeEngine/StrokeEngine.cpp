@@ -15,7 +15,7 @@ void StrokeEngine::attachMotor(MotorInterface *motor)
 
   ESP_LOGD("StrokeEngine", "Stroke Parameter Depth = %f", _depth);
   ESP_LOGD("StrokeEngine", "Stroke Parameter Stroke = %f", _stroke);
-  ESP_LOGD("StrokeEngine", "Stroke Parameter Stroke Rate = %f", _timeOfStroke);
+  ESP_LOGD("StrokeEngine", "Stroke Parameter Time of Stroke = %f", _timeOfStroke);
   ESP_LOGD("StrokeEngine", "Stroke Parameter Sensation = %f", _sensation);
 
   ESP_LOGI("StrokeEngine", "Attached Motor successfully to Stroke Engine!");

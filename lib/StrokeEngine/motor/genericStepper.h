@@ -25,15 +25,10 @@
 /**************************************************************************/
 typedef struct
 {
-  int stepsPerMillimeter; /*> Number of steps per millimeter */
-  bool invertDirection;   /*> Set to true to invert the direction signal
-                           *  The firmware expects the home switch to be located at the
-                           *  end of an retraction move. That way the machine homes
-                           *  itself away from the body. Home position is -KEEPOUTBOUNDARY */
-  bool enableActiveLow;   /*> Polarity of the enable signal. True for active low. */
-  int stepPin;            /*> Pin connected to the STEP input */
-  int directionPin;       /*> Pin connected to the DIR input */
-  int enablePin;          /*> Pin connected to the ENA input */
+  bool enableActiveLow; /*> Polarity of the enable signal. True for active low. */
+  int stepPin;          /*> Pin connected to the STEP input */
+  int directionPin;     /*> Pin connected to the DIR input */
+  int enablePin;        /*> Pin connected to the ENA input */
 } motorProperties;
 
 /**************************************************************************/
@@ -52,7 +47,7 @@ public:
   GenericStepperMotor() {}
 
   // Init
-  virtual void begin(motorProperties *motor)
+  void begin(motorProperties *motor)
   {
     _motor = motor;
 
@@ -61,7 +56,7 @@ public:
     _stepper = engine.stepperConnectToPin(_motor->stepPin);
     if (_stepper)
     {
-      _stepper->setDirectionPin(_motor->directionPin, _motor->invertDirection);
+      _stepper->setDirectionPin(_motor->directionPin, !_invertDirection);
       _stepper->setEnablePin(_motor->enablePin, _motor->enableActiveLow);
       _stepper->setAutoEnable(false);
       _stepper->disableOutputs();
@@ -88,12 +83,28 @@ public:
     _keepout = keepout;
     _maxPosition = travel - (keepout * 2);
     _minStep = 0;
-    _maxStep = int(0.5 + _maxPosition * _motor->stepsPerMillimeter);
-    _maxStepPerSecond = int(0.5 + _maxSpeed * _motor->stepsPerMillimeter);
-    _maxStepAcceleration = int(0.5 + _maxAcceleration * _motor->stepsPerMillimeter);
+    _maxStep = int(0.5 + _maxPosition * _stepsPerMillimeter);
+    _maxStepPerSecond = int(0.5 + _maxSpeed * _stepsPerMillimeter);
+    _maxStepAcceleration = int(0.5 + _maxAcceleration * _stepsPerMillimeter);
     ESP_LOGD("GenericStepper", "Machine Geometry Travel = %f", _travel);
     ESP_LOGD("GenericStepper", "Machine Geometry Keepout = %f", _keepout);
     ESP_LOGD("GenericStepper", "Machine Geometry MaxPosition = %f", _maxPosition);
+  }
+
+  /**************************************************************************/
+  /*!
+    @brief  Sets the machines steps per millimeter of travel. This is used
+    to translate between metric units and steps.
+    @param  stepsPerMillimeter steps per millimeter of travel.
+  */
+  /**************************************************************************/
+  void setStepsPerMillimeter(int stepsPerMillimeter = 50)
+  {
+    _stepsPerMillimeter = stepsPerMillimeter;
+    _maxStep = int(0.5 + _maxPosition * _stepsPerMillimeter);
+    _maxStepPerSecond = int(0.5 + _maxSpeed * _stepsPerMillimeter);
+    _maxStepAcceleration = int(0.5 + _maxAcceleration * _stepsPerMillimeter);
+    ESP_LOGD("GenericStepper", "Steps per Millimeter = %i", _stepsPerMillimeter);
   }
 
   /**************************************************************************/
@@ -125,8 +136,8 @@ public:
   /**************************************************************************/
   void home(float homePosition = 0.0, float speed = 5.0)
   {
-    _homePosition = int(0.5 + homePosition / float(_motor->stepsPerMillimeter));
-    _homingSpeed = speed * _motor->stepsPerMillimeter;
+    _homePosition = int(0.5 + homePosition / float(_stepsPerMillimeter));
+    _homingSpeed = speed * _stepsPerMillimeter;
     ESP_LOGI("GenericStepper", "Search home with %05.1f mm/s at %05.1f mm.", speed, homePosition);
 
     // set homed to false so that isActive() becomes false
@@ -168,24 +179,6 @@ public:
   {
     _callBackHoming = callBackHoming;
     home(homePosition, speed);
-  }
-
-  /**************************************************************************/
-  /*!
-    @brief  It also attaches a callback function where the speed and position
-    are reported on a regular interval specified with timeInMs.
-    @param cbMotionPoint Callback with the signature
-    `cbMotionPoint(unsigned int timestamp, float position, float speed)`. time is reported
-    milliseconds since the controller has started (`millis()`), speed in [m/s] and
-    position in [mm].
-    @param timeInMs time interval at which speed and position should be
-    reported in [ms]
-  */
-  /**************************************************************************/
-  void attachPositionFeedback(void (*cbMotionPoint)(unsigned int, float, float), unsigned int timeInMs = 50)
-  {
-    _cbMotionPoint = cbMotionPoint;
-    _timeSliceInMs = timeInMs / portTICK_PERIOD_MS;
   }
 
   /**************************************************************************/
@@ -318,7 +311,7 @@ public:
     @return acceleration of the motor in [mm/s²]
   */
   /**************************************************************************/
-  float getAcceleration() { return float(_stepper->getAcceleration()) / float(_motor->stepsPerMillimeter); }
+  float getAcceleration() { return float(_stepper->getAcceleration()) / float(_stepsPerMillimeter); }
 
   /**************************************************************************/
   /*!
@@ -326,7 +319,7 @@ public:
     @return speed of the motor in [mm/s]
   */
   /**************************************************************************/
-  float getSpeed() { return (float(_stepper->getCurrentSpeedInMilliHz()) * 1.0e-3) / float(_motor->stepsPerMillimeter); }
+  float getSpeed() { return (float(_stepper->getCurrentSpeedInMilliHz()) * 1.0e-3) / float(_stepsPerMillimeter); }
 
   /**************************************************************************/
   /*!
@@ -334,12 +327,12 @@ public:
     @return position in [mm]
   */
   /**************************************************************************/
-  float getPosition() { return float(_stepper->getCurrentPosition()) / float(_motor->stepsPerMillimeter); }
+  float getPosition() { return float(_stepper->getCurrentPosition()) / float(_stepsPerMillimeter); }
 
   // Misc
   // FastAccelStepperEngine &fastAccelStepperEngineReference();
 
-protected:
+private:
   /**************************************************************************/
   /*!
     @brief  Internal function that updates the trapezoidal motion path
@@ -353,9 +346,9 @@ protected:
   void _unsafeGoToPosition(float position, float speed, float acceleration)
   {
     // Translate between metric and steps
-    int speedInHz = int(0.5 + speed * _motor->stepsPerMillimeter);
-    int stepAcceleration = int(0.5 + acceleration * _motor->stepsPerMillimeter);
-    int positionInSteps = int(0.5 + position * _motor->stepsPerMillimeter);
+    int speedInHz = int(0.5 + speed * _stepsPerMillimeter);
+    int stepAcceleration = int(0.5 + acceleration * _stepsPerMillimeter);
+    int positionInSteps = int(0.5 + position * _stepsPerMillimeter);
     ESP_LOGD("GenericStepper", "Going to unsafe position %i steps @ %i steps/s, %i steps/s^2", positionInSteps, speedInHz, stepAcceleration);
 
     // write values to stepper
@@ -364,30 +357,33 @@ protected:
     _stepper->moveTo(positionInSteps);
   }
 
-  virtual bool _queryHome()
+  void _reportMotionPoint()
   {
-    ESP_LOGI("GenericStepper", "Querying homing switch.");
+    // Call notification callback, if it was defined.
+    if (_cbMotionPoint != NULL)
+    {
+      _cbMotionPoint(millis(), getPosition(), getSpeed(), 0.0, 0.0);
+    }
+  }
+
+  bool _queryHome()
+  {
+    ESP_LOGV("GenericStepper", "Querying homing switch.");
     return (digitalRead(_homingPin) == !_homingActiveLow) ? true : false;
   }
 
   void _homingProcedure()
   {
-    if (_stepper->isRunning())
-    {
-      ESP_LOGD("GenericStepper", "Stepper is moving. Stop and home");
-      stopMotion();
-    }
-
     // Set feedrate for homing
     _stepper->setSpeedInHz(_homingSpeed);
-    _stepper->setAcceleration(_maxStepAcceleration / 10);
+    _stepper->setAcceleration(_maxStepAcceleration);
 
     // Check if we are already at the home position
     if (_queryHome())
     {
       ESP_LOGD("GenericStepper", "Already at home position. Backing up and try again.");
       // back off 2*keepout from switch
-      _stepper->move(_motor->stepsPerMillimeter * 2 * _keepout);
+      _stepper->move(_stepsPerMillimeter * 2 * _keepout);
 
       // wait for move to complete
       while (_stepper->isRunning())
@@ -397,13 +393,13 @@ protected:
       }
 
       // move back towards endstop
-      _stepper->move(-_motor->stepsPerMillimeter * 4 * _keepout);
+      _stepper->move(-_stepsPerMillimeter * 4 * _keepout);
     }
     else
     {
       ESP_LOGD("GenericStepper", "Start searching for home.");
       // Move maximum travel distance + 2*keepout towards the homing switch
-      _stepper->move(-_motor->stepsPerMillimeter * (_maxPosition + 4 * _keepout));
+      _stepper->move(-_stepsPerMillimeter * (_maxPosition + 4 * _keepout));
     }
 
     // Poll homing switch
@@ -416,7 +412,7 @@ protected:
         ESP_LOGD("GenericStepper", "Found home!");
         // Set home position
         // Switch is at -KEEPOUT
-        _stepper->forceStopAndNewPosition(_motor->stepsPerMillimeter * int(_homePosition - _keepout));
+        _stepper->forceStopAndNewPosition(_stepsPerMillimeter * int(_homePosition - _keepout));
 
         // drive free of switch and set axis to lower end
         _stepper->moveTo(_minStep);
@@ -453,36 +449,15 @@ protected:
     ESP_LOGV("GenericStepper", "Homing task self-terminated");
   }
 
-  void _positionFeedbackTask()
-  {
-    TickType_t xLastWakeTime;
-    // Initialize the xLastWakeTime variable with the current tick count.
-    xLastWakeTime = xTaskGetTickCount();
-
-    unsigned int now = millis();
-
-    while (true)
-    {
-      // Return results of current motion point via the callback
-      _cbMotionPoint(
-          millis(),
-          getPosition(),
-          getSpeed());
-
-      // Delay the task until the next tick count
-      vTaskDelayUntil(&xLastWakeTime, _timeSliceInMs);
-    }
-  }
-
   /**************************************************************************/
   FastAccelStepper *_stepper;
   motorProperties *_motor;
   FastAccelStepperEngine engine = FastAccelStepperEngine();
+  int _stepsPerMillimeter = 50;
   int _minStep;
   int _maxStep;
   int _maxStepPerSecond;
   int _maxStepAcceleration;
-  bool _motionCompleted = true;
   static void _homingProcedureImpl(void *_this) { static_cast<GenericStepperMotor *>(_this)->_homingProcedure(); }
   int _homingSpeed;
   float _homePosition;
@@ -490,8 +465,4 @@ protected:
   bool _homingActiveLow; /*> Polarity of the homing signal*/
   TaskHandle_t _taskHomingHandle = NULL;
   void (*_callBackHoming)(bool) = NULL;
-  void (*_cbMotionPoint)(unsigned int, float, float) = NULL;
-  TickType_t _timeSliceInMs = 50;
-  static void _positionFeedbackTaskImpl(void *_this) { static_cast<GenericStepperMotor *>(_this)->_positionFeedbackTask(); }
-  TaskHandle_t _taskPositionFeedbackHandle = NULL;
 };

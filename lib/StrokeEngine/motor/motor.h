@@ -151,6 +151,19 @@ public:
 
   /**************************************************************************/
   /*!
+    @brief Inverts the direction of the motor. This is useful if the motor
+    is mounted in a way that the direction of the motor is inverted.
+    @param invert `true` if the direction should be inverted, `false` if not
+  */
+  /**************************************************************************/
+  void invertDirection(boolean invert = true)
+  {
+    _invertDirection = invert;
+    ESP_LOGD("AbstractMotor", "Set invert direction to %d", _invertDirection);
+  }
+
+  /**************************************************************************/
+  /*!
     @brief  This invokes a trapezoidal motion path planning and
     execution. It includes basic safeguards against nonphysical inputs and
     clips postion, speed and acceleration to the maximum values specified for
@@ -169,16 +182,11 @@ public:
   {
     // TODO - If a motion task is provided, ensure the caller is the motion task (Mutex?)
     // Ensure in ACTIVE and valid movement state
-    if (!_enabled || !_homed)
+    if (!_enabled || !_homed || _error)
     {
-      ESP_LOGE("AbstractMotor", "Unable to command motion while motor is not ENABLED or HOMED!");
+      ESP_LOGE("AbstractMotor", "Unable to command motion while motor is not ENABLED, nor HOMED or in ERROR state!");
       return;
     }
-
-    /*       // Take Semaphore for movement
-          if( xSemaphoreTake( movementSemaphore, 1000 / portTICK_PERIOD_MS ) != pdTRUE ) {
-            throw new MotorInMotionError("Unable to acquire Motor Movement Semaphore within 1000ms. Motor currently within movement still!");
-          } */
 
     // Apply bounds and protections
     float safePosition = constrain(position, 0.0, _maxPosition);
@@ -245,9 +253,72 @@ public:
   /**************************************************************************/
   virtual float getPosition() = 0;
 
+  /**************************************************************************/
+  /*!
+    @brief  It also attaches a callback function where the speed and position
+    are reported on a regular interval specified with timeInMs.
+    @param cbMotionPoint Callback with the signature
+    `cbMotionPoint(unsigned int timestamp, float position, float speed, float valueA,
+    float valueB)`. time is reported milliseconds since the controller has started
+    (`millis()`), speed in [m/s] and position in [mm]. valueA & valueB can be
+    arbitrary data like current, voltage, real position, torque, etc.
+    @param timeInMs time interval at which speed and position should be
+    reported in [ms]
+  */
+  /**************************************************************************/
+  void attachPositionFeedback(void (*cbMotionPoint)(unsigned int, float, float, float, float), unsigned int timeInMs = 50)
+  {
+    _cbMotionPoint = cbMotionPoint;
+    _timeSliceInMs = timeInMs / portTICK_PERIOD_MS;
+
+    // Create / resume motion feedback task
+    if (_taskPositionFeedbackHandle == NULL)
+    {
+      // Create Stroke Task
+      xTaskCreatePinnedToCore(
+          _positionFeedbackTaskImpl,    // Function that should be called
+          "Motion Feedback",            // Name of the task (for debugging)
+          4096,                         // Stack size (bytes)
+          this,                         // Pass reference to this class instance
+          10,                           // Pretty high task priority
+          &_taskPositionFeedbackHandle, // Task handle
+          1                             // Pin to application core
+      );
+      ESP_LOGD("AbstractMotor", "Created Position Feedback Task.");
+    }
+  }
+
+  /**************************************************************************/
+  /*!
+   @brief Detaches the position feedback for the motor. This function sets the
+   motion point callback to NULL and deletes the task responsible for position
+   feedback.
+  */
+  /**************************************************************************/
+  void detachPositionFeedback()
+  {
+    _cbMotionPoint = NULL;
+    vTaskDelete(_taskPositionFeedbackHandle);
+    _taskPositionFeedbackHandle = NULL;
+  }
+
+  /**************************************************************************/
+  /*!
+    @brief  Returns the error state of the motor. This is `true` if the motor
+    is in an error state and `false` if everything is fine. Can be overriden in
+    the user implementation and return more details in an enum.
+    @return error state
+  */
+  /**************************************************************************/
+  virtual int hasError()
+  {
+    return _error;
+  }
+
 protected:
   bool _enabled = false;
   bool _homed = false;
+  bool _error = false;
 
   /**************************************************************************/
   /*!
@@ -262,9 +333,45 @@ protected:
   /**************************************************************************/
   virtual void _unsafeGoToPosition(float position, float speed, float acceleration) = 0;
 
+  /**************************************************************************/
+  /*!
+    @brief  This function is getting called from within `goToPosition()` and
+    must be overriden by the user implementation for a specific motor.
+    @param position Target position that must be reached starting at the current
+    position and speed in [mm]
+    @param speed The speed at which the motion should happen [mm/s]
+    @param acceleration The acceleration that is used to get up to speed and
+    to slow down at the end in [mm/s²]
+  */
+  /**************************************************************************/
+  virtual void _reportMotionPoint() = 0;
+
   float _travel = 0.0;
   float _keepout = 0.0;
   float _maxPosition = 0.0;
   float _maxSpeed = 0.0;
   float _maxAcceleration = 0.0;
+  bool _invertDirection = false;
+
+  TickType_t _timeSliceInMs = 50;
+  void (*_cbMotionPoint)(unsigned int, float, float, float, float) = NULL;
+  static void _positionFeedbackTaskImpl(void *_this) { static_cast<MotorInterface *>(_this)->_positionFeedbackTask(); }
+  TaskHandle_t _taskPositionFeedbackHandle = NULL;
+  void _positionFeedbackTask()
+  {
+    TickType_t xLastWakeTime;
+    // Initialize the xLastWakeTime variable with the current tick count.
+    xLastWakeTime = xTaskGetTickCount();
+
+    unsigned int now = millis();
+
+    while (true)
+    {
+      // Return results of current motion point via the callback
+      _reportMotionPoint();
+
+      // Delay the task until the next tick count
+      vTaskDelayUntil(&xLastWakeTime, _timeSliceInMs);
+    }
+  }
 };

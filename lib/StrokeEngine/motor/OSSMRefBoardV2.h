@@ -26,23 +26,17 @@
 /**************************************************************************/
 typedef struct
 {
-  int stepsPerMillimeter; /*> Number of steps per millimeter */
-  bool invertDirection;   /*> Set to true to invert the direction signal
-                           *  The firmware expects the home switch to be located at the
-                           *  end of an retraction move. That way the machine homes
-                           *  itself away from the body. Home position is -KEEPOUTBOUNDARY */
-  bool enableActiveLow;   /*> Polarity of the enable signal. True for active low. */
-  int stepPin;            /*> Pin connected to the STEP input */
-  int directionPin;       /*> Pin connected to the DIR input */
-  int enablePin;          /*> Pin connected to the ENA input */
-  int alarmPin;           /*> Pin connected to the ALM input */
-  int inPositionPin;      /*> Pin connected to the PED input */
-  int ADCPinCurrent;      /*> Pin connected to the current sensor input */
-  float AmperePermV;      /*> Scaling of the current sensor ADC */
-  int AmpereOffsetInmV;   /*> Offset in mV of the current sensor ADC */
-  float currentThreshold; /*> Current threshold to count as hitting into an mechanical stop */
-  int ADCPinVoltage;      /*> Pin connected to the voltage sensor input */
-  float VoltPermV;        /*> Scaling of the voltage ADC */
+  bool enableActiveLow; /*> Polarity of the enable signal. True for active low. */
+  int stepPin;          /*> Pin connected to the STEP input */
+  int directionPin;     /*> Pin connected to the DIR input */
+  int enablePin;        /*> Pin connected to the ENA input */
+  int alarmPin;         /*> Pin connected to the ALM input */
+  int inPositionPin;    /*> Pin connected to the PED input */
+  int ADCPinCurrent;    /*> Pin connected to the current sensor input */
+  float AmperePermV;    /*> Scaling of the current sensor ADC */
+  int AmpereOffsetInmV; /*> Offset in mV of the current sensor ADC */
+  int ADCPinVoltage;    /*> Pin connected to the voltage sensor input */
+  float VoltPermV;      /*> Scaling of the voltage ADC */
 } OSSMRefBoardV2Properties;
 
 /**************************************************************************/
@@ -59,11 +53,10 @@ class OSSMRefBoardV2Motor : public MotorInterface
 public:
   /**************************************************************************/
   /*!
-   * @brief Initializes the motor control.
-   *
-   * @param motor Pointer to the motor properties.
-   * @param OSSMRefBoardV2 Pointer to the OSSMRefBoardV2 properties.
-   */
+   @brief Initializes the motor control.
+
+   @param OSSMRefBoardV2 Pointer to the OSSMRefBoardV2 properties.
+  */
   /**************************************************************************/
   void begin(OSSMRefBoardV2Properties *OSSMRefBoardV2)
   {
@@ -74,7 +67,7 @@ public:
     _stepper = engine.stepperConnectToPin(_motor->stepPin);
     if (_stepper)
     {
-      _stepper->setDirectionPin(_motor->directionPin, _motor->invertDirection);
+      _stepper->setDirectionPin(_motor->directionPin, !_invertDirection);
       _stepper->setEnablePin(_motor->enablePin, _motor->enableActiveLow);
       _stepper->setAutoEnable(false);
       _stepper->disableOutputs();
@@ -92,25 +85,18 @@ public:
 
   /**************************************************************************/
   /*!
-    @brief  Sets the machines mechanical geometries. The values are measured
-    from hard endstop to hard endstop and are given in [mm].
-    @param travel overal mechanical travel in [mm].
-    @param keepout This keepout [mm] is a soft endstop and subtracted at both ends
-    of the travel. A typical value would be 5mm.
+    @brief  Sets the machines steps per millimeter of travel. This is used
+    to translate between metric units and steps.
+    @param  stepsPerMillimeter steps per millimeter of travel. Default is 50.
   */
   /**************************************************************************/
-  void setMachineGeometry(float travel, float keepout = 5.0)
+  void setStepsPerMillimeter(int stepsPerMillimeter = 50)
   {
-    _travel = travel;
-    _keepout = keepout;
-    _maxPosition = travel - (keepout * 2);
-    _minStep = 0;
-    _maxStep = int(0.5 + _maxPosition * _motor->stepsPerMillimeter);
-    _maxStepPerSecond = int(0.5 + _maxSpeed * _motor->stepsPerMillimeter);
-    _maxStepAcceleration = int(0.5 + _maxAcceleration * _motor->stepsPerMillimeter);
-    ESP_LOGD("OSSMRefBoardV2", "Machine Geometry Travel = %f", _travel);
-    ESP_LOGD("OSSMRefBoardV2", "Machine Geometry Keepout = %f", _keepout);
-    ESP_LOGD("OSSMRefBoardV2", "Machine Geometry MaxPosition = %f", _maxPosition);
+    _stepsPerMillimeter = stepsPerMillimeter;
+    _maxStep = int(0.5 + _maxPosition * _stepsPerMillimeter);
+    _maxStepPerSecond = int(0.5 + _maxSpeed * _stepsPerMillimeter);
+    _maxStepAcceleration = int(0.5 + _maxAcceleration * _stepsPerMillimeter);
+    ESP_LOGD("OSSMRefBoardV2", "Steps per millimeter set to %i", _stepsPerMillimeter);
   }
 
   /**************************************************************************/
@@ -122,10 +108,44 @@ public:
     of the travel. A typical value would be 5mm.
   */
   /**************************************************************************/
+  void setMachineGeometry(float travel, float keepout = 5.0)
+  {
+    _travel = travel;
+    _keepout = keepout;
+    _maxPosition = travel - (keepout * 2);
+    _minStep = 0;
+    _maxStep = int(0.5 + _maxPosition * _stepsPerMillimeter);
+    _maxStepPerSecond = int(0.5 + _maxSpeed * _stepsPerMillimeter);
+    _maxStepAcceleration = int(0.5 + _maxAcceleration * _stepsPerMillimeter);
+    ESP_LOGD("OSSMRefBoardV2", "Machine Geometry Travel = %f", _travel);
+    ESP_LOGD("OSSMRefBoardV2", "Machine Geometry Keepout = %f", _keepout);
+    ESP_LOGD("OSSMRefBoardV2", "Machine Geometry MaxPosition = %f", _maxPosition);
+  }
+
+  /**************************************************************************/
+  /*!
+    @brief  Sets up sensorless homing.
+    @param threshold Current threshold to account as mechanical endstop in [A].
+  */
+  /**************************************************************************/
+  void setSensorlessHoming(float threshold = 0.10)
+  {
+    _currentThreshold = threshold;
+  }
+
+  /**************************************************************************/
+  /*!
+    @brief Homes the machine. This is done by moving the motor towards the
+    homing switch until the current threshold is reached. The homing switch
+    is then set as the new home position.
+    @param homePosition Position of the homing switch in [mm]. Default is 0.0.
+    @param speed Speed of the homing procedure in [mm/s]. Default is 5.0.
+  */
+  /**************************************************************************/
   void home(float homePosition = 0.0, float speed = 5.0)
   {
-    _homePosition = int(0.5 + homePosition / float(_motor->stepsPerMillimeter));
-    _homingSpeed = speed * _motor->stepsPerMillimeter;
+    _homePosition = int(0.5 + homePosition / float(_stepsPerMillimeter));
+    _homingSpeed = speed * _stepsPerMillimeter;
     ESP_LOGI("OSSMRefBoardV2", "Search home with %05.1f mm/s at %05.1f mm.", speed, homePosition);
 
     // set homed to false so that isActive() becomes false
@@ -156,11 +176,13 @@ public:
 
   /**************************************************************************/
   /*!
-    @brief  Sets the machines mechanical geometries. The values are measured
-    from hard endstop to hard endstop and are given in [mm].
-    @param travel overal mechanical travel in [mm].
-    @param keepout This keepout [mm] is a soft endstop and subtracted at both ends
-    of the travel. A typical value would be 5mm.
+    @brief Homes the machine. This is done by moving the motor towards the
+    homing switch until the current threshold is reached. The homing switch
+    is then set as the new home position.
+    @param callBackHoming Callback function that is called when homing is
+    completed. The callback function must take a boolean as an argument.
+    @param homePosition Position of the homing switch in [mm]. Default is 0.0.
+    @param speed Speed of the homing procedure in [mm/s]. Default is 5.0.
   */
   /**************************************************************************/
   void home(void (*callBackHoming)(bool), float homePosition = 0.0, float speed = 5.0)
@@ -171,14 +193,15 @@ public:
 
   /**************************************************************************/
   /*!
-   * @brief Measures the length of the rail.
-   *
-   * This measures the length of the rail by moving the motor back and forth until the in-position signal is reached on both sides.
-   * The length is then calculated from the number of steps and the steps per millimeter and stored in the motor properties using setMachineGeometry().
-   * @param keepout This keepout [mm] is a soft endstop and subtracted at both ends of the travel. A typical value would be 5mm.
-   */
+   @brief Measures the length of the rail.
+
+   This measures the length of the rail by moving the motor back and forth until the endstop is reached on both sides.
+   The length is then calculated from the number of steps and the steps per millimeter and stored in the motor properties using setMachineGeometry().
+   @param callBackMeasuring Callback function that is called when measuring is completed. The callback function must take a float as an argument.
+   @param keepout This keepout [mm] is a soft endstop and subtracted at both ends of the travel. A typical value would be 5mm.
+  */
   /**************************************************************************/
-  void measureRailLength(float keepout = 5.0)
+  void measureRailLength(void (*callBackMeasuring)(float), float keepout = 5.0)
   {
     // Quit if stepper not enabled
     if (_enabled == false)
@@ -187,8 +210,8 @@ public:
       return;
     }
 
-    // first stop current motion and suspend motion tasks
-    stopMotion();
+    // store the call back function
+    _callBackMeasuring = callBackMeasuring;
 
     // store the keepout distance
     _keepout = keepout;
@@ -210,29 +233,7 @@ public:
 
   /**************************************************************************/
   /*!
-    @brief  It also attaches a callback function where the speed and position
-    are reported on a regular interval specified with timeInMs.
-    @param cbMotionPoint Callback with the signature
-    `cbMotionPoint(unsigned int timestamp, float position, float speed)`. time is reported
-    milliseconds since the controller has started (`millis()`), speed in [m/s] and
-    position in [mm].
-    @param timeInMs time interval at which speed and position should be
-    reported in [ms]
-  */
-  /**************************************************************************/
-  void attachPositionFeedback(void (*cbMotionPoint)(unsigned int, float, float, float, float), unsigned int timeInMs = 50)
-  {
-    _cbMotionPoint = cbMotionPoint;
-    _timeSliceInMs = timeInMs / portTICK_PERIOD_MS;
-  }
-
-  /**************************************************************************/
-  /*!
-    @brief  Sets the machines mechanical geometries. The values are measured
-    from hard endstop to hard endstop and are given in [mm].
-    @param travel overal mechanical travel in [mm].
-    @param keepout This keepout [mm] is a soft endstop and subtracted at both ends
-    of the travel. A typical value would be 5mm.
+    @brief Enables the stepper motor.
   */
   /**************************************************************************/
   void enable()
@@ -241,43 +242,11 @@ public:
     // Enable stepper
     _enabled = true;
     _stepper->enableOutputs();
-
-    if (_cbMotionPoint == NULL)
-    {
-      ESP_LOGD("OSSMRefBoardV2", "No Position Feedback Task created.");
-      return;
-    }
-
-    // Create / resume motion feedback task
-    if (_taskPositionFeedbackHandle == NULL)
-    {
-      // Create Stroke Task
-      xTaskCreatePinnedToCore(
-          _positionFeedbackTaskImpl,    // Function that should be called
-          "Motion Feedback",            // Name of the task (for debugging)
-          4096,                         // Stack size (bytes)
-          this,                         // Pass reference to this class instance
-          10,                           // Pretty high task priority
-          &_taskPositionFeedbackHandle, // Task handle
-          1                             // Pin to application core
-      );
-      ESP_LOGD("OSSMRefBoardV2", "Created Position Feedback Task.");
-    }
-    else
-    {
-      // Resume task, if it already exists
-      vTaskResume(_taskPositionFeedbackHandle);
-      ESP_LOGD("OSSMRefBoardV2", "Resumed Position Feedback Task.");
-    }
   }
 
   /**************************************************************************/
   /*!
-    @brief  Sets the machines mechanical geometries. The values are measured
-    from hard endstop to hard endstop and are given in [mm].
-    @param travel overal mechanical travel in [mm].
-    @param keepout This keepout [mm] is a soft endstop and subtracted at both ends
-    of the travel. A typical value would be 5mm.
+    @brief  Disable the stepper motor.
   */
   /**************************************************************************/
   void disable()
@@ -294,22 +263,11 @@ public:
       _taskHomingHandle = NULL;
       ESP_LOGD("OSSMRefBoardV2", "Deleted Homing Task.");
     }
-
-    // Suspend motion feedback task if it exists already
-    if (_taskPositionFeedbackHandle != NULL)
-    {
-      vTaskSuspend(_taskPositionFeedbackHandle);
-      ESP_LOGD("OSSMRefBoardV2", "Suspended Position Feedback Task.");
-    }
   }
 
   /**************************************************************************/
   /*!
-    @brief  Sets the machines mechanical geometries. The values are measured
-    from hard endstop to hard endstop and are given in [mm].
-    @param travel overal mechanical travel in [mm].
-    @param keepout This keepout [mm] is a soft endstop and subtracted at both ends
-    of the travel. A typical value would be 5mm.
+    @brief  Stops any motion as fast as legally possible.
   */
   /**************************************************************************/
   void stopMotion()
@@ -323,6 +281,14 @@ public:
       vTaskDelete(_taskHomingHandle);
       _taskHomingHandle = NULL;
       ESP_LOGD("OSSMRefBoardV2", "Deleted Homing Task.");
+    }
+
+    // Delete measuring task should the measuring sequence be running
+    if (_taskMeasuringHandle != NULL)
+    {
+      vTaskDelete(_taskMeasuringHandle);
+      _taskMeasuringHandle = NULL;
+      ESP_LOGD("OSSMRefBoardV2", "Deleted Measuring Task.");
     }
 
     if (_stepper->isRunning())
@@ -341,11 +307,9 @@ public:
 
   /**************************************************************************/
   /*!
-    @brief  Sets the machines mechanical geometries. The values are measured
-    from hard endstop to hard endstop and are given in [mm].
-    @param travel overal mechanical travel in [mm].
-    @param keepout This keepout [mm] is a soft endstop and subtracted at both ends
-    of the travel. A typical value would be 5mm.
+    @brief  Returns if a trapezoidal motion is carried out, or the machine is
+    at stand-still.
+    @return `true` if motion is completed, `false` if still under way
   */
   /**************************************************************************/
   bool motionCompleted() { return _stepper->isRunning() ? false : true; }
@@ -356,7 +320,7 @@ public:
     @return acceleration of the motor in [mm/s²]
   */
   /**************************************************************************/
-  float getAcceleration() { return float(_stepper->getAcceleration()) / float(_motor->stepsPerMillimeter); }
+  float getAcceleration() { return float(_stepper->getAcceleration()) / float(_stepsPerMillimeter); }
 
   /**************************************************************************/
   /*!
@@ -364,7 +328,7 @@ public:
     @return speed of the motor in [mm/s]
   */
   /**************************************************************************/
-  float getSpeed() { return (float(_stepper->getCurrentSpeedInMilliHz()) * 1.0e-3) / float(_motor->stepsPerMillimeter); }
+  float getSpeed() { return (float(_stepper->getCurrentSpeedInMilliHz()) * 1.0e-3) / float(_stepsPerMillimeter); }
 
   /**************************************************************************/
   /*!
@@ -372,15 +336,14 @@ public:
     @return position in [mm]
   */
   /**************************************************************************/
-  float getPosition() { return float(_stepper->getCurrentPosition()) / float(_motor->stepsPerMillimeter); }
+  float getPosition() { return float(_stepper->getCurrentPosition()) / float(_stepsPerMillimeter); }
 
   /**************************************************************************/
   /*!
-   * @brief Gets the current value.
-   *
-   * @param samples Number of samples to average.
-   * @return The current in A.
-   */
+   @brief Measures the current consumption.
+   @param samples Number of samples to average.
+   @return The current in A.
+  */
   /**************************************************************************/
   float getCurrent(int samples = 20)
   {
@@ -400,11 +363,10 @@ public:
 
   /**************************************************************************/
   /*!
-   * @brief Gets the voltage value.
-   *
-   * @param samples Number of samples to average.
-   * @return The voltage in V.
-   */
+   @brief Measures the voltage.
+   @param samples Number of samples to average.
+   @return The voltage in V.
+  */
   /**************************************************************************/
   float getVoltage(int samples = 20)
   {
@@ -424,11 +386,10 @@ public:
 
   /**************************************************************************/
   /*!
-   * @brief Gets the power value.
-   *
-   * @param samples Number of samples to average.
-   * @return The power in W.
-   */
+   @brief Measures the power consumption.
+   @param samples Number of samples to average.
+   @return The power in W.
+  */
   /**************************************************************************/
   float getPower(int samples = 20)
   {
@@ -452,6 +413,24 @@ public:
     return power;
   }
 
+  /**************************************************************************/
+  /*!
+    @brief  Returns the error state of the motor. This is `true` if the motor
+    is in an error state and `false` if everything is fine.
+    @return error state
+  */
+  /**************************************************************************/
+  int hasError()
+  {
+    // Check if alarm is active
+    if (digitalRead(_motor->alarmPin) == LOW)
+    {
+      ESP_LOGE("OSSMRefBoardV2", "Alarm signal is active!");
+      return 1;
+    }
+    return 0;
+  }
+
 private:
   /**************************************************************************/
   /*!
@@ -466,9 +445,9 @@ private:
   void _unsafeGoToPosition(float position, float speed, float acceleration)
   {
     // Translate between metric and steps
-    int speedInHz = int(0.5 + speed * _motor->stepsPerMillimeter);
-    int stepAcceleration = int(0.5 + acceleration * _motor->stepsPerMillimeter);
-    int positionInSteps = int(0.5 + position * _motor->stepsPerMillimeter);
+    int speedInHz = int(0.5 + speed * _stepsPerMillimeter);
+    int stepAcceleration = int(0.5 + acceleration * _stepsPerMillimeter);
+    int positionInSteps = int(0.5 + position * _stepsPerMillimeter);
     ESP_LOGD("OSSMRefBoardV2", "Going to unsafe position %i steps @ %i steps/s, %i steps/s^2", positionInSteps, speedInHz, stepAcceleration);
 
     // write values to stepper
@@ -482,8 +461,8 @@ private:
     // read current
     float current = getCurrent();
     // check if current is above threshold
-    ESP_LOGV("OSSMRefBoardV2", "Readout current sensor: %.3f A, Threshold: %.3f A", current, (_idleCurrent + _motor->currentThreshold));
-    if (current > (_idleCurrent + _motor->currentThreshold))
+    ESP_LOGV("OSSMRefBoardV2", "Readout current sensor: %.3f A, Threshold: %.3f A", current, (_idleCurrent + _currentThreshold));
+    if (current > (_idleCurrent + _currentThreshold))
     {
       return true;
     }
@@ -495,20 +474,14 @@ private:
 
   void _homingProcedure()
   {
-    ESP_LOGD("OSSMRefBoardV2", "Start searching for home.");
+    ESP_LOGI("iHSVServoV6", "Start searching for home.");
 
-    if (_stepper->isRunning())
-    {
-      ESP_LOGD("OSSMRefBoardV2", "Stepper is moving. Stop and home");
-      stopMotion();
-    }
-
-    // Set feedrate for homing
+    // Set feedrate for homing and stop motor
     _stepper->setSpeedInHz(_homingSpeed);
-    _stepper->setAcceleration(_maxStepAcceleration / 10);
+    _stepper->setAcceleration(_maxStepAcceleration);
 
     // measure idle current
-    _idleCurrent = getCurrent();
+    _idleCurrent = getCurrent(100);
     ESP_LOGI("OSSMRefBoardV2", "Idle Current: %.3f A", _idleCurrent);
 
     // Move maximum travel distance + 2*keepout towards the homing switch
@@ -524,15 +497,15 @@ private:
         ESP_LOGD("OSSMRefBoardV2", "Found home!");
         // Set home position
         // Switch is at -KEEPOUT
-        _stepper->forceStopAndNewPosition(_motor->stepsPerMillimeter * int(_homePosition - _keepout));
+        _stepper->forceStopAndNewPosition(_stepsPerMillimeter * int(_homePosition - _keepout));
 
         // drive free of switch and set axis to lower end
         _stepper->moveTo(_minStep);
 
-        _homed = true;
-
         // drive free of switch and set axis to 0
-        _stepper->moveTo(0);
+        _stepper->moveTo(0, true); // blocking call
+
+        _homed = true;
 
         // Break loop, home was found
         break;
@@ -563,6 +536,8 @@ private:
 
   void _measureProcedure()
   {
+    float travel = 0.0;
+
     // home the motor
     home();
 
@@ -581,7 +556,7 @@ private:
     _stepper->runForward();
 
     // wait until the motor is in position
-    while (!_motionCompleted)
+    while (_stepper->isRunning())
     {
       // query endstop
       if (_queryHome())
@@ -594,12 +569,20 @@ private:
         ESP_LOGI("OSSMRefBoardV2", "Measured rail length: %f", travel);
         setMachineGeometry(travel, _keepout);
 
-        // move the motor back to the home position
-        _stepper->move(_motor->stepsPerMillimeter * (_maxPosition - _keepout));
+        // drive free of end to _maxPosition
+        _stepper->moveTo(_maxStep);
+
+        break;
       }
 
       // Pause the task for 20ms to allow other tasks
       vTaskDelay(20 / portTICK_PERIOD_MS);
+    }
+
+    // Call notification callback, if it was defined.
+    if (_callBackMeasuring != NULL)
+    {
+      _callBackMeasuring(travel);
     }
 
     // delete one-time task
@@ -608,47 +591,35 @@ private:
     ESP_LOGV("OSSMRefBoardV2", "Measuring task self-terminated");
   }
 
-  void _positionFeedbackTask()
+  void _reportMotionPoint()
   {
-    TickType_t xLastWakeTime;
-    // Initialize the xLastWakeTime variable with the current tick count.
-    xLastWakeTime = xTaskGetTickCount();
+    int alarm = digitalRead(_motor->alarmPin);
 
-    unsigned int now = millis();
-
-    while (true)
-    {
-      // Return results of current motion point via the callback
-      _cbMotionPoint(
-          millis(),
-          getPosition(),
-          getSpeed(),
-          getVoltage(),
-          getCurrent());
-
-      // Delay the task until the next tick count
-      vTaskDelayUntil(&xLastWakeTime, _timeSliceInMs);
-    }
+    // Return results of current motion point via the callback
+    _cbMotionPoint(
+        millis(),
+        getPosition(),
+        getSpeed(),
+        getCurrent(),
+        getVoltage());
   }
 
   OSSMRefBoardV2Properties *_motor;
   FastAccelStepper *_stepper;
   FastAccelStepperEngine engine = FastAccelStepperEngine();
   float _idleCurrent;
+  int _stepsPerMillimeter = 50;
   int _minStep;
   int _maxStep;
   int _maxStepPerSecond;
   int _maxStepAcceleration;
-  bool _motionCompleted = true;
   static void _homingProcedureImpl(void *_this) { static_cast<OSSMRefBoardV2Motor *>(_this)->_homingProcedure(); }
   int _homingSpeed;
   float _homePosition;
   TaskHandle_t _taskHomingHandle = NULL;
   void (*_callBackHoming)(bool) = NULL;
-  TickType_t _timeSliceInMs = 50;
-  static void _positionFeedbackTaskImpl(void *_this) { static_cast<OSSMRefBoardV2Motor *>(_this)->_positionFeedbackTask(); }
-  TaskHandle_t _taskPositionFeedbackHandle = NULL;
   static void _measureProcedureImpl(void *_this) { static_cast<OSSMRefBoardV2Motor *>(_this)->_measureProcedure(); }
   TaskHandle_t _taskMeasuringHandle = NULL;
-  void (*_cbMotionPoint)(unsigned int, float, float, float, float) = NULL;
+  void (*_callBackMeasuring)(float) = NULL;
+  float _currentThreshold; /*> Current threshold to count as hitting into an mechanical stop */
 };

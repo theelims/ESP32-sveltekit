@@ -83,20 +83,14 @@
 /**************************************************************************/
 typedef struct
 {
-  int stepsPerMillimeter; /*> Number of steps per millimeter */
-  bool invertDirection;   /*> Set to true to invert the direction signal
-                           *  The firmware expects the home switch to be located at the
-                           *  end of an retraction move. That way the machine homes
-                           *  itself away from the body. Home position is -KEEPOUTBOUNDARY */
-  bool enableActiveLow;   /*> Polarity of the enable signal. True for active low. */
-  int stepPin;            /*> Pin connected to the STEP input */
-  int directionPin;       /*> Pin connected to the DIR input */
-  int enablePin;          /*> Pin connected to the ENA input */
-  int alarmPin;           /*> Pin connected to the ALM input */
-  int inPositionPin;      /*> Pin connected to the PED input */
-  int modbusRxPin;        /*> Pin connected to the MODBUS RX input */
-  int modbusTxPin;        /*> Pin connected to the MODBUS TX input */
-  int torqueThreshold;    /*> Torque threshold for homing */
+  bool enableActiveLow; /*> Polarity of the enable signal. True for active low. */
+  int stepPin;          /*> Pin connected to the STEP input */
+  int directionPin;     /*> Pin connected to the DIR input */
+  int enablePin;        /*> Pin connected to the ENA input */
+  int alarmPin;         /*> Pin connected to the ALM input */
+  int inPositionPin;    /*> Pin connected to the PED input */
+  int modbusRxPin;      /*> Pin connected to the MODBUS RX input */
+  int modbusTxPin;      /*> Pin connected to the MODBUS TX input */
 } iHSVServoV6Properties;
 
 /**************************************************************************/
@@ -111,13 +105,17 @@ typedef struct
 class iHSVServoV6Motor : public MotorInterface
 {
 public:
+  iHSVServoV6Motor() : MotorInterface() // Constructor
+  {
+    // flag error as true until we have proven the opposite
+    _error = true;
+  };
   /**************************************************************************/
   /*!
-   * @brief Initializes the motor control.
-   *
-   * @param motor Pointer to the motor properties.
-   * @param iHSVServoV6 Pointer to the iHSVServoV6 properties.
-   */
+   @brief Initializes the motor control.
+
+   @param iHSVServoV6 Pointer to the iHSVServoV6 properties.
+  */
   /**************************************************************************/
   void begin(iHSVServoV6Properties *iHSVServoV6)
   {
@@ -134,7 +132,7 @@ public:
     _stepper = engine.stepperConnectToPin(_motor->stepPin);
     if (_stepper)
     {
-      _stepper->setDirectionPin(_motor->directionPin, _motor->invertDirection);
+      _stepper->setDirectionPin(_motor->directionPin, !_invertDirection);
       _stepper->setEnablePin(_motor->enablePin, _motor->enableActiveLow);
       _stepper->setAutoEnable(false);
       _stepper->disableOutputs();
@@ -148,24 +146,37 @@ public:
     pinMode(_motor->alarmPin, INPUT_PULLUP);
     pinMode(_motor->inPositionPin, INPUT_PULLUP);
 
-    int servoRatedRPM = _readServoRegister(IHSVV6_P0001_RATEDRPM);
-    int servoRatedTorque = _readServoRegister(IHSVV6_P0002_RATEDTORQUE);
-    int servoRatedCurrent = _readServoRegister(IHSVV6_P0003_RATEDCURRENT);
-    int servoFwdTorqueLimit = _readServoRegister(IHSVV6_P0510_FWDTORQUELIMIT);
-    int servoRevTorqueLimit = _readServoRegister(IHSVV6_P0511_REVTORQUELIMIT, true);
+    _servoRatedTorque = (float)_readServoRegister(IHSVV6_P0002_RATEDTORQUE) * 0.01;
     // Log all servo stats to serial
-    ESP_LOGI("iHSVServoV6", "Servo Stats: rated RPM: %d, rated torque: %d, rated current: %d, fwd torque limit: %d, rev torque limit: %d",
-             servoRatedRPM,
-             servoRatedTorque,
-             servoRatedCurrent,
-             servoFwdTorqueLimit,
-             servoRevTorqueLimit);
+    ESP_LOGI("iHSVServoV6", "Servo rated torque: %f Nm", _servoRatedTorque);
 
     // write default settings to servo (temporary)
-    _writeServoRegister(IHSVV6_P0305_INPOSMODE, 0);
-    _writeServoRegister(IHSVV6_P0306_INPOSMARGIN, 10);
-    _writeServoRegister(IHSVV6_P0315_DEVERROR, 65535);
-    _writeServoRegister(IHSVV6_P0103_RIGIDITY, 20);
+    if (!_writeServoRegister(IHSVV6_P0315_DEVERROR, 65535))
+    {
+      ESP_LOGE("iHSVServoV6", "Error to access servo over Modbus. Check wiring and try again.");
+      _error = true;
+    }
+    else
+    {
+      _error = false;
+      ESP_LOGI("iHSVServoV6", "Servo successfully initialized!");
+    }
+  }
+
+  /**************************************************************************/
+  /*!
+    @brief  Sets the machines steps per millimeter of travel. This is used
+    to translate between metric units and steps.
+    @param  stepsPerMillimeter steps per millimeter of travel.
+  */
+  /**************************************************************************/
+  void setStepsPerMillimeter(int stepsPerMillimeter = 50)
+  {
+    _stepsPerMillimeter = stepsPerMillimeter;
+    _maxStep = int(0.5 + _maxPosition * _stepsPerMillimeter);
+    _maxStepPerSecond = int(0.5 + _maxSpeed * _stepsPerMillimeter);
+    _maxStepAcceleration = int(0.5 + _maxAcceleration * _stepsPerMillimeter);
+    ESP_LOGD("iHSVServoV6", "Steps per millimeter set to %d", _stepsPerMillimeter);
   }
 
   /**************************************************************************/
@@ -183,9 +194,9 @@ public:
     _keepout = keepout;
     _maxPosition = travel - (keepout * 2);
     _minStep = 0;
-    _maxStep = int(0.5 + _maxPosition * _motor->stepsPerMillimeter);
-    _maxStepPerSecond = int(0.5 + _maxSpeed * _motor->stepsPerMillimeter);
-    _maxStepAcceleration = int(0.5 + _maxAcceleration * _motor->stepsPerMillimeter);
+    _maxStep = int(0.5 + _maxPosition * _stepsPerMillimeter);
+    _maxStepPerSecond = int(0.5 + _maxSpeed * _stepsPerMillimeter);
+    _maxStepAcceleration = int(0.5 + _maxAcceleration * _stepsPerMillimeter);
     ESP_LOGD("iHSVServoV6", "Machine Geometry Travel = %f", _travel);
     ESP_LOGD("iHSVServoV6", "Machine Geometry Keepout = %f", _keepout);
     ESP_LOGD("iHSVServoV6", "Machine Geometry MaxPosition = %f", _maxPosition);
@@ -193,17 +204,49 @@ public:
 
   /**************************************************************************/
   /*!
-    @brief  Sets the machines mechanical geometries. The values are measured
-    from hard endstop to hard endstop and are given in [mm].
-    @param travel overall mechanical travel in [mm].
-    @param keepout This keepout [mm] is a soft endstop and subtracted at both ends
-    of the travel. A typical value would be 5mm.
+    @brief  Sets up sensorless homing.
+    @param threshold Torque threshold to account as mechanical endstop.
+  */
+  /**************************************************************************/
+  void setSensorlessHoming(int threshold = 40)
+  {
+    _torqueThreshold = threshold * 10;
+  }
+
+  /**************************************************************************/
+  /*!
+    @brief  Changes the rigidity (stiffness) tuning of the servo. The value
+    is given in [0-31]. A value of 0 means the servo is very elastic and will
+    give in easily. A value of 31 means the servo is very stiff. Effect is only
+    temporary. After a power cycle the servo will return to its default value.
+    @param rigidity rigidity of the servo in [0-31]. Default tuning is 13.
+  */
+  /**************************************************************************/
+  void setRigidity(int rigidity = 13)
+  {
+    rigidity = constrain(rigidity, 0, 31);
+    _writeServoRegister(IHSVV6_P0103_RIGIDITY, rigidity);
+  }
+
+  /**************************************************************************/
+  /*!
+    @brief Homes the machine. This is done by moving the motor towards the
+    homing switch until the torque threshold is reached. The homing switch
+    is then set as the new home position.
+    @param homePosition Position of the homing switch in [mm]. Default is 0.0.
+    @param speed Speed of the homing procedure in [mm/s]. Default is 5.0.
   */
   /**************************************************************************/
   void home(float homePosition = 0.0, float speed = 5.0)
   {
-    _homePosition = int(0.5 + homePosition / float(_motor->stepsPerMillimeter));
-    _homingSpeed = speed * _motor->stepsPerMillimeter;
+    if (_error)
+    {
+      ESP_LOGE("iHSVServoV6", "Homing not possible! --> Servo in error state!");
+      return;
+    }
+
+    _homePosition = int(0.5 + homePosition / float(_stepsPerMillimeter));
+    _homingSpeed = speed * _stepsPerMillimeter;
     ESP_LOGI("iHSVServoV6", "Search home with %05.1f mm/s at %05.1f mm.", speed, homePosition);
 
     // set homed to false so that isActive() becomes false
@@ -234,11 +277,13 @@ public:
 
   /**************************************************************************/
   /*!
-    @brief  Sets the machines mechanical geometries. The values are measured
-    from hard endstop to hard endstop and are given in [mm].
-    @param travel overal mechanical travel in [mm].
-    @param keepout This keepout [mm] is a soft endstop and subtracted at both ends
-    of the travel. A typical value would be 5mm.
+    @brief Homes the machine. This is done by moving the motor towards the
+    homing switch until the current threshold is reached. The homing switch
+    is then set as the new home position.
+    @param callBackHoming Callback function that is called when homing is
+    completed. The callback function must take a boolean as an argument.
+    @param homePosition Position of the homing switch in [mm]. Default is 0.0.
+    @param speed Speed of the homing procedure in [mm/s]. Default is 5.0.
   */
   /**************************************************************************/
   void home(void (*callBackHoming)(bool), float homePosition = 0.0, float speed = 5.0)
@@ -251,22 +296,29 @@ public:
   /*!
    * @brief Measures the length of the rail.
    *
-   * This measures the length of the rail by moving the motor back and forth until the in-position signal is reached on both sides.
+   * This measures the length of the rail by moving the motor back and forth until the endstop is reached on both sides.
    * The length is then calculated from the number of steps and the steps per millimeter and stored in the motor properties using setMachineGeometry().
+   * @param callBackMeasuring Callback function that is called when measuring is completed. The callback function must take a float as an argument.
    * @param keepout This keepout [mm] is a soft endstop and subtracted at both ends of the travel. A typical value would be 5mm.
    */
   /**************************************************************************/
-  void measureRailLength(float keepout = 5.0)
+  void measureRailLength(void (*callBackMeasuring)(float), float keepout = 5.0)
   {
+    if (_error)
+    {
+      ESP_LOGE("iHSVServoV6", "Measuring not possible! --> Servo in error state!");
+      return;
+    }
+
+    // store the call back function
+    _callBackMeasuring = callBackMeasuring;
+
     // Quit if stepper not enabled
     if (_enabled == false)
     {
       ESP_LOGE("iHSVServoV6", "Measuring not possible! --> Enable stepper first!");
       return;
     }
-
-    // first stop current motion and suspend motion tasks
-    stopMotion();
 
     // store the keepout distance
     _keepout = keepout;
@@ -288,74 +340,26 @@ public:
 
   /**************************************************************************/
   /*!
-    @brief  It also attaches a callback function where the speed and position
-    are reported on a regular interval specified with timeInMs.
-    @param cbMotionPoint Callback with the signature
-    `cbMotionPoint(unsigned int timestamp, float position, float speed)`. time is reported
-    milliseconds since the controller has started (`millis()`), speed in [m/s] and
-    position in [mm].
-    @param timeInMs time interval at which speed and position should be
-    reported in [ms]
-  */
-  /**************************************************************************/
-  void attachPositionFeedback(void (*cbMotionPoint)(unsigned int, float, float, float, float), unsigned int timeInMs = 50)
-  {
-    _cbMotionPoint = cbMotionPoint;
-    _timeSliceInMs = timeInMs / portTICK_PERIOD_MS;
-  }
-
-  /**************************************************************************/
-  /*!
-    @brief  Sets the machines mechanical geometries. The values are measured
-    from hard endstop to hard endstop and are given in [mm].
-    @param travel overall mechanical travel in [mm].
-    @param keepout This keepout [mm] is a soft endstop and subtracted at both ends
-    of the travel. A typical value would be 5mm.
+    @brief Enables the stepper motor.
   */
   /**************************************************************************/
   void enable()
   {
+    if (_error)
+    {
+      ESP_LOGE("iHSVServoV6", "Enable not possible! --> Servo in error state!");
+      return;
+    }
+
     ESP_LOGI("iHSVServoV6", "Stepper Enabled!");
     // Enable stepper
     _enabled = true;
     _stepper->enableOutputs();
-
-    if (_cbMotionPoint == NULL)
-    {
-      ESP_LOGD("iHSVServoV6", "No Position Feedback Task created.");
-      return;
-    }
-
-    // Create / resume motion feedback task
-    if (_taskPositionFeedbackHandle == NULL)
-    {
-      // Create Stroke Task
-      xTaskCreatePinnedToCore(
-          _positionFeedbackTaskImpl,    // Function that should be called
-          "Motion Feedback",            // Name of the task (for debugging)
-          4096,                         // Stack size (bytes)
-          this,                         // Pass reference to this class instance
-          10,                           // Pretty high task priority
-          &_taskPositionFeedbackHandle, // Task handle
-          1                             // Pin to application core
-      );
-      ESP_LOGD("iHSVServoV6", "Created Position Feedback Task.");
-    }
-    else
-    {
-      // Resume task, if it already exists
-      vTaskResume(_taskPositionFeedbackHandle);
-      ESP_LOGD("iHSVServoV6", "Resumed Position Feedback Task.");
-    }
   }
 
   /**************************************************************************/
   /*!
-    @brief  Sets the machines mechanical geometries. The values are measured
-    from hard endstop to hard endstop and are given in [mm].
-    @param travel overall mechanical travel in [mm].
-    @param keepout This keepout [mm] is a soft endstop and subtracted at both ends
-    of the travel. A typical value would be 5mm.
+    @brief  Disable the stepper motor.
   */
   /**************************************************************************/
   void disable()
@@ -383,11 +387,7 @@ public:
 
   /**************************************************************************/
   /*!
-    @brief  Sets the machines mechanical geometries. The values are measured
-    from hard endstop to hard endstop and are given in [mm].
-    @param travel overal mechanical travel in [mm].
-    @param keepout This keepout [mm] is a soft endstop and subtracted at both ends
-    of the travel. A typical value would be 5mm.
+    @brief  Stops any motion as fast as legally possible.
   */
   /**************************************************************************/
   void stopMotion()
@@ -401,6 +401,14 @@ public:
       vTaskDelete(_taskHomingHandle);
       _taskHomingHandle = NULL;
       ESP_LOGD("iHSVServoV6", "Deleted Homing Task.");
+    }
+
+    // Delete measuring task should the measuring sequence be running
+    if (_taskMeasuringHandle != NULL)
+    {
+      vTaskDelete(_taskMeasuringHandle);
+      _taskMeasuringHandle = NULL;
+      ESP_LOGD("OSSMRefBoardV2", "Deleted Measuring Task.");
     }
 
     if (_stepper->isRunning())
@@ -419,11 +427,9 @@ public:
 
   /**************************************************************************/
   /*!
-    @brief  Sets the machines mechanical geometries. The values are measured
-    from hard endstop to hard endstop and are given in [mm].
-    @param travel overal mechanical travel in [mm].
-    @param keepout This keepout [mm] is a soft endstop and subtracted at both ends
-    of the travel. A typical value would be 5mm.
+    @brief  Returns if a trapezoidal motion is carried out, or the machine is
+    at stand-still.
+    @return `true` if motion is completed, `false` if still under way
   */
   /**************************************************************************/
   bool motionCompleted() { return _stepper->isRunning() ? false : true; }
@@ -434,7 +440,7 @@ public:
     @return acceleration of the motor in [mm/s²]
   */
   /**************************************************************************/
-  float getAcceleration() { return float(_stepper->getAcceleration()) / float(_motor->stepsPerMillimeter); }
+  float getAcceleration() { return float(_stepper->getAcceleration()) / float(_stepsPerMillimeter); }
 
   /**************************************************************************/
   /*!
@@ -442,7 +448,7 @@ public:
     @return speed of the motor in [mm/s]
   */
   /**************************************************************************/
-  float getSpeed() { return (float(_stepper->getCurrentSpeedInMilliHz()) * 1.0e-3) / float(_motor->stepsPerMillimeter); }
+  float getSpeed() { return (float(_stepper->getCurrentSpeedInMilliHz()) * 1.0e-3) / float(_stepsPerMillimeter); }
 
   /**************************************************************************/
   /*!
@@ -450,7 +456,25 @@ public:
     @return position in [mm]
   */
   /**************************************************************************/
-  float getPosition() { return float(_stepper->getCurrentPosition()) / float(_motor->stepsPerMillimeter); }
+  float getPosition() { return float(_stepper->getCurrentPosition()) / float(_stepsPerMillimeter); }
+
+  /**************************************************************************/
+  /*!
+    @brief  Returns the error state of the motor. This is `true` if the motor
+    is in an error state and `false` if everything is fine.
+    @return error state
+  */
+  /**************************************************************************/
+  int hasError()
+  {
+    // Check if alarm is active
+    if (digitalRead(_motor->alarmPin) == LOW || _error)
+    {
+      ESP_LOGE("OSSMRefBoardV2", "Alarm signal is active!");
+      return 1;
+    }
+    return 0;
+  }
 
 private:
   /**************************************************************************/
@@ -466,9 +490,9 @@ private:
   void _unsafeGoToPosition(float position, float speed, float acceleration)
   {
     // Translate between metric and steps
-    int speedInHz = int(0.5 + speed * _motor->stepsPerMillimeter);
-    int stepAcceleration = int(0.5 + acceleration * _motor->stepsPerMillimeter);
-    int positionInSteps = int(0.5 + position * _motor->stepsPerMillimeter);
+    int speedInHz = int(0.5 + speed * _stepsPerMillimeter);
+    int stepAcceleration = int(0.5 + acceleration * _stepsPerMillimeter);
+    int positionInSteps = int(0.5 + position * _stepsPerMillimeter);
     ESP_LOGD("iHSVServoV6", "Going to unsafe position %i steps @ %i steps/s, %i steps/s^2", positionInSteps, speedInHz, stepAcceleration);
 
     // write values to stepper
@@ -479,7 +503,8 @@ private:
 
   /**************************************************************************/
   /*!
-    @brief  Read 16bit values from the servo register map.
+    @brief  Read 16bit values from the servo register map. Retries up to 2x if
+    a read fails. Returns 0 if all retries failed.
     @param address Address of the register to read.
     @param sign Set to true if the register is signed.
     @return value of the register.
@@ -487,36 +512,40 @@ private:
   /**************************************************************************/
   int _readServoRegister(uint16_t address, boolean sign = false)
   {
-    ModbusMessage response = _MB.syncRequest(token++, 1, READ_HOLD_REGISTER, address, 1);
-    Error err = response.getError();
-    if (err != SUCCESS)
+    for (size_t i = 0; i < 3; i++)
     {
-      ModbusError e(err);
-      ESP_LOGE("iHSVServoV6", "Error creating Modbus request at %#04x: %02X - %s", address, (int)e, (const char *)e);
-    }
-    else
-    {
-      uint16_t value;
-      int result;
-      response.get(3, value);
-
-      if (sign && value > 32676)
+      ModbusMessage response = _MB.syncRequest(token++, 1, READ_HOLD_REGISTER, address, 1);
+      Error err = response.getError();
+      if (err != SUCCESS)
       {
-        result = value - 65536;
+        ModbusError e(err);
+        ESP_LOGD("iHSVServoV6", "Error creating Modbus request at %#04x: %02X - %s", address, (int)e, (const char *)e);
       }
       else
       {
-        result = value;
+        uint16_t value;
+        int result;
+        response.get(3, value);
+
+        if (sign && value > 32676)
+        {
+          result = value - 65536;
+        }
+        else
+        {
+          result = value;
+        }
+        ESP_LOGV("iHSVServoV6", "Modbus read at %#04x: FC=%d, length=%d, value= %d", address, response.getFunctionCode(), response[2], result);
+        return result;
       }
-      ESP_LOGV("iHSVServoV6", "Modbus read at %#04x: FC=%d, length=%d, value= %d", address, response.getFunctionCode(), response[2], result);
-      return result;
     }
     return 0;
   }
 
   /**************************************************************************/
   /*!
-    @brief  Read 32bit values from the servo register map.
+    @brief  Read 32bit values from the servo register map. Retries up to 2x if
+    a read fails. Returns 0 if all retries failed.
     @param address Address of the register to read.
     @param sign Set to true if the register is signed.
     @return value of the register.
@@ -524,29 +553,32 @@ private:
   /**************************************************************************/
   int _readServoRegister32bit(uint16_t address, boolean sign = false)
   {
-    ModbusMessage response = _MB.syncRequest(token++, 1, READ_HOLD_REGISTER, address, 2);
-    Error err = response.getError();
-    if (err != SUCCESS)
+    for (size_t i = 0; i < 3; i++)
     {
-      ModbusError e(err);
-      ESP_LOGE("iHSVServoV6", "Error creating Modbus request at %#04x: %02X - %s", address, (int)e, (const char *)e);
-    }
-    else
-    {
-      uint32_t value;
-      int result;
-      response.get(3, value);
-
-      if (sign && value > 2147482647)
+      ModbusMessage response = _MB.syncRequest(token++, 1, READ_HOLD_REGISTER, address, 2);
+      Error err = response.getError();
+      if (err != SUCCESS)
       {
-        result = value - 4294967296;
+        ModbusError e(err);
+        ESP_LOGE("iHSVServoV6", "Error creating Modbus request at %#04x: %02X - %s", address, (int)e, (const char *)e);
       }
       else
       {
-        result = value;
+        uint32_t value;
+        int result;
+        response.get(3, value);
+
+        if (sign && value > 2147482647)
+        {
+          result = value - 4294967296;
+        }
+        else
+        {
+          result = value;
+        }
+        ESP_LOGV("iHSVServoV6", "Modbus 32bit read at %#04x: FC=%d, length=%d, value=%d", address, response.getFunctionCode(), response[2], result);
+        return result;
       }
-      ESP_LOGV("iHSVServoV6", "Modbus 32bit read at %#04x: FC=%d, length=%d, value=%d", address, response.getFunctionCode(), response[2], result);
-      return result;
     }
     return 0;
   }
@@ -599,8 +631,8 @@ private:
   {
     // read actual torque from servo
     int actualTorque = _readServoRegister(IHSVV6_MON_TORQACT, true);
-    ESP_LOGD("iHSVServoV6", "Actual Absolute Torque: %d", actualTorque);
-    if (abs(actualTorque) > _motor->torqueThreshold)
+    ESP_LOGV("iHSVServoV6", "Actual Torque: %d", actualTorque);
+    if (abs(actualTorque) > _torqueThreshold)
     {
       return true;
     }
@@ -612,17 +644,11 @@ private:
 
   void _homingProcedure()
   {
-    ESP_LOGD("iHSVServoV6", "Start searching for home.");
-
-    if (_stepper->isRunning())
-    {
-      ESP_LOGD("iHSVServoV6", "Stepper is moving. Stop and home");
-      stopMotion();
-    }
+    ESP_LOGI("iHSVServoV6", "Start searching for home.");
 
     // Set feedrate for homing
     _stepper->setSpeedInHz(_homingSpeed);
-    _stepper->setAcceleration(_maxStepAcceleration / 10);
+    _stepper->setAcceleration(_maxStepAcceleration);
 
     // Move towards the home position
     _stepper->runBackward();
@@ -637,15 +663,19 @@ private:
         ESP_LOGD("iHSVServoV6", "Found home!");
         // Set home position
         // Switch is at -KEEPOUT
-        _stepper->forceStopAndNewPosition(_motor->stepsPerMillimeter * int(_homePosition - _keepout));
+        _stepper->forceStopAndNewPosition(_stepsPerMillimeter * int(_homePosition - _keepout));
+
+        // store teh current servo position as offset
+        _servoPositionOffset = _readServoRegister32bit(IHSVV6_MON_POSACT, true);
+        ESP_LOGI("iHSVServoV6", "Servo position offset: %d", _servoPositionOffset);
 
         // drive free of switch and set axis to lower end
         _stepper->moveTo(_minStep);
 
-        _homed = true;
-
         // drive free of switch and set axis to 0
-        _stepper->moveTo(0);
+        _stepper->moveTo(0, true); // blocking call
+
+        _homed = true;
 
         // Break loop, home was found
         break;
@@ -676,14 +706,16 @@ private:
 
   void _measureProcedure()
   {
+    float travel = 0.0;
+
     // home the motor
     home();
 
     // wait until the motor is in position
     while (!_homed)
     {
-      // Pause the task for 20ms to allow other tasks
-      vTaskDelay(20 / portTICK_PERIOD_MS);
+      // Pause the task for 100ms while waiting for home to complete
+      vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 
     // measure the rail length
@@ -694,7 +726,7 @@ private:
     _stepper->runForward();
 
     // wait until the motor is in position
-    while (!_motionCompleted)
+    while (_stepper->isRunning())
     {
       // query endstop
       if (_queryHome())
@@ -703,16 +735,24 @@ private:
         _stepper->stopMove();
 
         // set the current position as the travel length. Add one keepout to account for homing on one side.
-        float travel = getPosition() + _keepout;
+        travel = getPosition() + _keepout;
         ESP_LOGI("iHSVServoV6", "Measured rail length: %f", travel);
         setMachineGeometry(travel, _keepout);
 
-        // move the motor back to the home position
-        _stepper->move(_motor->stepsPerMillimeter * (_maxPosition - _keepout));
+        // drive free of end to _maxPosition
+        _stepper->moveTo(_maxStep);
+
+        break;
       }
 
       // Pause the task for 20ms to allow other tasks
       vTaskDelay(20 / portTICK_PERIOD_MS);
+    }
+
+    // Call notification callback, if it was defined.
+    if (_callBackMeasuring != NULL)
+    {
+      _callBackMeasuring(travel);
     }
 
     // delete one-time task
@@ -721,73 +761,45 @@ private:
     ESP_LOGV("iHSVServoV6", "Measuring task self-terminated");
   }
 
-  void _positionFeedbackTask()
+  void _reportMotionPoint()
   {
-    TickType_t xLastWakeTime;
-    // Initialize the xLastWakeTime variable with the current tick count.
-    xLastWakeTime = xTaskGetTickCount();
+    // read position from servo
+    int actualPosition = _readServoRegister32bit(IHSVV6_MON_POSACT, true);
 
-    unsigned int now = millis();
+    // read torque from servo
+    int actualTorque = _readServoRegister(IHSVV6_MON_TORQACT, true);
 
-    while (true)
-    {
-      // Return results of current motion point via the callback
-      /*       _cbMotionPoint(
-                millis(),
-                getPosition(),
-                getSpeed(),
-                0.0,
-                0.0); */
+    // Read pins of the servo
+    int alarm = digitalRead(_motor->alarmPin);
 
-      // read positions from servo
-      int commandPosition = _readServoRegister32bit(IHSVV6_MON_POSCMD, true);
-      int actualPosition = _readServoRegister32bit(IHSVV6_MON_POSACT, true);
-      int positionError = _readServoRegister32bit(IHSVV6_MON_POSERR, true);
-
-      // read torques from servo
-      int commandTorque = _readServoRegister(IHSVV6_MON_TORQCMD, true);
-      int actualTorque = _readServoRegister(IHSVV6_MON_TORQACT, true);
-
-      // Read pins of the servo
-      int alarm = digitalRead(_motor->alarmPin);
-      int inPosition = digitalRead(_motor->inPositionPin);
-
-      // Print results on Serial
-      Serial.printf("Time: %d, Command Position: %d, Actual Position: %d, Position Error: %d, Command Torque: %d, Actual Torque: %d, Alarm: %d, In Position: %d\n",
-                    millis(),
-                    commandPosition,
-                    actualPosition,
-                    positionError,
-                    commandTorque,
-                    actualTorque,
-                    alarm,
-                    inPosition);
-
-      // Delay the task until the next tick count
-      vTaskDelayUntil(&xLastWakeTime, _timeSliceInMs);
-    }
+    // Return results of current motion point via the callback
+    _cbMotionPoint(
+        millis(),
+        getPosition(),
+        getSpeed(),
+        (float)(actualPosition - _servoPositionOffset) / (float)_stepsPerMillimeter,
+        (float)actualTorque * 0.1 * _servoRatedTorque);
   }
 
   iHSVServoV6Properties *_motor;
   FastAccelStepper *_stepper;
   ModbusClientRTU _MB;
+  unsigned int token = 1111;
   FastAccelStepperEngine engine = FastAccelStepperEngine();
-  float _idleCurrent;
+  int _stepsPerMillimeter = 50;
   int _minStep;
   int _maxStep;
   int _maxStepPerSecond;
   int _maxStepAcceleration;
-  bool _motionCompleted = true;
   static void _homingProcedureImpl(void *_this) { static_cast<iHSVServoV6Motor *>(_this)->_homingProcedure(); }
   int _homingSpeed;
   float _homePosition;
   TaskHandle_t _taskHomingHandle = NULL;
   void (*_callBackHoming)(bool) = NULL;
-  TickType_t _timeSliceInMs = 50;
-  static void _positionFeedbackTaskImpl(void *_this) { static_cast<iHSVServoV6Motor *>(_this)->_positionFeedbackTask(); }
-  TaskHandle_t _taskPositionFeedbackHandle = NULL;
   static void _measureProcedureImpl(void *_this) { static_cast<iHSVServoV6Motor *>(_this)->_measureProcedure(); }
   TaskHandle_t _taskMeasuringHandle = NULL;
-  void (*_cbMotionPoint)(unsigned int, float, float, float, float) = NULL;
-  unsigned int token = 1111;
+  void (*_callBackMeasuring)(float) = NULL;
+  int _torqueThreshold; /*> Torque threshold for homing */
+  float _servoRatedTorque;
+  int _servoPositionOffset = 0;
 };

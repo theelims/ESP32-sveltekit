@@ -11,8 +11,6 @@
  *   the terms of the MIT license. See the LICENSE file for details.
  **/
 
-// #define VIRTUAL
-
 #include <ESP32SvelteKit.h>
 #include <ESPmDNS.h>
 #include <LightMqttSettingsService.h>
@@ -36,24 +34,21 @@
 // StrokeEngine ###################################################################################
 // Calculation Aid:
 #define STEP_PER_REV 2000 // How many steps per revolution of the motor (S1 off, S2 on, S3 on, S4 off)
-#define PULLEY_TEETH 16   // How many teeth has the pulley
+#define PULLEY_TEETH 14   // How many teeth has the pulley
 #define BELT_PITCH 2      // What is the timing belt pitch in mm
 #define MAX_RPM 3000.0    // Maximum RPM of motor
 #define STEP_PER_MM STEP_PER_REV / (PULLEY_TEETH * BELT_PITCH)
 #define MAX_SPEED (MAX_RPM / 60.0) * PULLEY_TEETH *BELT_PITCH
 
 static motorProperties genericMotorProperties{
-    .stepsPerMillimeter = STEP_PER_MM,
-    .invertDirection = true,
     .enableActiveLow = true,
     .stepPin = 14,
     .directionPin = 27,
     .enablePin = 26,
 };
+// GenericStepperMotor motor;
 
 static OSSMRefBoardV2Properties OSSMMotorProperties{
-    .stepsPerMillimeter = STEP_PER_MM,
-    .invertDirection = true,
     .enableActiveLow = true,
     .stepPin = 14,
     .directionPin = 27,
@@ -63,14 +58,12 @@ static OSSMRefBoardV2Properties OSSMMotorProperties{
     .ADCPinCurrent = 36,
     .AmperePermV = 2.5e-3,
     .AmpereOffsetInmV = 1666,
-    .currentThreshold = 0.05,
     .ADCPinVoltage = 39,
     .VoltPermV = 4.0e-2,
 };
+// OSSMRefBoardV2Motor motor;
 
 static iHSVServoV6Properties iHSVV6MotorProperties{
-    .stepsPerMillimeter = STEP_PER_MM,
-    .invertDirection = true,
     .enableActiveLow = true,
     .stepPin = 14,
     .directionPin = 27,
@@ -79,13 +72,10 @@ static iHSVServoV6Properties iHSVV6MotorProperties{
     .inPositionPin = 4,
     .modbusRxPin = 16,
     .modbusTxPin = 17,
-    .torqueThreshold = 100,
 };
-
-// VirtualMotor motor;
-// GenericStepperMotor motor;
-// OSSMRefBoardV2Motor motor;
 iHSVServoV6Motor motor;
+
+VirtualMotor virtualmotor;
 
 StrokeEngine Stroker;
 
@@ -115,12 +105,9 @@ WebSocketRawDataStreamer PositionStream(&server);
 ##
 ##################################################################################################*/
 
-void streamMotorData(unsigned int time, float position, float speed, float voltage, float current)
+void streamMotorData(unsigned int time, float position, float speed, float valueA, float valueB)
 {
-    // float voltage = 0.0;
-    // float current = 0.0;
-    // Serial.printf("Time: %d, Position: %f, Speed: %f, Voltage: %f, Current: %f\n", time, position, speed, voltage, current);
-    PositionStream.streamRawData(time, position, speed, voltage, current);
+    PositionStream.streamRawData(time, position, speed, valueA, valueB);
 }
 
 /*#################################################################################################
@@ -158,23 +145,28 @@ void setup()
     // start serial and filesystem
     Serial.begin(SERIAL_BAUD_RATE);
 
-    // motor.begin(streamMotorData, 20);
-    // motor.begin(&OSSMMotorProperties);
+    // Select the and start the motor driver according to the config
     // motor.begin(&genericMotorProperties);
+    // motor.begin(&OSSMMotorProperties);
     motor.begin(&iHSVV6MotorProperties);
-    motor.attachPositionFeedback(streamMotorData, 500);
     // motor.setSensoredHoming(12, INPUT_PULLUP, true);
+    motor.setSensorlessHoming();
+
+    motor.attachPositionFeedback(streamMotorData, 50);
 
     motor.setMaxSpeed(MAX_SPEED);     // 2 m/s
     motor.setMaxAcceleration(100000); // 100 m/s^2
-    // motor.setMachineGeometry(160.0, 5.0);
+    motor.setStepsPerMillimeter(STEP_PER_MM);
+    motor.invertDirection(true);
+    motor.setMachineGeometry(160.0, 5.0);
 
     Stroker.attachMotor(&motor);
-    motor.enable();
-    // motor.home();
 
-    // Measure rail length (including homing)
-    motor.measureRailLength(5.0);
+    motor.enable();
+    motor.home();
+
+    // Measure rail length (includes homing)
+    // motor.measureRailLength(5.0);
 
     // start the framework and LUST-motion
     esp32sveltekit.setMDNSAppName("LUST-motion");
