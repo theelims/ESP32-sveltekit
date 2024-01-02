@@ -70,16 +70,25 @@ void StrokeEngineControlService::begin()
 
 void StrokeEngineControlService::onConfigUpdated()
 {
+    ESP_LOGI("StrokeEngineControlService", "Config updated");
+    // Update stroke parameters
     _state.depth = _strokeEngine->setParameter(StrokeParameter::DEPTH, _state.depth, true);
     _state.stroke = _strokeEngine->setParameter(StrokeParameter::STROKE, _state.stroke, true);
     _state.rate = _strokeEngine->setParameter(StrokeParameter::RATE, _state.rate, true);
     _state.sensation = _strokeEngine->setParameter(StrokeParameter::SENSATION, _state.sensation, true);
-    _strokeEngine->setPattern(_state.pattern, true);
-    if (_state.go == true)
+
+    // only update pattern, if it has changed
+    if (_strokeEngine->getCurrentPatternName() != _state.pattern)
+    {
+        _strokeEngine->setPattern(_state.pattern, true);
+    }
+
+    // Change running state of the stroke engine
+    if ((_state.go == true) && (_strokeEngine->isActive() == false))
     {
         _strokeEngine->startPattern();
     }
-    else
+    else if ((_state.go == false) && (_strokeEngine->isActive() == true))
     {
         _strokeEngine->stopMotion();
     }

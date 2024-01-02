@@ -114,18 +114,28 @@ public:
 
   /**************************************************************************/
   /*!
-    @brief  Get the pattern index for the StrokeEngine.
+    @brief  Get the current pattern index for the StrokeEngine.
     @return Index of a pattern
   */
   /**************************************************************************/
   int getCurrentPattern();
 
+  /**************************************************************************/
+  /*!
+    @brief  Get the current pattern name for the StrokeEngine.
+    @return Name of a pattern
+  */
+  /**************************************************************************/
+  String getCurrentPatternName();
+
+  /**************************************************************************/
   /*!
     @brief  Allows fetching Pattern names for UIs
     @param index index of a pattern.
     @return String holding a pattern name with a certain index. If index is
                   out of range it returns "Invalid"
   */
+  /**************************************************************************/
   String getPatternName(int index);
 
   /*!

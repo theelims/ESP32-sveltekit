@@ -147,6 +147,11 @@ int StrokeEngine::getCurrentPattern()
   return _patternIndex;
 }
 
+String StrokeEngine::getCurrentPatternName()
+{
+  return String(patternTable[_patternIndex]->getName());
+}
+
 bool StrokeEngine::startPattern()
 {
   // Only valid if state is ready
