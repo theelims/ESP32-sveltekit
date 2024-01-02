@@ -92,7 +92,7 @@ A client can safely disconnect if the machine is in standstill and any motion in
     "depth_limit": 120.0,
     "stroke_limit": 80.5,
     "rate_limit": 30.0,
-    "heartbeat_mode": 0,
+    "heartbeat_mode": "disabled",
     "ease_in_speed": 5.0
 }
 ```
@@ -107,12 +107,15 @@ This API will provide the information about the environment like maximum travel 
 | ------ | ----------------- | --------------- |
 | GET    | /rest/environment | `NONE_REQUIRED` |
 
-| Parameter  | Type             | Info                                                                                                 |
-| ---------- | ---------------- | ---------------------------------------------------------------------------------------------------- |
-| travel     | number           | maximum travel of the machine. Used for depth and stroke                                             |
-| rate_limit | number           | maximum rate in FPM that the machine is capable                                                      |
-| heartbeat  | boolean          | if heartbeat is true the control message must be sent every second, regardless wether it has changed |
-| pattern    | array of strings | array of all available pattern names                                                                 |
+| Parameter | Type             | Info                                                                                                 |
+| --------- | ---------------- | ---------------------------------------------------------------------------------------------------- |
+| travel    | number           | maximum travel of the machine. Used for depth and stroke                                             |
+| max_rate  | number           | maximum rate in FPM that the machine is capable                                                      |
+| heartbeat | boolean          | if heartbeat is true the control message must be sent every second, regardless wether it has changed |
+| pattern   | array of strings | array of all available pattern names                                                                 |
+| valueA    | string           | Label of the valueA data stream                                                                      |
+| valueB    | string           | Label of the valueB data stream                                                                      |
+| motor     | string           | Which motor driver is loaded: `VIRTUAL`, `GENERIC`, `OSSMV2` or `iHSVV6`                             |
 
 #### JSON
 
@@ -121,7 +124,10 @@ This API will provide the information about the environment like maximum travel 
     "travel": 150.0,
     "max_rate": 30.0,
     "heartbeat": true,
-    "pattern": ["Depth Adjustment", "Streaming", "Pounding or Teasing", "Robo Stroke"]
+    "pattern": ["Depth Adjustment", "Streaming", "Pounding or Teasing", "Robo Stroke"],
+    "valueA" : "Real Position",
+    "valueB" : "Torque",
+    "motor" : "iHSVV6"
 }
 ```
 
@@ -155,4 +161,48 @@ Instead of pattern the motion commands can be provided via this streaming interf
 }
 ```
 
+### Hardware Configuration
+
+This REST endpoint configures the motor driver and important parameters during runtime. It starts with the `VIRTUAL` driver by default. The available driver depend on the hardware and build target.
+
+> Defined in `MotorConfigurationService.h`
+
+| Method | URL               | Authentication  |
+| ------ | ----------------- | --------------- |
+| GET    | /rest/motorconfig | `NONE_REQUIRED` |
+| POST   | /rest/motorconfig | `NONE_REQUIRED` |
+
+| Parameter          | Type    | Info                                                                                         |
+| ------------------ | ------- | -------------------------------------------------------------------------------------------- |
+| driver             | string  | must match one of the available motor drivers `VIRTUAL`, `GENERIC`, `OSSMV2` or `iHSVV6`     |
+| steps_per_rev      | number  | How many steps the motor turns per revolution                                                |
+| pulley_teeth       | number  | Number of teeth on the pulley assuming a GT2 belt                                            |
+| invert_direction   | boolean | can be used to change the direction of the machine                                           |
+| measure_travel     | boolean | if set to `true` will initiate a measurement, if it is within the capabilities of the driver |
+| travel             | number  | The mechanical travel from one endstop to the other                                          |
+| keepout            | number  | Soft endstop distance from hard endstop away. In mm on both sides                            |
+| sensorless_trigger | number  | Trigger value for sensorless homing in % of rated torque or rated current                    |
+
+#### JSON
+
+```JSON
+{
+    "driver": "iHSVV6",
+    "steps_per_rev": 2000,
+    "pulley_teeth": 20,
+    "invert_direction": false,
+    "measure_travel": false,
+    "travel": 160,
+    "keepout": 5.0,
+    "sensorless_trigger": 20,
+}
+```
+
 ## Server Sent Events
+
+The current motor state is updated every 500ms via SSE events. The following events are available:
+
+| Event       | Message          | Info                                                |
+| ----------- | ---------------- | --------------------------------------------------- |
+| motor_homed | "true" / "false" | Wether the motor is currently homed or not          |
+| motor_error | "true" / "false" | Wether the motor is currently in error state or not |
