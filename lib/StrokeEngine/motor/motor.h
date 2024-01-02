@@ -111,6 +111,14 @@ public:
 
   /**************************************************************************/
   /*!
+    @brief  Returns the travel of the machine from endstop to endstop.
+    @return travel in [mm]
+  */
+  /**************************************************************************/
+  float getTravel() { return _travel; }
+
+  /**************************************************************************/
+  /*!
     @brief  Sets the maximum allowed speed the machine is capable.
     @param speed maximum allowed speed of the motor in [mm/s]
   */
@@ -274,7 +282,7 @@ public:
     // Create / resume motion feedback task
     if (_taskPositionFeedbackHandle == NULL)
     {
-      // Create Stroke Task
+      // Create Feedback Task
       xTaskCreatePinnedToCore(
           _positionFeedbackTaskImpl,    // Function that should be called
           "Motion Feedback",            // Name of the task (for debugging)
@@ -362,8 +370,6 @@ protected:
     TickType_t xLastWakeTime;
     // Initialize the xLastWakeTime variable with the current tick count.
     xLastWakeTime = xTaskGetTickCount();
-
-    unsigned int now = millis();
 
     while (true)
     {

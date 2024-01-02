@@ -593,7 +593,12 @@ private:
 
   void _reportMotionPoint()
   {
-    int alarm = digitalRead(_motor->alarmPin);
+    // Read alarm pin of the servo
+    if (digitalRead(_motor->alarmPin) == LOW)
+    {
+      _error = true;
+      ESP_LOGE("OSSMRefBoardV2", "Alarm signal is active!");
+    }
 
     // Return results of current motion point via the callback
     _cbMotionPoint(

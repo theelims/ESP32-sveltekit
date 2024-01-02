@@ -108,6 +108,14 @@ WebSocketRawDataStreamer PositionStream(&server);
 void streamMotorData(unsigned int time, float position, float speed, float valueA, float valueB)
 {
     PositionStream.streamRawData(time, position, speed, valueA, valueB);
+    static int lastMillis = 0;
+
+    // Send motor state notification events every 500ms
+    if (millis() - lastMillis > 500)
+    {
+        esp32sveltekit.getNotificationEvents()->send(motor.isHomed() ? "true" : "false", "motor_homed", millis());
+        esp32sveltekit.getNotificationEvents()->send(motor.hasError() ? "true" : "false", "motor_error", millis());
+    }
 }
 
 /*#################################################################################################

@@ -520,6 +520,14 @@ private:
       {
         ModbusError e(err);
         ESP_LOGD("iHSVServoV6", "Error creating Modbus request at %#04x: %02X - %s", address, (int)e, (const char *)e);
+
+        // if modbus times out flag error and return 0
+        if (err == TIMEOUT)
+        {
+          // set error flag
+          _error = true;
+          return 0;
+        }
       }
       else
       {
@@ -561,6 +569,14 @@ private:
       {
         ModbusError e(err);
         ESP_LOGE("iHSVServoV6", "Error creating Modbus request at %#04x: %02X - %s", address, (int)e, (const char *)e);
+
+        // if modbus times out flag error and return 0
+        if (err == TIMEOUT)
+        {
+          // set error flag
+          _error = true;
+          return 0;
+        }
       }
       else
       {
@@ -763,22 +779,39 @@ private:
 
   void _reportMotionPoint()
   {
-    // read position from servo
-    int actualPosition = _readServoRegister32bit(IHSVV6_MON_POSACT, true);
+    // Read alarm pin of the servo
+    if (digitalRead(_motor->alarmPin) == LOW)
+    {
+      _error = true;
+      ESP_LOGE("iHSVServoV6", "Alarm signal is active!");
+    }
 
-    // read torque from servo
-    int actualTorque = _readServoRegister(IHSVV6_MON_TORQACT, true);
+    if (_error)
+    {
+      // Skip reading over modbus if servo is in error state
+      _cbMotionPoint(
+          millis(),
+          getPosition(),
+          getSpeed(),
+          0.0,
+          0.0);
+    }
+    else
+    {
+      // read position from servo
+      int actualPosition = _readServoRegister32bit(IHSVV6_MON_POSACT, true);
 
-    // Read pins of the servo
-    int alarm = digitalRead(_motor->alarmPin);
+      // read torque from servo
+      int actualTorque = _readServoRegister(IHSVV6_MON_TORQACT, true);
 
-    // Return results of current motion point via the callback
-    _cbMotionPoint(
-        millis(),
-        getPosition(),
-        getSpeed(),
-        (float)(actualPosition - _servoPositionOffset) / (float)_stepsPerMillimeter,
-        (float)actualTorque * 0.1 * _servoRatedTorque);
+      // Return results of current motion point via the callback
+      _cbMotionPoint(
+          millis(),
+          getPosition(),
+          getSpeed(),
+          (float)(actualPosition - _servoPositionOffset) / (float)_stepsPerMillimeter,
+          (float)actualTorque * 0.1 * _servoRatedTorque);
+    }
   }
 
   iHSVServoV6Properties *_motor;
