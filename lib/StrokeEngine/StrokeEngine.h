@@ -14,6 +14,38 @@
 #include <pattern.h>
 #include <motor/motor.h>
 
+#ifndef MOTION_FACTORY_TRAVEL
+#define MOTION_FACTORY_TRAVEL 150.0
+#endif
+
+#ifndef MOTION_FACTORY_STROKE
+#define MOTION_FACTORY_STROKE 80.0
+#endif
+
+#ifndef MOTION_FACTORY_RATE
+#define MOTION_FACTORY_RATE 30.0
+#endif
+
+#ifndef MOTION_FACTORY_SENSATION
+#define MOTION_FACTORY_SENSATION 0.0
+#endif
+
+#ifndef MOTION_FACTORY_PATTERN
+#define MOTION_FACTORY_PATTERN "PoundingTeasing"
+#endif
+
+#ifndef MOTION_FACTORY_VIBRATION_AMPLITUDE
+#define MOTION_FACTORY_VIBRATION_AMPLITUDE 0.0
+#endif
+
+#ifndef MOTION_FACTORY_VIBRATION_FREQUENCY
+#define MOTION_FACTORY_VIBRATION_FREQUENCY 30.0
+#endif
+
+#ifndef MOTION_FACTORY_MAX_RATE
+#define MOTION_FACTORY_MAX_RATE 240.0
+#endif
+
 enum class StrokeParameter
 {
   // RATE - Range 0.5 to 6000 Strokes / Min
@@ -154,8 +186,11 @@ protected:
   int _index = 0;
 
   float _depth;
+  float _depthLimit = MOTION_FACTORY_TRAVEL;
   float _stroke;
+  float _strokeLimit = MOTION_FACTORY_TRAVEL;
   float _timeOfStroke;
+  float _timeOfStrokeLimit = 60.0 / MOTION_FACTORY_RATE;
   float _sensation;
 
   bool _applyUpdate = false;

@@ -8,13 +8,15 @@ void StrokeEngine::attachMotor(MotorInterface *motor)
   _motor = motor;
 
   // Initialize with default values
-  _depth = _motor->getMaxPosition();
-  _stroke = _motor->getMaxPosition() / 3;
-  _timeOfStroke = 5.0;
-  _sensation = 0.0;
+  _depth = _depthLimit = _strokeLimit = _motor->getMaxPosition();
+  _stroke = constrain(MOTION_FACTORY_STROKE, 0.0, _depthLimit);
+  _timeOfStroke = constrain(60.0 / MOTION_FACTORY_RATE, _timeOfStrokeLimit, 120.0);
+  _sensation = MOTION_FACTORY_SENSATION;
 
   ESP_LOGD("StrokeEngine", "Stroke Parameter Depth = %f", _depth);
+  ESP_LOGD("StrokeEngine", "Stroke Parameter Depth Limit = %f", _depthLimit);
   ESP_LOGD("StrokeEngine", "Stroke Parameter Stroke = %f", _stroke);
+  ESP_LOGD("StrokeEngine", "Stroke Parameter Stroke Limit = %f", _strokeLimit);
   ESP_LOGD("StrokeEngine", "Stroke Parameter Time of Stroke = %f", _timeOfStroke);
   ESP_LOGD("StrokeEngine", "Stroke Parameter Sensation = %f", _sensation);
 
@@ -33,7 +35,7 @@ float StrokeEngine::setParameter(StrokeParameter parameter, float value, bool ap
       name = "Stroke Time";
       // Convert FPM into seconds to complete a full stroke
       // Constrain stroke time between 100ms and 120 seconds
-      _timeOfStroke = constrain(60.0 / value, 0.1, 120.0);
+      _timeOfStroke = constrain(60.0 / value, _timeOfStrokeLimit, 120.0);
       debugValue = 60.0 / _timeOfStroke;
       break;
 
@@ -73,6 +75,87 @@ float StrokeEngine::setParameter(StrokeParameter parameter, float value, bool ap
 
   // Add a default return statement
   return 0.0f;
+}
+
+float StrokeEngine::setLimit(StrokeLimit limit, float value, bool applyNow)
+{
+  String name = "";
+  float debugValue;
+  if (xSemaphoreTake(_parameterMutex, portMAX_DELAY) == pdTRUE)
+  {
+    switch (limit)
+    {
+    case StrokeLimit::RATE:
+      name = "Rate";
+      // Convert FPM into seconds to complete a full stroke
+      // Constrain stroke time between 100ms and 120 seconds
+      _timeOfStrokeLimit = constrain(60.0 / value, 0.1, 120.0);
+      // constrain current stroke time to new limit
+      _timeOfStroke = constrain(_timeOfStroke, _timeOfStrokeLimit, 120.0);
+      debugValue = 60.0 / _timeOfStrokeLimit;
+      break;
+
+    case StrokeLimit::DEPTH:
+      name = "Depth";
+      debugValue = _depthLimit = constrain(value, 0.0, _motor->getMaxPosition());
+      // constrain current depth to new limit
+      _depth = constrain(_depth, 0.0, _depthLimit);
+      break;
+
+    case StrokeLimit::STROKE:
+      name = "Stroke";
+      debugValue = _strokeLimit = constrain(value, 0.0, _motor->getMaxPosition());
+      // constrain current stroke to new limit
+      _stroke = constrain(_stroke, 0.0, _strokeLimit);
+      break;
+    }
+
+    _sendParameters(_patternIndex);
+
+    ESP_LOGD("StrokeEngine", "Stroke Limits %s - %f", name, debugValue);
+
+    // When running a pattern and immediate update requested:
+    if (applyNow == true)
+    {
+      _applyUpdate = true;
+
+      ESP_LOGD("StrokeEngine", "Setting Apply Update Flag!");
+    }
+
+    xSemaphoreGive(_parameterMutex);
+
+    return debugValue;
+  }
+
+  return 0.0f;
+}
+
+float StrokeEngine::getLimit(StrokeLimit limit)
+{
+  String name = "";
+  float debugValue;
+
+  switch (limit)
+  {
+  case StrokeLimit::RATE:
+    name = "Rate";
+    debugValue = 60.0 / _timeOfStrokeLimit;
+    break;
+
+  case StrokeLimit::DEPTH:
+    name = "Depth";
+    debugValue = _depthLimit;
+    break;
+
+  case StrokeLimit::STROKE:
+    name = "Stroke";
+    debugValue = _strokeLimit;
+    break;
+  }
+
+  ESP_LOGD("StrokeEngine", "Get Stroke Limits %s - %f", name, debugValue);
+
+  return debugValue;
 }
 
 // WARNING: This function must be called only within the scope of a Taken _parameterMutex
