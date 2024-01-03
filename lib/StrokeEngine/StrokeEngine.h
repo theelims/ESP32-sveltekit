@@ -42,9 +42,11 @@
 #define MOTION_FACTORY_VIBRATION_FREQUENCY 30.0
 #endif
 
-#ifndef MOTION_FACTORY_MAX_RATE
-#define MOTION_FACTORY_MAX_RATE 240.0
+#ifndef MOTION_MAX_RATE
+#define MOTION_MAX_RATE 240.0
 #endif
+
+#define MIN_TIME_OF_STROKE 60.0 / MOTION_MAX_RATE
 
 enum class StrokeParameter
 {
@@ -190,7 +192,7 @@ protected:
   float _stroke;
   float _strokeLimit = MOTION_FACTORY_TRAVEL;
   float _timeOfStroke;
-  float _timeOfStrokeLimit = 60.0 / MOTION_FACTORY_RATE;
+  float _timeOfStrokeLimit = MIN_TIME_OF_STROKE;
   float _sensation;
 
   bool _applyUpdate = false;

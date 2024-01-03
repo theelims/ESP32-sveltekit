@@ -442,6 +442,20 @@ public:
 
   /**************************************************************************/
   /*!
+    @brief  Returns the data labels for valueA and valueB of a motion point.
+    @return MotionPointLabel struct with the labels for valueA and valueB
+  */
+  /**************************************************************************/
+  MotionPointLabel getMotionPointLabel()
+  {
+    MotionPointLabel label;
+    label.labelValueA = "Real Position [mm]";
+    label.labelValueB = "Torque [Nm]";
+    return label;
+  }
+
+  /**************************************************************************/
+  /*!
     @brief  Returns the error state of the motor. This is `true` if the motor
     is in an error state and `false` if everything is fine.
     @return error state

@@ -3,7 +3,7 @@
 /**
  *   LUST-motion
  *
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the MIT license. See the LICENSE file for details.
@@ -168,6 +168,8 @@ class MotorConfigurationService : public StatefulService<MotorConfiguration>
 public:
     MotorConfigurationService(StrokeEngine *strokeEngine, AsyncWebServer *server, FS *fs, SecurityManager *securityManager, NotificationEvents *notificationEvent);
     void begin();
+
+    String getDriverName();
 
 private:
     HttpEndpoint<MotorConfiguration> _httpEndpoint;

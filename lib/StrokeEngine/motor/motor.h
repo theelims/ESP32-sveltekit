@@ -16,6 +16,18 @@
 #include "freertos/task.h"
 #include "esp_log.h"
 
+/**************************************************************************/
+/*!
+  @brief  This struct is used to pass data labels for valueA and valueB of a
+  motion point.
+*/
+/**************************************************************************/
+typedef struct
+{
+  String labelValueA;
+  String labelValueB;
+} MotionPointLabel;
+
 using HomingCallbackType = std::function<void(boolean)>;
 
 /**************************************************************************/
@@ -133,7 +145,7 @@ public:
 
   /**************************************************************************/
   /*!
-    @brief  Returns the travel of the machine from endstop to endstop.
+    @brief  Returns the mechanical (measured) travel of the machine from endstop to endstop.
     @return travel in [mm]
   */
   /**************************************************************************/
@@ -330,6 +342,20 @@ public:
     _cbMotionPoint = NULL;
     vTaskDelete(_taskPositionFeedbackHandle);
     _taskPositionFeedbackHandle = NULL;
+  }
+
+  /**************************************************************************/
+  /*!
+    @brief  Returns the data labels for valueA and valueB of a motion point.
+    @return MotionPointLabel struct with the labels for valueA and valueB
+  */
+  /**************************************************************************/
+  MotionPointLabel getMotionPointLabel()
+  {
+    MotionPointLabel label;
+    label.labelValueA = "None";
+    label.labelValueB = "None";
+    return label;
   }
 
   /**************************************************************************/

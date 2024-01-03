@@ -1,11 +1,9 @@
 /**
  *   LUST-Motion
  *
- *
- *
  *   https://github.com/openlust/LUST-motion
  *
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the MIT license. See the LICENSE file for details.
@@ -19,6 +17,7 @@
 #include <SettingValue.h>
 #include <StrokeEngineControlService.h>
 #include <MotorConfigurationService.h>
+#include <StrokeEngineEnvironmentService.h>
 #include <WebSocketRawDataStreaming.h>
 
 /*#################################################################################################
@@ -53,6 +52,10 @@ MotorConfigurationService motorConfigurationService = MotorConfigurationService(
                                                                                 esp32sveltekit.getFS(),
                                                                                 esp32sveltekit.getSecurityManager(),
                                                                                 esp32sveltekit.getNotificationEvents());
+
+StrokeEngineEnvironmentService strokeEngineEnvironmentService = StrokeEngineEnvironmentService(&Stroker,
+                                                                                               &server,
+                                                                                               &motorConfigurationService);
 
 WebSocketRawDataStreamer PositionStream(&server);
 

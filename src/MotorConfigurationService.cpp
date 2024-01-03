@@ -1,7 +1,7 @@
 /**
  *   LUST-motion
  *
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the MIT license. See the LICENSE file for details.
@@ -183,5 +183,22 @@ void MotorConfigurationService::onConfigUpdated(String originId)
         _motor->disable();
         delay(500);
         ESP.restart();
+    }
+}
+
+String MotorConfigurationService::getDriverName()
+{
+    switch (_loadedDriver)
+    {
+    case VIRTUAL:
+        return "VIRTUAL";
+    case GENERIC_STEPPER:
+        return "GENERIC_STEPPER";
+    case OSSM_REF_BOARD_V2:
+        return "OSSM_REF_BOARD_V2";
+    case IHSV_SERVO_V6:
+        return "IHSV_SERVO_V6";
+    default:
+        return "VIRTUAL";
     }
 }

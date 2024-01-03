@@ -89,7 +89,7 @@ float StrokeEngine::setLimit(StrokeLimit limit, float value, bool applyNow)
       name = "Rate";
       // Convert FPM into seconds to complete a full stroke
       // Constrain stroke time between 100ms and 120 seconds
-      _timeOfStrokeLimit = constrain(60.0 / value, 0.1, 120.0);
+      _timeOfStrokeLimit = constrain(60.0 / value, MIN_TIME_OF_STROKE, 120.0);
       // constrain current stroke time to new limit
       _timeOfStroke = constrain(_timeOfStroke, _timeOfStrokeLimit, 120.0);
       debugValue = 60.0 / _timeOfStrokeLimit;

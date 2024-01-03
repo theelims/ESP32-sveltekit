@@ -67,21 +67,21 @@ This API can be used to restrict the mechanical reach of the machine and limit t
 | GET    | /rest/safety | `NONE_REQUIRED` |
 | POST   | /rest/safety | `NONE_REQUIRED` |
 
-| Parameter      | Type   | Range                     | Info                                                                                | Failure Mode         |
-| -------------- | ------ | ------------------------- | ----------------------------------------------------------------------------------- | -------------------- |
-| depth_limit    | number | 0.0 - `travel`            | maximum depth of the motion                                                         | truncated into range |
-| stroke_limit   | number | 0.0 - `travel`            | length of the stroke                                                                | truncated into range |
-| rate_limit     | number | 0.0 - `max_rate`          | affects the feeling of a pattern                                                    | truncated into range |
-| heartbeat_mode | string | "disabled", "last", "any" | selects the heartbeat mode and how to enter safestate if a client looses connection | "any"                |
-| ease_in_speed  | number | 0.0 - 30.0                | speed in mm/s it takes to ease in changes in stroke or depth                        | truncated into range |
+| Parameter      | Type   | Range            | Info                                                                                | Failure Mode         |
+| -------------- | ------ | ---------------- | ----------------------------------------------------------------------------------- | -------------------- |
+| depth_limit    | number | 0.0 - `travel`   | maximum depth of the motion                                                         | truncated into range |
+| stroke_limit   | number | 0.0 - `travel`   | length of the stroke                                                                | truncated into range |
+| rate_limit     | number | 0.0 - `max_rate` | affects the feeling of a pattern                                                    | truncated into range |
+| heartbeat_mode | number | 0 - 2            | selects the heartbeat mode and how to enter safestate if a client looses connection | 1                    |
+| ease_in_speed  | number | 0.0 - 30.0       | speed in mm/s it takes to ease in changes in stroke or depth                        | truncated into range |
 
 #### Heart Beat Mode
 
-| Heartbeat Mode | Description                                |
-| :------------: | ------------------------------------------ |
-|   "disabled"   | Heartbeat disabled                         |
-|     "any"      | Enter safestate if one connections drops   |
-|     "last"     | Enter safestate when last connection drops |
+| Number | Heartbeat Mode | Description                                |
+| :----: | :------------: | ------------------------------------------ |
+|   0    |   "disabled"   | Heartbeat disabled                         |
+|   1    |     "any"      | Enter safestate if one connections drops   |
+|   2    |     "last"     | Enter safestate when last connection drops |
 
 A client can safely disconnect if the machine is in standstill and any motion input disabled.
 
@@ -109,7 +109,7 @@ This API will provide the information about the environment like maximum travel 
 
 | Parameter | Type             | Info                                                                                                 |
 | --------- | ---------------- | ---------------------------------------------------------------------------------------------------- |
-| travel    | number           | maximum travel of the machine. Used for depth and stroke                                             |
+| depth     | number           | maximum travel of the machine. Used for depth and stroke                                             |
 | max_rate  | number           | maximum rate in FPM that the machine is capable                                                      |
 | heartbeat | boolean          | if heartbeat is true the control message must be sent every second, regardless wether it has changed |
 | pattern   | array of strings | array of all available pattern names                                                                 |
@@ -121,7 +121,7 @@ This API will provide the information about the environment like maximum travel 
 
 ```JSON
 {
-    "travel": 150.0,
+    "depth": 150.0,
     "max_rate": 30.0,
     "heartbeat": true,
     "pattern": ["Depth Adjustment", "Streaming", "Pounding or Teasing", "Robo Stroke"],
