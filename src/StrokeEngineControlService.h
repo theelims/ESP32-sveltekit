@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- *   LUST-motino
+ *   LUST-motion
  *
  *   Copyright (C) 2023 theelims
  *
@@ -16,8 +16,14 @@
 #include <HttpEndpoint.h>
 #include <FSPersistence.h>
 #include <JsonUtils.h>
-
 #include <StrokeEngine.h>
+
+#ifdef OSSM_REF
+#include <boards/OSSMReferenceBoard.h>
+// else throw compile error
+#else
+#error "No board defined"
+#endif
 
 #ifndef MOTION_FACTORY_TRAVEL
 #define MOTION_FACTORY_TRAVEL 150.0
@@ -113,8 +119,7 @@ public:
     StrokeEngineControlService(StrokeEngine *strokeEngine,
                                AsyncWebServer *server,
                                SecurityManager *securityManager,
-                               AsyncMqttClient *mqttClient,
-                               LightMqttSettingsService *lightMqttSettingsService);
+                               AsyncMqttClient *mqttClient);
 
     void begin();
 
@@ -124,9 +129,7 @@ private:
     WebSocketServer<StrokeEngineControl> _webSocketServer;
     // WebSocketClient<StrokeEngineControl> _webSocketClient;
     AsyncMqttClient *_mqttClient;
-    LightMqttSettingsService *_lightMqttSettingsService;
     StrokeEngine *_strokeEngine;
 
-    void registerConfig();
     void onConfigUpdated();
 };

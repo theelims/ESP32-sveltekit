@@ -167,21 +167,24 @@ This REST endpoint configures the motor driver and important parameters during r
 
 > Defined in `MotorConfigurationService.h`
 
-| Method | URL               | Authentication  |
-| ------ | ----------------- | --------------- |
-| GET    | /rest/motorconfig | `NONE_REQUIRED` |
-| POST   | /rest/motorconfig | `NONE_REQUIRED` |
+| Method | URL               | Authentication |
+| ------ | ----------------- | -------------- |
+| GET    | /rest/motorConfig | `IS_ADMIN`     |
+| POST   | /rest/motorConfig | `IS_ADMIN`     |
 
-| Parameter          | Type    | Info                                                                                         |
-| ------------------ | ------- | -------------------------------------------------------------------------------------------- |
-| driver             | string  | must match one of the available motor drivers `VIRTUAL`, `GENERIC`, `OSSMV2` or `iHSVV6`     |
-| steps_per_rev      | number  | How many steps the motor turns per revolution                                                |
-| pulley_teeth       | number  | Number of teeth on the pulley assuming a GT2 belt                                            |
-| invert_direction   | boolean | can be used to change the direction of the machine                                           |
-| measure_travel     | boolean | if set to `true` will initiate a measurement, if it is within the capabilities of the driver |
-| travel             | number  | The mechanical travel from one endstop to the other                                          |
-| keepout            | number  | Soft endstop distance from hard endstop away. In mm on both sides                            |
-| sensorless_trigger | number  | Trigger value for sensorless homing in % of rated torque or rated current                    |
+| Parameter          | Type    | Info                                                                                                               |
+| ------------------ | ------- | ------------------------------------------------------------------------------------------------------------------ |
+| driver             | string  | must match one of the available motor drivers `VIRTUAL`, `GENERIC_STEPPER`, `OSSM_REF_BOARD_V2` or `IHSV_SERVO_V6` |
+| steps_per_rev      | number  | How many steps the motor turns per revolution                                                                      |
+| max_rpm            | number  | Maximum RPM of the motor                                                                                           |
+| max_acceleration   | number  | Maximum acceleration in [mm/s²]                                                                                    |
+| pulley_teeth       | number  | Number of teeth on the pulley assuming a GT2 belt                                                                  |
+| invert_direction   | boolean | can be used to change the direction of the machine                                                                 |
+| measure_travel     | boolean | if set to `true` will initiate a measurement, if it is within the capabilities of the driver                       |
+| home               | boolean | if set to `true` it will initiate a homing cycle                                                                   |
+| travel             | number  | The mechanical travel from one endstop to the other                                                                |
+| keepout            | number  | Soft endstop distance from hard endstop away. In mm on both sides                                                  |
+| sensorless_trigger | number  | Trigger value for sensorless homing in % of rated torque or rated current                                          |
 
 #### JSON
 
@@ -189,9 +192,12 @@ This REST endpoint configures the motor driver and important parameters during r
 {
     "driver": "iHSVV6",
     "steps_per_rev": 2000,
+    "max_rpm": 3000,
+    "max_acceleration": 100000,
     "pulley_teeth": 20,
     "invert_direction": false,
     "measure_travel": false,
+    "home": false,
     "travel": 160,
     "keepout": 5.0,
     "sensorless_trigger": 20,

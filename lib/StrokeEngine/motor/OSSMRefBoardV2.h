@@ -39,6 +39,8 @@ typedef struct
   float VoltPermV;      /*> Scaling of the voltage ADC */
 } OSSMRefBoardV2Properties;
 
+using MeasureCallbackType = std::function<void(float)>;
+
 /**************************************************************************/
 /*!
   @brief  OSSMRefBoardV2 Motor inherits from MotorInterface and provides a generic
@@ -126,11 +128,14 @@ public:
   /*!
     @brief  Sets up sensorless homing.
     @param threshold Current threshold to account as mechanical endstop in [A].
+    @param speed Speed of the homing procedure in [mm/s]. Default is 5.0.
   */
   /**************************************************************************/
-  void setSensorlessHoming(float threshold = 0.10)
+  void setSensorlessHoming(float threshold = 0.10, float speed = 5.0)
   {
     _currentThreshold = threshold;
+    _homingSpeed = speed * _stepsPerMillimeter;
+    ESP_LOGI("OSSMRefBoardV2", "Search home with %05.1f mm/s.", speed);
   }
 
   /**************************************************************************/
@@ -138,16 +143,10 @@ public:
     @brief Homes the machine. This is done by moving the motor towards the
     homing switch until the current threshold is reached. The homing switch
     is then set as the new home position.
-    @param homePosition Position of the homing switch in [mm]. Default is 0.0.
-    @param speed Speed of the homing procedure in [mm/s]. Default is 5.0.
   */
   /**************************************************************************/
-  void home(float homePosition = 0.0, float speed = 5.0)
+  void home()
   {
-    _homePosition = int(0.5 + homePosition / float(_stepsPerMillimeter));
-    _homingSpeed = speed * _stepsPerMillimeter;
-    ESP_LOGI("OSSMRefBoardV2", "Search home with %05.1f mm/s at %05.1f mm.", speed, homePosition);
-
     // set homed to false so that isActive() becomes false
     _homed = false;
 
@@ -176,23 +175,6 @@ public:
 
   /**************************************************************************/
   /*!
-    @brief Homes the machine. This is done by moving the motor towards the
-    homing switch until the current threshold is reached. The homing switch
-    is then set as the new home position.
-    @param callBackHoming Callback function that is called when homing is
-    completed. The callback function must take a boolean as an argument.
-    @param homePosition Position of the homing switch in [mm]. Default is 0.0.
-    @param speed Speed of the homing procedure in [mm/s]. Default is 5.0.
-  */
-  /**************************************************************************/
-  void home(void (*callBackHoming)(bool), float homePosition = 0.0, float speed = 5.0)
-  {
-    _callBackHoming = callBackHoming;
-    home(homePosition, speed);
-  }
-
-  /**************************************************************************/
-  /*!
    @brief Measures the length of the rail.
 
    This measures the length of the rail by moving the motor back and forth until the endstop is reached on both sides.
@@ -201,7 +183,7 @@ public:
    @param keepout This keepout [mm] is a soft endstop and subtracted at both ends of the travel. A typical value would be 5mm.
   */
   /**************************************************************************/
-  void measureRailLength(void (*callBackMeasuring)(float), float keepout = 5.0)
+  void measureRailLength(MeasureCallbackType callBackMeasuring, float keepout = 5.0)
   {
     // Quit if stepper not enabled
     if (_enabled == false)
@@ -497,7 +479,7 @@ private:
         ESP_LOGD("OSSMRefBoardV2", "Found home!");
         // Set home position
         // Switch is at -KEEPOUT
-        _stepper->forceStopAndNewPosition(_stepsPerMillimeter * int(_homePosition - _keepout));
+        _stepper->forceStopAndNewPosition(_stepsPerMillimeter * int(-_keepout));
 
         // drive free of switch and set axis to lower end
         _stepper->moveTo(_minStep);
@@ -601,12 +583,13 @@ private:
     }
 
     // Return results of current motion point via the callback
-    _cbMotionPoint(
-        millis(),
-        getPosition(),
-        getSpeed(),
-        getCurrent(),
-        getVoltage());
+    if (_cbMotionPoint != NULL)
+      _cbMotionPoint(
+          millis(),
+          getPosition(),
+          getSpeed(),
+          getCurrent(),
+          getVoltage());
   }
 
   OSSMRefBoardV2Properties *_motor;
@@ -620,11 +603,9 @@ private:
   int _maxStepAcceleration;
   static void _homingProcedureImpl(void *_this) { static_cast<OSSMRefBoardV2Motor *>(_this)->_homingProcedure(); }
   int _homingSpeed;
-  float _homePosition;
   TaskHandle_t _taskHomingHandle = NULL;
-  void (*_callBackHoming)(bool) = NULL;
   static void _measureProcedureImpl(void *_this) { static_cast<OSSMRefBoardV2Motor *>(_this)->_measureProcedure(); }
   TaskHandle_t _taskMeasuringHandle = NULL;
-  void (*_callBackMeasuring)(float) = NULL;
+  MeasureCallbackType _callBackMeasuring;
   float _currentThreshold; /*> Current threshold to count as hitting into an mechanical stop */
 };

@@ -114,32 +114,30 @@ public:
     @param travel overal mechanical travel in [mm].
     @param keepout This keepout [mm] is a soft endstop and subtracted at both ends
     of the travel. A typical value would be 5mm.
+    @param homePosition Position of the homing switch in [mm]. Default is 0.0.
+    @param speed Speed of the homing procedure in [mm/s]. Default is 5.0.
   */
   /**************************************************************************/
-  void setSensoredHoming(int homePin, uint8_t arduinoPinMode = INPUT_PULLDOWN, bool activeLow = true) // Assumes always homing to back of machine for safety
+  void setSensoredHoming(int homePin, uint8_t arduinoPinMode = INPUT_PULLDOWN, bool activeLow = true, float homePosition = 0.0, float speed = 5.0) // Assumes always homing to back of machine for safety
   {
     // set homing pin as input
     _homingPin = homePin;
     pinMode(_homingPin, arduinoPinMode);
     _homingActiveLow = activeLow;
+    _homePosition = int(0.5 + homePosition / float(_stepsPerMillimeter));
+    _homingSpeed = speed * _stepsPerMillimeter;
     ESP_LOGI("GenericStepper", "Homing switch on pin %i in pin mode %i is %s", _homingPin, arduinoPinMode, _homingActiveLow ? "active low" : "active high");
+    ESP_LOGI("GenericStepper", "Search home with %05.1f mm/s at %05.1f mm.", speed, homePosition);
   }
 
   /**************************************************************************/
   /*!
     @brief  Sets the machines mechanical geometries. The values are measured
     from hard endstop to hard endstop and are given in [mm].
-    @param travel overal mechanical travel in [mm].
-    @param keepout This keepout [mm] is a soft endstop and subtracted at both ends
-    of the travel. A typical value would be 5mm.
   */
   /**************************************************************************/
-  void home(float homePosition = 0.0, float speed = 5.0)
+  void home()
   {
-    _homePosition = int(0.5 + homePosition / float(_stepsPerMillimeter));
-    _homingSpeed = speed * _stepsPerMillimeter;
-    ESP_LOGI("GenericStepper", "Search home with %05.1f mm/s at %05.1f mm.", speed, homePosition);
-
     // set homed to false so that isActive() becomes false
     _homed = false;
 
@@ -175,55 +173,12 @@ public:
     of the travel. A typical value would be 5mm.
   */
   /**************************************************************************/
-  void home(void (*callBackHoming)(bool), float homePosition = 0.0, float speed = 5.0)
-  {
-    _callBackHoming = callBackHoming;
-    home(homePosition, speed);
-  }
-
-  /**************************************************************************/
-  /*!
-    @brief  Sets the machines mechanical geometries. The values are measured
-    from hard endstop to hard endstop and are given in [mm].
-    @param travel overal mechanical travel in [mm].
-    @param keepout This keepout [mm] is a soft endstop and subtracted at both ends
-    of the travel. A typical value would be 5mm.
-  */
-  /**************************************************************************/
   void enable()
   {
     ESP_LOGI("GenericStepper", "Stepper Enabled!");
     // Enable stepper
     _enabled = true;
     _stepper->enableOutputs();
-
-    if (_cbMotionPoint == NULL)
-    {
-      ESP_LOGD("GenericStepper", "No Position Feedback Task created.");
-      return;
-    }
-
-    // Create / resume motion feedback task
-    if (_taskPositionFeedbackHandle == NULL)
-    {
-      // Create Stroke Task
-      xTaskCreatePinnedToCore(
-          _positionFeedbackTaskImpl,    // Function that should be called
-          "Motion Feedback",            // Name of the task (for debugging)
-          4096,                         // Stack size (bytes)
-          this,                         // Pass reference to this class instance
-          10,                           // Pretty high task priority
-          &_taskPositionFeedbackHandle, // Task handle
-          1                             // Pin to application core
-      );
-      ESP_LOGD("GenericStepper", "Created Position Feedback Task.");
-    }
-    else
-    {
-      // Resume task, if it already exists
-      vTaskResume(_taskPositionFeedbackHandle);
-      ESP_LOGD("GenericStepper", "Resumed Position Feedback Task.");
-    }
   }
 
   /**************************************************************************/

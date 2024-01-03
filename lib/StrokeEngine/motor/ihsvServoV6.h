@@ -93,6 +93,8 @@ typedef struct
   int modbusTxPin;      /*> Pin connected to the MODBUS TX input */
 } iHSVServoV6Properties;
 
+using MeasureCallbackType = std::function<void(float)>;
+
 /**************************************************************************/
 /*!
   @brief  iHSVServoV6 Motor inherits from MotorInterface and provides a generic
@@ -206,11 +208,14 @@ public:
   /*!
     @brief  Sets up sensorless homing.
     @param threshold Torque threshold to account as mechanical endstop.
+    @param speed Speed of the homing procedure in [mm/s].
   */
   /**************************************************************************/
-  void setSensorlessHoming(int threshold = 40)
+  void setSensorlessHoming(int threshold = 40, float speed = 5.0)
   {
     _torqueThreshold = threshold * 10;
+    _homingSpeed = speed * _stepsPerMillimeter;
+    ESP_LOGI("iHSVServoV6", "Search home with %05.1f mm/s.", speed);
   }
 
   /**************************************************************************/
@@ -233,21 +238,15 @@ public:
     @brief Homes the machine. This is done by moving the motor towards the
     homing switch until the torque threshold is reached. The homing switch
     is then set as the new home position.
-    @param homePosition Position of the homing switch in [mm]. Default is 0.0.
-    @param speed Speed of the homing procedure in [mm/s]. Default is 5.0.
   */
   /**************************************************************************/
-  void home(float homePosition = 0.0, float speed = 5.0)
+  void home()
   {
     if (_error)
     {
       ESP_LOGE("iHSVServoV6", "Homing not possible! --> Servo in error state!");
       return;
     }
-
-    _homePosition = int(0.5 + homePosition / float(_stepsPerMillimeter));
-    _homingSpeed = speed * _stepsPerMillimeter;
-    ESP_LOGI("iHSVServoV6", "Search home with %05.1f mm/s at %05.1f mm.", speed, homePosition);
 
     // set homed to false so that isActive() becomes false
     _homed = false;
@@ -277,23 +276,6 @@ public:
 
   /**************************************************************************/
   /*!
-    @brief Homes the machine. This is done by moving the motor towards the
-    homing switch until the current threshold is reached. The homing switch
-    is then set as the new home position.
-    @param callBackHoming Callback function that is called when homing is
-    completed. The callback function must take a boolean as an argument.
-    @param homePosition Position of the homing switch in [mm]. Default is 0.0.
-    @param speed Speed of the homing procedure in [mm/s]. Default is 5.0.
-  */
-  /**************************************************************************/
-  void home(void (*callBackHoming)(bool), float homePosition = 0.0, float speed = 5.0)
-  {
-    _callBackHoming = callBackHoming;
-    home(homePosition, speed);
-  }
-
-  /**************************************************************************/
-  /*!
    * @brief Measures the length of the rail.
    *
    * This measures the length of the rail by moving the motor back and forth until the endstop is reached on both sides.
@@ -302,7 +284,7 @@ public:
    * @param keepout This keepout [mm] is a soft endstop and subtracted at both ends of the travel. A typical value would be 5mm.
    */
   /**************************************************************************/
-  void measureRailLength(void (*callBackMeasuring)(float), float keepout = 5.0)
+  void measureRailLength(MeasureCallbackType callBackMeasuring, float keepout = 5.0)
   {
     if (_error)
     {
@@ -679,7 +661,7 @@ private:
         ESP_LOGD("iHSVServoV6", "Found home!");
         // Set home position
         // Switch is at -KEEPOUT
-        _stepper->forceStopAndNewPosition(_stepsPerMillimeter * int(_homePosition - _keepout));
+        _stepper->forceStopAndNewPosition(_stepsPerMillimeter * int(-_keepout));
 
         // store teh current servo position as offset
         _servoPositionOffset = _readServoRegister32bit(IHSVV6_MON_POSACT, true);
@@ -766,7 +748,7 @@ private:
     }
 
     // Call notification callback, if it was defined.
-    if (_callBackMeasuring != NULL)
+    if (_callBackMeasuring)
     {
       _callBackMeasuring(travel);
     }
@@ -789,12 +771,13 @@ private:
     if (_error)
     {
       // Skip reading over modbus if servo is in error state
-      _cbMotionPoint(
-          millis(),
-          getPosition(),
-          getSpeed(),
-          0.0,
-          0.0);
+      if (_cbMotionPoint != NULL)
+        _cbMotionPoint(
+            millis(),
+            getPosition(),
+            getSpeed(),
+            0.0,
+            0.0);
     }
     else
     {
@@ -805,12 +788,13 @@ private:
       int actualTorque = _readServoRegister(IHSVV6_MON_TORQACT, true);
 
       // Return results of current motion point via the callback
-      _cbMotionPoint(
-          millis(),
-          getPosition(),
-          getSpeed(),
-          (float)(actualPosition - _servoPositionOffset) / (float)_stepsPerMillimeter,
-          (float)actualTorque * 0.1 * _servoRatedTorque);
+      if (_cbMotionPoint != NULL)
+        _cbMotionPoint(
+            millis(),
+            getPosition(),
+            getSpeed(),
+            (float)(actualPosition - _servoPositionOffset) / (float)_stepsPerMillimeter,
+            (float)actualTorque * 0.1 * _servoRatedTorque);
     }
   }
 
@@ -826,12 +810,10 @@ private:
   int _maxStepAcceleration;
   static void _homingProcedureImpl(void *_this) { static_cast<iHSVServoV6Motor *>(_this)->_homingProcedure(); }
   int _homingSpeed;
-  float _homePosition;
   TaskHandle_t _taskHomingHandle = NULL;
-  void (*_callBackHoming)(bool) = NULL;
   static void _measureProcedureImpl(void *_this) { static_cast<iHSVServoV6Motor *>(_this)->_measureProcedure(); }
   TaskHandle_t _taskMeasuringHandle = NULL;
-  void (*_callBackMeasuring)(float) = NULL;
+  MeasureCallbackType _callBackMeasuring;
   int _torqueThreshold; /*> Torque threshold for homing */
   float _servoRatedTorque;
   int _servoPositionOffset = 0;

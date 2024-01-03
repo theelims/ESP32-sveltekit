@@ -16,13 +16,7 @@
 #include "freertos/task.h"
 #include "esp_log.h"
 
-/**
- *  Motor
- *
- *  position = mm
- *  speed = mm/s
- *  acceleration = mm/s^2
- */
+using HomingCallbackType = std::function<void(boolean)>;
 
 /**************************************************************************/
 /*!
@@ -38,6 +32,13 @@ class MotorInterface
 {
 public:
   MotorInterface() {}
+
+  /**************************************************************************/
+  /*!
+    @brief  Initializes the motor driver. This must be called as first
+  */
+  /**************************************************************************/
+  virtual void begin() {}
 
   /**************************************************************************/
   /*!
@@ -61,6 +62,27 @@ public:
   */
   /**************************************************************************/
   virtual bool isEnabled() { return _enabled; }
+
+  /**************************************************************************/
+  /*!
+    @brief  Homes the motor. This is a non-blocking function.
+  */
+  /**************************************************************************/
+  virtual void home() = 0;
+
+  /**************************************************************************/
+  /*!
+    @brief Homes the machine. This is a non-blocking function and notifies
+    the caller via the callback function when homing is completed.
+    @param callBackHoming Callback function that is called when homing is
+    completed. The callback function must take a boolean as an argument.
+  */
+  /**************************************************************************/
+  void home(HomingCallbackType callBackHoming)
+  {
+    _callBackHoming = callBackHoming;
+    home();
+  }
 
   /**************************************************************************/
   /*!
@@ -288,7 +310,7 @@ public:
           "Motion Feedback",            // Name of the task (for debugging)
           4096,                         // Stack size (bytes)
           this,                         // Pass reference to this class instance
-          10,                           // Pretty high task priority
+          20,                           // Pretty high task priority
           &_taskPositionFeedbackHandle, // Task handle
           1                             // Pin to application core
       );
@@ -363,7 +385,11 @@ protected:
 
   TickType_t _timeSliceInMs = 50;
   void (*_cbMotionPoint)(unsigned int, float, float, float, float) = NULL;
-  static void _positionFeedbackTaskImpl(void *_this) { static_cast<MotorInterface *>(_this)->_positionFeedbackTask(); }
+  HomingCallbackType _callBackHoming;
+  static void _positionFeedbackTaskImpl(void *_this)
+  {
+    static_cast<MotorInterface *>(_this)->_positionFeedbackTask();
+  }
   TaskHandle_t _taskPositionFeedbackHandle = NULL;
   void _positionFeedbackTask()
   {

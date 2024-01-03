@@ -59,10 +59,6 @@ public:
       @brief  Initializes the virtual motor Arduino Style. It also attaches a
       callback function where the speed and position are reported on a regular
       interval specified with timeInMs.
-      @param cbMotionPoint Callback with the signature
-      `cbMotionPoint(unsigned int timestamp, float position, float speed)`. time is reported
-      milliseconds since the controller has started (`millis()`), speed in [m/s] and
-      position in [mm].
       @param timeInMs time interval at which speed and position should be
       reported in [ms]
     */
@@ -98,6 +94,9 @@ public:
             }
             xSemaphoreGive(_parameterMutex);
         }
+
+        if (_callBackHoming != NULL)
+            _callBackHoming(_homed);
     }
 
     /**************************************************************************/
@@ -122,12 +121,6 @@ public:
 
         // Reset motion to home position
         home();
-
-        if (_cbMotionPoint == NULL)
-        {
-            ESP_LOGE("VirtualMotor", "Could not create Position Feedback Task! Please provide callback function.");
-            return;
-        }
 
         // Create / resume motion simulator task
         if (_taskMotionSimulatorHandle == NULL)
@@ -258,7 +251,8 @@ private:
             }
 
             // Return results of current motion point via the callback
-            _cbMotionPoint(now, currentSpeedAndPosition.position, currentSpeedAndPosition.speed, 0.0, 0.0);
+            if (_cbMotionPoint != NULL)
+                _cbMotionPoint(now, currentSpeedAndPosition.position, currentSpeedAndPosition.speed, 0.0, 0.0);
 
             // Delay the task until the next tick count
             vTaskDelayUntil(&xLastWakeTime, _timeSliceInMs);
