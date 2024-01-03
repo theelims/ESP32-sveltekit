@@ -13,7 +13,6 @@
 #include <FSPersistence.h>
 #include <StrokeEngine.h>
 #include <NotificationEvents.h>
-#include <RestartService.h>
 
 #include <motor/motor.h>
 #include <motor/virtualMotor.h>

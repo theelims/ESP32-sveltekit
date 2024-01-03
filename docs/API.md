@@ -79,7 +79,7 @@ This API can be used to restrict the mechanical reach of the machine and limit t
 
 | Number | Heartbeat Mode | Description                                |
 | :----: | :------------: | ------------------------------------------ |
-|   0    |   "disabled"   | Heartbeat disabled                         |
+|   0    |     "none"     | Heartbeat disabled                         |
 |   1    |     "any"      | Enter safestate if one connections drops   |
 |   2    |     "last"     | Enter safestate when last connection drops |
 
@@ -92,7 +92,7 @@ A client can safely disconnect if the machine is in standstill and any motion in
     "depth_limit": 120.0,
     "stroke_limit": 80.5,
     "rate_limit": 30.0,
-    "heartbeat_mode": "disabled",
+    "heartbeat_mode": 0,
     "ease_in_speed": 5.0
 }
 ```
@@ -161,7 +161,7 @@ Instead of pattern the motion commands can be provided via this streaming interf
 }
 ```
 
-### Hardware Configuration
+### Motor Configuration
 
 This REST endpoint configures the motor driver and important parameters during runtime. It starts with the `VIRTUAL` driver by default. The available driver depend on the hardware and build target.
 

@@ -56,6 +56,13 @@
 #define SE_CONTROL_SETTINGS_ENDPOINT_PATH "/rest/control"
 #define SE_CONTROL_SETTINGS_SOCKET_PATH "/ws/control"
 
+enum HeartbeatMode
+{
+    NONE,
+    ANY,
+    LAST
+};
+
 class StrokeEngineControl
 {
 public:

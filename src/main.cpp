@@ -18,6 +18,7 @@
 #include <StrokeEngineControlService.h>
 #include <MotorConfigurationService.h>
 #include <StrokeEngineEnvironmentService.h>
+#include <StrokeEngineSafetyService.h>
 #include <WebSocketRawDataStreaming.h>
 
 /*#################################################################################################
@@ -56,6 +57,12 @@ MotorConfigurationService motorConfigurationService = MotorConfigurationService(
 StrokeEngineEnvironmentService strokeEngineEnvironmentService = StrokeEngineEnvironmentService(&Stroker,
                                                                                                &server,
                                                                                                &motorConfigurationService);
+
+StrokeEngineSafetyService strokeEngineSafetyService = StrokeEngineSafetyService(&Stroker,
+                                                                                &server,
+                                                                                esp32sveltekit.getFS(),
+                                                                                esp32sveltekit.getSecurityManager(),
+                                                                                &strokeEngineControlService);
 
 WebSocketRawDataStreamer PositionStream(&server);
 
@@ -130,6 +137,9 @@ void setup()
     motorConfigurationService.begin();
     // Stroker.getMotor()->attachPositionFeedback(streamMotorData, 50);
 
+    // Start the stroke engine safety service
+    strokeEngineSafetyService.begin();
+
     // start the stroke engine control service
     strokeEngineControlService.begin();
 
@@ -139,6 +149,6 @@ void setup()
 
 void loop()
 {
-    // Delete Arduino loop task, as it is not needed in this example
+    // Delete Arduino loop task, as it is not needed in this application
     vTaskDelete(NULL);
 }
