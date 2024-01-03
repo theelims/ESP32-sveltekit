@@ -61,11 +61,33 @@ void StrokeEngineControlService::begin()
 void StrokeEngineControlService::onConfigUpdated()
 {
     ESP_LOGI("StrokeEngineControlService", "Config updated");
-    // Update stroke parameters
-    _state.depth = _strokeEngine->setParameter(StrokeParameter::DEPTH, _state.depth, true);
-    _state.stroke = _strokeEngine->setParameter(StrokeParameter::STROKE, _state.stroke, true);
-    _state.rate = _strokeEngine->setParameter(StrokeParameter::RATE, _state.rate, true);
-    _state.sensation = _strokeEngine->setParameter(StrokeParameter::SENSATION, _state.sensation, true);
+    bool sanitized = false;
+
+    // Update stroke parameters and propagate changes to StatefulService
+    float depth = _strokeEngine->setParameter(StrokeParameter::DEPTH, _state.depth, true);
+    if (depth != _state.depth)
+    {
+        _state.depth = depth;
+        sanitized = true;
+    }
+    float stroke = _strokeEngine->setParameter(StrokeParameter::STROKE, _state.stroke, true);
+    if (stroke != _state.stroke)
+    {
+        _state.stroke = stroke;
+        sanitized = true;
+    }
+    float rate = _strokeEngine->setParameter(StrokeParameter::RATE, _state.rate, true);
+    if (rate != _state.rate)
+    {
+        _state.rate = rate;
+        sanitized = true;
+    }
+    float sensation = _strokeEngine->setParameter(StrokeParameter::SENSATION, _state.sensation, true);
+    if (sensation != _state.sensation)
+    {
+        _state.sensation = sensation;
+        sanitized = true;
+    }
 
     // only update pattern, if it has changed
     if (_strokeEngine->getCurrentPatternName() != _state.pattern)
@@ -81,5 +103,14 @@ void StrokeEngineControlService::onConfigUpdated()
     else if ((_state.go == false) && (_strokeEngine->isActive() == true))
     {
         _strokeEngine->stopMotion();
+    }
+
+    // propagate sanitized changes to StatefulService if necessary
+    if (sanitized)
+    {
+        ESP_LOGI("StrokeEngineControlService", "Sanitized control settings");
+        update([&](StrokeEngineControl &state)
+               { return StateUpdateResult::CHANGED; },
+               "onConfigUpdated");
     }
 }

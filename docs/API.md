@@ -69,8 +69,8 @@ This API can be used to restrict the mechanical reach of the machine and limit t
 
 | Parameter      | Type   | Range            | Info                                                                                | Failure Mode         |
 | -------------- | ------ | ---------------- | ----------------------------------------------------------------------------------- | -------------------- |
-| depth_limit    | number | 0.0 - `travel`   | maximum depth of the motion                                                         | truncated into range |
-| stroke_limit   | number | 0.0 - `travel`   | length of the stroke                                                                | truncated into range |
+| depth_limit    | number | 0.0 - `depth`    | maximum depth of the motion                                                         | truncated into range |
+| stroke_limit   | number | 0.0 - `depth`    | length of the stroke                                                                | truncated into range |
 | rate_limit     | number | 0.0 - `max_rate` | affects the feeling of a pattern                                                    | truncated into range |
 | heartbeat_mode | number | 0 - 2            | selects the heartbeat mode and how to enter safestate if a client looses connection | 1                    |
 | ease_in_speed  | number | 0.0 - 30.0       | speed in mm/s it takes to ease in changes in stroke or depth                        | truncated into range |

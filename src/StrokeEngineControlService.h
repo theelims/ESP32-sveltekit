@@ -100,7 +100,6 @@ public:
     {
         StrokeEngineControl newSettings = {};
         // All parameters will be cropped or sanitized inside StrokeEngine
-        // TODO: Now the potentially out of boundary parameters are propagated instead of the sanitized values.
         newSettings.go = root["go"] | false;
         newSettings.depth = root["depth"];
         newSettings.stroke = root["stroke"];
