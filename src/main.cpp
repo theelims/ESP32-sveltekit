@@ -80,8 +80,9 @@ void streamMotorData(unsigned int time, float position, float speed, float value
     // Send motor state notification events every 500ms
     if (millis() - lastMillis > 500)
     {
-        esp32sveltekit.getNotificationEvents()->send(Stroker.getMotor()->isHomed() ? "true" : "false", "motor_homed", millis());
-        esp32sveltekit.getNotificationEvents()->send(Stroker.getMotor()->hasError() ? "true" : "false", "motor_error", millis());
+        esp32sveltekit.getNotificationEvents()->send(Stroker.getMotor()->isHomed() ? "{\"homed\":true}" : "{\"homed\":false}", "motor_homed", millis());
+        esp32sveltekit.getNotificationEvents()->send(Stroker.getMotor()->hasError() ? "{\"error\":true}" : "{\"error\":false}", "motor_error", millis());
+        lastMillis = millis();
     }
 }
 
@@ -135,7 +136,7 @@ void setup()
 
     // Start motor control service
     motorConfigurationService.begin();
-    // Stroker.getMotor()->attachPositionFeedback(streamMotorData, 50);
+    Stroker.getMotor()->attachPositionFeedback(streamMotorData, 50);
 
     // Start the stroke engine safety service
     strokeEngineSafetyService.begin();

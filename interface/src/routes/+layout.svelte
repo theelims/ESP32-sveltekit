@@ -152,6 +152,20 @@
 			false
 		);
 		NotificationSource.addEventListener(
+			'motor_error',
+			(event) => {
+				telemetry.setMotorError(event.data);
+			},
+			false
+		);
+		NotificationSource.addEventListener(
+			'motor_homed',
+			(event) => {
+				telemetry.setMotorHomed(event.data);
+			},
+			false
+		);
+		NotificationSource.addEventListener(
 			'analytics',
 			(event) => {
 				analytics.addData(event.data);
@@ -171,7 +185,6 @@
 		}
 		connectionLost = true;
 	}
-
 </script>
 
 <svelte:head>

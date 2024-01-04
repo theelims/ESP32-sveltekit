@@ -51,16 +51,19 @@
 	<div class="indicator flex-none">
 		<UpdateIndicator />
 	</div>
-	<div class="flex-none">
-		<button class="btn btn-square btn-ghost h-9 w-10">
+
+	{#if $telemetry.error}
+		<div class="flex-none h-9 w-10">
 			<Error class="text-error h-7 w-7" />
-		</button>
-	</div>
-	<div class="flex-none">
-		<button class="btn btn-square btn-ghost h-9 w-10">
+		</div>
+	{/if}
+
+	{#if !$telemetry.homed}
+		<div class="flex-none h-9 w-10">
 			<NotHomed class="text-warning h-7 w-7" />
-		</button>
-	</div>
+		</div>
+	{/if}
+
 	<div class="flex-none">
 		{#if $telemetry.rssi.disconnected}
 			<WiFiOff class="h-7 w-7" />

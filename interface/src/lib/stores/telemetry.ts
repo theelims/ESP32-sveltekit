@@ -14,7 +14,9 @@ let telemetry_data = {
 		status: 'none',
 		progress: 0,
 		error: ''
-	}
+	},
+	homed: false,
+	error: true
 };
 
 function createTelemetry() {
@@ -45,6 +47,14 @@ function createTelemetry() {
 				...telemerty_data,
 				download_ota: { status: content.status, progress: content.progress, error: content.error }
 			}));
+		},
+		setMotorHomed: (data: string) => {
+			const content = JSON.parse(data);
+			update((telemerty_data) => ({ ...telemerty_data, homed: content.homed }));
+		},
+		setMotorError: (data: string) => {
+			const content = JSON.parse(data);
+			update((telemerty_data) => ({ ...telemerty_data, error: content.error }));
 		}
 	};
 }
