@@ -157,18 +157,24 @@ public:
         {
             settings.driver = VIRTUAL;
         }
+#ifdef DRIVER_GENERIC_STEPPER
         else if (driver == "GENERIC_STEPPER")
         {
             settings.driver = GENERIC_STEPPER;
         }
+#endif
+#ifdef DRIVER_OSSM_REF_BOARD_V2
         else if (driver == "OSSM_REF_BOARD_V2")
         {
             settings.driver = OSSM_REF_BOARD_V2;
         }
+#endif
+#ifdef DREIVER_IHSV_SERVO_V6
         else if (driver == "IHSV_SERVO_V6")
         {
             settings.driver = IHSV_SERVO_V6;
         }
+#endif
         else
         {
             settings.driver = VIRTUAL;
