@@ -140,117 +140,123 @@
 	});
 
 	onMount(() => {
-		openDataSocket();
 		openControlSocket();
-		positionChart = new Chart(positionChartElement, {
-			type: 'line',
-			data: {
-				datasets: [
-					{
-						// Position
-						borderColor: daisyColor('--p'),
-						fill: false,
-						pointRadius: 0,
-						data: [],
-						yAxisID: 'y'
-					},
-					{
-						// Speed
-						backgroundColor: daisyColor('--s', 20),
-						borderColor: daisyColor('--s'),
-						fill: true,
-						pointRadius: 0,
-						data: [],
-						yAxisID: 'y1'
-					}
-				]
-			},
-			options: {
-				animation: false,
-				responsive: true,
-				maintainAspectRatio: false,
-				interaction: {
-					mode: 'index',
-					intersect: false
+		if ($page.data.features.data_streaming === true) {
+			openDataSocket();
+
+			positionChart = new Chart(positionChartElement, {
+				type: 'line',
+				data: {
+					datasets: [
+						{
+							// Position
+							borderColor: daisyColor('--p'),
+							fill: false,
+							pointRadius: 0,
+							data: [],
+							yAxisID: 'y'
+						},
+						{
+							// Speed
+							backgroundColor: daisyColor('--s', 20),
+							borderColor: daisyColor('--s'),
+							fill: true,
+							pointRadius: 0,
+							data: [],
+							yAxisID: 'y1'
+						}
+					]
 				},
-				plugins: {
-					// Change options for ALL axes of THIS CHART
-					streaming: {
-						duration: 10000,
-						refresh: 25,
-						delay: 100
+				options: {
+					animation: false,
+					responsive: true,
+					maintainAspectRatio: false,
+					interaction: {
+						mode: 'index',
+						intersect: false
 					},
-					tooltip: {
-						enabled: false
+					plugins: {
+						// Change options for ALL axes of THIS CHART
+						streaming: {
+							duration: 10000,
+							refresh: 25,
+							delay: 100
+						},
+						tooltip: {
+							enabled: false
+						},
+						legend: {
+							display: false
+						}
 					},
-					legend: {
-						display: false
-					}
-				},
-				scales: {
-					x: {
-						type: 'realtime',
-						grid: {
-							color: daisyColor('--bc', 10)
+					scales: {
+						x: {
+							type: 'realtime',
+							grid: {
+								color: daisyColor('--bc', 10)
+							},
+							ticks: { color: daisyColor('--bc') }
 						},
-						ticks: { color: daisyColor('--bc') }
-					},
-					y: {
-						type: 'linear',
-						title: {
-							display: true,
-							text: 'Position [mm]',
-							color: daisyColor('--p'),
-							font: {
-								size: 16,
-								weight: 'bold'
-							}
+						y: {
+							type: 'linear',
+							title: {
+								display: true,
+								text: 'Position [mm]',
+								color: daisyColor('--p'),
+								font: {
+									size: 16,
+									weight: 'bold'
+								}
+							},
+							position: 'left',
+							min: 0,
+							max: 150,
+							grid: { color: daisyColor('--bc', 10) },
+							ticks: {
+								stepSize: 150 / 6,
+								color: daisyColor('--bc')
+							},
+							border: { color: daisyColor('--bc', 10) }
 						},
-						position: 'left',
-						min: 0,
-						max: 150,
-						grid: { color: daisyColor('--bc', 10) },
-						ticks: {
-							stepSize: 150 / 6,
-							color: daisyColor('--bc')
-						},
-						border: { color: daisyColor('--bc', 10) }
-					},
-					y1: {
-						type: 'linear',
-						title: {
-							display: true,
-							text: 'Speed [mm/s]',
-							color: daisyColor('--s'),
-							font: {
-								size: 16,
-								weight: 'bold'
-							}
-						},
-						position: 'right',
-						suggestedMin: -150,
-						suggestedMax: 150,
-						ticks: {
-							stepSize: 150 / 3,
-							color: daisyColor('--bc')
-						},
-						grid: {
-							drawOnChartArea: false // only want the grid lines for one axis to show up
-						},
-						border: { color: daisyColor('--bc', 10) }
+						y1: {
+							type: 'linear',
+							title: {
+								display: true,
+								text: 'Speed [mm/s]',
+								color: daisyColor('--s'),
+								font: {
+									size: 16,
+									weight: 'bold'
+								}
+							},
+							position: 'right',
+							suggestedMin: -150,
+							suggestedMax: 150,
+							ticks: {
+								stepSize: 150 / 3,
+								color: daisyColor('--bc')
+							},
+							grid: {
+								drawOnChartArea: false // only want the grid lines for one axis to show up
+							},
+							border: { color: daisyColor('--bc', 10) }
+						}
 					}
 				}
-			}
-		});
+			});
+		}
 	});
 </script>
 
-<div class="card bg-base-200 shadow-md shadow-primary/50 mt-3 mb-1.5 mx-auto w-11/12">
-	<div class="relative h-72 md:h-96 w-full p-2">
-		<canvas bind:this={positionChartElement} />
+{#if $page.data.features.data_streaming === true}
+	<div class="card bg-base-200 shadow-md shadow-primary/50 mt-3 mx-auto w-11/12">
+		<div class="relative h-72 md:h-96 w-full p-2">
+			<canvas bind:this={positionChartElement} />
+		</div>
 	</div>
-</div>
-<div class="card bg-base-200 shadow-md shadow-primary/50 my-1.5 mx-auto w-11/12">
+{/if}
+
+<div class="card bg-base-200 shadow-md shadow-primary/50 mt-3 mb-1.5 mx-auto w-11/12">
 	<div class="mt-4 mx-4">
 		<input
 			type="range"

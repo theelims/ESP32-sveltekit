@@ -63,8 +63,9 @@ StrokeEngineSafetyService strokeEngineSafetyService = StrokeEngineSafetyService(
                                                                                 esp32sveltekit.getFS(),
                                                                                 esp32sveltekit.getSecurityManager(),
                                                                                 &strokeEngineControlService);
-
+#ifdef DATA_STREAMING
 WebSocketRawDataStreamer PositionStream(&server);
+#endif
 
 /*#################################################################################################
 ##
@@ -74,7 +75,11 @@ WebSocketRawDataStreamer PositionStream(&server);
 
 void streamMotorData(unsigned int time, float position, float speed, float valueA, float valueB)
 {
+#ifdef DATA_STREAMING
+    // Send raw motor data to the websocket
     PositionStream.streamRawData(time, position, speed, valueA, valueB);
+#endif
+
     static int lastMillis = 0;
 
     // Send motor state notification events every 500ms
@@ -127,6 +132,12 @@ void setup()
     MDNS.addService("stroking", "tcp", 80);
     MDNS.addServiceTxt("stroking", "tcp", "FirmwareVersion", FIRMWARE_VERSION);
     MDNS.addServiceTxt("stroking", "tcp", "DeviceID", SettingValue::format("LUST-motion-#{unique_id}"));
+
+#ifdef DATA_STREAMING
+    esp32sveltekit.getFeatureService()->addFeature("data_streaming", true);
+#else
+    esp32sveltekit.getFeatureService()->addFeature("data_streaming", false);
+#endif
 
     // load the initial light settings
     lightStateService.begin();

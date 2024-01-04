@@ -81,7 +81,7 @@
 	<span slot="title">Safety Settings</span>
 	<div class="w-full">
 		<h1 class="text-xl font-semibold">Limit Range</h1>
-		<div class="alert alert-info my-2 shadow-lg">
+		<div class="alert my-2 shadow-lg bg-base-100">
 			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
 			<span
 				>This limits the range of the input parameters <b>Depth</b>, <b>Stroke</b> and <b>Speed</b>.
@@ -132,7 +132,7 @@
 		</div>
 		<div class="divider" />
 		<h1 class="text-xl font-semibold">Ease In Speed</h1>
-		<div class="alert alert-info my-2 shadow-lg">
+		<div class="alert my-2 shadow-lg bg-base-100">
 			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
 			<span
 				>Changing parameters may result in sudden very fast movements that could come at a surprise.
@@ -155,7 +155,7 @@
 		</div>
 		<div class="divider" />
 		<h1 class="text-xl font-semibold">Heartbeat Mode</h1>
-		<div class="alert alert-info my-2 shadow-lg">
+		<div class="alert my-2 shadow-lg bg-base-100">
 			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
 			<span
 				>Heartbeat mode is a safety feature that will stop the machine if the heartbeat signal is
