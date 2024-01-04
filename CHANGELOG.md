@@ -2,7 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.2]
+## WIP
+
+### Added
+
+### Changed
+
+- Better route protection for user page with deep link
+
+## [0.2.2] - 2023-10-08
 
 ### Added
 
