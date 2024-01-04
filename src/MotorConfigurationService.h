@@ -126,30 +126,37 @@ public:
         drivers.add("IHSV_SERVO_V6");
 #endif
 
-        root["stepPerRev"] = settings.stepPerRev;
-        root["maxRPM"] = settings.maxRPM;
-        root["maxAcceleration"] = settings.maxAcceleration;
-        root["pulleyTeeth"] = settings.pulleyTeeth;
-        root["invertDirection"] = settings.invertDirection;
-        root["measureTravel"] = false; // this is only for POST to start measuring cycle
+        root["steps_per_rev"] = settings.stepPerRev;
+        root["max_rpm"] = settings.maxRPM;
+        root["max_acceleration"] = settings.maxAcceleration;
+        root["pulley_teeth"] = settings.pulleyTeeth;
+        root["invert_direction"] = settings.invertDirection;
+        root["measure_travel"] = false; // this is only for POST to start measuring cycle
         root["home"] = false;
         root["travel"] = settings.travel;
         root["keepout"] = settings.keepout;
-        root["sensorlessTrigger"] = settings.sensorlessTrigger;
+        root["sensorless_trigger"] = settings.sensorlessTrigger;
     }
 
     static StateUpdateResult update(JsonObject &root, MotorConfiguration &settings)
     {
-        settings.stepPerRev = root["stepPerRev"] | STEP_PER_REV;
-        settings.maxRPM = root["maxRPM"] | MAX_RPM;
-        settings.maxAcceleration = root["maxAcceleration"] | MAX_ACCELERATION;
-        settings.pulleyTeeth = root["pulleyTeeth"] | PULLEY_TEETH;
-        settings.invertDirection = root["invertDirection"] | INVERT_DIRECTION;
-        settings.measureTravel = root["measureTravel"] | false;
+        settings.measureTravel = root["measure_travel"] | false;
         settings.home = root["home"] | false;
+
+        // DO not read the rest of the settings if we are measuring travel or homing
+        if (settings.measureTravel || settings.home)
+        {
+            return StateUpdateResult::CHANGED;
+        }
+
+        settings.stepPerRev = root["steps_per_rev"] | STEP_PER_REV;
+        settings.maxRPM = root["max_rpm"] | MAX_RPM;
+        settings.maxAcceleration = root["max_acceleration"] | MAX_ACCELERATION;
+        settings.pulleyTeeth = root["pulley_teeth"] | PULLEY_TEETH;
+        settings.invertDirection = root["invert_direction"] | INVERT_DIRECTION;
         settings.travel = root["travel"] | MOTION_FACTORY_TRAVEL;
         settings.keepout = root["keepout"] | KEEP_OUT;
-        settings.sensorlessTrigger = root["sensorlessTrigger"] | SENSORLESS_TRIGGER;
+        settings.sensorlessTrigger = root["sensorless_trigger"] | SENSORLESS_TRIGGER;
 
         // translate the string to an enum
         String driver = root["driver"] | "VIRTUAL";

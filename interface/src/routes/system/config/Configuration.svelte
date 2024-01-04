@@ -3,356 +3,414 @@
 	import { openModal, closeModal } from 'svelte-modals';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
+	import { notifications } from '$lib/components/toasts/notifications';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
-	import CPU from '~icons/tabler/cpu';
-	import CPP from '~icons/tabler/binary';
-	import Power from '~icons/tabler/reload';
-	import Sleep from '~icons/tabler/zzz';
-	import FactoryReset from '~icons/tabler/refresh-dot';
-	import Speed from '~icons/tabler/activity';
-	import Flash from '~icons/tabler/device-sd-card';
-	import Pyramid from '~icons/tabler/pyramid';
-	import Sketch from '~icons/tabler/chart-pie';
-	import Folder from '~icons/tabler/folder';
-	import Heap from '~icons/tabler/box-model';
+	import Config from '~icons/tabler/settings-automation';
 	import Cancel from '~icons/tabler/x';
-	import Temperature from '~icons/tabler/temperature';
-	import Health from '~icons/tabler/stethoscope';
-	import Stopwatch from '~icons/tabler/24-hours';
+	import Refresh from '~icons/tabler/Refresh';
+	import Home from '~icons/tabler/home-search';
+	import Measure from '~icons/tabler/ruler-measure';
+	import Save from '~icons/tabler/device-floppy';
+	import { goto } from '$app/navigation';
 
-	type SystemStatus = {
-		esp_platform: string;
-		max_alloc_heap: number;
-		psram_size: number;
-		free_psram: number;
-		cpu_freq_mhz: number;
-		free_heap: number;
-		sketch_size: number;
-		free_sketch_space: number;
-		sdk_version: string;
-		flash_chip_size: number;
-		flash_chip_speed: number;
-		fs_total: number;
-		fs_used: number;
-		firmware_version: string;
+	type MotorConfig = {
+		driver: string;
+		driver_list: string[];
+		steps_per_rev: number;
+		max_rpm: number;
+		max_acceleration: number;
+		pulley_teeth: number;
+		invert_direction: boolean;
+		measure_travel: boolean;
+		home: boolean;
+		travel: number;
+		keepout: number;
+		sensorless_trigger: number;
 	};
 
-	async function getSystemStatus() {
+	let motorConfig: MotorConfig = {
+		driver: 'VIRTUAL',
+		driver_list: [],
+		steps_per_rev: 0,
+		max_rpm: 0,
+		max_acceleration: 0,
+		pulley_teeth: 0,
+		invert_direction: false,
+		measure_travel: false,
+		home: false,
+		travel: 0,
+		keepout: 0,
+		sensorless_trigger: 0
+	};
+
+	async function getMotorConfig() {
 		try {
-			const response = await fetch('/rest/systemStatus', {
+			const response = await fetch('/rest/motorConfig', {
 				method: 'GET',
 				headers: {
 					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
-			return await response.json();
+			motorConfig = await response.json();
+			console.log(motorConfig);
+			return motorConfig;
 		} catch (error) {
 			console.log('Error:', error);
 		}
 	}
 
-	const interval = setInterval(async () => {
-		getSystemStatus();
-	}, 5000);
-
-	onMount(() => getSystemStatus());
-
-	onDestroy(() => clearInterval(interval));
-
-	async function postRestart() {
-		const response = await fetch('/rest/restart', {
-			method: 'POST',
-			headers: {
-				Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic'
+	async function postMotorConfig() {
+		try {
+			const response = await fetch('/rest/motorConfig', {
+				method: 'POST',
+				headers: {
+					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(motorConfig)
+			});
+			if (response.status == 200) {
+				notifications.success('Motor config updated.', 3000);
+				motorConfig = await response.json();
+				console.log(motorConfig);
+			} else {
+				notifications.error('User not authorized.', 3000);
 			}
-		});
+		} catch (error) {
+			console.error('Error:', error);
+		}
 	}
 
-	function confirmRestart() {
+	let formField: any;
+
+	let formErrors = {
+		steps_per_rev: false,
+		max_rpm: false,
+		pulley_teeth: false,
+		max_acceleration: false,
+		travel: false,
+		keepout: false
+	};
+
+	function handleSubmitMotorConfig() {
+		let valid = true;
+
+		// Validate if steps per revolution is a number and within the right range
+		let steps_pre_rev = Number(motorConfig.steps_per_rev);
+		if (800 <= steps_pre_rev && steps_pre_rev <= 51200) {
+			formErrors.steps_per_rev = false;
+		} else {
+			formErrors.steps_per_rev = true;
+			valid = false;
+		}
+
+		// Validate if max rpm is a number and within the right range
+		let max_rpm = Number(motorConfig.max_rpm);
+		if (0 <= max_rpm && max_rpm <= 10000) {
+			formErrors.max_rpm = false;
+		} else {
+			formErrors.max_rpm = true;
+			valid = false;
+		}
+
+		// Validate if pulley teeth is a number and within the right range
+		let pulley_teeth = Number(motorConfig.pulley_teeth);
+		if (10 <= pulley_teeth && pulley_teeth <= 100) {
+			formErrors.pulley_teeth = false;
+		} else {
+			formErrors.pulley_teeth = true;
+			valid = false;
+		}
+
+		// Validate if max acceleration is a number and within the right range
+		let max_acceleration = Number(motorConfig.max_acceleration);
+		if (100 <= max_acceleration && max_acceleration <= 1000000) {
+			formErrors.max_acceleration = false;
+		} else {
+			formErrors.max_acceleration = true;
+			valid = false;
+		}
+
+		// Validate if travel is a number and within the right range
+		let travel = Number(motorConfig.travel);
+		if (100 <= travel && travel <= 1000) {
+			formErrors.travel = false;
+		} else {
+			formErrors.travel = true;
+			valid = false;
+		}
+
+		// Validate if keepout is a number and within the right range
+		let keepout = Number(motorConfig.keepout);
+		if (0 <= keepout && keepout <= 20) {
+			formErrors.keepout = false;
+		} else {
+			formErrors.keepout = true;
+			valid = false;
+		}
+
+		// Submit JSON to REST API
+		if (valid) {
+			openModal(ConfirmDialog, {
+				title: 'Confirm Restart',
+				message: 'Changing the motor configuration will restart the device. Proceed?',
+				labels: {
+					cancel: { label: 'Abort', icon: Cancel },
+					confirm: { label: 'Save & Restart', icon: Refresh }
+				},
+				onConfirm: () => {
+					closeModal();
+					motorConfig.home = false;
+					motorConfig.measure_travel = false;
+					postMotorConfig();
+				}
+			});
+		}
+	}
+
+	function confirmHome() {
 		openModal(ConfirmDialog, {
-			title: 'Confirm Restart',
-			message: 'Are you sure you want to restart the device?',
+			title: 'Confirm Homing',
+			message: 'Are you sure you want to home the device?',
 			labels: {
 				cancel: { label: 'Abort', icon: Cancel },
-				confirm: { label: 'Restart', icon: Power }
+				confirm: { label: 'Home', icon: Home }
 			},
 			onConfirm: () => {
 				closeModal();
-				postRestart();
+				motorConfig.home = true;
+				postMotorConfig();
 			}
 		});
 	}
 
-	async function postFactoryReset() {
-		const response = await fetch('/rest/factoryReset', {
-			method: 'POST',
-			headers: {
-				Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic'
-			}
-		});
-	}
-
-	function confirmReset() {
+	function confirmMeasure() {
 		openModal(ConfirmDialog, {
-			title: 'Confirm Factory Reset',
-			message: 'Are you sure you want to reset the device to its factory defaults?',
+			title: 'Confirm Measure Rail Length',
+			message: 'Are you sure you want to measure the rail length?',
 			labels: {
 				cancel: { label: 'Abort', icon: Cancel },
-				confirm: { label: 'Factory Reset', icon: FactoryReset }
+				confirm: { label: 'Measure', icon: Measure }
 			},
 			onConfirm: () => {
 				closeModal();
-				postFactoryReset();
+				motorConfig.measure_travel = true;
+				postMotorConfig();
 			}
 		});
-	}
-
-	async function postSleep() {
-		const response = await fetch('/rest/sleep', {
-			method: 'POST',
-			headers: {
-				Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic'
-			}
-		});
-	}
-
-	function confirmSleep() {
-		openModal(ConfirmDialog, {
-			title: 'Confirm Going to Sleep',
-			message: 'Are you sure you want to put the device into sleep?',
-			labels: {
-				cancel: { label: 'Abort', icon: Cancel },
-				confirm: { label: 'Sleep', icon: Sleep }
-			},
-			onConfirm: () => {
-				closeModal();
-				postSleep();
-			}
-		});
-	}
-
-	function convertSeconds(seconds: number) {
-		// Calculate the number of seconds, minutes, hours, and days
-		let minutes = Math.floor(seconds / 60);
-		let hours = Math.floor(minutes / 60);
-		let days = Math.floor(hours / 24);
-
-		// Calculate the remaining hours, minutes, and seconds
-		hours = hours % 24;
-		minutes = minutes % 60;
-		seconds = seconds % 60;
-
-		// Create the formatted string
-		let result = '';
-		if (days > 0) {
-			result += days + ' day' + (days > 1 ? 's' : '') + ' ';
-		}
-		if (hours > 0) {
-			result += hours + ' hour' + (hours > 1 ? 's' : '') + ' ';
-		}
-		if (minutes > 0) {
-			result += minutes + ' minute' + (minutes > 1 ? 's' : '') + ' ';
-		}
-		result += seconds + ' second' + (seconds > 1 ? 's' : '');
-
-		return result;
 	}
 </script>
 
-<SettingsCard collapsible={false}>
-	<Health slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">System Status</span>
+{#if !$page.data.features.security || $user.admin}
+	<SettingsCard collapsible={false}>
+		<Config slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+		<span slot="title">Motor Configuration</span>
 
-	<div class="w-full overflow-x-auto">
-		{#await getSystemStatus()}
-			<Spinner />
-		{:then systemStatus}
-			<div
-				class="flex w-full flex-col space-y-1"
-				transition:slide|local={{ duration: 300, easing: cubicOut }}
-			>
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-						<CPU class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">Device (Platform / SDK)</div>
-						<div class="text-sm opacity-75">
-							{systemStatus.esp_platform} / {systemStatus.sdk_version}
-						</div>
-					</div>
-				</div>
-
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-						<CPP class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">Firmware Version</div>
-						<div class="text-sm opacity-75">
-							{systemStatus.firmware_version}
-						</div>
-					</div>
-				</div>
-
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-						<Speed class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">CPU Frequency</div>
-						<div class="text-sm opacity-75">
-							{systemStatus.cpu_freq_mhz} MHz
-						</div>
-					</div>
-				</div>
-
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-						<Heap class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">Heap (Free / Max Alloc)</div>
-						<div class="text-sm opacity-75">
-							{systemStatus.free_heap.toLocaleString('en-US')} / {systemStatus.max_alloc_heap.toLocaleString(
-								'en-US'
-							)} bytes
-						</div>
-					</div>
-				</div>
-
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-						<Pyramid class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">PSRAM (Size / Free)</div>
-						<div class="text-sm opacity-75">
-							{systemStatus.psram_size.toLocaleString('en-US')} / {systemStatus.psram_size.toLocaleString(
-								'en-US'
-							)} bytes
-						</div>
-					</div>
-				</div>
-
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-						<Sketch class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">Sketch (Used / Free)</div>
-						<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
-							<span>
-								{((systemStatus.sketch_size / systemStatus.free_sketch_space) * 100).toFixed(1)} % of
-								{(systemStatus.free_sketch_space / 1000000).toLocaleString('en-US')} MB used
-							</span>
-
-							<span>
-								({(
-									(systemStatus.free_sketch_space - systemStatus.sketch_size) /
-									1000000
-								).toLocaleString('en-US')} MB free)
-							</span>
-						</div>
-					</div>
-				</div>
-
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-						<Flash class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">Flash Chip (Size / Speed)</div>
-						<div class="text-sm opacity-75">
-							{(systemStatus.flash_chip_size / 1000000).toLocaleString('en-US')} MB / {(
-								systemStatus.flash_chip_speed / 1000000
-							).toLocaleString('en-US')} MHz
-						</div>
-					</div>
-				</div>
-
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-						<Folder class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">File System (Used / Total)</div>
-						<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
-							<span
-								>{((systemStatus.fs_used / systemStatus.fs_total) * 100).toFixed(1)} % of {(
-									systemStatus.fs_total / 1000000
-								).toLocaleString('en-US')} MB used</span
+		<div class="w-full overflow-x-auto">
+			{#await getMotorConfig()}
+				<Spinner />
+			{:then}
+				<form on:submit|preventDefault={handleSubmitMotorConfig} novalidate bind:this={formField}>
+					<div
+						class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2"
+						transition:slide|local={{ duration: 300, easing: cubicOut }}
+					>
+						<!-- Driver -->
+						<div>
+							<label class="label" for="driver">
+								<span class="label-text text-md">Driver</span>
+							</label>
+							<select
+								class="select select-bordered w-full max-w-xs"
+								bind:value={motorConfig.driver}
+								id="driver"
 							>
-
-							<span
-								>({((systemStatus.fs_total - systemStatus.fs_used) / 1000000).toLocaleString(
-									'en-US'
-								)}
-								MB free)</span
+								{#each motorConfig.driver_list as driver}
+									<option value={driver}>{driver}</option>
+								{/each}
+							</select>
+						</div>
+						<!-- Invert Direction-->
+						<label class="label inline-flex cursor-pointer content-end justify-start gap-4">
+							<input
+								type="checkbox"
+								bind:checked={motorConfig.invert_direction}
+								class="checkbox checkbox-primary mt-2 sm:-mb-8 sm:mt-0"
+							/>
+							<span class="mt-2 sm:-mb-8 sm:mt-0">Invert Direction?</span>
+						</label>
+						<!-- Steps per Revolution -->
+						<div>
+							<label class="label" for="steps_pee_rev">
+								<span class="label-text text-md">Steps per Revolution</span>
+							</label>
+							<span class="input-group">
+								<input
+									type="number"
+									min="800"
+									max="51200"
+									step="100"
+									class="join-item input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.steps_per_rev
+										? 'border-error border-2'
+										: ''}"
+									bind:value={motorConfig.steps_per_rev}
+									id="steps_per_rev"
+								/>
+								<span>Steps/Rev</span>
+							</span>
+							<label for="steps_per_rev" class="label"
+								><span class="label-text-alt text-error {formErrors.steps_per_rev ? '' : 'hidden'}"
+									>Must be between 800 and 51200</span
+								></label
 							>
 						</div>
-					</div>
-				</div>
-
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-						<Temperature class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">Core Temperature</div>
-						<div class="text-sm opacity-75">
-							{systemStatus.core_temp.toFixed(2) == 53.33
-								? 'NaN'
-								: systemStatus.core_temp.toFixed(2) + ' °C'}
+						<!-- Pulley Teeth -->
+						<div>
+							<label class="label" for="pulley_teeth">
+								<span class="label-text text-md">Pulley Teeth</span>
+							</label>
+							<span class="input-group">
+								<input
+									type="number"
+									min="10"
+									max="100"
+									step="1"
+									class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.pulley_teeth
+										? 'border-error border-2'
+										: ''}"
+									bind:value={motorConfig.pulley_teeth}
+									id="pulley_teeth"
+								/>
+								<span>Teeth</span>
+							</span>
+							<label for="pulley_teeth" class="label"
+								><span class="label-text-alt text-error {formErrors.pulley_teeth ? '' : 'hidden'}"
+									>Must be between 10 and 100</span
+								></label
+							>
+						</div>
+						<!-- Max RPM -->
+						<div>
+							<label class="label" for="max_rpm">
+								<span class="label-text text-md">Max RPM</span>
+							</label>
+							<span class="input-group">
+								<input
+									type="number"
+									min="0"
+									max="10000"
+									step="10"
+									class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.max_rpm
+										? 'border-error border-2'
+										: ''}"
+									bind:value={motorConfig.max_rpm}
+									id="max_rpm"
+								/>
+								<span>RPM</span>
+							</span>
+							<label for="max_rpm" class="label"
+								><span class="label-text-alt text-error {formErrors.max_rpm ? '' : 'hidden'}"
+									>Must be between 0 RPM and 10000 RPM</span
+								></label
+							>
+						</div>
+						<!-- Max Acceleration -->
+						<div>
+							<label class="label" for="max_acceleration">
+								<span class="label-text text-md">Max Acceleration</span>
+							</label>
+							<span class="input-group">
+								<input
+									type="number"
+									min="100"
+									max="1000000"
+									step="100"
+									class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.max_acceleration
+										? 'border-error border-2'
+										: ''}"
+									bind:value={motorConfig.max_acceleration}
+									id="max_acceleration"
+								/>
+								<span>mm/s²</span>
+							</span>
+							<label for="max_acceleration" class="label"
+								><span
+									class="label-text-alt text-error {formErrors.max_acceleration ? '' : 'hidden'}"
+									>Must be between 100 mm/s² and 1000000 mm/s²</span
+								></label
+							>
+						</div>
+						<!-- Travel -->
+						<div>
+							<label class="label" for="travel">
+								<span class="label-text text-md">Travel</span>
+							</label>
+							<span class="input-group">
+								<input
+									type="number"
+									min="100"
+									max="1000"
+									class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.travel
+										? 'border-error border-2'
+										: ''}"
+									bind:value={motorConfig.travel}
+									id="travel"
+								/>
+								<span>mm</span>
+							</span>
+							<label for="travel" class="label"
+								><span class="label-text-alt text-error {formErrors.travel ? '' : 'hidden'}"
+									>Must be between 100 mm and 1000 mm</span
+								></label
+							>
+						</div>
+						<!-- Keepout -->
+						<div>
+							<label class="label" for="keepout">
+								<span class="label-text text-md">Keepout</span>
+							</label>
+							<span class="input-group">
+								<input
+									type="number"
+									min="0"
+									max="20"
+									step="0.1"
+									class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.keepout
+										? 'border-error border-2'
+										: ''}"
+									bind:value={motorConfig.keepout}
+									id="keepout"
+								/>
+								<span>mm</span>
+							</span>
+							<label for="keepout" class="label"
+								><span class="label-text-alt text-error {formErrors.keepout ? '' : 'hidden'}"
+									>Must be between 0 mm and 10 mm</span
+								></label
+							>
 						</div>
 					</div>
-				</div>
-
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
-						<Stopwatch class="text-primary-content h-auto w-full scale-75" />
+					<div class="divider mb-2 mt-0" />
+					<div class="mx-4 flex flex-wrap justify-end gap-2">
+						<button class="btn btn-primary inline-flex items-center" on:click={confirmHome}
+							><Home class="mr-2 h-5 w-5" /><span>Home</span></button
+						>
+						<button class="btn btn-primary inline-flex items-center" on:click={confirmMeasure}
+							><Measure class="mr-2 h-5 w-5" /><span>Measure Rail Length</span></button
+						>
+						<button class="btn btn-secondary inline-flex items-center" type="submit"
+							><Save class="mr-2 h-5 w-5" /><span>Save Configuration</span></button
+						>
 					</div>
-					<div>
-						<div class="font-bold">Uptime</div>
-						<div class="text-sm opacity-75">
-							{convertSeconds(systemStatus.uptime)}
-						</div>
-					</div>
-				</div>
-
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-						<Power class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">Reset Reason</div>
-						<div class="text-sm opacity-75">
-							{systemStatus.cpu_reset_reason}
-						</div>
-					</div>
-				</div>
-			</div>
-		{/await}
-	</div>
-
-	<div class="mt-4 flex flex-wrap justify-end gap-2">
-		{#if $page.data.features.sleep}
-			<button class="btn btn-primary inline-flex items-center" on:click={confirmSleep}
-				><Sleep class="mr-2 h-5 w-5" /><span>Sleep</span></button
-			>
-		{/if}
-		{#if !$page.data.features.security || $user.admin}
-			<button class="btn btn-primary inline-flex items-center" on:click={confirmRestart}
-				><Power class="mr-2 h-5 w-5" /><span>Restart</span></button
-			>
-			<button class="btn btn-secondary inline-flex items-center" on:click={confirmReset}
-				><FactoryReset class="mr-2 h-5 w-5" /><span>Factory Reset</span></button
-			>
-		{/if}
-	</div>
-</SettingsCard>
+				</form>
+			{/await}
+		</div>
+	</SettingsCard>
+{:else}
+	{goto('/')}
+{/if}

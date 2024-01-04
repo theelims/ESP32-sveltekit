@@ -470,7 +470,7 @@ private:
 
   void _homingProcedure()
   {
-    ESP_LOGI("iHSVServoV6", "Start searching for home.");
+    ESP_LOGI("OSSMRefBoardV2", "Start searching for home.");
 
     // Set feedrate for homing and stop motor
     _stepper->setSpeedInHz(_homingSpeed);

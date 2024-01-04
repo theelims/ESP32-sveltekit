@@ -94,7 +94,7 @@
 					title: 'Configuration',
 					icon: Config,
 					href: '/system/config',
-					feature: true,
+					feature: !$page.data.features.security || $user.admin,
 					active: false
 				},
 				{

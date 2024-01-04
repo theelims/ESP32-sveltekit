@@ -181,6 +181,7 @@ void MotorConfigurationService::onConfigUpdated(String originId)
             delay(10);
         }
         _motor->disable();
+        ESP_LOGW("MotorConfigurationService", "Restarting ESP32 in 500ms");
         delay(500);
         ESP.restart();
     }
