@@ -111,6 +111,21 @@ public:
             root["driver"] = "VIRTUAL";
             break;
         }
+
+        // create a new array for patterns
+        JsonArray drivers = root.createNestedArray("driver_list");
+        // add drivers
+        drivers.add("VIRTUAL");
+#ifdef DRIVER_GENERIC_STEPPER
+        drivers.add("GENERIC_STEPPER");
+#endif
+#ifdef DRIVER_OSSM_REF_BOARD_V2
+        drivers.add("OSSM_REF_BOARD_V2");
+#endif
+#ifdef DREIVER_IHSV_SERVO_V6
+        drivers.add("IHSV_SERVO_V6");
+#endif
+
         root["stepPerRev"] = settings.stepPerRev;
         root["maxRPM"] = settings.maxRPM;
         root["maxAcceleration"] = settings.maxAcceleration;

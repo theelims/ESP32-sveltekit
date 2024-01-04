@@ -41,3 +41,9 @@
 #define NEOPIXEL_COUNT 1
 #define NEOPIXEL_METHODE NeoEsp32Rmt0Ws2812xMethod
 #define NEOPIXEL_COLOR_ORDER NeoGrbFeature
+
+// Available motor drivers
+// VIRTUAL driver is enabled by default
+#define DRIVER_GENERIC_STEPPER
+#define DRIVER_OSSM_REF_BOARD_V2
+#define DREIVER_IHSV_SERVO_V6
