@@ -46,4 +46,4 @@
 // VIRTUAL driver is enabled by default
 #define DRIVER_GENERIC_STEPPER
 #define DRIVER_OSSM_REF_BOARD_V2
-#define DREIVER_IHSV_SERVO_V6
+#define DRIVER_IHSV_SERVO_V6

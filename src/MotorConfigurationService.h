@@ -122,7 +122,7 @@ public:
 #ifdef DRIVER_OSSM_REF_BOARD_V2
         drivers.add("OSSM_REF_BOARD_V2");
 #endif
-#ifdef DREIVER_IHSV_SERVO_V6
+#ifdef DRIVER_IHSV_SERVO_V6
         drivers.add("IHSV_SERVO_V6");
 #endif
 
@@ -169,7 +169,7 @@ public:
             settings.driver = OSSM_REF_BOARD_V2;
         }
 #endif
-#ifdef DREIVER_IHSV_SERVO_V6
+#ifdef DRIVER_IHSV_SERVO_V6
         else if (driver == "IHSV_SERVO_V6")
         {
             settings.driver = IHSV_SERVO_V6;
