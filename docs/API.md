@@ -112,7 +112,7 @@ This API will provide the information about the environment like maximum travel 
 | depth     | number           | maximum travel of the machine. Used for depth and stroke                                             |
 | max_rate  | number           | maximum rate in FPM that the machine is capable                                                      |
 | heartbeat | boolean          | if heartbeat is true the control message must be sent every second, regardless wether it has changed |
-| pattern   | array of strings | array of all available pattern names                                                                 |
+| patterns  | array of strings | array of all available pattern names                                                                 |
 | valueA    | string           | Label of the valueA data stream                                                                      |
 | valueB    | string           | Label of the valueB data stream                                                                      |
 | motor     | string           | Which motor driver is loaded: `VIRTUAL`, `GENERIC_STEPPER`, `OSSM_REF_BOARD_V2` or `IHSV_SERVO_V6`   |

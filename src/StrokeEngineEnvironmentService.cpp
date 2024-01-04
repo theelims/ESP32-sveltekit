@@ -24,7 +24,7 @@ void StrokeEngineEnvironmentService::environment(AsyncWebServerRequest *request)
     root["heartbeat"] = false; // TODO implement heartbeat in StrokeEngineControlService
 
     // create a new array for patterns
-    JsonArray patterns = root.createNestedArray("pattern");
+    JsonArray patterns = root.createNestedArray("patterns");
     // add the patterns
     for (int i = 0; i < _strokeEngine->getNumberOfPattern(); i++)
     {

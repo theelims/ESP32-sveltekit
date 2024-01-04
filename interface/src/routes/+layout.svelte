@@ -4,6 +4,7 @@
 	import { user } from '$lib/stores/user';
 	import { telemetry } from '$lib/stores/telemetry';
 	import { analytics } from '$lib/stores/analytics';
+	import { environment } from '$lib/stores/environment';
 	import type { userProfile } from '$lib/stores/user';
 	import { page } from '$app/stores';
 	import { Modals, closeModal } from 'svelte-modals';
@@ -25,14 +26,11 @@
 		}
 		menuOpen = false;
 		connectToEventSource();
+		fetchEnvironment();
 	});
 
 	onDestroy(() => {
 		NotificationSource?.close();
-	});
-
-	onDestroy(() => {
-		NotificationSource.close();
 	});
 
 	async function validateUser(userdata: userProfile) {
@@ -46,6 +44,25 @@
 			});
 			if (response.status !== 200) {
 				user.invalidate();
+			}
+		} catch (error) {
+			console.error('Error:', error);
+		}
+		return;
+	}
+
+	async function fetchEnvironment() {
+		try {
+			const response = await fetch('/rest/environment', {
+				method: 'GET',
+				headers: {
+					Authorization: 'Bearer ' + $user.bearer_token,
+					'Content-Type': 'application/json'
+				}
+			});
+			if (response.status === 200) {
+				const data = await response.json();
+				environment.set(data);
 			}
 		} catch (error) {
 			console.error('Error:', error);

@@ -4,6 +4,7 @@
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
 	import { analytics } from '$lib/stores/analytics';
+	import { environment } from '$lib/stores/environment';
 	import { Chart, registerables } from 'chart.js';
 	import * as LuxonAdapter from 'chartjs-adapter-luxon';
 	import ChartStreaming from '@robloche/chartjs-plugin-streaming';
@@ -15,6 +16,8 @@
 	import { daisyColor } from '$lib/DaisyUiHelper';
 
 	export let data: PageData;
+
+	$: console.log($environment);
 
 	Chart.register(...registerables);
 	Chart.register(LuxonAdapter);
@@ -110,6 +113,7 @@
 
 		controlSocket.onmessage = (event) => {
 			controlState = JSON.parse(event.data);
+			console.log(controlState);
 		};
 
 		controlSocket.onerror = () => {
@@ -251,7 +255,7 @@
 		<input
 			type="range"
 			min="0"
-			max="150"
+			max={$environment.depth}
 			bind:value={controlState.depth}
 			on:change={() => {
 				sendControl();
@@ -267,7 +271,7 @@
 		<input
 			type="range"
 			min="0"
-			max="150"
+			max={$environment.depth}
 			bind:value={controlState.stroke}
 			on:change={() => {
 				sendControl();
@@ -283,7 +287,7 @@
 		<input
 			type="range"
 			min="0"
-			max="100"
+			max={$environment.max_rate}
 			bind:value={controlState.rate}
 			on:change={() => {
 				sendControl();
@@ -326,14 +330,9 @@
 				bind:value={controlState.pattern}
 				on:change={sendControl}
 			>
-				<option>DepthAdjustment</option>
-				<option>Streaming</option>
-				<option>PoundingTeasing</option>
-				<option>RoboStroke</option>
-				<option>Half'n'Half</option>
-				<option>Deeper</option>
-				<option>Stop'n'Go</option>
-				<option>Insist</option>
+				{#each $environment.patterns as pattern}
+					<option>{pattern}</option>
+				{/each}
 			</select>
 		</div>
 	</div>

@@ -24,7 +24,7 @@
 
 	const appName = 'FuckIO';
 
-	const copyright = '2023 elims';
+	const copyright = '2024 elims';
 
 	const github = { href: 'https://github.com/' + $page.data.github, active: true };
 
