@@ -56,7 +56,7 @@
 			const response = await fetch('/rest/environment', {
 				method: 'GET',
 				headers: {
-					Authorization: 'Bearer ' + $user.bearer_token,
+					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});

@@ -8,7 +8,10 @@ void StrokeEngine::attachMotor(MotorInterface *motor)
   _motor = motor;
 
   // Initialize with default values
-  _depth = _depthLimit = _strokeLimit = _motor->getMaxPosition();
+  _timeOfStrokeLimit = MIN_TIME_OF_STROKE;
+  _depthLimit = _motor->getMaxPosition();
+  _strokeLimit = _motor->getMaxPosition();
+  _depth = _motor->getMaxPosition();
   _stroke = constrain(MOTION_FACTORY_STROKE, 0.0, _depthLimit);
   _timeOfStroke = constrain(60.0 / MOTION_FACTORY_RATE, _timeOfStrokeLimit, 120.0);
   _sensation = MOTION_FACTORY_SENSATION;
@@ -41,12 +44,12 @@ float StrokeEngine::setParameter(StrokeParameter parameter, float value, bool ap
 
     case StrokeParameter::DEPTH:
       name = "Depth";
-      debugValue = _depth = constrain(value, 0.0, _motor->getMaxPosition());
+      debugValue = _depth = constrain(value, 0.0, _depthLimit);
       break;
 
     case StrokeParameter::STROKE:
       name = "Stroke";
-      debugValue = _stroke = constrain(value, 0.0, _motor->getMaxPosition());
+      debugValue = _stroke = constrain(value, 0.0, _strokeLimit);
       break;
 
     case StrokeParameter::SENSATION:

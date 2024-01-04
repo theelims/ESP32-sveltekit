@@ -35,20 +35,20 @@ public:
 
     static void read(StrokeEngineSafety &settings, JsonObject &root)
     {
-        root["depthLimit"] = settings.depthLimit;
-        root["strokeLimit"] = settings.strokeLimit;
-        root["rateLimit"] = settings.rateLimit;
-        root["heartbeatMode"] = settings.heartbeatMode;
-        root["easeInSpeed"] = settings.easeInSpeed;
+        root["depth_limit"] = settings.depthLimit;
+        root["stroke_limit"] = settings.strokeLimit;
+        root["rate_limit"] = settings.rateLimit;
+        root["heartbeat_mode"] = settings.heartbeatMode;
+        root["ease_in_speed"] = settings.easeInSpeed;
     }
 
     static StateUpdateResult update(JsonObject &root, StrokeEngineSafety &settings)
     {
-        settings.depthLimit = root["depthLimit"] | -1.0;
-        settings.strokeLimit = root["strokeLimit"] | -1.0;
-        settings.rateLimit = root["rateLimit"] | MOTION_MAX_RATE;
-        settings.heartbeatMode = root["heartbeatMode"] | HeartbeatMode::NONE;
-        settings.easeInSpeed = root["easeInSpeed"] | MOTION_FACTORY_EASE_IN_SPEED;
+        settings.depthLimit = root["depth_limit"] | -1.0;
+        settings.strokeLimit = root["stroke_limit"] | -1.0;
+        settings.rateLimit = root["rate_limit"] | MOTION_MAX_RATE;
+        settings.heartbeatMode = root["heartbeat_mode"] | HeartbeatMode::NONE;
+        settings.easeInSpeed = root["ease_in_speed"] | MOTION_FACTORY_EASE_IN_SPEED;
 
         return StateUpdateResult::CHANGED;
     }

@@ -263,7 +263,7 @@
 			class="range range-primary range-xs"
 		/>
 		<label class="label mt-0 pt-0">
-			<span class="label-text">Depth</span>
+			<span class="label-text"><b>Depth</b></span>
 			<span class="label-text-alt">{controlState.depth} mm</span>
 		</label>
 	</div>
@@ -279,7 +279,7 @@
 			class="range range-primary range-xs"
 		/>
 		<label class="label mt-0 pt-0">
-			<span class="label-text">Stroke</span>
+			<span class="label-text"><b>Stroke</b></span>
 			<span class="label-text-alt">{controlState.stroke} mm</span>
 		</label>
 	</div>
@@ -295,7 +295,7 @@
 			class="range range-primary range-xs"
 		/>
 		<label class="label mt-0 pt-0">
-			<span class="label-text">Speed</span>
+			<span class="label-text"><b>Speed</b></span>
 			<span class="label-text-alt">{controlState.rate} FPM</span>
 		</label>
 	</div>
@@ -311,7 +311,7 @@
 			class="range range-primary range-xs"
 		/>
 		<label class="label mt-0 pt-0">
-			<span class="label-text">Sensation</span>
+			<span class="label-text"><b>Sensation</b></span>
 			<span class="label-text-alt">{controlState.sensation}</span>
 		</label>
 	</div>

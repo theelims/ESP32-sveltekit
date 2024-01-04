@@ -96,7 +96,7 @@
 			});
 
 			if (response.status == 200) {
-				notifications.success('Security settings updated.', 3000);
+				notifications.success('NTP settings updated.', 3000);
 				ntpSettings = await response.json();
 			} else {
 				notifications.error('User not authorized.', 3000);

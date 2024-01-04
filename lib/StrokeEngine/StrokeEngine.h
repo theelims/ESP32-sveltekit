@@ -188,9 +188,9 @@ protected:
   int _index = 0;
 
   float _depth;
-  float _depthLimit = MOTION_FACTORY_TRAVEL;
+  float _depthLimit;
   float _stroke;
-  float _strokeLimit = MOTION_FACTORY_TRAVEL;
+  float _strokeLimit;
   float _timeOfStroke;
   float _timeOfStrokeLimit = MIN_TIME_OF_STROKE;
   float _sensation;
