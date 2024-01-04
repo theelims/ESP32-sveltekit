@@ -213,7 +213,7 @@ float StrokeEngine::getParameter(StrokeParameter parameter)
   switch (parameter)
   {
   case StrokeParameter::RATE:
-    return _timeOfStroke;
+    return 60.0 / _timeOfStroke;
   case StrokeParameter::DEPTH:
     return _depth;
   case StrokeParameter::STROKE:

@@ -17,7 +17,7 @@
 
 	export let data: PageData;
 
-	$: console.log($environment);
+	//$: console.log($environment);
 
 	Chart.register(...registerables);
 	Chart.register(LuxonAdapter);
@@ -113,7 +113,7 @@
 
 		controlSocket.onmessage = (event) => {
 			controlState = JSON.parse(event.data);
-			console.log(controlState);
+			// console.log(controlState);
 		};
 
 		controlSocket.onerror = () => {
