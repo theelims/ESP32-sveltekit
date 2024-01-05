@@ -21,6 +21,10 @@
 #include <StrokeEngineSafetyService.h>
 #include <WebSocketRawDataStreaming.h>
 
+#ifndef DATA_STREAMING_INTERVAL
+#define DATA_STREAMING_INTERVAL 50
+#endif
+
 /*#################################################################################################
 ##
 ##    G L O B A L    D E F I N I T I O N S   &   D E C L A R A T I O N S
@@ -147,7 +151,7 @@ void setup()
 
     // Start motor control service
     motorConfigurationService.begin();
-    Stroker.getMotor()->attachPositionFeedback(streamMotorData, 50);
+    Stroker.getMotor()->attachPositionFeedback(streamMotorData, DATA_STREAMING_INTERVAL);
 
     // Start the stroke engine safety service
     strokeEngineSafetyService.begin();
