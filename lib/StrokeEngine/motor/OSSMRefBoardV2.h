@@ -39,7 +39,7 @@ typedef struct
   float VoltPermV;      /*> Scaling of the voltage ADC */
 } OSSMRefBoardV2Properties;
 
-using MeasureCallbackType = std::function<void(float)>;
+using MeasureCallbackType = std::function<void()>;
 
 /**************************************************************************/
 /*!
@@ -131,11 +131,11 @@ public:
     @param speed Speed of the homing procedure in [mm/s]. Default is 5.0.
   */
   /**************************************************************************/
-  void setSensorlessHoming(float threshold = 0.10, float speed = 5.0)
+  void setSensorlessHoming(float threshold = 0.25, float speed = 5.0)
   {
     _currentThreshold = threshold;
     _homingSpeed = speed * _stepsPerMillimeter;
-    ESP_LOGI("OSSMRefBoardV2", "Search home with %05.1f mm/s.", speed);
+    ESP_LOGD("OSSMRefBoardV2", "Search home with %05.1f mm/s and trigger at %.3f A", speed, threshold);
   }
 
   /**************************************************************************/
@@ -147,18 +147,15 @@ public:
   /**************************************************************************/
   void home()
   {
-    // set homed to false so that isActive() becomes false
-    _homed = false;
-
-    // first stop current motion and suspend motion tasks
-    stopMotion();
-
-    // Quit if stepper not enabled
-    if (_enabled == false)
+    // Quit if stepper has error, is not enabled or in motion
+    if (_error || _enabled == false || motionCompleted() == false)
     {
-      ESP_LOGE("OSSMRefBoardV2", "Homing not possible! --> Enable stepper first!");
+      ESP_LOGE("OSSMRefBoardV2", "Homing not possible!");
       return;
     }
+
+    // set homed to false so that isActive() becomes false
+    _homed = false;
 
     // Create homing task
     xTaskCreatePinnedToCore(
@@ -185,10 +182,10 @@ public:
   /**************************************************************************/
   void measureRailLength(MeasureCallbackType callBackMeasuring, float keepout = 5.0)
   {
-    // Quit if stepper not enabled
-    if (_enabled == false)
+    // Quit if stepper has error, is not enabled or in motion
+    if (_error || _enabled == false || motionCompleted() == false)
     {
-      ESP_LOGE("OSSMRefBoardV2", "Measuring not possible! --> Enable stepper first!");
+      ESP_LOGE("OSSMRefBoardV2", "Homing not possible!");
       return;
     }
 
@@ -273,7 +270,7 @@ public:
       ESP_LOGD("OSSMRefBoardV2", "Deleted Measuring Task.");
     }
 
-    if (_stepper->isRunning())
+    if (motionCompleted() == false)
     {
       // Stop servo motor as fast as legally allowed
       _stepper->setAcceleration(_maxStepAcceleration);
@@ -283,7 +280,7 @@ public:
     }
 
     // Wait for servo stopped
-    while (_stepper->isRunning())
+    while (motionCompleted() == false)
       ;
   }
 
@@ -478,13 +475,13 @@ private:
 
     // measure idle current
     _idleCurrent = getCurrent(100);
-    ESP_LOGI("OSSMRefBoardV2", "Idle Current: %.3f A", _idleCurrent);
+    ESP_LOGI("OSSMRefBoardV2", "Idle Current: %.3f A, Threshold: %.3f A", _idleCurrent, (_idleCurrent + _currentThreshold));
 
     // Move maximum travel distance + 2*keepout towards the homing switch
     _stepper->runBackward();
 
     // Poll homing switch
-    while (_stepper->isRunning())
+    while (motionCompleted() == false)
     {
 
       // Are we at the home position?
@@ -521,13 +518,14 @@ private:
     // Call notification callback, if it was defined.
     if (_callBackHoming != NULL)
     {
-      _callBackHoming(_homed);
+      _callBackHoming();
     }
+
+    ESP_LOGV("OSSMRefBoardV2", "Homing task self-terminated");
 
     // delete one-time task
     _taskHomingHandle = NULL;
     vTaskDelete(NULL);
-    ESP_LOGV("OSSMRefBoardV2", "Homing task self-terminated");
   }
 
   void _measureProcedure()
@@ -551,8 +549,10 @@ private:
     // move motor into the other direction
     _stepper->runForward();
 
+    ESP_LOGI("OSSMRefBoardV2", "Start measuring rail length...");
+
     // wait until the motor is in position
-    while (_stepper->isRunning())
+    while (motionCompleted() == false)
     {
       // query endstop
       if (_queryHome())
@@ -562,8 +562,18 @@ private:
 
         // set the current position as the travel length. Add one keepout to account for homing on one side.
         float travel = getPosition() + _keepout;
-        ESP_LOGI("OSSMRefBoardV2", "Measured rail length: %f", travel);
-        setMachineGeometry(travel, _keepout);
+
+        // round down travel length to the next 10mm
+        float roundedTravel = floor(travel / 10.0) * 10.0;
+
+        ESP_LOGI("OSSMRefBoardV2", "Measured true rail length: %.2f mm, rounded to %.1f mm", travel, roundedTravel);
+
+        // calculate the adjusted keepout and account for the rounding error
+        float adjustedKeepout = _keepout + (travel - roundedTravel) / 2.0;
+        ESP_LOGI("OSSMRefBoardV2", "Adjusted keepout: %.2f mm", adjustedKeepout);
+
+        // set the machine geometry to the rounded travel length
+        setMachineGeometry(roundedTravel, adjustedKeepout);
 
         // drive free of end to _maxPosition
         _stepper->moveTo(_maxStep);
@@ -578,13 +588,14 @@ private:
     // Call notification callback, if it was defined.
     if (_callBackMeasuring != NULL)
     {
-      _callBackMeasuring(travel);
+      _callBackMeasuring();
     }
+
+    ESP_LOGV("OSSMRefBoardV2", "Measuring task self-terminated");
 
     // delete one-time task
     _taskMeasuringHandle = NULL;
     vTaskDelete(NULL);
-    ESP_LOGV("OSSMRefBoardV2", "Measuring task self-terminated");
   }
 
   void _reportMotionPoint()

@@ -44,7 +44,7 @@ void MotorConfigurationService::begin()
         ESP_LOGI("MotorConfigurationService", "Using GenericStepperMotor");
         genericMotorInstance = new GenericStepperMotor();
         genericMotorInstance->begin(&genericMotorProperties);
-        genericMotorInstance->setSensoredHoming(ENDSTOP_PIN, INPUT_PULLUP, true);
+        genericMotorInstance->setSensoredHoming(ENDSTOP_PIN, INPUT_PULLUP, true, 0.0, MOTION_HOMING_SPEED);
         genericMotorInstance->setStepsPerMillimeter(_state.stepPerRev / (_state.pulleyTeeth * BELT_PITCH));
         genericMotorInstance->invertDirection(_state.invertDirection);
         _motor = static_cast<MotorInterface *>(genericMotorInstance);
@@ -54,7 +54,7 @@ void MotorConfigurationService::begin()
         ESP_LOGI("MotorConfigurationService", "Using OSSMRefBoardV2Motor");
         OSSMMotorInstance = new OSSMRefBoardV2Motor();
         OSSMMotorInstance->begin(&OSSMMotorProperties);
-        OSSMMotorInstance->setSensorlessHoming(MAX_AMPERE * _state.sensorlessTrigger);
+        OSSMMotorInstance->setSensorlessHoming(MAX_AMPERE * (_state.sensorlessTrigger / 100.0), MOTION_HOMING_SPEED);
         OSSMMotorInstance->setStepsPerMillimeter(_state.stepPerRev / (_state.pulleyTeeth * BELT_PITCH));
         OSSMMotorInstance->invertDirection(_state.invertDirection);
         _motor = static_cast<MotorInterface *>(OSSMMotorInstance);
@@ -64,7 +64,7 @@ void MotorConfigurationService::begin()
         ESP_LOGI("MotorConfigurationService", "Using iHSVServoV6Motor");
         IHSVMotorInstance = new iHSVServoV6Motor();
         IHSVMotorInstance->begin(&iHSVV6MotorProperties);
-        IHSVMotorInstance->setSensorlessHoming(_state.sensorlessTrigger);
+        IHSVMotorInstance->setSensorlessHoming((int)_state.sensorlessTrigger, MOTION_HOMING_SPEED);
         IHSVMotorInstance->setStepsPerMillimeter(_state.stepPerRev / (_state.pulleyTeeth * BELT_PITCH));
         IHSVMotorInstance->invertDirection(_state.invertDirection);
         _motor = static_cast<MotorInterface *>(IHSVMotorInstance);
@@ -87,9 +87,9 @@ void MotorConfigurationService::begin()
     _motor->enable();
 
     // home motor
-    _motor->home([&](boolean homed)
+    _motor->home([&]()
                  {
-                     if (homed)
+                     if (_motor->isHomed())
                      {
                          _notificationEvent->pushNotification("Motor homed", pushEvent::PUSHSUCCESS, millis());
                      }
@@ -105,14 +105,25 @@ void MotorConfigurationService::begin()
 
 void MotorConfigurationService::onConfigUpdated(String originId)
 {
+    ESP_LOGI("MotorConfigurationService", "Stop StrokeEngine: motor config updated by %s", originId.c_str());
+
+    // Stop motion of StrokeEngine
+    _strokeEngine->stopMotion();
+
+    // wait for motor to stop
+    while (_motor->motionCompleted() == false)
+    {
+        delay(100);
+    }
+
     // check if motor needs to be homed and return
     if (_state.home)
     {
         ESP_LOGI("MotorConfigurationService", "Homing motor requested");
         _state.home = false;
-        _motor->home([&](boolean homed)
+        _motor->home([&]()
                      {
-                         if (homed)
+                         if (_motor->isHomed())
                          {
                              _notificationEvent->pushNotification("Motor homed", pushEvent::PUSHSUCCESS, millis());
                          }
@@ -127,41 +138,51 @@ void MotorConfigurationService::onConfigUpdated(String originId)
     else if (_state.measureTravel)
     {
         ESP_LOGI("MotorConfigurationService", "Measuring travel requested");
+
         // check if _motor is of type OSSMRefBoardV2Motor
         if (_loadedDriver == OSSM_REF_BOARD_V2)
         {
             // cast _motor to OSSMRefBoardV2Motor
             OSSMRefBoardV2Motor *OSSMMotor = static_cast<OSSMRefBoardV2Motor *>(_motor);
             // set motor to full speed
-            OSSMMotor->measureRailLength([&](float travel)
+            OSSMMotor->measureRailLength([&]()
                                          {
-                                             _notificationEvent->pushNotification("Measured travel: " + String(travel) + "mm", pushEvent::PUSHSUCCESS, millis());
+                                             float newTravel = OSSMMotor->getTravel();
+                                             float newKeepout = OSSMMotor->getKeepout();
+                                             _notificationEvent->pushNotification("Measured travel: " + String(newTravel, 1) + "mm", pushEvent::PUSHSUCCESS, millis());
 
                                              // save travel to config
                                              update([&](MotorConfiguration &state)
-                                                    { state.travel = travel;
+                                                    {   state.travel = newTravel;
+                                                        state.keepout = newKeepout;
                                                         return StateUpdateResult::CHANGED; },
                                                     "persist");
                                              // done
-                                         });
+                                         },
+                                         _state.keepout);
         }
 
+        // check if _motor is of type iHSVServoV6Motor
         else if (_loadedDriver == IHSV_SERVO_V6)
         {
             // cast _motor to iHSVServoV6Motor
             iHSVServoV6Motor *IHSVMotor = static_cast<iHSVServoV6Motor *>(_motor);
             // set motor to full speed
-            IHSVMotor->measureRailLength([&](float travel)
+            IHSVMotor->measureRailLength([&]()
                                          {
-                                             _notificationEvent->pushNotification("Measured travel: " + String(travel) + "mm", pushEvent::PUSHSUCCESS, millis());
+                                             float newTravel = IHSVMotor->getTravel();
+                                             float newKeepout = IHSVMotor->getKeepout();
+                                             _notificationEvent->pushNotification("Measured travel: " + String(newTravel, 1) + "mm", pushEvent::PUSHSUCCESS, millis());
 
                                              // save travel to config
                                              update([&](MotorConfiguration &state)
-                                                    { state.travel = travel;
+                                                    {   state.travel = newTravel;
+                                                        state.keepout = newKeepout;
                                                         return StateUpdateResult::CHANGED; },
                                                     "persist");
                                              // done
-                                         });
+                                         },
+                                         _state.keepout);
         }
         else
         {
@@ -175,13 +196,7 @@ void MotorConfigurationService::onConfigUpdated(String originId)
     {
         // restart ESP32 to load changed motor driver
         ESP_LOGI("MotorConfigurationService", "Restarting ESP32 to load new motor driver");
-        _motor->stopMotion();
-        while (_motor->isActive())
-        {
-            delay(10);
-        }
         _motor->disable();
-        ESP_LOGW("MotorConfigurationService", "Restarting ESP32 in 500ms");
         delay(500);
         ESP.restart();
     }

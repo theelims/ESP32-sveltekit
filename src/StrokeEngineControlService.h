@@ -137,5 +137,5 @@ private:
     AsyncMqttClient *_mqttClient;
     StrokeEngine *_strokeEngine;
 
-    void onConfigUpdated();
+    void onConfigUpdated(String originId);
 };

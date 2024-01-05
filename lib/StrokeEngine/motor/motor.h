@@ -28,7 +28,7 @@ typedef struct
   String labelValueB;
 } MotionPointLabel;
 
-using HomingCallbackType = std::function<void(boolean)>;
+using HomingCallbackType = std::function<void()>;
 
 /**************************************************************************/
 /*!
@@ -112,7 +112,7 @@ public:
     @return active state
   */
   /**************************************************************************/
-  virtual bool isActive() { return (_enabled && _homed); }
+  virtual bool isActive() { return (_enabled && _homed && !_error); }
 
   /**************************************************************************/
   /*!
@@ -150,6 +150,14 @@ public:
   */
   /**************************************************************************/
   float getTravel() { return _travel; }
+
+  /**************************************************************************/
+  /*!
+    @brief  Returns the keepout of the machine. This is a soft endstop and
+    subtracted at both ends of the travel. A typical value would be 5mm.
+    @return keepout in [mm]
+  */
+  float getKeepout() { return _keepout; }
 
   /**************************************************************************/
   /*!

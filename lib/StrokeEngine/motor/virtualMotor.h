@@ -96,7 +96,7 @@ public:
         }
 
         if (_callBackHoming != NULL)
-            _callBackHoming(_homed);
+            _callBackHoming();
     }
 
     /**************************************************************************/

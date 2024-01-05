@@ -53,8 +53,9 @@ void StrokeEngineSafetyService::begin()
 void StrokeEngineSafetyService::onConfigUpdated(String originId)
 {
 
-    ESP_LOGI("StrokeEngineSafetyService", "Updating safety settings by %s", originId.c_str());
+    ESP_LOGI("StrokeEngineSafetyService", "Update safety settings by %s", originId.c_str());
     boolean sanitized = false;
+
     // update stroke engine safety settings
     float depthLimit = _strokeEngine->setLimit(StrokeLimit::DEPTH, _state.depthLimit);
     if (depthLimit != _state.depthLimit)
@@ -62,12 +63,14 @@ void StrokeEngineSafetyService::onConfigUpdated(String originId)
         _state.depthLimit = depthLimit;
         sanitized = true;
     }
+
     float strokeLimit = _strokeEngine->setLimit(StrokeLimit::STROKE, _state.strokeLimit);
     if (strokeLimit != _state.strokeLimit)
     {
         _state.strokeLimit = strokeLimit;
         sanitized = true;
     }
+
     float rateLimit = _strokeEngine->setLimit(StrokeLimit::RATE, _state.rateLimit);
     if (rateLimit != _state.rateLimit)
     {
@@ -75,14 +78,17 @@ void StrokeEngineSafetyService::onConfigUpdated(String originId)
         sanitized = true;
     }
 
+    // Apply new values immediately
+    _strokeEngine->applyChangesNow();
+
     // TODO implement heartbeat mode
     // _strokeEngine->setEaseInSpeed(_state.easeInSpeed);
 
     // update stroke engine control service
     //_strokeEngineControlService->setHeartbeatMode(_state.heartbeatMode);
 
-    // Propagate sanitized changes to StatefulService
-    if (sanitized)
+    // Propagate sanitized changes to StatefulService, but prevent infinite loop
+    if (sanitized && originId != "onConfigUpdated")
     {
         ESP_LOGW("StrokeEngineSafetyService", "Sanitized safety settings");
         update([&](StrokeEngineSafety &state)

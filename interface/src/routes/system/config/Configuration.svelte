@@ -446,12 +446,14 @@
 					</div>
 					<div class="divider mb-2 mt-0" />
 					<div class="mx-4 flex flex-wrap justify-end gap-2 mb-1">
-						<button class="btn btn-primary inline-flex items-center" on:click={confirmHome}
-							><Home class="mr-2 h-5 w-5" /><span>Home</span></button
+						<button
+							class="btn btn-primary inline-flex items-center"
+							type="button"
+							on:click={confirmHome}><Home class="mr-2 h-5 w-5" /><span>Home</span></button
 						>
 
 						<button class="btn btn-secondary inline-flex items-center" type="submit"
-							><Save class="mr-2 h-5 w-5" /><span>Save Configuration</span></button
+							><Save class="mr-2 h-5 w-5" /><span>Save & Restart</span></button
 						>
 					</div>
 				</form>

@@ -215,11 +215,8 @@ public:
 
   /**************************************************************************/
   /*!
-    @brief  Sets the machines mechanical geometries. The values are measured
-    from hard endstop to hard endstop and are given in [mm].
-    @param travel overal mechanical travel in [mm].
-    @param keepout This keepout [mm] is a soft endstop and subtracted at both ends
-    of the travel. A typical value would be 5mm.
+    @brief  Initiates the fastest safe breaking to stand-still stopping all
+    motion without loosing position.
   */
   /**************************************************************************/
   void stopMotion()
@@ -251,11 +248,9 @@ public:
 
   /**************************************************************************/
   /*!
-    @brief  Sets the machines mechanical geometries. The values are measured
-    from hard endstop to hard endstop and are given in [mm].
-    @param travel overal mechanical travel in [mm].
-    @param keepout This keepout [mm] is a soft endstop and subtracted at both ends
-    of the travel. A typical value would be 5mm.
+    @brief  Returns if a trapezoidal motion is carried out, or the machine is
+    at stand-still.
+    @return `true` if motion is completed, `false` if still under way
   */
   /**************************************************************************/
   bool motionCompleted() { return _stepper->isRunning() ? false : true; }
@@ -395,7 +390,7 @@ private:
     // Call notification callback, if it was defined.
     if (_callBackHoming != NULL)
     {
-      _callBackHoming(_homed);
+      _callBackHoming();
     }
 
     // delete one-time task
@@ -419,5 +414,4 @@ private:
   int _homingPin = -1;
   bool _homingActiveLow; /*> Polarity of the homing signal*/
   TaskHandle_t _taskHomingHandle = NULL;
-  void (*_callBackHoming)(bool) = NULL;
 };

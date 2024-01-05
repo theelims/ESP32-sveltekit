@@ -93,7 +93,7 @@ typedef struct
   int modbusTxPin;      /*> Pin connected to the MODBUS TX input */
 } iHSVServoV6Properties;
 
-using MeasureCallbackType = std::function<void(float)>;
+using MeasureCallbackType = std::function<void()>;
 
 /**************************************************************************/
 /*!
@@ -207,15 +207,15 @@ public:
   /**************************************************************************/
   /*!
     @brief  Sets up sensorless homing.
-    @param threshold Torque threshold to account as mechanical endstop.
+    @param threshold Torque threshold in percent to account as mechanical endstop.
     @param speed Speed of the homing procedure in [mm/s].
   */
   /**************************************************************************/
-  void setSensorlessHoming(int threshold = 40, float speed = 5.0)
+  void setSensorlessHoming(int threshold = 5, float speed = 5.0)
   {
     _torqueThreshold = threshold * 10;
     _homingSpeed = speed * _stepsPerMillimeter;
-    ESP_LOGI("iHSVServoV6", "Search home with %05.1f mm/s.", speed);
+    ESP_LOGI("iHSVServoV6", "Search home with %05.1f mm/s and %d%% torque.", speed, threshold);
   }
 
   /**************************************************************************/
@@ -242,24 +242,15 @@ public:
   /**************************************************************************/
   void home()
   {
-    if (_error)
+    // Quit if stepper has error, is not enabled or in motion
+    if (_error || _enabled == false || motionCompleted() == false)
     {
-      ESP_LOGE("iHSVServoV6", "Homing not possible! --> Servo in error state!");
+      ESP_LOGE("iHSVServoV6", "Homing not possible!");
       return;
     }
 
     // set homed to false so that isActive() becomes false
     _homed = false;
-
-    // first stop current motion and suspend motion tasks
-    stopMotion();
-
-    // Quit if stepper not enabled
-    if (_enabled == false)
-    {
-      ESP_LOGE("iHSVServoV6", "Homing not possible! --> Enable stepper first!");
-      return;
-    }
 
     // Create homing task
     xTaskCreatePinnedToCore(
@@ -286,21 +277,15 @@ public:
   /**************************************************************************/
   void measureRailLength(MeasureCallbackType callBackMeasuring, float keepout = 5.0)
   {
-    if (_error)
+    // Quit if stepper has error, is not enabled or in motion
+    if (_error || _enabled == false || motionCompleted() == false)
     {
-      ESP_LOGE("iHSVServoV6", "Measuring not possible! --> Servo in error state!");
+      ESP_LOGE("iHSVServoV6", "Homing not possible!");
       return;
     }
 
     // store the call back function
     _callBackMeasuring = callBackMeasuring;
-
-    // Quit if stepper not enabled
-    if (_enabled == false)
-    {
-      ESP_LOGE("iHSVServoV6", "Measuring not possible! --> Enable stepper first!");
-      return;
-    }
 
     // store the keepout distance
     _keepout = keepout;
@@ -393,7 +378,7 @@ public:
       ESP_LOGD("OSSMRefBoardV2", "Deleted Measuring Task.");
     }
 
-    if (_stepper->isRunning())
+    if (motionCompleted() == false)
     {
       // Stop servo motor as fast as legally allowed
       _stepper->setAcceleration(_maxStepAcceleration);
@@ -403,7 +388,7 @@ public:
     }
 
     // Wait for servo stopped
-    while (_stepper->isRunning())
+    while (motionCompleted() == false)
       ;
   }
 
@@ -642,9 +627,9 @@ private:
   bool _queryHome()
   {
     // read actual torque from servo
-    int actualTorque = _readServoRegister(IHSVV6_MON_TORQACT, true);
-    ESP_LOGV("iHSVServoV6", "Actual Torque: %d", actualTorque);
-    if (abs(actualTorque) > _torqueThreshold)
+    int actualTorque = abs(_readServoRegister(IHSVV6_MON_TORQACT, true));
+    ESP_LOGI("iHSVServoV6", "Actual Torque: %d, Threshold : %d", actualTorque, _torqueThreshold);
+    if (actualTorque > _torqueThreshold)
     {
       return true;
     }
@@ -666,7 +651,7 @@ private:
     _stepper->runBackward();
 
     // Poll homing switch
-    while (_stepper->isRunning())
+    while (motionCompleted() == false)
     {
 
       // Are we at the home position?
@@ -707,13 +692,14 @@ private:
     // Call notification callback, if it was defined.
     if (_callBackHoming != NULL)
     {
-      _callBackHoming(_homed);
+      _callBackHoming();
     }
+
+    ESP_LOGV("iHSVServoV6", "Homing task self-terminated");
 
     // delete one-time task
     _taskHomingHandle = NULL;
     vTaskDelete(NULL);
-    ESP_LOGV("iHSVServoV6", "Homing task self-terminated");
   }
 
   void _measureProcedure()
@@ -738,7 +724,7 @@ private:
     _stepper->runForward();
 
     // wait until the motor is in position
-    while (_stepper->isRunning())
+    while (motionCompleted() == false)
     {
       // query endstop
       if (_queryHome())
@@ -764,13 +750,14 @@ private:
     // Call notification callback, if it was defined.
     if (_callBackMeasuring)
     {
-      _callBackMeasuring(travel);
+      _callBackMeasuring();
     }
+
+    ESP_LOGV("iHSVServoV6", "Measuring task self-terminated");
 
     // delete one-time task
     _taskMeasuringHandle = NULL;
     vTaskDelete(NULL);
-    ESP_LOGV("iHSVServoV6", "Measuring task self-terminated");
   }
 
   void _reportMotionPoint()

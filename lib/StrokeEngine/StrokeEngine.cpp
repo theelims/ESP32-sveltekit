@@ -26,76 +26,75 @@ void StrokeEngine::attachMotor(MotorInterface *motor)
   ESP_LOGI("StrokeEngine", "Attached Motor successfully to Stroke Engine!");
 }
 
-float StrokeEngine::setParameter(StrokeParameter parameter, float value, bool applyNow)
+float StrokeEngine::setParameter(StrokeParameter parameter, float value)
 {
   String name = "";
   float debugValue;
+  float sanitizedValue;
   if (xSemaphoreTake(_parameterMutex, portMAX_DELAY) == pdTRUE)
   {
     switch (parameter)
     {
     case StrokeParameter::RATE:
-      name = "Stroke Time";
+      name = "Time of Stroke";
       // Convert FPM into seconds to complete a full stroke
       // Constrain stroke time between 100ms and 120 seconds
       _timeOfStroke = constrain(60.0 / value, _timeOfStrokeLimit, 120.0);
-      debugValue = 60.0 / _timeOfStroke;
+      debugValue = _timeOfStroke;
+      sanitizedValue = 60.0 / _timeOfStroke;
       break;
 
     case StrokeParameter::DEPTH:
       name = "Depth";
       debugValue = _depth = constrain(value, 0.0, _depthLimit);
+      sanitizedValue = _depth;
       break;
 
     case StrokeParameter::STROKE:
       name = "Stroke";
       debugValue = _stroke = constrain(value, 0.0, _strokeLimit);
+      sanitizedValue = _stroke;
       break;
 
     case StrokeParameter::SENSATION:
       name = "Sensation";
       debugValue = _sensation = constrain(value, -100.0, 100.0);
+      sanitizedValue = _sensation;
       break;
     }
 
     _sendParameters(_patternIndex);
 
-    ESP_LOGD("StrokeEngine", "Stroke Parameter %s - %f", name, debugValue);
-
-    // When running a pattern and immediate update requested:
-    if (applyNow == true)
-    {
-      _applyUpdate = true;
-
-      ESP_LOGD("StrokeEngine", "Setting Apply Update Flag!");
-    }
-
     xSemaphoreGive(_parameterMutex);
 
+    ESP_LOGD("StrokeEngine", "Stroke Parameter %s - %.2f", name, debugValue);
+
     // return the actually used value after input sanitizing
-    return debugValue;
+    return sanitizedValue;
   }
 
   // Add a default return statement
   return 0.0f;
 }
 
-float StrokeEngine::setLimit(StrokeLimit limit, float value, bool applyNow)
+float StrokeEngine::setLimit(StrokeLimit limit, float value)
 {
   String name = "";
   float debugValue;
+  float sanitizedValue;
   if (xSemaphoreTake(_parameterMutex, portMAX_DELAY) == pdTRUE)
   {
     switch (limit)
     {
     case StrokeLimit::RATE:
-      name = "Rate";
+      name = "ToS";
       // Convert FPM into seconds to complete a full stroke
       // Constrain stroke time between 100ms and 120 seconds
       _timeOfStrokeLimit = constrain(60.0 / value, MIN_TIME_OF_STROKE, 120.0);
       // constrain current stroke time to new limit
       _timeOfStroke = constrain(_timeOfStroke, _timeOfStrokeLimit, 120.0);
-      debugValue = 60.0 / _timeOfStrokeLimit;
+      debugValue = _timeOfStrokeLimit;
+      sanitizedValue = 60.0 / _timeOfStrokeLimit;
       break;
 
     case StrokeLimit::DEPTH:
@@ -103,6 +102,7 @@ float StrokeEngine::setLimit(StrokeLimit limit, float value, bool applyNow)
       debugValue = _depthLimit = constrain(value, 0.0, _motor->getMaxPosition());
       // constrain current depth to new limit
       _depth = constrain(_depth, 0.0, _depthLimit);
+      sanitizedValue = _depthLimit;
       break;
 
     case StrokeLimit::STROKE:
@@ -110,24 +110,18 @@ float StrokeEngine::setLimit(StrokeLimit limit, float value, bool applyNow)
       debugValue = _strokeLimit = constrain(value, 0.0, _motor->getMaxPosition());
       // constrain current stroke to new limit
       _stroke = constrain(_stroke, 0.0, _strokeLimit);
+      sanitizedValue = _strokeLimit;
       break;
     }
 
     _sendParameters(_patternIndex);
 
-    ESP_LOGD("StrokeEngine", "Stroke Limits %s - %f", name, debugValue);
-
-    // When running a pattern and immediate update requested:
-    if (applyNow == true)
-    {
-      _applyUpdate = true;
-
-      ESP_LOGD("StrokeEngine", "Setting Apply Update Flag!");
-    }
-
+    // Give mutex back
     xSemaphoreGive(_parameterMutex);
 
-    return debugValue;
+    ESP_LOGD("StrokeEngine", "Stroke Limits %s - %.2f", name, debugValue);
+
+    return sanitizedValue;
   }
 
   return 0.0f;
@@ -159,6 +153,16 @@ float StrokeEngine::getLimit(StrokeLimit limit)
   ESP_LOGD("StrokeEngine", "Get Stroke Limits %s - %f", name, debugValue);
 
   return debugValue;
+}
+
+void StrokeEngine::applyChangesNow()
+{
+  if (xSemaphoreTake(_parameterMutex, portMAX_DELAY) == pdTRUE)
+  {
+    _applyUpdate = true;
+    ESP_LOGD("StrokeEngine", "Setting Apply Update Flag!");
+    xSemaphoreGive(_parameterMutex);
+  }
 }
 
 // WARNING: This function must be called only within the scope of a Taken _parameterMutex
@@ -293,9 +297,9 @@ bool StrokeEngine::startPattern()
 
 void StrokeEngine::stopMotion()
 {
+  ESP_LOGI("StrokeEngine", "Stopping Motion!");
   _active = false;
   _motor->stopMotion();
-  ESP_LOGI("StrokeEngine", "Stopping Motion!");
 }
 
 String StrokeEngine::getPatternName(int index)

@@ -41,7 +41,7 @@ SE_CONTROL_SETTINGS_SOCKET_PATH)*/
 {
     // configure settings service update handler to update state
     addUpdateHandler([&](const String &originId)
-                     { onConfigUpdated(); },
+                     { onConfigUpdated(originId); },
                      false);
 }
 
@@ -58,36 +58,39 @@ void StrokeEngineControlService::begin()
     _state.vibrationFrequency = MOTION_FACTORY_VIBRATION_FREQUENCY;
 }
 
-void StrokeEngineControlService::onConfigUpdated()
+void StrokeEngineControlService::onConfigUpdated(String originId)
 {
     ESP_LOGI("StrokeEngineControlService", "Config updated");
     bool sanitized = false;
 
     // Update stroke parameters and propagate changes to StatefulService
-    float depth = _strokeEngine->setParameter(StrokeParameter::DEPTH, _state.depth, true);
+    float depth = _strokeEngine->setParameter(StrokeParameter::DEPTH, _state.depth);
     if (depth != _state.depth)
     {
         _state.depth = depth;
         sanitized = true;
     }
-    float stroke = _strokeEngine->setParameter(StrokeParameter::STROKE, _state.stroke, true);
+    float stroke = _strokeEngine->setParameter(StrokeParameter::STROKE, _state.stroke);
     if (stroke != _state.stroke)
     {
         _state.stroke = stroke;
         sanitized = true;
     }
-    float rate = _strokeEngine->setParameter(StrokeParameter::RATE, _state.rate, true);
+    float rate = _strokeEngine->setParameter(StrokeParameter::RATE, _state.rate);
     if (rate != _state.rate)
     {
         _state.rate = rate;
         sanitized = true;
     }
-    float sensation = _strokeEngine->setParameter(StrokeParameter::SENSATION, _state.sensation, true);
+    float sensation = _strokeEngine->setParameter(StrokeParameter::SENSATION, _state.sensation);
     if (sensation != _state.sensation)
     {
         _state.sensation = sensation;
         sanitized = true;
     }
+
+    // Apply new values immediately
+    _strokeEngine->applyChangesNow();
 
     // only update pattern, if it has changed
     if (_strokeEngine->getCurrentPatternName() != _state.pattern)
@@ -105,8 +108,8 @@ void StrokeEngineControlService::onConfigUpdated()
         _strokeEngine->stopMotion();
     }
 
-    // propagate sanitized changes to StatefulService if necessary
-    if (sanitized)
+    // propagate sanitized changes to StatefulService if necessary but prevent infinite loop
+    if (sanitized && originId != "onConfigUpdated")
     {
         ESP_LOGI("StrokeEngineControlService", "Sanitized control settings");
         update([&](StrokeEngineControl &state)
