@@ -94,7 +94,8 @@
 		pulley_teeth: false,
 		max_acceleration: false,
 		travel: false,
-		keepout: false
+		keepout: false,
+		sensorless_trigger: false
 	};
 
 	function handleSubmitMotorConfig() {
@@ -151,6 +152,15 @@
 			formErrors.keepout = false;
 		} else {
 			formErrors.keepout = true;
+			valid = false;
+		}
+
+		// Validate if sensorless trigger is a number and within the right range
+		let sensorless_trigger = Number(motorConfig.sensorless_trigger);
+		if (0 <= sensorless_trigger && sensorless_trigger <= 100) {
+			formErrors.sensorless_trigger = false;
+		} else {
+			formErrors.sensorless_trigger = true;
 			valid = false;
 		}
 
@@ -242,7 +252,7 @@
 								bind:checked={motorConfig.invert_direction}
 								class="checkbox checkbox-primary mt-2 sm:-mb-8 sm:mt-0"
 							/>
-							<span class="mt-2 sm:-mb-8 sm:mt-0">Invert Direction?</span>
+							<span class="mt-2 sm:-mb-8 sm:mt-0">Invert Direction</span>
 						</label>
 						<!-- Steps per Revolution -->
 						<div>
@@ -297,7 +307,7 @@
 						<!-- Max RPM -->
 						<div>
 							<label class="label" for="max_rpm">
-								<span class="label-text text-md">Max RPM</span>
+								<span class="label-text text-md">Maximum RPM</span>
 							</label>
 							<span class="input-group">
 								<input
@@ -322,7 +332,7 @@
 						<!-- Max Acceleration -->
 						<div>
 							<label class="label" for="max_acceleration">
-								<span class="label-text text-md">Max Acceleration</span>
+								<span class="label-text text-md">Maximum Acceleration</span>
 							</label>
 							<span class="input-group">
 								<input
@@ -348,7 +358,7 @@
 						<!-- Travel -->
 						<div>
 							<label class="label" for="travel">
-								<span class="label-text text-md">Travel</span>
+								<span class="label-text text-md">Mechanical Travel</span>
 							</label>
 							<span class="input-group">
 								<input
@@ -369,10 +379,25 @@
 								></label
 							>
 						</div>
+						<!-- Measure Travel -->
+						<div class="flex flex-col justify-center sm:pt-5 pt-0">
+							<button
+								class="btn btn-primary inline-flex items-center"
+								on:click={confirmMeasure}
+								type="button"
+								disabled={!(
+									motorConfig.driver === 'IHSV_SERVO_V6' ||
+									motorConfig.driver === 'OSSM_REF_BOARD_V2'
+								)}
+							>
+								<Measure class="mr-2 h-5 w-5" />
+								<span>Measure Travel</span>
+							</button>
+						</div>
 						<!-- Keepout -->
 						<div>
 							<label class="label" for="keepout">
-								<span class="label-text text-md">Keepout</span>
+								<span class="label-text text-md">Keep Away from End Stops</span>
 							</label>
 							<span class="input-group">
 								<input
@@ -394,15 +419,37 @@
 								></label
 							>
 						</div>
+						<!-- Sensorless Trigger -->
+						<div>
+							<label class="label" for="sensorless_trigger">
+								<span class="label-text text-md">Sensorless Trigger</span>
+							</label>
+							<span class="input-group">
+								<input
+									type="number"
+									min="0"
+									max="100"
+									step="1"
+									class="input input-bordered w-full"
+									bind:value={motorConfig.sensorless_trigger}
+									id="sensorless_trigger"
+								/>
+								<span>%</span>
+							</span>
+							<label for="sensorless_trigger" class="label"
+								><span
+									class="label-text-alt text-error {formErrors.sensorless_trigger ? '' : 'hidden'}"
+									>Must be between 0% and 100%</span
+								></label
+							>
+						</div>
 					</div>
 					<div class="divider mb-2 mt-0" />
-					<div class="mx-4 flex flex-wrap justify-end gap-2">
+					<div class="mx-4 flex flex-wrap justify-end gap-2 mb-1">
 						<button class="btn btn-primary inline-flex items-center" on:click={confirmHome}
 							><Home class="mr-2 h-5 w-5" /><span>Home</span></button
 						>
-						<button class="btn btn-primary inline-flex items-center" on:click={confirmMeasure}
-							><Measure class="mr-2 h-5 w-5" /><span>Measure Rail Length</span></button
-						>
+
 						<button class="btn btn-secondary inline-flex items-center" type="submit"
 							><Save class="mr-2 h-5 w-5" /><span>Save Configuration</span></button
 						>
