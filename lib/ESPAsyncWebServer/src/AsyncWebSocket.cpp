@@ -476,6 +476,7 @@ AsyncWebSocketClient::AsyncWebSocketClient(AsyncWebServerRequest *request, Async
                                                         { delete m; })),
       _tempObject(NULL)
 {
+    _runQueues_mutex = xSemaphoreCreateMutex();
     _client = request->client();
     _server = server;
     _clientId = _server->_getNextId();
@@ -555,18 +556,22 @@ void AsyncWebSocketClient::_onPoll()
 
 void AsyncWebSocketClient::_runQueue()
 {
-    while (!_messageQueue.isEmpty() && _messageQueue.front()->finished())
+    if (xSemaphoreTake(_runQueues_mutex, portMAX_DELAY) == pdTRUE)
     {
-        _messageQueue.remove(_messageQueue.front());
-    }
+        while (!_messageQueue.isEmpty() && _messageQueue.front()->finished())
+        {
+            _messageQueue.remove(_messageQueue.front());
+        }
 
-    if (!_controlQueue.isEmpty() && (_messageQueue.isEmpty() || _messageQueue.front()->betweenFrames()) && webSocketSendFrameWindow(_client) > (size_t)(_controlQueue.front()->len() - 1))
-    {
-        _controlQueue.front()->send(_client);
-    }
-    else if (!_messageQueue.isEmpty() && _messageQueue.front()->betweenFrames() && webSocketSendFrameWindow(_client))
-    {
-        _messageQueue.front()->send(_client);
+        if (!_controlQueue.isEmpty() && (_messageQueue.isEmpty() || _messageQueue.front()->betweenFrames()) && webSocketSendFrameWindow(_client) > (size_t)(_controlQueue.front()->len() - 1))
+        {
+            _controlQueue.front()->send(_client);
+        }
+        else if (!_messageQueue.isEmpty() && _messageQueue.front()->betweenFrames() && webSocketSendFrameWindow(_client))
+        {
+            _messageQueue.front()->send(_client);
+        }
+        xSemaphoreGive(_runQueues_mutex);
     }
 }
 

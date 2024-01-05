@@ -211,6 +211,7 @@ private:
 
     LinkedList<AsyncWebSocketControl *> _controlQueue;
     LinkedList<AsyncWebSocketMessage *> _messageQueue;
+    SemaphoreHandle_t _runQueues_mutex = NULL;
 
     uint8_t _pstate;
     AwsFrameInfo _pinfo;

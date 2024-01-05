@@ -183,6 +183,7 @@ AsyncEventSourceClient::AsyncEventSourceClient(AsyncWebServerRequest *request, A
     : _messageQueue(LinkedList<AsyncEventSourceMessage *>([](AsyncEventSourceMessage *m)
                                                           { delete m; }))
 {
+    _messageQueue_mutex = xSemaphoreCreateMutex();
     _client = request->client();
     _server = server;
     _lastId = 0;
@@ -287,15 +288,20 @@ void AsyncEventSourceClient::send(const char *message, const char *event, uint32
 
 void AsyncEventSourceClient::_runQueue()
 {
-    while (!_messageQueue.isEmpty() && _messageQueue.front()->finished())
+    if (xSemaphoreTake(_messageQueue_mutex, portMAX_DELAY) == pdTRUE)
     {
-        _messageQueue.remove(_messageQueue.front());
-    }
+        while (!_messageQueue.isEmpty() && _messageQueue.front()->finished())
+        {
+            _messageQueue.remove(_messageQueue.front());
+        }
 
-    for (auto i = _messageQueue.begin(); i != _messageQueue.end(); ++i)
-    {
-        if (!(*i)->sent())
-            (*i)->send(_client);
+        for (auto i = _messageQueue.begin(); i != _messageQueue.end(); ++i)
+        {
+            if (!(*i)->sent())
+                (*i)->send(_client);
+        }
+
+        xSemaphoreGive(_messageQueue_mutex);
     }
 }
 
