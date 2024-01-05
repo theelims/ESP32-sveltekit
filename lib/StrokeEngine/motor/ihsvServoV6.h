@@ -734,8 +734,20 @@ private:
 
         // set the current position as the travel length. Add one keepout to account for homing on one side.
         travel = getPosition() + _keepout;
-        ESP_LOGI("iHSVServoV6", "Measured rail length: %f", travel);
-        setMachineGeometry(travel, _keepout);
+
+        // round down travel length to full mm
+        float roundedTravel = floor(travel);
+
+        ESP_LOGI("iHSVServoV6", "Measured rail length: %.2f mm, rounded to %.1f mm", travel, roundedTravel);
+
+        // calculate the adjusted keepout and account for the rounding error
+        // Adjust keepout such, that maxPosition is in full 10mm steps
+        float adjustedKeepout = (roundedTravel - floor((roundedTravel - 2 * _keepout) * 0.1f) * 10.0f) / 2.0f;
+
+        ESP_LOGI("OSSMRefBoardV2", "Adjusted keepout: %.2f mm", adjustedKeepout);
+
+        // set the machine geometry to the rounded travel length
+        setMachineGeometry(roundedTravel, adjustedKeepout);
 
         // drive free of end to _maxPosition
         _stepper->moveTo(_maxStep);
