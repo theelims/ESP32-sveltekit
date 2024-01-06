@@ -227,9 +227,9 @@ public:
     // Delete homing task should the homing sequence be running
     if (_taskHomingHandle != NULL)
     {
+      ESP_LOGD("GenericStepper", "Deleted Homing Task: %p", _taskHomingHandle);
       vTaskDelete(_taskHomingHandle);
       _taskHomingHandle = NULL;
-      ESP_LOGD("GenericStepper", "Deleted Homing Task.");
     }
 
     if (_stepper->isRunning())

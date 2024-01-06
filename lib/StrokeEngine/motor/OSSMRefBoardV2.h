@@ -257,17 +257,17 @@ public:
     // Delete homing task should the homing sequence be running
     if (_taskHomingHandle != NULL)
     {
+      ESP_LOGD("OSSMRefBoardV2", "Deleted Homing Task: %p", _taskHomingHandle);
       vTaskDelete(_taskHomingHandle);
       _taskHomingHandle = NULL;
-      ESP_LOGD("OSSMRefBoardV2", "Deleted Homing Task.");
     }
 
     // Delete measuring task should the measuring sequence be running
     if (_taskMeasuringHandle != NULL)
     {
+      ESP_LOGD("OSSMRefBoardV2", "Deleted Measuring Task: %p", _taskMeasuringHandle);
       vTaskDelete(_taskMeasuringHandle);
       _taskMeasuringHandle = NULL;
-      ESP_LOGD("OSSMRefBoardV2", "Deleted Measuring Task.");
     }
 
     if (motionCompleted() == false)

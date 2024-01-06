@@ -36,7 +36,7 @@ float StrokeEngine::setParameter(StrokeParameter parameter, float value)
     switch (parameter)
     {
     case StrokeParameter::RATE:
-      name = "Time of Stroke";
+      name = "ToS";
       // Convert FPM into seconds to complete a full stroke
       // Constrain stroke time between 100ms and 120 seconds
       _timeOfStroke = constrain(60.0 / value, _timeOfStrokeLimit, 120.0);

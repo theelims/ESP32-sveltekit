@@ -135,7 +135,7 @@ public:
         root["max_acceleration"] = settings.maxAcceleration;
         root["pulley_teeth"] = settings.pulleyTeeth;
         root["invert_direction"] = settings.invertDirection;
-        root["measure_travel"] = false; // this is only for POST to start measuring cycle
+        root["measure_travel"] = settings.measureTravel;
         root["home"] = false;
         root["travel"] = settings.travel;
         root["keepout"] = settings.keepout;

@@ -16,6 +16,7 @@
 	import Measure from '~icons/tabler/ruler-measure';
 	import Save from '~icons/tabler/device-floppy';
 	import { goto } from '$app/navigation';
+	import MeasureTravel from './Measure.svelte';
 
 	type MotorConfig = {
 		driver: string;
@@ -199,7 +200,7 @@
 		});
 	}
 
-	function confirmMeasure() {
+	/* 	function confirmMeasure() {
 		openModal(ConfirmDialog, {
 			title: 'Confirm Measure Rail Length',
 			message: 'Are you sure you want to measure the rail length?',
@@ -211,6 +212,17 @@
 				closeModal();
 				motorConfig.measure_travel = true;
 				postMotorConfig();
+			}
+		});
+	} */
+
+	function confirmMeasure() {
+		motorConfig.measure_travel = true;
+		postMotorConfig();
+		openModal(MeasureTravel, {
+			onClose: () => {
+				closeModal();
+				getMotorConfig();
 			}
 		});
 	}

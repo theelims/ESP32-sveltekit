@@ -107,7 +107,11 @@ void MotorConfigurationService::onConfigUpdated(String originId)
 {
     ESP_LOGI("MotorConfigurationService", "Stop StrokeEngine: motor config updated by %s", originId.c_str());
 
-    // Stop motion of StrokeEngine
+    // Ignore if originId is "measurement" to prevent endless loop
+    if (originId == "measurement")
+        return;
+
+    // stop stroke engine
     _strokeEngine->stopMotion();
 
     // wait for motor to stop
@@ -147,16 +151,15 @@ void MotorConfigurationService::onConfigUpdated(String originId)
             // set motor to full speed
             OSSMMotor->measureRailLength([&]()
                                          {
-                                             float newTravel = OSSMMotor->getTravel();
-                                             float newKeepout = OSSMMotor->getKeepout();
-                                             _notificationEvent->pushNotification("Measured travel: " + String(newTravel, 1) + "mm", pushEvent::PUSHSUCCESS, millis());
+                                             _notificationEvent->pushNotification("Measured travel finished", pushEvent::PUSHSUCCESS, millis());
 
                                              // save travel to config
                                              update([&](MotorConfiguration &state)
-                                                    {   state.travel = newTravel;
-                                                        state.keepout = newKeepout;
+                                                    {   state.travel = _motor->getTravel();
+                                                        state.keepout = _motor->getKeepout();
+                                                        state.measureTravel = false;
                                                         return StateUpdateResult::CHANGED; },
-                                                    "persist");
+                                                    "measurement");
                                              // done
                                          },
                                          _state.keepout);
@@ -170,25 +173,25 @@ void MotorConfigurationService::onConfigUpdated(String originId)
             // set motor to full speed
             IHSVMotor->measureRailLength([&]()
                                          {
-                                             float newTravel = IHSVMotor->getTravel();
-                                             float newKeepout = IHSVMotor->getKeepout();
-                                             _notificationEvent->pushNotification("Measured travel: " + String(newTravel, 1) + "mm", pushEvent::PUSHSUCCESS, millis());
+                                             _notificationEvent->pushNotification("Measured travel finished", pushEvent::PUSHSUCCESS, millis());
 
                                              // save travel to config
                                              update([&](MotorConfiguration &state)
-                                                    {   state.travel = newTravel;
-                                                        state.keepout = newKeepout;
+                                                    {   state.travel = _motor->getTravel();
+                                                        state.keepout = _motor->getKeepout();
+                                                        state.measureTravel = false;
                                                         return StateUpdateResult::CHANGED; },
-                                                    "persist");
+                                                    "measurement");
                                              // done
                                          },
                                          _state.keepout);
         }
         else
         {
+            _notificationEvent->pushNotification("Rail measurement not supported by this motor driver", pushEvent::PUSHERROR, millis());
             ESP_LOGW("MotorConfigurationService", "Rail measurement not supported by this motor driver");
+            _state.measureTravel = false;
         }
-        _state.measureTravel = false;
 
         return;
     }

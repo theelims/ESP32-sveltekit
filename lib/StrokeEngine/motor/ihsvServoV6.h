@@ -365,17 +365,17 @@ public:
     // Delete homing task should the homing sequence be running
     if (_taskHomingHandle != NULL)
     {
+      ESP_LOGD("iHSVServoV6", "Deleted Homing Task: %d", _taskHomingHandle);
       vTaskDelete(_taskHomingHandle);
       _taskHomingHandle = NULL;
-      ESP_LOGD("iHSVServoV6", "Deleted Homing Task.");
     }
 
     // Delete measuring task should the measuring sequence be running
     if (_taskMeasuringHandle != NULL)
     {
+      ESP_LOGD("OSSMRefBoardV2", "Deleted Measuring Task: %d", _taskMeasuringHandle);
       vTaskDelete(_taskMeasuringHandle);
       _taskMeasuringHandle = NULL;
-      ESP_LOGD("OSSMRefBoardV2", "Deleted Measuring Task.");
     }
 
     if (motionCompleted() == false)
@@ -628,7 +628,7 @@ private:
   {
     // read actual torque from servo
     int actualTorque = abs(_readServoRegister(IHSVV6_MON_TORQACT, true));
-    ESP_LOGI("iHSVServoV6", "Actual Torque: %d, Threshold : %d", actualTorque, _torqueThreshold);
+    ESP_LOGV("iHSVServoV6", "Actual Torque: %d, Threshold : %d", actualTorque, _torqueThreshold);
     if (actualTorque > _torqueThreshold)
     {
       return true;
