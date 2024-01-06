@@ -12,6 +12,8 @@
 	import Download from '~icons/tabler/download';
 	import Start from '~icons/tabler/player-play';
 	import Stop from '~icons/tabler/player-stop';
+	import Metronome from '~icons/tabler/metronome';
+	import Speed from '~icons/tabler/brand-speedtest';
 	import { decode } from 'cbor-x/decode';
 	import { daisyColor } from '$lib/DaisyUiHelper';
 
@@ -54,6 +56,9 @@
 	let controlSocket: WebSocket;
 	let unresponsiveTimeoutData: number;
 	let timeSync: number = 0;
+
+	let constSpeed: boolean = false;
+	let oldStroke: number = 0;
 
 	function openDataSocket() {
 		dataSocket = new WebSocket('ws://' + $page.url.host + '/ws/rawPosition');
@@ -113,6 +118,7 @@
 
 		controlSocket.onmessage = (event) => {
 			controlState = JSON.parse(event.data);
+			oldStroke = controlState.stroke;
 			// console.log(controlState);
 		};
 
@@ -131,6 +137,15 @@
 		} else {
 			controlState.go = true;
 		}
+		sendControl();
+	}
+
+	function controlSpeed() {
+		if (constSpeed === true) {
+			// adjust speed when stroke changes
+			controlState.rate = (oldStroke / controlState.stroke) * controlState.rate;
+		}
+		oldStroke = controlState.stroke;
 		sendControl();
 	}
 
@@ -280,7 +295,7 @@
 			max={$environment.depth}
 			bind:value={controlState.stroke}
 			on:change={() => {
-				sendControl();
+				controlSpeed();
 			}}
 			class="range range-primary range-xs"
 		/>
@@ -340,6 +355,18 @@
 					<option>{pattern}</option>
 				{/each}
 			</select>
+		</div>
+		<div
+			class="tooltip tooltip-left"
+			data-tip={constSpeed ? 'Keep velocity constant' : 'Keep pace constant'}
+		>
+			<label class="swap swap-flip text-4xl text-primary">
+				<!-- this hidden checkbox controls the state -->
+				<input type="checkbox" bind:checked={constSpeed} />
+
+				<div class="swap-on"><Speed /></div>
+				<div class="swap-off"><Metronome /></div>
+			</label>
 		</div>
 	</div>
 </div>
