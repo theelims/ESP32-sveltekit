@@ -285,7 +285,7 @@
 		/>
 		<label class="label mt-0 pt-0">
 			<span class="label-text"><b>Depth</b></span>
-			<span class="label-text-alt">{controlState.depth} mm</span>
+			<span class="label-text-alt">{Math.round(controlState.depth)} mm</span>
 		</label>
 	</div>
 	<div class="mt-4 mx-4">
@@ -301,7 +301,7 @@
 		/>
 		<label class="label mt-0 pt-0">
 			<span class="label-text"><b>Stroke</b></span>
-			<span class="label-text-alt">{controlState.stroke} mm</span>
+			<span class="label-text-alt">{Math.round(controlState.stroke)} mm</span>
 		</label>
 	</div>
 	<div class="mt-4 mx-4">
@@ -317,7 +317,7 @@
 		/>
 		<label class="label mt-0 pt-0">
 			<span class="label-text"><b>Speed</b></span>
-			<span class="label-text-alt">{controlState.rate} FPM</span>
+			<span class="label-text-alt">{Math.round(controlState.rate * 1e1) / 1e1} FPM</span>
 		</label>
 	</div>
 	<div class="mt-4 mx-4">
@@ -333,7 +333,7 @@
 		/>
 		<label class="label mt-0 pt-0">
 			<span class="label-text"><b>Sensation</b></span>
-			<span class="label-text-alt">{controlState.sensation}</span>
+			<span class="label-text-alt">{Math.round(controlState.sensation)}</span>
 		</label>
 	</div>
 
