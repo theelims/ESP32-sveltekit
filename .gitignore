@@ -3,7 +3,6 @@
 .gcc-flags.json
 *Thumbs.db
 /data/www
-/lib/framework/WWWData.h
 /interface/build
 /interface/node_modules
 /interface/.eslintcache
