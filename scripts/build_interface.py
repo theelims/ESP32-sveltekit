@@ -20,11 +20,12 @@ import os
 import gzip
 import mimetypes
 import glob
+from datetime import datetime
 
 Import("env")
 
-#print("Current CLI targets", COMMAND_LINE_TARGETS)
-#print("Current Build targets", BUILD_TARGETS)
+# print("Current CLI targets", COMMAND_LINE_TARGETS)
+# print("Current Build targets", BUILD_TARGETS)
 
 OUTPUTFILE: Final[str] = env["PROJECT_DIR"] + "/lib/framework/WWWData.h"
 SOURCEWWWDIR: Final[str] = env["PROJECT_DIR"] + "/interface/src"
@@ -34,31 +35,31 @@ def OutputFileExits():
 
 def findLastestTimeStampWWWInterface():
   list_of_files = glob.glob(SOURCEWWWDIR+'/**/*', recursive=True) 
-  #print(list_of_files)
-  latest_file = max(list_of_files, key=os.path.getctime)
-  #print(latest_file)
-  return os.path.getctime(latest_file)
+  # print(list_of_files)
+  latest_file = max(list_of_files, key=os.path.getmtime)
+  print(latest_file)
+
+  return os.path.getmtime(latest_file)
 
 def timestampOutputFile():
-     return os.path.getctime(OUTPUTFILE)
+     return os.path.getmtime(OUTPUTFILE)
 
 def needtoRegenerateOutputFile():
     if not flagExists("PROGMEM_WWW"):
         return True
     else:
         if (OutputFileExits()):
-            if not flagExists("SKIP_BUILDING_PROGMEM_WWW"): 
-                #x=findLastestTimeStampWWWInterface()
-                #print(f'My value is: {x:.2f}')
-                sourceEdited=( timestampOutputFile()<findLastestTimeStampWWWInterface() )
-                if (sourceEdited):
-                    print("Svelte source files are updated. Need to regenerate.")
-                    return True
-                else:
-                    print("Current outputfile is O.K. No need to regenerate.")
-                    return False
+            x = findLastestTimeStampWWWInterface()
+            y = timestampOutputFile()
+            # print timestamp of newest file in interface directory and timestamp of outputfile nicely formatted as time
+            print(f'Newest interface file: {datetime.fromtimestamp(x):%Y-%m-%d %H:%M:%S}, WWW Outputfile: {datetime.fromtimestamp(y):%Y-%m-%d %H:%M:%S}')
+            # print(f'Newest interface file: {x:.2f}, WWW Outputfile: {y:.2f}')
+            sourceEdited=( timestampOutputFile() < findLastestTimeStampWWWInterface() )
+            if (sourceEdited):
+                print("Svelte source files are updated. Need to regenerate.")
+                return True
             else:
-                print("Compiledef indicates skipping building PROGMEM")
+                print("Current outputfile is O.K. No need to regenerate.")
                 return False
 
         else:
@@ -189,13 +190,16 @@ print("running: build_interface.py")
 # Dump project construction environment (for debug purpose)
 #print(projenv.Dump())
 
-if (needtoRegenerateOutputFile()):
-    buildWeb()
+# if (needtoRegenerateOutputFile()):
+#     buildWeb()
 
 #env.AddPreAction("${BUILD_DIR}/src/HTTPServer.o", buildWebInterface)
 
-#if ("upload" in BUILD_TARGETS):
-#    print(BUILD_TARGETS)
-#    #buildWeb()
-#else:
-#    print("Skipping build interface step for target(s): " + ", ".join(BUILD_TARGETS))
+if ("upload" in BUILD_TARGETS):
+    print(BUILD_TARGETS)
+    if (needtoRegenerateOutputFile()):
+        buildWeb()
+else:
+    print("Skipping build interface step for target(s): " + ", ".join(BUILD_TARGETS))
+
+# Newest interface file: 1696761571.22, WWW Outputfile: 1686856081.44

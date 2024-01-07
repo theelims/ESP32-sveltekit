@@ -288,20 +288,19 @@ You may use SettingValue::format in your own code if you require the use of thes
 
 The framework supplies access to various features via getter functions:
 
-| SettingsService              | Description                                            |
-| ---------------------------- | ------------------------------------------------------ |
-| getFS()                      | The filesystem used by the framework                   |
-| getSecurityManager()         | The security manager - detailed above                  |
-| getSecuritySettingsService() | Configures the users and other security settings       |
-| getWiFiSettingsService()     | Configures and manages the WiFi network connection     |
-| getAPSettingsService()       | Configures and manages the Access Point                |
-| getNTPSettingsService()      | Configures and manages the network time                |
-| getOTASettingsService()      | Configures and manages the Over-The-Air update feature |
-| getMqttSettingsService()     | Configures and manages the MQTT connection             |
-| getMqttClient()              | Provides direct access to the MQTT client instance     |
-| getNotificationEvents()      | Lets you send push notifications to all clients        |
-| getSleepService()            | Send the ESP32 into deep sleep                         |
-| getBatteryService()          | Update battery information on the client               |
+| SettingsService              | Description                                        |
+| ---------------------------- | -------------------------------------------------- |
+| getFS()                      | The filesystem used by the framework               |
+| getSecurityManager()         | The security manager - detailed above              |
+| getSecuritySettingsService() | Configures the users and other security settings   |
+| getWiFiSettingsService()     | Configures and manages the WiFi network connection |
+| getAPSettingsService()       | Configures and manages the Access Point            |
+| getNTPSettingsService()      | Configures and manages the network time            |
+| getMqttSettingsService()     | Configures and manages the MQTT connection         |
+| getMqttClient()              | Provides direct access to the MQTT client instance |
+| getNotificationEvents()      | Lets you send push notifications to all clients    |
+| getSleepService()            | Send the ESP32 into deep sleep                     |
+| getBatteryService()          | Update battery information on the client           |
 
 The core features use the [StatefulService.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/StatefulService.h) class and can therefore you can change settings or observe changes to settings through the read/update API.
 
@@ -427,19 +426,7 @@ esp32sveltekit.getFeatureService()->addFeature("custom_feature", true); // or fa
 
 ## OTA Firmware Updates
 
-ESP32-SvelteKit offers three different ways to roll out firmware updates to field devices. Except for ArduinoOTA all other OTA possibilities cannot update the file system. If the frontend should be updated as well it is necessary to serve it from PROGMEM by activating `-D PROGMEM_WWW`.
-
-### ArduinoOTA
-
-Using the ArduinoOTA firmware update service can be enabled by setting `FT_OTA=1` in [features.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/features.ini). It creates an update server and advertises it's service through mDNS. This can then be used by the Arduino IDE or Platform.io to flash new firmware directly from the IDE.
-The defaults are defined in [factory_settings.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini), but can be changed at any time through the frontend.
-
-```ini
-  ; OTA settings
-  -D FACTORY_OTA_PORT=8266
-  -D FACTORY_OTA_PASSWORD=\"esp-sveltekit\"
-  -D FACTORY_OTA_ENABLED=true
-```
+ESP32-SvelteKit offers two different ways to roll out firmware updates to field devices. If the frontend should be updated as well it is necessary to serve it from PROGMEM by activating `-D PROGMEM_WWW`.
 
 ### Firmware Upload
 
@@ -450,7 +437,7 @@ Enabling `FT_UPLOAD_FIRMWARE=1` in [features.ini](https://github.com/theelims/ES
 By enabling `FT_DOWNLOAD_FIRMWARE=1` in [features.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/features.ini) one can POST a link to a firmware binary which is downloaded for the OTA process. This feature requires SSL and is thus dependent on `FT_NTP=1`. The Frontend contains an implementation which uses GitHub's Releases section as teh update server. By specifying a firmware version in [factory_settings.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini) one can make use of semantic versioning to determine the correct firmware:
 
 ```ini
-  -D FIRMWARE_VERSION=\"0.2.0\"
+  -D APP_VERSION=\"0.2.0\"
 ```
 
 Attaching the firmware binary from `.pio/build/{env}/firmware.bin` to the right version tag on GitHub allows anyone to easily upgrade to the latest version.

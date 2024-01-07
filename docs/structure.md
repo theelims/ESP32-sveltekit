@@ -95,7 +95,7 @@ On the root level there are two more files which you can customize to your needs
 
 If the feature `FT_DOWNLOAD_FIRMWARE` is enabled, ESP32 SvelteKit pulls the Github Release section through the Github API for firmware updates (stable only) once per hour. Also the firmware update menu shows all available firmware releases allowing the user to up- and downgrade has he pleases. If you're using the Github releases section you must first tell the frontend your correct path to your github repository as described [here](sveltekit.md#changing-the-app-name).
 
-Also you must make use of the '-D FIRMWARE_VERSION=' flag in [factory_settings.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini) and give it the same semantic version number as the release tag on Github. On Github create a new release with the matching tag name. Attach the firmware binary file found under `.pio/build/{env}/firmware.bin`. The frontend searches for the first attachment found and uses this as the update link. If you upload further attachments the binary must be the first element, otherwise the update will fail.
+Also you must make use of the '-D APP_VERSION=' flag in [factory_settings.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini) and give it the same semantic version number as the release tag on Github. On Github create a new release with the matching tag name. Attach the firmware binary file found under `.pio/build/{env}/firmware.bin`. The frontend searches for the first attachment found and uses this as the update link. If you upload further attachments the binary must be the first element, otherwise the update will fail.
 
 ### Custom Update Server
 

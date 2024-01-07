@@ -76,7 +76,7 @@
 	{:then githubReleases}
 		<div class="relative w-full overflow-visible">
 			<div class="overflow-x-auto" transition:slide|local={{ duration: 300, easing: cubicOut }}>
-				<table class="table table w-full table-auto">
+				<table class="table w-full table-auto">
 					<thead>
 						<tr class="font-bold">
 							<th align="left">Release</th>

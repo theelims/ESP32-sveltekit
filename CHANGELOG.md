@@ -2,14 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
-
 ## WIP
 
 ### Added
 
+- Added postscript to platform.io build process to copy, rename and calculate MD5 checksum of \*.bin file. These files are ready for uploading to the Github Release page.
+
 ### Changed
 
-- Better route protection for user page with deep link
+- Better route protection for user page with deep link.
+- Changed build_interface.py script to check for modified files in the interface sources before re-building the interface. Saves some time on the compilation process.
+
+### Removed
+
+- Removed support for Arduino ESP OTA
 
 ## [0.2.2] - 2023-10-08
 

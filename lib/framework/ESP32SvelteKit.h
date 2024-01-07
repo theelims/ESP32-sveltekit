@@ -33,7 +33,6 @@
 #include <NotificationEvents.h>
 #include <NTPSettingsService.h>
 #include <NTPStatus.h>
-#include <OTASettingsService.h>
 #include <UploadFirmwareService.h>
 #include <RestartService.h>
 #include <SecuritySettingsService.h>
@@ -52,8 +51,8 @@
 #define CORS_ORIGIN "*"
 #endif
 
-#ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "demo"
+#ifndef APP_VERSION
+#define APP_VERSION "demo"
 #endif
 
 #ifndef ESP32SVELTEKIT_RUNNING_CORE
@@ -108,13 +107,6 @@ public:
     StatefulService<NTPSettings> *getNTPSettingsService()
     {
         return &_ntpSettingsService;
-    }
-#endif
-
-#if FT_ENABLED(FT_OTA)
-    StatefulService<OTASettings> *getOTASettingsService()
-    {
-        return &_otaSettingsService;
     }
 #endif
 
@@ -177,9 +169,6 @@ private:
 #if FT_ENABLED(FT_NTP)
     NTPSettingsService _ntpSettingsService;
     NTPStatus _ntpStatus;
-#endif
-#if FT_ENABLED(FT_OTA)
-    OTASettingsService _otaSettingsService;
 #endif
 #if FT_ENABLED(FT_UPLOAD_FIRMWARE)
     UploadFirmwareService _uploadFirmwareService;

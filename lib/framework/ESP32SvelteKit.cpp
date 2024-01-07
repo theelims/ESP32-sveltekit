@@ -26,9 +26,6 @@ ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server)
                                                          _ntpSettingsService(server, &ESPFS, &_securitySettingsService),
                                                          _ntpStatus(server, &_securitySettingsService),
 #endif
-#if FT_ENABLED(FT_OTA)
-                                                         _otaSettingsService(server, &ESPFS, &_securitySettingsService),
-#endif
 #if FT_ENABLED(FT_UPLOAD_FIRMWARE)
                                                          _uploadFirmwareService(server, &_securitySettingsService),
 #endif
@@ -123,9 +120,9 @@ void ESP32SvelteKit::begin()
     MDNS.setInstanceName(_appName);
     MDNS.addService("http", "tcp", 80);
     MDNS.addService("ws", "tcp", 80);
-    MDNS.addServiceTxt("http", "tcp", "Firmware Version", FIRMWARE_VERSION);
+    MDNS.addServiceTxt("http", "tcp", "Firmware Version", APP_VERSION);
 
-    Serial.printf("Running Firmware Version: %s\n", FIRMWARE_VERSION);
+    Serial.printf("Running Firmware Version: %s\n", APP_VERSION);
 
     _apSettingsService.begin();
 #if FT_ENABLED(FT_NTP)
@@ -136,9 +133,6 @@ void ESP32SvelteKit::begin()
 #endif
 #if FT_ENABLED(FT_SECURITY)
     _securitySettingsService.begin();
-#endif
-#if FT_ENABLED(FT_OTA)
-    _otaSettingsService.begin();
 #endif
 #if FT_ENABLED(FT_ANALYTICS)
     _analyticsService.begin();

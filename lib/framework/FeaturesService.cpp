@@ -38,11 +38,6 @@ void FeaturesService::features(AsyncWebServerRequest *request)
 #else
     root["ntp"] = false;
 #endif
-#if FT_ENABLED(FT_OTA)
-    root["ota"] = true;
-#else
-    root["ota"] = false;
-#endif
 #if FT_ENABLED(FT_UPLOAD_FIRMWARE)
     root["upload_firmware"] = true;
 #else
@@ -68,7 +63,7 @@ void FeaturesService::features(AsyncWebServerRequest *request)
 #else
     root["analytics"] = false;
 #endif
-    root["firmware_version"] = FIRMWARE_VERSION;
+    root["firmware_version"] = APP_VERSION;
 
     // Iterate over user features
     for (auto &element : userFeatures)

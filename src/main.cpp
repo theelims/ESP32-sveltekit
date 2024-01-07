@@ -35,7 +35,7 @@ void setup()
     Serial.begin(SERIAL_BAUD_RATE);
 
     // start the framework and demo project
-    esp32sveltekit.setMDNSAppName("ESP32 SvelteKit Demo App");
+    esp32sveltekit.setMDNSAppName(APP_NAME);
     esp32sveltekit.begin();
 
     // load the initial light settings

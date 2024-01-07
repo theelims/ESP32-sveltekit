@@ -32,7 +32,6 @@ Customize the settings as you see fit. A value of 0 will disable the specified f
   -D FT_SECURITY=1
   -D FT_MQTT=1
   -D FT_NTP=1
-  -D FT_OTA=1
   -D FT_UPLOAD_FIRMWARE=1
   -D FT_DOWNLOAD_FIRMWARE=1
   -D FT_SLEEP=1
@@ -44,7 +43,6 @@ Customize the settings as you see fit. A value of 0 will disable the specified f
 | FT_SECURITY          | Controls whether the [security features](statefulservice.md#security-features) are enabled. Disabling this means you won't need to authenticate to access the device and all authentication predicates will be bypassed. |
 | FT_MQTT              | Controls whether the MQTT features are enabled. Disable this if your project does not require MQTT support.                                                                                                              |
 | FT_NTP               | Controls whether network time protocol synchronization features are enabled. Disable this if your project does not require accurate time.                                                                                |
-| FT_OTA               | Controls whether ArduinoOTA update support is enabled. Disable this if you won't be using the remote update feature.                                                                                                     |
 | FT_UPLOAD_FIRMWARE   | Controls whether the manual upload firmware feature is enabled. Disable this if you won't be manually uploading firmware.                                                                                                |
 | FT_DOWNLOAD_FIRMWARE | Controls whether the firmware download feature is enabled. Disable this if you won't firmware pulled from a server.                                                                                                      |
 | FT_SLEEP             | Controls whether the deep sleep feature is enabled. Disable this if your device is not battery operated or you don't need to place it in deep sleep to save energy.                                                      |
