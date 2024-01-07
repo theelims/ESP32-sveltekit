@@ -371,10 +371,10 @@ will force a start of the AP regardless of the AP settings. It will not change t
 It is possibly to send push notifications to all clients by using Server Side Events. These will be displayed as toasts an the client side. Either directly call
 
 ```cpp
-esp32sveltekit.getNotificationEvents()->pushNotification("Pushed a message!", INFO, millis());
+esp32sveltekit.getNotificationEvents()->pushNotification("Pushed a message!", PUSHINFO, millis());
 ```
 
-or keep a local pointer to the `NotificationEvents` instance. It is possible to send `INFO`, `WARNING`, `ERROR` and `SUCCESS` events to all clients. The HTTP endpoint for this service is at `/events/notifications`.
+or keep a local pointer to the `NotificationEvents` instance. It is possible to send `PUSHINFO`, `PUSHWARNING`, `PUSHERROR` and `PUSHSUCCESS` events to all clients. The HTTP endpoint for this service is at `/events/notifications`.
 
 In addition the raw `send()` function is mapped out as well:
 
