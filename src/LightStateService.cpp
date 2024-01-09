@@ -14,7 +14,7 @@
 
 #include <LightStateService.h>
 
-LightStateService::LightStateService(AsyncWebServer *server,
+LightStateService::LightStateService(PsychicHttpServer *server,
                                      SecurityManager *securityManager,
                                      AsyncMqttClient *mqttClient,
                                      LightMqttSettingsService *lightMqttSettingsService) : _httpEndpoint(LightState::read,

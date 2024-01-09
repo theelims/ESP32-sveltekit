@@ -81,7 +81,7 @@ public:
 class LightStateService : public StatefulService<LightState>
 {
 public:
-    LightStateService(AsyncWebServer *server,
+    LightStateService(PsychicHttpServer *server,
                       SecurityManager *securityManager,
                       AsyncMqttClient *mqttClient,
                       LightMqttSettingsService *lightMqttSettingsService);

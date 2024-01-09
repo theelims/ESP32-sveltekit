@@ -14,71 +14,87 @@
 
 #include <ESP32SvelteKit.h>
 
-ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server),
-                                                         _securitySettingsService(server, &ESPFS),
-                                                         _wifiSettingsService(server, &ESPFS, &_securitySettingsService, &_notificationEvents),
-                                                         _wifiScanner(server, &_securitySettingsService),
-                                                         _wifiStatus(server, &_securitySettingsService),
-                                                         _apSettingsService(server, &ESPFS, &_securitySettingsService),
-                                                         _apStatus(server, &_securitySettingsService, &_apSettingsService),
-                                                         _notificationEvents(server),
+ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server) : _featureService(server),
+                                                            _securitySettingsService(server, &ESPFS),
+                                                            _wifiSettingsService(server, &ESPFS, &_securitySettingsService, &_notificationEvents),
+                                                            _wifiScanner(server, &_securitySettingsService),
+                                                            _wifiStatus(server, &_securitySettingsService),
+                                                            _apSettingsService(server, &ESPFS, &_securitySettingsService),
+                                                            _apStatus(server, &_securitySettingsService, &_apSettingsService),
+                                                            _notificationEvents(server),
 #if FT_ENABLED(FT_NTP)
-                                                         _ntpSettingsService(server, &ESPFS, &_securitySettingsService),
-                                                         _ntpStatus(server, &_securitySettingsService),
+                                                            _ntpSettingsService(server, &ESPFS, &_securitySettingsService),
+                                                            _ntpStatus(server, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_UPLOAD_FIRMWARE)
-                                                         _uploadFirmwareService(server, &_securitySettingsService),
+                                                            _uploadFirmwareService(server, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_DOWNLOAD_FIRMWARE)
-                                                         _downloadFirmwareService(server, &_securitySettingsService, &_notificationEvents),
+                                                            _downloadFirmwareService(server, &_securitySettingsService, &_notificationEvents),
 #endif
 #if FT_ENABLED(FT_MQTT)
-                                                         _mqttSettingsService(server, &ESPFS, &_securitySettingsService),
-                                                         _mqttStatus(server, &_mqttSettingsService, &_securitySettingsService),
+                                                            _mqttSettingsService(server, &ESPFS, &_securitySettingsService),
+                                                            _mqttStatus(server, &_mqttSettingsService, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_SECURITY)
-                                                         _authenticationService(server, &_securitySettingsService),
+                                                            _authenticationService(server, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_SLEEP)
-                                                         _sleepService(server, &_securitySettingsService),
+                                                            _sleepService(server, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_BATTERY)
-                                                         _batteryService(&_notificationEvents),
+                                                            _batteryService(&_notificationEvents),
 #endif
 #if FT_ENABLED(FT_ANALYTICS)
-                                                         _analyticsService(&_notificationEvents),
+                                                            _analyticsService(&_notificationEvents),
 #endif
-                                                         _restartService(server, &_securitySettingsService),
-                                                         _factoryResetService(server, &ESPFS, &_securitySettingsService),
-                                                         _systemStatus(server, &_securitySettingsService)
+                                                            _restartService(server, &_securitySettingsService),
+                                                            _factoryResetService(server, &ESPFS, &_securitySettingsService),
+                                                            _systemStatus(server, &_securitySettingsService)
 {
     _server = server;
 
-#ifdef PROGMEM_WWW
+#ifdef PROGMEM_WWW2
     // Serve static resources from PROGMEM
     WWWData::registerRoutes(
         [server, this](const String &uri, const String &contentType, const uint8_t *content, size_t len)
         {
-            ArRequestHandlerFunction requestHandler = [contentType, content, len](AsyncWebServerRequest *request)
+            PsychicHttpRequestCallback requestHandler = [contentType, content, len](PsychicRequest *request)
             {
-                AsyncWebServerResponse *response = request->beginResponse_P(200, contentType, content, len);
+                PsychicResponse response(request);
+                response->setCode(200);
+                response.setContentType(contentType.c_str());
                 response->addHeader("Content-Encoding", "gzip");
-                request->send(response);
+                response.addHeader("Cache-Control", "public, immutable, max-age=31536000");
+                response.setContent(content, len);
+                return response.send();
             };
+            PsychicWebHandler *handler = new PsychicWebHandler();
+            handler->onRequest(requestHandler);
+            server.on(uri.c_str(), HTTP_GET, handler);
+
+            // Set default end-point for all non matching requests
+            // this is easier than using webServer.onNotFound()
+            // if (uri.equals("/index.html"))
+            // {
+            //     // if (strcmp(uri, "/index.html") == 0) {
+            //     webServer.defaultEndpoint->setHandler(handler);
+            // }
+
             server->on(uri.c_str(), HTTP_GET, requestHandler);
             // Serving non matching get requests with "/index.html"
             // OPTIONS get a straight up 200 response
             if (uri.equals("/index.html"))
             {
-                server->onNotFound([requestHandler](AsyncWebServerRequest *request)
+                server->onNotFound([requestHandler](PsychicRequest *request)
                                    {
                     if (request->method() == HTTP_GET) {
                         requestHandler(request);
                     } else if (request->method() == HTTP_OPTIONS) {
                         // CORS Pre-flight
-                        request->send(200);
+                        request->reply(200);
                     } else {
-                        request->send(404);
+                        request->reply(404);
                     } });
             }
         });
@@ -88,14 +104,17 @@ ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _featureService(server)
     server->serveStatic("/favicon.png", ESPFS, "/www/favicon.png");
     //  Serving all other get requests with "/www/index.htm"
     //  OPTIONS get a straight up 200 response
-    server->onNotFound([](AsyncWebServerRequest *request)
+    server->onNotFound([](PsychicRequest *request)
                        {
         if (request->method() == HTTP_GET) {
-            request->send(ESPFS, "/www/index.html");
+            PsychicFileResponse response(request, ESPFS, "/www/index.html", "text/html");
+            return response.send();
+            // String url = "http://" + request->host() + "/index.html";
+            // request->redirect(url.c_str());
         } else if (request->method() == HTTP_OPTIONS) {
-            request->send(200);
+            request->reply(200);
         } else {
-            request->send(404);
+            request->reply(404);
         } });
 #endif
 #ifdef SERVE_CONFIG_FILES

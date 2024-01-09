@@ -18,7 +18,7 @@
 
 #define SERIAL_BAUD_RATE 115200
 
-AsyncWebServer server(80);
+PsychicHttpServer server;
 ESP32SvelteKit esp32sveltekit(&server);
 
 LightMqttSettingsService lightMqttSettingsService =
@@ -45,7 +45,10 @@ void setup()
     lightMqttSettingsService.begin();
 
     // start the server
-    server.begin();
+    // SvelteKit uses a lot of handlers, so we need to increase the max_uri_handlers
+    // WWWData has 77 Endpoints, Framework has 27, and Lighstate Demo has 4
+    server.config.max_uri_handlers = 110;
+    server.listen(80);
 }
 
 void loop()

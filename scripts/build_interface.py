@@ -24,6 +24,9 @@ from datetime import datetime
 
 Import("env")
 
+# print("Current build environment:")
+# print(env.ParseFlags(env["BUILD_FLAGS"]).get("CPPDEFINES"))
+
 # print("Current CLI targets", COMMAND_LINE_TARGETS)
 # print("Current Build targets", BUILD_TARGETS)
 
@@ -37,11 +40,11 @@ def findLastestTimeStampWWWInterface():
   list_of_files = glob.glob(SOURCEWWWDIR+'/**/*', recursive=True) 
   # print(list_of_files)
   latest_file = max(list_of_files, key=os.path.getmtime)
-  print(latest_file)
+  # print(latest_file)
 
   return os.path.getmtime(latest_file)
 
-def timestampOutputFile():
+def findTimestampOutputFile():
      return os.path.getmtime(OUTPUTFILE)
 
 def needtoRegenerateOutputFile():
@@ -49,12 +52,14 @@ def needtoRegenerateOutputFile():
         return True
     else:
         if (OutputFileExits()):
-            x = findLastestTimeStampWWWInterface()
-            y = timestampOutputFile()
+            latestWWWInterface = findLastestTimeStampWWWInterface()
+            timestampOutputFile = findTimestampOutputFile()
+
             # print timestamp of newest file in interface directory and timestamp of outputfile nicely formatted as time
-            print(f'Newest interface file: {datetime.fromtimestamp(x):%Y-%m-%d %H:%M:%S}, WWW Outputfile: {datetime.fromtimestamp(y):%Y-%m-%d %H:%M:%S}')
-            # print(f'Newest interface file: {x:.2f}, WWW Outputfile: {y:.2f}')
-            sourceEdited=( timestampOutputFile() < findLastestTimeStampWWWInterface() )
+            print(f'Newest interface file: {datetime.fromtimestamp(latestWWWInterface):%Y-%m-%d %H:%M:%S}, WWW Outputfile: {datetime.fromtimestamp(timestampOutputFile):%Y-%m-%d %H:%M:%S}')
+            # print(f'Newest interface file: {latestWWWInterface:.2f}, WWW Outputfile: {timestampOutputFile:.2f}')
+            
+            sourceEdited=( timestampOutputFile < latestWWWInterface )
             if (sourceEdited):
                 print("Svelte source files are updated. Need to regenerate.")
                 return True
@@ -190,16 +195,16 @@ print("running: build_interface.py")
 # Dump project construction environment (for debug purpose)
 #print(projenv.Dump())
 
-# if (needtoRegenerateOutputFile()):
-#     buildWeb()
+if (needtoRegenerateOutputFile()):
+     buildWeb()
 
 #env.AddPreAction("${BUILD_DIR}/src/HTTPServer.o", buildWebInterface)
 
-if ("upload" in BUILD_TARGETS):
-    print(BUILD_TARGETS)
-    if (needtoRegenerateOutputFile()):
-        buildWeb()
-else:
-    print("Skipping build interface step for target(s): " + ", ".join(BUILD_TARGETS))
+# if ("upload" in BUILD_TARGETS):
+#     print(BUILD_TARGETS)
+#     if (needtoRegenerateOutputFile()):
+#         buildWeb()
+# else:
+#     print("Skipping build interface step for target(s): " + ", ".join(BUILD_TARGETS))
 
-# Newest interface file: 1696761571.22, WWW Outputfile: 1686856081.44
+

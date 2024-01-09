@@ -17,7 +17,7 @@
 
 #include <Arduino.h>
 
-#include <AsyncTCP.h>
+// #include <AsyncTCP.h>
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include <AnalyticsService.h>
@@ -42,6 +42,7 @@
 #include <WiFiSettingsService.h>
 #include <WiFiStatus.h>
 #include <ESPFS.h>
+#include <PsychicHttp.h>
 
 #ifdef PROGMEM_WWW
 #include <WWWData.h>
@@ -62,7 +63,7 @@
 class ESP32SvelteKit
 {
 public:
-    ESP32SvelteKit(AsyncWebServer *server);
+    ESP32SvelteKit(PsychicHttpServer *server);
 
     void begin();
 
@@ -71,7 +72,7 @@ public:
         return &ESPFS;
     }
 
-    AsyncWebServer *getServer()
+    PsychicHttpServer *getServer()
     {
         return _server;
     }
@@ -157,7 +158,7 @@ public:
     }
 
 private:
-    AsyncWebServer *_server;
+    PsychicHttpServer *_server;
     FeaturesService _featureService;
     SecuritySettingsService _securitySettingsService;
     WiFiSettingsService _wifiSettingsService;
