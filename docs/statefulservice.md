@@ -160,7 +160,7 @@ The code below demonstrates how to extend the LightStateService class to provide
 class LightStateService : public StatefulService<LightState> {
  public:
   LightStateService(PsychicHttpServer* server, SecurityManager *securityManager) :
-      _httpEndpoint(LightState::read, LightState::update, this, server, "/rest/lightState", securityManager,                             AuthenticationPredicates::IS_AUTHENTICATED) {
+      _httpEndpoint(LightState::read, LightState::update, this, server, "/rest/lightState", securityManager,AuthenticationPredicates::IS_AUTHENTICATED) {
   }
 
  private:
@@ -200,7 +200,7 @@ The code below demonstrates how to extend the LightStateService class to provide
 class LightStateService : public StatefulService<LightState> {
  public:
   LightStateService(PsychicHttpServer* server, SecurityManager *securityManager) :
-      _webSocket(LightState::read, LightState::update, this, server, "/ws/lightState", securityManager,                             AuthenticationPredicates::IS_AUTHENTICATED), {
+      _webSocket(LightState::read, LightState::update, this, server, "/ws/lightState", securityManager, AuthenticationPredicates::IS_AUTHENTICATED), {
   }
 
  private:

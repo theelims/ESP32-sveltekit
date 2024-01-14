@@ -23,7 +23,7 @@ All notable changes to this project will be documented in this file.
 - Removed support for Arduino ESP OTA.
 - HttpEndpoints and Websocket Server without a securityManager are no longer possible.
 
-### Migrate from ESPAsnyWebServer
+### Migrate from ESPAsyncWebServer
 
 #### Migrate `main.cpp`
 
@@ -38,13 +38,25 @@ Remove `server.begin();` in `void setup()`. This is handled by ESP32SvelteKit no
 
 #### Migrate `platformio.ini`
 
-Remove `-D CONFIG_ASYNC_TCP_RUNNING_CORE=0`, `-D NO_GLOBAL_ARDUINOOTA` and `esphome/AsyncTCP-esphome @ ^2.0.0`. Add `https://github.com/hoeken/PsychicHttp.git` as lib dependency.
+Remove the following `build_flags`:
+
+```ini
+    ; Increase queue size of SSE and WS
+    -D SSE_MAX_QUEUED_MESSAGES=64
+    -D WS_MAX_QUEUED_MESSAGES=64
+    -D CONFIG_ASYNC_TCP_RUNNING_CORE=0
+    -D NO_GLOBAL_ARDUINOOTA
+```
+
+Change `-D CORE_DEBUG_LEVEL=2` to no higher than 2.
+
+Remove the lib dependency `esphome/AsyncTCP-esphome @ ^2.0.0` and add `https://github.com/hoeken/PsychicHttp.git` instead.
 
 #### Custom Stateful Services
 
 Adapt the class constructor (`(PsychicHttpServer *server, ...`) to PsychicHttpServer.
 
-Due to the loading sequence HttpEndoint and WebsocketServer both have become a `begin()` function to register their http endpoints with the server. This must be called in your stateful services own `begin()` function:
+Due to the loading sequence HttpEndoint and WebsocketServer both have become a `begin()` function to register their http endpoints with the server. This must be called in your stateful services' own `begin()` function:
 
 ```
 void LightStateService::begin()
