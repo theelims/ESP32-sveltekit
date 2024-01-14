@@ -27,5 +27,6 @@ LightMqttSettingsService::LightMqttSettingsService(PsychicHttpServer *server, FS
 
 void LightMqttSettingsService::begin()
 {
+    _httpEndpoint.begin();
     _fsPersistence.readFromFS();
 }

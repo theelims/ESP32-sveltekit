@@ -1,19 +1,21 @@
 # Developing with the Framework
 
-The back end is a set of REST endpoints hosted by a [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) instance. The ['lib/framework'](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework) directory contains the majority of the back end code. The framework contains a number of useful utility classes which you can use when extending it. The project also comes with a demo project to give you some help getting started.
+The back end is a set of REST endpoints hosted by a [PsychicHttp](https://github.com/hoeken/PsychicHttp) instance. The ['lib/framework'](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework) directory contains the majority of the back end code. The framework contains a number of useful utility classes which you can use when extending it. The project also comes with a demo project to give you some help getting started.
 
 The framework's source is split up by feature, for example [WiFiScanner.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/WiFiScanner.h) implements the end points for scanning for available networks where as [WiFiSettingsService.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/WiFiSettingsService.h) handles configuring the WiFi settings and managing the WiFi connection.
 
 ## Initializing the framework
 
-The ['src/main.cpp'](https://github.com/theelims/ESP32-sveltekit/blob/main/src/main.cpp) file constructs the webserver and initializes the framework. You can add endpoints to the server here to support your IoT project. The main loop is also accessible so you can run your own code easily.
+The ['src/main.cpp'](https://github.com/theelims/ESP32-sveltekit/blob/main/src/main.cpp) file constructs the web server and initializes the framework. You can add endpoints to the server here to support your IoT project. The main loop is also accessible so you can run your own code easily.
 
 The following code creates the web server and esp32sveltekit framework:
 
 ```cpp
-AsyncWebServer server(80);
-ESP32SvelteKit esp32sveltekit(&server);
+PsychicHttpServer server;
+ESP32SvelteKit esp32sveltekit(&server, 115);
 ```
+
+ESP32SvelteKit is instantiated with a reference to the server and a number of HTTP endpoints. The underlying ESP-IDF HTTP Server statically allocates memory for each endpoint and needs to know how many there are. Best is to inspect your WWWData.h file for the number of Endpoints from SvelteKit, the framework itself has 27 endpoints, and Lighstate Demo has 4 endpoints. Each `_server.on()` counts as an endpoint. Don't forget to add a couple of spare, just in case.
 
 Now in the `setup()` function the initialization is performed:
 
@@ -25,9 +27,6 @@ void setup() {
   // start the framework and demo project
   esp32sveltekit.setMDNSAppName("ESP32 SvelteKit Demo App");
   esp32sveltekit.begin();
-
-  // start the server
-  server.begin();
 }
 ```
 
@@ -155,13 +154,13 @@ lightStateService->update(jsonObject, LightState::update, "timer");
 
 The framework provides an [HttpEndpoint.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/HttpEndpoint.h) class which may be used to register GET and POST handlers to read and update the state over HTTP. You may construct an HttpEndpoint as a part of the StatefulService or separately if you prefer.
 
-The code below demonstrates how to extend the LightStateService class to provide an unsecured endpoint:
+The code below demonstrates how to extend the LightStateService class to provide an endpoint:
 
 ```cpp
 class LightStateService : public StatefulService<LightState> {
  public:
-  LightStateService(AsyncWebServer* server) :
-      _httpEndpoint(LightState::read, LightState::update, this, server, "/rest/lightState") {
+  LightStateService(PsychicHttpServer* server, SecurityManager *securityManager) :
+      _httpEndpoint(LightState::read, LightState::update, this, server, "/rest/lightState", securityManager,                             AuthenticationPredicates::IS_AUTHENTICATED) {
   }
 
  private:
@@ -169,7 +168,9 @@ class LightStateService : public StatefulService<LightState> {
 };
 ```
 
-Endpoint security is provided by authentication predicates which are [documented below](#security-features). The SecurityManager and authentication predicate may be provided if a secure endpoint is required. The placeholder project shows how endpoints can be secured.
+Endpoint security is provided by authentication predicates which are [documented below](#security-features). The SecurityManager and authentication predicate must be provided, even if no secure endpoint is required. The placeholder project shows how endpoints can be secured.
+
+To register the HTTP endpoints with the web server the function `_httpEndpoint.begin()` must be called in the custom StatefulService Class' own `void begin()` function.
 
 ### Persistence
 
@@ -193,21 +194,23 @@ class LightStateService : public StatefulService<LightState> {
 
 [WebSocketTxRx.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/WebSocketTxRx.h) allows you to read and update state over a WebSocket connection. WebSocketTxRx automatically pushes changes to all connected clients when state is updated.
 
-The code below demonstrates how to extend the LightStateService class to provide an unsecured WebSocket:
+The code below demonstrates how to extend the LightStateService class to provide an WebSocket:
 
 ```cpp
 class LightStateService : public StatefulService<LightState> {
  public:
-  LightStateService(AsyncWebServer* server) :
-      _webSocket(LightState::read, LightState::update, this, server, "/ws/lightState"), {
+  LightStateService(PsychicHttpServer* server, SecurityManager *securityManager) :
+      _webSocket(LightState::read, LightState::update, this, server, "/ws/lightState", securityManager,                             AuthenticationPredicates::IS_AUTHENTICATED), {
   }
 
  private:
-  WebSocketTxRx<LightState> _webSocket;
+  WebSocketServer<LightState> _webSocketServer;
 };
 ```
 
-WebSocket security is provided by authentication predicates which are [documented below](#security-features). The SecurityManager and authentication predicate may be provided if a secure WebSocket is required. The placeholder project shows how WebSockets can be secured.
+WebSocket security is provided by authentication predicates which are [documented below](#security-features). The SecurityManager and authentication predicate must be provided, even if no secure endpoint is required. The placeholder project shows how endpoints can be secured.
+
+To register the HTTP endpoints with the web server the function `_webSocketServer.begin()` must be called in the custom StatefulService Class' own `void begin()` function.
 
 ### MQTT
 
@@ -434,13 +437,15 @@ Enabling `FT_UPLOAD_FIRMWARE=1` in [features.ini](https://github.com/theelims/ES
 
 ### Firmware Download from Update Server
 
-By enabling `FT_DOWNLOAD_FIRMWARE=1` in [features.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/features.ini) one can POST a link to a firmware binary which is downloaded for the OTA process. This feature requires SSL and is thus dependent on `FT_NTP=1`. The Frontend contains an implementation which uses GitHub's Releases section as teh update server. By specifying a firmware version in [factory_settings.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini) one can make use of semantic versioning to determine the correct firmware:
+By enabling `FT_DOWNLOAD_FIRMWARE=1` in [features.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/features.ini) one can POST a link to a firmware binary which is downloaded for the OTA process. This feature requires SSL and is thus dependent on `FT_NTP=1`. The Frontend contains an implementation which uses GitHub's Releases section as the update server. By specifying a firmware version in [platformio.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/platformio.ini) one can make use of semantic versioning to determine the correct firmware:
 
 ```ini
-  -D APP_VERSION=\"0.2.0\"
+    -D BUILD_TARGET="$PIOENV"
+    -D APP_NAME=\"ESP32-Sveltekit\" ; Must only contain characters from [a-zA-Z0-9-_] as this is converted into a filename
+    -D APP_VERSION=\"0.2.2\" ; semver compatible version string
 ```
 
-Attaching the firmware binary from `.pio/build/{env}/firmware.bin` to the right version tag on GitHub allows anyone to easily upgrade to the latest version.
+A build script copies the firmware binary files for all build environment to `build/firmware`. It renames them into `{APP_NAME}_{PIOENV}_{APP_VERSION}.bin`. It also creates a MD5 checksum file for verification during the OTA process. These files can be used as attachment on the GitHub release pages.
 
 !!! info
 

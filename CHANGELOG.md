@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## WIP
 
+> **Warning**: This update has breaking changes!
+
 ### Added
 
 - Added postscript to platform.io build process to copy, rename and calculate MD5 checksum of \*.bin file. These files are ready for uploading to the Github Release page.
@@ -18,7 +20,41 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 
-- Removed support for Arduino ESP OTA
+- Removed support for Arduino ESP OTA.
+- HttpEndpoints and Websocket Server without a securityManager are no longer possible.
+
+### Migrate from ESPAsnyWebServer
+
+#### Migrate `main.cpp`
+
+Change the server and ESPSvelteKit instances to PsychicHttpServer and give the ESP32SvelteKit constructor the number of http endpoints of your project.
+
+```
+PsychicHttpServer server;
+ESP32SvelteKit esp32sveltekit(&server, 115);
+```
+
+Remove `server.begin();` in `void setup()`. This is handled by ESP32SvelteKit now.
+
+#### Migrate `platformio.ini`
+
+Remove `-D CONFIG_ASYNC_TCP_RUNNING_CORE=0`, `-D NO_GLOBAL_ARDUINOOTA` and `esphome/AsyncTCP-esphome @ ^2.0.0`. Add `https://github.com/hoeken/PsychicHttp.git` as lib dependency.
+
+#### Custom Stateful Services
+
+Adapt the class constructor (`(PsychicHttpServer *server, ...`) to PsychicHttpServer.
+
+Due to the loading sequence HttpEndoint and WebsocketServer both have become a `begin()` function to register their http endpoints with the server. This must be called in your stateful services own `begin()` function:
+
+```
+void LightStateService::begin()
+{
+    _httpEndpoint.begin();
+    _webSocketServer.begin();
+    _state.ledOn = DEFAULT_LED_STATE;
+    onConfigUpdated();
+}
+```
 
 ## [0.2.2] - 2023-10-08
 
@@ -71,7 +107,7 @@ All notable changes to this project will be documented in this file.
 - Compiler flag on which core ESP32-sveltekit tasks should run
 - Renamed WebSocketRxTx.h to WebSocketServer.h to create a distinction between WS Client and WS Server interfaces
 - Made code of LightStateExample slightly more verbose
-- getServer() returning a pointer to the AsnycWebServer instance.
+- getServer() returning a pointer to the AsyncWebServer instance.
 - Updated frontend dependencies and packages to newest version.
 
 ### Depreciated

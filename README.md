@@ -58,7 +58,7 @@ The code runs on many variants of the ESP32 chip family. From the plain old ESP3
 - [unplugin-icons](https://github.com/antfu/unplugin-icons)
 - [svelte-modals](https://svelte-modals.mattjennings.io/)
 - [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
-- [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)
+- [PsychicHttp](https://github.com/hoeken/PsychicHttp)
 - [AsyncMqttClient](https://github.com/marvinroger/async-mqtt-client)
 
 ## Licensing
