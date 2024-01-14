@@ -14,12 +14,21 @@
 
 #include <WiFiStatus.h>
 
-WiFiStatus::WiFiStatus(AsyncWebServer *server, SecurityManager *securityManager)
+WiFiStatus::WiFiStatus(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
+                                                                                      _securityManager(securityManager)
 {
-    server->on(WIFI_STATUS_SERVICE_PATH,
-               HTTP_GET,
-               securityManager->wrapRequest(std::bind(&WiFiStatus::wifiStatus, this, std::placeholders::_1),
-                                            AuthenticationPredicates::IS_AUTHENTICATED));
+    ESP_LOGV("WiFiStatus", "WiFi Status Service initialized");
+}
+
+void WiFiStatus::begin()
+{
+    _server->on(WIFI_STATUS_SERVICE_PATH,
+                HTTP_GET,
+                _securityManager->wrapRequest(std::bind(&WiFiStatus::wifiStatus, this, std::placeholders::_1),
+                                              AuthenticationPredicates::IS_AUTHENTICATED));
+
+    ESP_LOGV("WiFiStatus", "Registered GET endpoint: %s", WIFI_STATUS_SERVICE_PATH);
+
     WiFi.onEvent(onStationModeConnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_CONNECTED);
     WiFi.onEvent(onStationModeDisconnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
     WiFi.onEvent(onStationModeGotIP, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
@@ -42,10 +51,10 @@ void WiFiStatus::onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
         PSTR("WiFi Got IP. localIP=%s, hostName=%s\r\n"), WiFi.localIP().toString().c_str(), WiFi.getHostname());
 }
 
-void WiFiStatus::wifiStatus(AsyncWebServerRequest *request)
+esp_err_t WiFiStatus::wifiStatus(PsychicRequest *request)
 {
-    AsyncJsonResponse *response = new AsyncJsonResponse(false, MAX_WIFI_STATUS_SIZE);
-    JsonObject root = response->getRoot();
+    PsychicJsonResponse response = PsychicJsonResponse(request, false, MAX_WIFI_STATUS_SIZE);
+    JsonObject root = response.getRoot();
     wl_status_t status = WiFi.status();
     root["status"] = (uint8_t)status;
     if (status == WL_CONNECTED)
@@ -69,6 +78,6 @@ void WiFiStatus::wifiStatus(AsyncWebServerRequest *request)
             root["dns_ip_2"] = dnsIP2.toString();
         }
     }
-    response->setLength();
-    request->send(response);
+
+    return response.send();
 }

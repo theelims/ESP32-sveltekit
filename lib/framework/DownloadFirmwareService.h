@@ -19,9 +19,7 @@
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ArduinoJson.h>
-#include <AsyncJson.h>
-
-#include <ESPAsyncWebServer.h>
+#include <PsychicHttp.h>
 #include <SecurityManager.h>
 #include <NotificationEvents.h>
 
@@ -30,16 +28,18 @@
 // #include <SSLCertBundle.h>
 
 #define GITHUB_FIRMWARE_PATH "/rest/downloadUpdate"
-#define MAX_GITHUB_SIZE 192
 #define OTA_TASK_STACK_SIZE 9216
 
 class DownloadFirmwareService
 {
 public:
-    DownloadFirmwareService(AsyncWebServer *server, SecurityManager *securityManager, NotificationEvents *notificationEvents);
+    DownloadFirmwareService(PsychicHttpServer *server, SecurityManager *securityManager, NotificationEvents *notificationEvents);
+
+    void begin();
 
 private:
     SecurityManager *_securityManager;
-    AsyncCallbackJsonWebHandler _downloadHandler;
-    void downloadUpdate(AsyncWebServerRequest *request, JsonVariant &json);
+    PsychicHttpServer *_server;
+    NotificationEvents *_notificationEvents;
+    esp_err_t downloadUpdate(PsychicRequest *request, JsonVariant &json);
 };

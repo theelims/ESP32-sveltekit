@@ -14,32 +14,41 @@
 
 #include <WiFiSettingsService.h>
 
-WiFiSettingsService::WiFiSettingsService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager, NotificationEvents *notificationEvents) : _httpEndpoint(WiFiSettings::read, WiFiSettings::update, this, server, WIFI_SETTINGS_SERVICE_PATH, securityManager),
-                                                                                                                                                     _fsPersistence(WiFiSettings::read, WiFiSettings::update, this, fs, WIFI_SETTINGS_FILE),
-                                                                                                                                                     _lastConnectionAttempt(0),
-                                                                                                                                                     _notificationEvents(notificationEvents)
+WiFiSettingsService::WiFiSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, NotificationEvents *notificationEvents) : _server(server),
+                                                                                                                                                        _securityManager(securityManager),
+                                                                                                                                                        _httpEndpoint(WiFiSettings::read, WiFiSettings::update, this, server, WIFI_SETTINGS_SERVICE_PATH, securityManager),
+                                                                                                                                                        _fsPersistence(WiFiSettings::read, WiFiSettings::update, this, fs, WIFI_SETTINGS_FILE),
+                                                                                                                                                        _lastConnectionAttempt(0),
+                                                                                                                                                        _notificationEvents(notificationEvents)
 {
     addUpdateHandler([&](const String &originId)
                      { reconfigureWiFiConnection(); },
                      false);
+    ESP_LOGV("WiFiSettingsService", "WiFi Settings Service initialized");
 }
 
-void WiFiSettingsService::begin()
+void WiFiSettingsService::initWiFi()
 {
+    ESP_LOGV("WiFiSettingsService", "WiFi mode: %i", WiFi.getMode());
+
     // We want the device to come up in opmode=0 (WIFI_OFF), when erasing the flash this is not the default.
     // If needed, we save opmode=0 before disabling persistence so the device boots with WiFi disabled in the future.
-    if (WiFi.getMode() != WIFI_OFF)
-    {
-        WiFi.mode(WIFI_OFF);
-    }
+    // if (WiFi.getMode() != WIFI_OFF)
+    // {
+    //     WiFi.mode(WIFI_OFF);
+    //     ESP_LOGV("WiFiSettingsService", "Forcing WiFi mode to WIFI_OFF");
+    // }
+
+    WiFi.mode(WIFI_MODE_STA); // TODO added otherwise crashes. this is the default.
 
     // Disable WiFi config persistance and auto reconnect
     WiFi.persistent(false);
     WiFi.setAutoReconnect(false);
 
     // Init the wifi driver on ESP32
-    WiFi.mode(WIFI_MODE_MAX);
-    WiFi.mode(WIFI_MODE_NULL);
+    // WiFi.mode(WIFI_MODE_MAX);  // TODO commented out, not sure what use it has
+    // WiFi.mode(WIFI_MODE_NULL);
+
     WiFi.onEvent(
         std::bind(&WiFiSettingsService::onStationModeDisconnected, this, std::placeholders::_1, std::placeholders::_2),
         WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
@@ -48,6 +57,11 @@ void WiFiSettingsService::begin()
 
     _fsPersistence.readFromFS();
     reconfigureWiFiConnection();
+}
+
+void WiFiSettingsService::begin()
+{
+    _httpEndpoint.begin();
 }
 
 void WiFiSettingsService::reconfigureWiFiConnection()
@@ -107,6 +121,9 @@ void WiFiSettingsService::manageSTA()
         WiFi.setHostname(_state.hostname.c_str());
         // attempt to connect to the network
         WiFi.begin(_state.ssid.c_str(), _state.password.c_str());
+#if CONFIG_IDF_TARGET_ESP32C3
+        WiFi.setTxPower(WIFI_POWER_8_5dBm); // https://www.wemos.cc/en/latest/c3/c3_mini_1_0_0.html#about-wifi
+#endif
     }
 }
 

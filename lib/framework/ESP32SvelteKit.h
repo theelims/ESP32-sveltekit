@@ -17,7 +17,6 @@
 
 #include <Arduino.h>
 
-// #include <AsyncTCP.h>
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include <AnalyticsService.h>
@@ -56,6 +55,10 @@
 #define APP_VERSION "demo"
 #endif
 
+#ifndef APP_NAME
+#define APP_NAME "ESP32 SvelteKit Demo"
+#endif
+
 #ifndef ESP32SVELTEKIT_RUNNING_CORE
 #define ESP32SVELTEKIT_RUNNING_CORE -1
 #endif
@@ -63,7 +66,7 @@
 class ESP32SvelteKit
 {
 public:
-    ESP32SvelteKit(PsychicHttpServer *server);
+    ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEndpoints = 30);
 
     void begin();
 
@@ -159,6 +162,7 @@ public:
 
 private:
     PsychicHttpServer *_server;
+    unsigned int _numberEndpoints;
     FeaturesService _featureService;
     SecuritySettingsService _securitySettingsService;
     WiFiSettingsService _wifiSettingsService;
@@ -197,7 +201,7 @@ private:
     FactoryResetService _factoryResetService;
     SystemStatus _systemStatus;
 
-    String _appName = "ESP32 SvelteKit Demo";
+    String _appName = APP_NAME;
 
 protected:
     static void _loopImpl(void *_this) { static_cast<ESP32SvelteKit *>(_this)->_loop(); }

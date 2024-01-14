@@ -14,127 +14,144 @@
 
 #include <ESP32SvelteKit.h>
 
-ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server) : _featureService(server),
-                                                            _securitySettingsService(server, &ESPFS),
-                                                            _wifiSettingsService(server, &ESPFS, &_securitySettingsService, &_notificationEvents),
-                                                            _wifiScanner(server, &_securitySettingsService),
-                                                            _wifiStatus(server, &_securitySettingsService),
-                                                            _apSettingsService(server, &ESPFS, &_securitySettingsService),
-                                                            _apStatus(server, &_securitySettingsService, &_apSettingsService),
-                                                            _notificationEvents(server),
+ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEndpoints) : _server(server),
+                                                                                          _numberEndpoints(numberEndpoints),
+                                                                                          _featureService(server),
+                                                                                          _securitySettingsService(server, &ESPFS),
+                                                                                          _wifiSettingsService(server, &ESPFS, &_securitySettingsService, &_notificationEvents),
+                                                                                          _wifiScanner(server, &_securitySettingsService),
+                                                                                          _wifiStatus(server, &_securitySettingsService),
+                                                                                          _apSettingsService(server, &ESPFS, &_securitySettingsService),
+                                                                                          _apStatus(server, &_securitySettingsService, &_apSettingsService),
+                                                                                          _notificationEvents(server),
 #if FT_ENABLED(FT_NTP)
-                                                            _ntpSettingsService(server, &ESPFS, &_securitySettingsService),
-                                                            _ntpStatus(server, &_securitySettingsService),
+                                                                                          _ntpSettingsService(server, &ESPFS, &_securitySettingsService),
+                                                                                          _ntpStatus(server, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_UPLOAD_FIRMWARE)
-                                                            _uploadFirmwareService(server, &_securitySettingsService),
+                                                                                          _uploadFirmwareService(server, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_DOWNLOAD_FIRMWARE)
-                                                            _downloadFirmwareService(server, &_securitySettingsService, &_notificationEvents),
+                                                                                          _downloadFirmwareService(server, &_securitySettingsService, &_notificationEvents),
 #endif
 #if FT_ENABLED(FT_MQTT)
-                                                            _mqttSettingsService(server, &ESPFS, &_securitySettingsService),
-                                                            _mqttStatus(server, &_mqttSettingsService, &_securitySettingsService),
+                                                                                          _mqttSettingsService(server, &ESPFS, &_securitySettingsService),
+                                                                                          _mqttStatus(server, &_mqttSettingsService, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_SECURITY)
-                                                            _authenticationService(server, &_securitySettingsService),
+                                                                                          _authenticationService(server, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_SLEEP)
-                                                            _sleepService(server, &_securitySettingsService),
+                                                                                          _sleepService(server, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_BATTERY)
-                                                            _batteryService(&_notificationEvents),
+                                                                                          _batteryService(&_notificationEvents),
 #endif
 #if FT_ENABLED(FT_ANALYTICS)
-                                                            _analyticsService(&_notificationEvents),
+                                                                                          _analyticsService(&_notificationEvents),
 #endif
-                                                            _restartService(server, &_securitySettingsService),
-                                                            _factoryResetService(server, &ESPFS, &_securitySettingsService),
-                                                            _systemStatus(server, &_securitySettingsService)
+                                                                                          _restartService(server, &_securitySettingsService),
+                                                                                          _factoryResetService(server, &ESPFS, &_securitySettingsService),
+                                                                                          _systemStatus(server, &_securitySettingsService)
 {
-    _server = server;
+    ESP_LOGV("ESP32SvelteKit", "Loading settings from files system");
+    if (!ESPFS.begin(true))
+    {
+        ESP_LOGE("ESP32SvelteKit", "LittleFS Mount Failed. Using default settings.");
+    }
+}
 
-#ifdef PROGMEM_WWW2
+void ESP32SvelteKit::begin()
+{
+    ESP_LOGV("ESP32SvelteKit", "Start WiFi");
+    _wifiSettingsService.initWiFi();
+
+    ESP_LOGV("ESP32SvelteKit", "Starting Psychic HTTP Server");
+    // SvelteKit uses a lot of handlers, so we need to increase the max_uri_handlers
+    // WWWData has 77 Endpoints, Framework has 27, and Lighstate Demo has 4
+    _server->config.max_uri_handlers = _numberEndpoints;
+    _server->listen(80);
+
+#ifdef PROGMEM_WWW
     // Serve static resources from PROGMEM
+    ESP_LOGV("ESP32SvelteKit", "Registering routes from PROGMEM static resources");
     WWWData::registerRoutes(
-        [server, this](const String &uri, const String &contentType, const uint8_t *content, size_t len)
+        [&](const String &uri, const String &contentType, const uint8_t *content, size_t len)
         {
             PsychicHttpRequestCallback requestHandler = [contentType, content, len](PsychicRequest *request)
             {
                 PsychicResponse response(request);
-                response->setCode(200);
+                response.setCode(200);
                 response.setContentType(contentType.c_str());
-                response->addHeader("Content-Encoding", "gzip");
+                response.addHeader("Content-Encoding", "gzip");
                 response.addHeader("Cache-Control", "public, immutable, max-age=31536000");
                 response.setContent(content, len);
                 return response.send();
             };
             PsychicWebHandler *handler = new PsychicWebHandler();
             handler->onRequest(requestHandler);
-            server.on(uri.c_str(), HTTP_GET, handler);
+            _server->on(uri.c_str(), HTTP_GET, handler);
 
             // Set default end-point for all non matching requests
             // this is easier than using webServer.onNotFound()
-            // if (uri.equals("/index.html"))
-            // {
-            //     // if (strcmp(uri, "/index.html") == 0) {
-            //     webServer.defaultEndpoint->setHandler(handler);
-            // }
-
-            server->on(uri.c_str(), HTTP_GET, requestHandler);
-            // Serving non matching get requests with "/index.html"
-            // OPTIONS get a straight up 200 response
             if (uri.equals("/index.html"))
             {
-                server->onNotFound([requestHandler](PsychicRequest *request)
-                                   {
-                    if (request->method() == HTTP_GET) {
-                        requestHandler(request);
-                    } else if (request->method() == HTTP_OPTIONS) {
-                        // CORS Pre-flight
-                        request->reply(200);
-                    } else {
-                        request->reply(404);
-                    } });
+                // TODO: Add CORS pre-flight
+                _server->defaultEndpoint->setHandler(handler);
             }
+
+            // Serving non matching get requests with "/index.html"
+            // OPTIONS get a straight up 200 response
+            // if (uri.equals("/index.html"))
+            // {
+            //     _server->onNotFound([&](PsychicRequest *request)
+            //                         {
+            //         if (request->method() == HTTP_GET) {
+            //             requestHandler(request);
+            //             return ESP_OK;
+            //         } else if (request->method() == HTTP_OPTIONS) {
+            //             // CORS Pre-flight
+            //             ESP_LOGI("ESP32SvelteKit" , "CORS Pre-flight");
+            //             return request->reply(200);
+            //         } else {
+            //             return request->reply(404);
+            //         } });
+            // }
         });
 #else
     // Serve static resources from /www/
-    server->serveStatic("/_app/", ESPFS, "/www/_app/");
-    server->serveStatic("/favicon.png", ESPFS, "/www/favicon.png");
+    ESP_LOGV("ESP32SvelteKit", "Registering routes from FS /www/ static resources");
+    _server->serveStatic("/_app/", ESPFS, "/www/_app/");
+    _server->serveStatic("/favicon.png", ESPFS, "/www/favicon.png");
     //  Serving all other get requests with "/www/index.htm"
     //  OPTIONS get a straight up 200 response
-    server->onNotFound([](PsychicRequest *request)
-                       {
+    _server->onNotFound([](PsychicRequest *request)
+                        {
         if (request->method() == HTTP_GET) {
             PsychicFileResponse response(request, ESPFS, "/www/index.html", "text/html");
             return response.send();
             // String url = "http://" + request->host() + "/index.html";
             // request->redirect(url.c_str());
         } else if (request->method() == HTTP_OPTIONS) {
+            ESP_LOGI("ESP32SvelteKit", "CORS Pre-flight");
             request->reply(200);
         } else {
             request->reply(404);
         } });
 #endif
 #ifdef SERVE_CONFIG_FILES
-    server->serveStatic("/config/", ESPFS, "/config/");
+    _server->serveStatic("/config/", ESPFS, "/config/");
 #endif
 
 // Enable CORS if required
 #if defined(ENABLE_CORS)
+    ESP_LOGV("ESP32SvelteKit", "Enabling CORS headers");
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", CORS_ORIGIN);
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers", "Accept, Content-Type, Authorization");
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Credentials", "true");
 #endif
-}
 
-void ESP32SvelteKit::begin()
-{
-    ESPFS.begin(true);
-
-    _wifiSettingsService.begin();
-
+    ESP_LOGV("ESP32SvelteKit", "Starting MDNS");
     MDNS.begin(_wifiSettingsService.getHostname().c_str());
     MDNS.setInstanceName(_appName);
     MDNS.addService("http", "tcp", 80);
@@ -143,20 +160,45 @@ void ESP32SvelteKit::begin()
 
     Serial.printf("Running Firmware Version: %s\n", APP_VERSION);
 
+    // Start the services
+    ESP_LOGV("ESP32SvelteKit", "Starting services and registering REST endpoints");
+    _apStatus.begin();
+    _notificationEvents.begin();
     _apSettingsService.begin();
+    _factoryResetService.begin();
+    _featureService.begin();
+    _restartService.begin();
+    _systemStatus.begin();
+    _wifiScanner.begin();
+    _wifiStatus.begin();
+
+#if FT_ENABLED(FT_UPLOAD_FIRMWARE)
+    _uploadFirmwareService.begin();
+#endif
+#if FT_ENABLED(FT_DOWNLOAD_FIRMWARE)
+    _downloadFirmwareService.begin();
+#endif
 #if FT_ENABLED(FT_NTP)
     _ntpSettingsService.begin();
+    _ntpStatus.begin();
 #endif
 #if FT_ENABLED(FT_MQTT)
     _mqttSettingsService.begin();
+    _mqttStatus.begin();
 #endif
 #if FT_ENABLED(FT_SECURITY)
+    _authenticationService.begin();
     _securitySettingsService.begin();
 #endif
 #if FT_ENABLED(FT_ANALYTICS)
     _analyticsService.begin();
 #endif
+#if FT_ENABLED(FT_SLEEP)
+    _sleepService.begin();
+#endif
 
+    // Start the loop task
+    ESP_LOGV("ESP32SvelteKit", "Starting loop task");
     xTaskCreatePinnedToCore(
         this->_loopImpl,            // Function that should be called
         "ESP32 SvelteKit Loop",     // Name of the task (for debugging)

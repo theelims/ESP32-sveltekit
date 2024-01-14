@@ -16,7 +16,7 @@
  **/
 
 #include <StatefulService.h>
-#include <ESPAsyncWebServer.h>
+#include <PsychicHttp.h>
 #include <SecurityManager.h>
 #include "freertos/timers.h"
 
@@ -25,142 +25,118 @@
 #define WEB_SOCKET_ORIGIN "wsserver"
 #define WEB_SOCKET_ORIGIN_CLIENT_ID_PREFIX "wsserver:"
 
-#define WEB_SOCKET_CLIENT_CLEANUP_INTERVAL 1000
-
 template <class T>
-class WebSocketServerConnector
-{
-protected:
-    StatefulService<T> *_statefulService;
-    AsyncWebServer *_server;
-    AsyncWebSocket _webSocket;
-    size_t _bufferSize;
-
-    WebSocketServerConnector(StatefulService<T> *statefulService,
-                             AsyncWebServer *server,
-                             const char *webSocketPath,
-                             SecurityManager *securityManager,
-                             AuthenticationPredicate authenticationPredicate,
-                             size_t bufferSize) : _statefulService(statefulService), _server(server), _webSocket(webSocketPath), _bufferSize(bufferSize)
-    {
-        _webSocket.setFilter(securityManager->filterRequest(authenticationPredicate));
-        _webSocket.onEvent(std::bind(&WebSocketServerConnector::onWSEvent,
-                                     this,
-                                     std::placeholders::_1,
-                                     std::placeholders::_2,
-                                     std::placeholders::_3,
-                                     std::placeholders::_4,
-                                     std::placeholders::_5,
-                                     std::placeholders::_6));
-        _server->addHandler(&_webSocket);
-        _server->on(webSocketPath, HTTP_GET, std::bind(&WebSocketServerConnector::forbidden, this, std::placeholders::_1));
-    }
-
-    WebSocketServerConnector(StatefulService<T> *statefulService,
-                             AsyncWebServer *server,
-                             const char *webSocketPath,
-                             size_t bufferSize) : _statefulService(statefulService), _server(server), _webSocket(webSocketPath), _bufferSize(bufferSize)
-    {
-        _webSocket.onEvent(std::bind(&WebSocketServerConnector::onWSEvent,
-                                     this,
-                                     std::placeholders::_1,
-                                     std::placeholders::_2,
-                                     std::placeholders::_3,
-                                     std::placeholders::_4,
-                                     std::placeholders::_5,
-                                     std::placeholders::_6));
-        _server->addHandler(&_webSocket);
-    }
-
-    virtual void onWSEvent(AsyncWebSocket *server,
-                           AsyncWebSocketClient *client,
-                           AwsEventType type,
-                           void *arg,
-                           uint8_t *data,
-                           size_t len) = 0;
-
-    String clientId(AsyncWebSocketClient *client)
-    {
-        return WEB_SOCKET_ORIGIN_CLIENT_ID_PREFIX + String(client->id());
-    }
-
-private:
-    void forbidden(AsyncWebServerRequest *request)
-    {
-        request->send(403);
-    }
-};
-
-template <class T>
-class WebSocketTx : virtual public WebSocketServerConnector<T>
+class WebSocketServer
 {
 public:
-    WebSocketTx(JsonStateReader<T> stateReader,
-                StatefulService<T> *statefulService,
-                AsyncWebServer *server,
-                const char *webSocketPath,
-                SecurityManager *securityManager,
-                AuthenticationPredicate authenticationPredicate = AuthenticationPredicates::IS_ADMIN,
-                size_t bufferSize = DEFAULT_BUFFER_SIZE) : WebSocketServerConnector<T>(statefulService,
-                                                                                       server,
-                                                                                       webSocketPath,
-                                                                                       securityManager,
-                                                                                       authenticationPredicate,
-                                                                                       bufferSize),
-                                                           _stateReader(stateReader)
+    WebSocketServer(JsonStateReader<T> stateReader,
+                    JsonStateUpdater<T> stateUpdater,
+                    StatefulService<T> *statefulService,
+                    PsychicHttpServer *server,
+                    const char *webSocketPath,
+                    SecurityManager *securityManager,
+                    AuthenticationPredicate authenticationPredicate = AuthenticationPredicates::IS_ADMIN,
+                    size_t bufferSize = DEFAULT_BUFFER_SIZE) : _stateReader(stateReader),
+                                                               _stateUpdater(stateUpdater),
+                                                               _statefulService(statefulService),
+                                                               _server(server),
+                                                               _bufferSize(bufferSize),
+                                                               _webSocketPath(webSocketPath),
+                                                               _authenticationPredicate(authenticationPredicate),
+                                                               _securityManager(securityManager)
     {
-        WebSocketServerConnector<T>::_statefulService->addUpdateHandler(
+        _statefulService->addUpdateHandler(
             [&](const String &originId)
             { transmitData(nullptr, originId); },
             false);
+
+        ESP_LOGV("WebSocketServer", "WebSocketServer for %s initialized", _webSocketPath.c_str());
     }
 
-    WebSocketTx(JsonStateReader<T> stateReader,
-                StatefulService<T> *statefulService,
-                AsyncWebServer *server,
-                const char *webSocketPath,
-                size_t bufferSize = DEFAULT_BUFFER_SIZE) : WebSocketServerConnector<T>(statefulService, server, webSocketPath, bufferSize), _stateReader(stateReader)
+    void begin()
     {
-        WebSocketServerConnector<T>::_statefulService->addUpdateHandler(
-            [&](const String &originId)
-            { transmitData(nullptr, originId); },
-            false);
+        // _webSocket.setFilter(_securityManager->filterRequest(_authenticationPredicate));
+        _webSocket.onOpen(std::bind(&WebSocketServer::onWSOpen,
+                                    this,
+                                    std::placeholders::_1));
+        _webSocket.onClose(std::bind(&WebSocketServer::onWSClose,
+                                     this,
+                                     std::placeholders::_1));
+        _webSocket.onFrame(std::bind(&WebSocketServer::onWSFrame,
+                                     this,
+                                     std::placeholders::_1,
+                                     std::placeholders::_2));
+        _server->on(_webSocketPath.c_str(), &_webSocket);
+
+        // Doesn't work with PsychicHttpServer
+        // _server->on(_webSocketPath.c_str(), HTTP_GET, [](PsychicRequest *request)
+        //             { return request->reply(403); });
+
+        ESP_LOGV("WebSocketServer", "Registered WebSocket handler: %s", _webSocketPath.c_str());
     }
 
-protected:
-    virtual void onWSEvent(AsyncWebSocket *server,
-                           AsyncWebSocketClient *client,
-                           AwsEventType type,
-                           void *arg,
-                           uint8_t *data,
-                           size_t len)
+    void onWSOpen(PsychicWebSocketClient *client)
     {
-        if (type == WS_EVT_CONNECT)
+
+        // when a client connects, we transmit it's id and the current payload
+        transmitId(client);
+        transmitData(client, WEB_SOCKET_ORIGIN);
+        ESP_LOGI("WebSocketServer", "ws[%s][%u] connect", client->remoteIP().toString(), client->socket());
+    }
+
+    void onWSClose(PsychicWebSocketClient *client)
+    {
+        ESP_LOGI("WebSocketServer", "ws[%s][%u] disconnect", client->remoteIP().toString(), client->socket());
+    }
+
+    esp_err_t onWSFrame(PsychicWebSocketRequest *request, httpd_ws_frame *frame)
+    {
+        ESP_LOGV("WebSocketServer", "ws[%s][%u] opcode[%d]", request->client()->remoteIP().toString(), request->client()->socket(), frame->type);
+
+        if (frame->type == HTTPD_WS_TYPE_TEXT)
         {
-            // when a client connects, we transmit it's id and the current payload
-            transmitId(client);
-            transmitData(client, WEB_SOCKET_ORIGIN);
-            client->ping();
-            ESP_LOGI("WebSocket Server", "ws[%s][%u] connect", server->url(), client->id());
+            ESP_LOGV("WebSocketServer", "ws[%s][%u] request: %s", request->client()->remoteIP().toString(), request->client()->socket(), (char *)frame->payload);
+
+            DynamicJsonDocument jsonDocument = DynamicJsonDocument(_bufferSize);
+            DeserializationError error = deserializeJson(jsonDocument, (char *)frame->payload, frame->len);
+
+            if (!error && jsonDocument.is<JsonObject>())
+            {
+                JsonObject jsonObject = jsonDocument.as<JsonObject>();
+                _statefulService->update(jsonObject, _stateUpdater, clientId(request->client()));
+                return ESP_OK;
+            }
         }
+        return ESP_OK;
+    }
+
+    String clientId(PsychicWebSocketClient *client)
+    {
+        return WEB_SOCKET_ORIGIN_CLIENT_ID_PREFIX + String(client->socket());
     }
 
 private:
     JsonStateReader<T> _stateReader;
+    JsonStateUpdater<T> _stateUpdater;
+    StatefulService<T> *_statefulService;
+    AuthenticationPredicate _authenticationPredicate;
+    SecurityManager *_securityManager;
+    PsychicHttpServer *_server;
+    PsychicWebSocketHandler _webSocket;
+    String _webSocketPath;
+    size_t _bufferSize;
 
-    void transmitId(AsyncWebSocketClient *client)
+    void transmitId(PsychicWebSocketClient *client)
     {
         DynamicJsonDocument jsonDocument = DynamicJsonDocument(WEB_SOCKET_CLIENT_ID_MSG_SIZE);
         JsonObject root = jsonDocument.to<JsonObject>();
         root["type"] = "id";
-        root["id"] = WebSocketServerConnector<T>::clientId(client);
-        size_t len = measureJson(jsonDocument);
-        AsyncWebSocketMessageBuffer *buffer = WebSocketServerConnector<T>::_webSocket.makeBuffer(len);
-        if (buffer)
-        {
-            serializeJson(jsonDocument, (char *)buffer->get(), len + 1);
-            client->text(buffer);
-        }
+        root["id"] = clientId(client);
+
+        // serialize the json to a string
+        String buffer;
+        serializeJson(jsonDocument, buffer);
+        client->sendMessage(buffer.c_str());
     }
 
     /**
@@ -168,193 +144,27 @@ private:
      * specified.
      *
      * Original implementation sent clients their own IDs so they could ignore updates they initiated. This approach
-     * simplifies the client and the server implementation but may not be sufficent for all use-cases.
+     * simplifies the client and the server implementation but may not be sufficient for all use-cases.
      */
-    void transmitData(AsyncWebSocketClient *client, const String &originId)
+    void transmitData(PsychicWebSocketClient *client, const String &originId)
     {
-        DynamicJsonDocument jsonDocument = DynamicJsonDocument(WebSocketServerConnector<T>::_bufferSize);
+        DynamicJsonDocument jsonDocument = DynamicJsonDocument(_bufferSize);
         JsonObject root = jsonDocument.to<JsonObject>();
-        WebSocketServerConnector<T>::_statefulService->read(root, _stateReader);
+        String buffer;
 
-        size_t len = measureJson(jsonDocument);
-        AsyncWebSocketMessageBuffer *buffer = WebSocketServerConnector<T>::_webSocket.makeBuffer(len);
-        if (buffer)
+        _statefulService->read(root, _stateReader);
+
+        // serialize the json to a string
+        serializeJson(jsonDocument, buffer);
+        if (client)
         {
-            serializeJson(jsonDocument, (char *)buffer->get(), len + 1);
-            if (client)
-            {
-                client->text(buffer);
-            }
-            else
-            {
-                WebSocketServerConnector<T>::_webSocket.textAll(buffer);
-            }
+            client->sendMessage(buffer.c_str());
+        }
+        else
+        {
+            _webSocket.sendAll(buffer.c_str());
         }
     }
-};
-
-template <class T>
-class WebSocketRx : virtual public WebSocketServerConnector<T>
-{
-public:
-    WebSocketRx(JsonStateUpdater<T> stateUpdater,
-                StatefulService<T> *statefulService,
-                AsyncWebServer *server,
-                const char *webSocketPath,
-                SecurityManager *securityManager,
-                AuthenticationPredicate authenticationPredicate = AuthenticationPredicates::IS_ADMIN,
-                size_t bufferSize = DEFAULT_BUFFER_SIZE) : WebSocketServerConnector<T>(statefulService,
-                                                                                       server,
-                                                                                       webSocketPath,
-                                                                                       securityManager,
-                                                                                       authenticationPredicate,
-                                                                                       bufferSize),
-                                                           _stateUpdater(stateUpdater)
-    {
-    }
-
-    WebSocketRx(JsonStateUpdater<T> stateUpdater,
-                StatefulService<T> *statefulService,
-                AsyncWebServer *server,
-                const char *webSocketPath,
-                size_t bufferSize = DEFAULT_BUFFER_SIZE) : WebSocketServerConnector<T>(statefulService, server, webSocketPath, bufferSize), _stateUpdater(stateUpdater)
-    {
-    }
-
-protected:
-    virtual void onWSEvent(AsyncWebSocket *server,
-                           AsyncWebSocketClient *client,
-                           AwsEventType type,
-                           void *arg,
-                           uint8_t *data,
-                           size_t len)
-    {
-        if (type == WS_EVT_DATA)
-        {
-            AwsFrameInfo *info = (AwsFrameInfo *)arg;
-            if (info->final && info->index == 0 && info->len == len)
-            {
-                if (info->opcode == WS_TEXT)
-                {
-                    DynamicJsonDocument jsonDocument = DynamicJsonDocument(WebSocketServerConnector<T>::_bufferSize);
-                    DeserializationError error = deserializeJson(jsonDocument, (char *)data);
-                    if (!error && jsonDocument.is<JsonObject>())
-                    {
-                        JsonObject jsonObject = jsonDocument.as<JsonObject>();
-                        WebSocketServerConnector<T>::_statefulService->update(
-                            jsonObject, _stateUpdater, WebSocketServerConnector<T>::clientId(client));
-                    }
-                }
-            }
-        }
-        else if (type == WS_EVT_DISCONNECT)
-        {
-            // client disconnected
-            ESP_LOGI("WebSocket Server", "ws[%s][%u] disconnect: %u", server->url(), client->id());
-        }
-        else if (type == WS_EVT_ERROR)
-        {
-            // error was received from the other end
-            ESP_LOGD("WebSocket Server", "ws[%s][%u] error(%u): %s", server->url(), client->id(), *((uint16_t *)arg), (char *)data);
-        }
-        else if (type == WS_EVT_PONG)
-        {
-            // pong message was received (in response to a ping request maybe)
-            // ESP_LOGV("WebSocket Server", "ws[%s][%u] pong[%u]: %s", server->url(), client->id(), len, (len) ? (char *)data : "");
-        }
-    }
-
-private:
-    JsonStateUpdater<T> _stateUpdater;
-};
-
-template <class T>
-class WebSocketServer : public WebSocketTx<T>, public WebSocketRx<T>
-{
-public:
-    WebSocketServer(JsonStateReader<T> stateReader,
-                    JsonStateUpdater<T> stateUpdater,
-                    StatefulService<T> *statefulService,
-                    AsyncWebServer *server,
-                    const char *webSocketPath,
-                    SecurityManager *securityManager,
-                    AuthenticationPredicate authenticationPredicate = AuthenticationPredicates::IS_ADMIN,
-                    size_t bufferSize = DEFAULT_BUFFER_SIZE) : WebSocketServerConnector<T>(statefulService,
-                                                                                           server,
-                                                                                           webSocketPath,
-                                                                                           securityManager,
-                                                                                           authenticationPredicate,
-                                                                                           bufferSize),
-                                                               WebSocketTx<T>(stateReader,
-                                                                              statefulService,
-                                                                              server,
-                                                                              webSocketPath,
-                                                                              securityManager,
-                                                                              authenticationPredicate,
-                                                                              bufferSize),
-                                                               WebSocketRx<T>(stateUpdater,
-                                                                              statefulService,
-                                                                              server,
-                                                                              webSocketPath,
-                                                                              securityManager,
-                                                                              authenticationPredicate,
-                                                                              bufferSize)
-    {
-        // Create the FreeRTOS timer with a period of 1000ms (1 second)
-        timerHandle = xTimerCreate("CleanupTimer", pdMS_TO_TICKS(WEB_SOCKET_CLIENT_CLEANUP_INTERVAL), pdTRUE, this, timerCallbackStatic);
-
-        // Start the timer (it will call the cleanupFunction every 1000ms)
-        xTimerStart(timerHandle, portMAX_DELAY);
-    }
-
-    WebSocketServer(JsonStateReader<T> stateReader,
-                    JsonStateUpdater<T> stateUpdater,
-                    StatefulService<T> *statefulService,
-                    AsyncWebServer *server,
-                    const char *webSocketPath,
-                    size_t bufferSize = DEFAULT_BUFFER_SIZE) : WebSocketServerConnector<T>(statefulService, server, webSocketPath, bufferSize),
-                                                               WebSocketTx<T>(stateReader, statefulService, server, webSocketPath, bufferSize),
-                                                               WebSocketRx<T>(stateUpdater, statefulService, server, webSocketPath, bufferSize)
-    {
-        // Create the FreeRTOS timer with a period of 1000ms (1 second)
-        timerHandle = xTimerCreate("CleanupTimer", pdMS_TO_TICKS(WEB_SOCKET_CLIENT_CLEANUP_INTERVAL), pdTRUE, this, timerCallbackStatic);
-
-        // Start the timer (it will call the cleanupFunction every 1000ms)
-        xTimerStart(timerHandle, portMAX_DELAY);
-    }
-
-protected:
-    void cleanupClientsWrapper()
-    {
-        WebSocketServerConnector<T>::_webSocket.cleanupClients();
-        // ESP_LOGV("WebSocket Server", "Cleanup WS Clients");
-        WebSocketServerConnector<T>::_webSocket.pingAll();
-    }
-
-    static void timerCallbackStatic(TimerHandle_t xTimer)
-    {
-        // Get the instance of the class from the timer's user data
-        WebSocketServer *instance = static_cast<WebSocketServer *>(pvTimerGetTimerID(xTimer));
-        // Call the member function using the class instance
-        if (instance)
-        {
-            instance->cleanupClientsWrapper();
-        }
-    }
-
-    void onWSEvent(AsyncWebSocket *server,
-                   AsyncWebSocketClient *client,
-                   AwsEventType type,
-                   void *arg,
-                   uint8_t *data,
-                   size_t len)
-    {
-        WebSocketRx<T>::onWSEvent(server, client, type, arg, data, len);
-        WebSocketTx<T>::onWSEvent(server, client, type, arg, data, len);
-    }
-
-private:
-    TimerHandle_t timerHandle;
 };
 
 #endif

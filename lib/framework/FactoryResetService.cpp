@@ -16,18 +16,28 @@
 
 using namespace std::placeholders;
 
-FactoryResetService::FactoryResetService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager) : fs(fs)
+FactoryResetService::FactoryResetService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager) : _server(server),
+                                                                                                                fs(fs),
+                                                                                                                _securityManager(securityManager)
 {
-    server->on(FACTORY_RESET_SERVICE_PATH,
-               HTTP_POST,
-               securityManager->wrapRequest(std::bind(&FactoryResetService::handleRequest, this, _1),
-                                            AuthenticationPredicates::IS_ADMIN));
+    ESP_LOGV("FactoryResetService", "Factory Reset Service initialized");
 }
 
-void FactoryResetService::handleRequest(AsyncWebServerRequest *request)
+void FactoryResetService::begin()
 {
-    request->onDisconnect(std::bind(&FactoryResetService::factoryReset, this));
-    request->send(200);
+    _server->on(FACTORY_RESET_SERVICE_PATH,
+                HTTP_POST,
+                _securityManager->wrapRequest(std::bind(&FactoryResetService::handleRequest, this, _1), AuthenticationPredicates::IS_ADMIN));
+
+    ESP_LOGV("FactoryResetService", "Registered POST endpoint: %s", FACTORY_RESET_SERVICE_PATH);
+}
+
+esp_err_t FactoryResetService::handleRequest(PsychicRequest *request)
+{
+    request->reply(200);
+    factoryReset();
+
+    return ESP_OK;
 }
 
 /**

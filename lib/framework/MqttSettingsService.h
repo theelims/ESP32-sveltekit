@@ -20,6 +20,7 @@
 #include <FSPersistence.h>
 #include <AsyncMqttClient.h>
 #include <SettingValue.h>
+#include <WiFi.h>
 
 #ifndef FACTORY_MQTT_ENABLED
 #define FACTORY_MQTT_ENABLED false
@@ -113,7 +114,7 @@ public:
 class MqttSettingsService : public StatefulService<MqttSettings>
 {
 public:
-    MqttSettingsService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager);
+    MqttSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager);
     ~MqttSettingsService();
 
     void begin();
@@ -128,6 +129,8 @@ protected:
     void onConfigUpdated();
 
 private:
+    PsychicHttpServer *_server;
+    SecurityManager *_securityManager;
     HttpEndpoint<MqttSettings> _httpEndpoint;
     FSPersistence<MqttSettings> _fsPersistence;
 

@@ -17,12 +17,29 @@
 
 #if CONFIG_IDF_TARGET_ESP32 // ESP32/PICO-D4
 #include "esp32/rom/rtc.h"
+#define ESP_PLATFORM "ESP32";
 #elif CONFIG_IDF_TARGET_ESP32S2
-#include "esp32s2/rom/rtc.h"
+#define ESP_PLATFORM "ESP32-S2";
 #elif CONFIG_IDF_TARGET_ESP32C3
 #include "esp32c3/rom/rtc.h"
+#define ESP_PLATFORM "ESP32-C3";
 #elif CONFIG_IDF_TARGET_ESP32S3
 #include "esp32s3/rom/rtc.h"
+#define ESP_PLATFORM "ESP32-S3";
+#else
+#error Target CONFIG_IDF_TARGET is not supported
+#endif
+
+#ifndef ARDUINO_VERSION
+#ifndef STRINGIZE
+#define STRINGIZE(s) #s
+#endif
+#if TASMOTA_SDK
+#define ARDUINO_VERSION_STR(major, minor, patch) "Tasmota Arduino v" STRINGIZE(major) "." STRINGIZE(minor) "." STRINGIZE(patch)
+#else
+#define ARDUINO_VERSION_STR(major, minor, patch) "ESP32 Arduino v" STRINGIZE(major) "." STRINGIZE(minor) "." STRINGIZE(patch)
+#endif
+#define ARDUINO_VERSION ARDUINO_VERSION_STR(ESP_ARDUINO_VERSION_MAJOR, ESP_ARDUINO_VERSION_MINOR, ESP_ARDUINO_VERSION_PATCH)
 #endif
 
 String verbosePrintResetReason(int reason)
@@ -54,7 +71,7 @@ String verbosePrintResetReason(int reason)
         return ("RTC Watch dog Reset digital core");
         break;
     case 10:
-        return ("Instrusion tested to reset CPU");
+        return ("Intrusion tested to reset CPU");
         break;
     case 11:
         return ("Time Group reset CPU");
@@ -79,29 +96,42 @@ String verbosePrintResetReason(int reason)
     }
 }
 
-SystemStatus::SystemStatus(AsyncWebServer *server, SecurityManager *securityManager)
+SystemStatus::SystemStatus(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
+                                                                                          _securityManager(securityManager)
 {
-    server->on(SYSTEM_STATUS_SERVICE_PATH,
-               HTTP_GET,
-               securityManager->wrapRequest(std::bind(&SystemStatus::systemStatus, this, std::placeholders::_1),
-                                            AuthenticationPredicates::IS_AUTHENTICATED));
+    ESP_LOGV("SystemStatus", "System Status Service initialized");
 }
 
-void SystemStatus::systemStatus(AsyncWebServerRequest *request)
+void SystemStatus::begin()
 {
-    AsyncJsonResponse *response = new AsyncJsonResponse(false, MAX_ESP_STATUS_SIZE);
-    JsonObject root = response->getRoot();
-    root["esp_platform"] = "esp32";
+    _server->on(SYSTEM_STATUS_SERVICE_PATH,
+                HTTP_GET,
+                _securityManager->wrapRequest(std::bind(&SystemStatus::systemStatus, this, std::placeholders::_1),
+                                              AuthenticationPredicates::IS_AUTHENTICATED));
+
+    ESP_LOGV("SystemStatus", "Registered GET endpoint: %s", SYSTEM_STATUS_SERVICE_PATH);
+}
+
+esp_err_t SystemStatus::systemStatus(PsychicRequest *request)
+{
+    PsychicJsonResponse response = PsychicJsonResponse(request, false, MAX_ESP_STATUS_SIZE);
+    JsonObject root = response.getRoot();
+
+    root["esp_platform"] = ESP_PLATFORM;
     root["firmware_version"] = APP_VERSION;
     root["max_alloc_heap"] = ESP.getMaxAllocHeap();
     root["psram_size"] = ESP.getPsramSize();
     root["free_psram"] = ESP.getFreePsram();
     root["cpu_freq_mhz"] = ESP.getCpuFreqMHz();
+    root["cpu_type"] = ESP.getChipModel();
+    root["cpu_rev"] = ESP.getChipRevision();
+    root["cpu_cores"] = ESP.getChipCores();
     root["free_heap"] = ESP.getFreeHeap();
     root["min_free_heap"] = ESP.getMinFreeHeap();
     root["sketch_size"] = ESP.getSketchSize();
     root["free_sketch_space"] = ESP.getFreeSketchSpace();
     root["sdk_version"] = ESP.getSdkVersion();
+    root["arduino_version"] = ARDUINO_VERSION;
     root["flash_chip_size"] = ESP.getFlashChipSize();
     root["flash_chip_speed"] = ESP.getFlashChipSpeed();
     root["fs_total"] = ESPFS.totalBytes();
@@ -109,6 +139,6 @@ void SystemStatus::systemStatus(AsyncWebServerRequest *request)
     root["core_temp"] = temperatureRead();
     root["cpu_reset_reason"] = verbosePrintResetReason(rtc_get_reset_reason(0));
     root["uptime"] = millis() / 1000;
-    response->setLength();
-    request->send(response);
+
+    return response.send();
 }

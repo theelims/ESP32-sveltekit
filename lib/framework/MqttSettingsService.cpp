@@ -36,27 +36,24 @@ static char *retainCstr(const char *cstr, char **ptr)
     return *ptr;
 }
 
-MqttSettingsService::MqttSettingsService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager) : _httpEndpoint(MqttSettings::read, MqttSettings::update, this, server, MQTT_SETTINGS_SERVICE_PATH, securityManager),
-                                                                                                             _fsPersistence(MqttSettings::read, MqttSettings::update, this, fs, MQTT_SETTINGS_FILE),
-                                                                                                             _retainedHost(nullptr),
-                                                                                                             _retainedClientId(nullptr),
-                                                                                                             _retainedUsername(nullptr),
-                                                                                                             _retainedPassword(nullptr),
-                                                                                                             _reconfigureMqtt(false),
-                                                                                                             _disconnectedAt(0),
-                                                                                                             _disconnectReason(AsyncMqttClientDisconnectReason::TCP_DISCONNECTED),
-                                                                                                             _mqttClient()
+MqttSettingsService::MqttSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager) : _server(server),
+                                                                                                                _securityManager(securityManager),
+                                                                                                                _httpEndpoint(MqttSettings::read, MqttSettings::update, this, server, MQTT_SETTINGS_SERVICE_PATH, securityManager),
+                                                                                                                _fsPersistence(MqttSettings::read, MqttSettings::update, this, fs, MQTT_SETTINGS_FILE),
+                                                                                                                _retainedHost(nullptr),
+                                                                                                                _retainedClientId(nullptr),
+                                                                                                                _retainedUsername(nullptr),
+                                                                                                                _retainedPassword(nullptr),
+                                                                                                                _reconfigureMqtt(false),
+                                                                                                                _disconnectedAt(0),
+                                                                                                                _disconnectReason(AsyncMqttClientDisconnectReason::TCP_DISCONNECTED),
+                                                                                                                _mqttClient()
 {
-    WiFi.onEvent(
-        std::bind(&MqttSettingsService::onStationModeDisconnected, this, std::placeholders::_1, std::placeholders::_2),
-        WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
-    WiFi.onEvent(std::bind(&MqttSettingsService::onStationModeGotIP, this, std::placeholders::_1, std::placeholders::_2),
-                 WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
-    _mqttClient.onConnect(std::bind(&MqttSettingsService::onMqttConnect, this, std::placeholders::_1));
-    _mqttClient.onDisconnect(std::bind(&MqttSettingsService::onMqttDisconnect, this, std::placeholders::_1));
     addUpdateHandler([&](const String &originId)
                      { onConfigUpdated(); },
                      false);
+
+    ESP_LOGV("MqttSettingsService", "MQTT Settings Service initialized");
 }
 
 MqttSettingsService::~MqttSettingsService()
@@ -65,6 +62,15 @@ MqttSettingsService::~MqttSettingsService()
 
 void MqttSettingsService::begin()
 {
+    WiFi.onEvent(
+        std::bind(&MqttSettingsService::onStationModeDisconnected, this, std::placeholders::_1, std::placeholders::_2),
+        WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+    WiFi.onEvent(std::bind(&MqttSettingsService::onStationModeGotIP, this, std::placeholders::_1, std::placeholders::_2),
+                 WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
+    _mqttClient.onConnect(std::bind(&MqttSettingsService::onMqttConnect, this, std::placeholders::_1));
+    _mqttClient.onDisconnect(std::bind(&MqttSettingsService::onMqttDisconnect, this, std::placeholders::_1));
+
+    _httpEndpoint.begin();
     _fsPersistence.readFromFS();
 }
 

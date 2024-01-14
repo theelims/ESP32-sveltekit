@@ -13,10 +13,9 @@
 
 #include <BatteryService.h>
 
-BatteryService::BatteryService(NotificationEvents *notificationEvents)
+BatteryService::BatteryService(NotificationEvents *notificationEvents) : _notificationEvents(notificationEvents)
 {
-    // Store SSE
-    _notificationEvents = notificationEvents;
+    ESP_LOGV("BatteryService", "Battery Service initialized");
 }
 
 void BatteryService::batteryEvent()

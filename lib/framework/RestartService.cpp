@@ -14,16 +14,25 @@
 
 #include <RestartService.h>
 
-RestartService::RestartService(AsyncWebServer *server, SecurityManager *securityManager)
+RestartService::RestartService(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
+                                                                                              _securityManager(securityManager)
 {
-    server->on(RESTART_SERVICE_PATH,
-               HTTP_POST,
-               securityManager->wrapRequest(std::bind(&RestartService::restart, this, std::placeholders::_1),
-                                            AuthenticationPredicates::IS_ADMIN));
+    ESP_LOGV("RestartService", "Restart Service initialized");
 }
 
-void RestartService::restart(AsyncWebServerRequest *request)
+void RestartService::begin()
 {
-    request->onDisconnect(RestartService::restartNow);
-    request->send(200);
+    _server->on(RESTART_SERVICE_PATH,
+                HTTP_POST,
+                _securityManager->wrapRequest(std::bind(&RestartService::restart, this, std::placeholders::_1),
+                                              AuthenticationPredicates::IS_ADMIN));
+
+    ESP_LOGV("RestartService", "Registered POST endpoint: %s", RESTART_SERVICE_PATH);
+}
+
+esp_err_t RestartService::restart(PsychicRequest *request)
+{
+    request->reply(200);
+    restartNow();
+    return ESP_OK;
 }

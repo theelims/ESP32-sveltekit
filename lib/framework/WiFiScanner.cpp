@@ -14,35 +14,46 @@
 
 #include <WiFiScanner.h>
 
-WiFiScanner::WiFiScanner(AsyncWebServer *server, SecurityManager *securityManager)
+WiFiScanner::WiFiScanner(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
+                                                                                        _securityManager(securityManager)
 {
-    server->on(SCAN_NETWORKS_SERVICE_PATH,
-               HTTP_GET,
-               securityManager->wrapRequest(std::bind(&WiFiScanner::scanNetworks, this, std::placeholders::_1),
-                                            AuthenticationPredicates::IS_ADMIN));
-    server->on(LIST_NETWORKS_SERVICE_PATH,
-               HTTP_GET,
-               securityManager->wrapRequest(std::bind(&WiFiScanner::listNetworks, this, std::placeholders::_1),
-                                            AuthenticationPredicates::IS_ADMIN));
+    ESP_LOGV("WiFiScanner", "WiFi Scanner initialized");
+}
+
+void WiFiScanner::begin()
+{
+    _server->on(SCAN_NETWORKS_SERVICE_PATH,
+                HTTP_GET,
+                _securityManager->wrapRequest(std::bind(&WiFiScanner::scanNetworks, this, std::placeholders::_1),
+                                              AuthenticationPredicates::IS_ADMIN));
+
+    ESP_LOGV("WiFiScanner", "Registered GET endpoint: %s", SCAN_NETWORKS_SERVICE_PATH);
+
+    _server->on(LIST_NETWORKS_SERVICE_PATH,
+                HTTP_GET,
+                _securityManager->wrapRequest(std::bind(&WiFiScanner::listNetworks, this, std::placeholders::_1),
+                                              AuthenticationPredicates::IS_ADMIN));
+
+    ESP_LOGV("WiFiScanner", "Registered GET endpoint: %s", LIST_NETWORKS_SERVICE_PATH);
 };
 
-void WiFiScanner::scanNetworks(AsyncWebServerRequest *request)
+esp_err_t WiFiScanner::scanNetworks(PsychicRequest *request)
 {
     if (WiFi.scanComplete() != -1)
     {
         WiFi.scanDelete();
         WiFi.scanNetworks(true);
     }
-    request->send(202);
+    request->reply(202);
 }
 
-void WiFiScanner::listNetworks(AsyncWebServerRequest *request)
+esp_err_t WiFiScanner::listNetworks(PsychicRequest *request)
 {
     int numNetworks = WiFi.scanComplete();
     if (numNetworks > -1)
     {
-        AsyncJsonResponse *response = new AsyncJsonResponse(false, MAX_WIFI_SCANNER_SIZE);
-        JsonObject root = response->getRoot();
+        PsychicJsonResponse response = PsychicJsonResponse(request, false, MAX_WIFI_SCANNER_SIZE);
+        JsonObject root = response.getRoot();
         JsonArray networks = root.createNestedArray("networks");
         for (int i = 0; i < numNetworks; i++)
         {
@@ -53,15 +64,15 @@ void WiFiScanner::listNetworks(AsyncWebServerRequest *request)
             network["channel"] = WiFi.channel(i);
             network["encryption_type"] = (uint8_t)WiFi.encryptionType(i);
         }
-        response->setLength();
-        request->send(response);
+
+        return response.send();
     }
     else if (numNetworks == -1)
     {
-        request->send(202);
+        return request->reply(202);
     }
     else
     {
-        scanNetworks(request);
+        return scanNetworks(request);
     }
 }

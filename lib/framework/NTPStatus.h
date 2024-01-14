@@ -17,12 +17,10 @@
 
 #include <time.h>
 #include <WiFi.h>
-#include <AsyncTCP.h>
 #include <lwip/apps/sntp.h>
 
 #include <ArduinoJson.h>
-#include <AsyncJson.h>
-#include <ESPAsyncWebServer.h>
+#include <PsychicHttp.h>
 #include <SecurityManager.h>
 
 #define MAX_NTP_STATUS_SIZE 1024
@@ -31,10 +29,14 @@
 class NTPStatus
 {
 public:
-    NTPStatus(AsyncWebServer *server, SecurityManager *securityManager);
+    NTPStatus(PsychicHttpServer *server, SecurityManager *securityManager);
+
+    void begin();
 
 private:
-    void ntpStatus(AsyncWebServerRequest *request);
+    PsychicHttpServer *_server;
+    SecurityManager *_securityManager;
+    esp_err_t ntpStatus(PsychicRequest *request);
 };
 
 #endif // end NTPStatus_h

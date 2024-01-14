@@ -91,7 +91,7 @@ private:
     HttpEndpoint<LightState> _httpEndpoint;
     MqttPubSub<LightState> _mqttPubSub;
     WebSocketServer<LightState> _webSocketServer;
-    // WebSocketClient<LightState> _webSocketClient;
+    //  WebSocketClient<LightState> _webSocketClient;
     AsyncMqttClient *_mqttClient;
     LightMqttSettingsService *_lightMqttSettingsService;
 

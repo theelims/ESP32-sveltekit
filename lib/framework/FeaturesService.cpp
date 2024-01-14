@@ -14,64 +14,69 @@
 
 #include <FeaturesService.h>
 
-FeaturesService::FeaturesService(AsyncWebServer *server)
+FeaturesService::FeaturesService(PsychicHttpServer *server) : _server(server)
 {
-    server->on(FEATURES_SERVICE_PATH, HTTP_GET, std::bind(&FeaturesService::features, this, std::placeholders::_1));
+    ESP_LOGV("FeaturesService", "Features Service initialized");
 }
 
-void FeaturesService::features(AsyncWebServerRequest *request)
+void FeaturesService::begin()
 {
-    AsyncJsonResponse *response = new AsyncJsonResponse(false, MAX_FEATURES_SIZE);
-    JsonObject root = response->getRoot();
+    _server->on(FEATURES_SERVICE_PATH, HTTP_GET, [&](PsychicRequest *request)
+                {
+                    PsychicJsonResponse response = PsychicJsonResponse(request, false, MAX_FEATURES_SIZE);
+                    JsonObject root = response.getRoot();
+
 #if FT_ENABLED(FT_SECURITY)
-    root["security"] = true;
+                    root["security"] = true;
 #else
-    root["security"] = false;
+                    root["security"] = false;
 #endif
 #if FT_ENABLED(FT_MQTT)
-    root["mqtt"] = true;
+                    root["mqtt"] = true;
 #else
-    root["mqtt"] = false;
+                    root["mqtt"] = false;
 #endif
 #if FT_ENABLED(FT_NTP)
-    root["ntp"] = true;
+                    root["ntp"] = true;
 #else
-    root["ntp"] = false;
+                    root["ntp"] = false;
 #endif
 #if FT_ENABLED(FT_UPLOAD_FIRMWARE)
-    root["upload_firmware"] = true;
+                    root["upload_firmware"] = true;
 #else
-    root["upload_firmware"] = false;
+                    root["upload_firmware"] = false;
 #endif
 #if FT_ENABLED(FT_DOWNLOAD_FIRMWARE)
-    root["download_firmware"] = true;
+                    root["download_firmware"] = true;
 #else
-    root["download_firmware"] = false;
+                    root["download_firmware"] = false;
 #endif
 #if FT_ENABLED(FT_SLEEP)
-    root["sleep"] = true;
+                    root["sleep"] = true;
 #else
-    root["sleep"] = false;
+                    root["sleep"] = false;
 #endif
 #if FT_ENABLED(FT_BATTERY)
-    root["battery"] = true;
+                    root["battery"] = true;
 #else
-    root["battery"] = false;
+                    root["battery"] = false;
 #endif
 #if FT_ENABLED(FT_ANALYTICS)
-    root["analytics"] = true;
+                    root["analytics"] = true;
 #else
-    root["analytics"] = false;
+                    root["analytics"] = false;
 #endif
-    root["firmware_version"] = APP_VERSION;
+                    root["firmware_version"] = APP_VERSION;
 
-    // Iterate over user features
-    for (auto &element : userFeatures)
-    {
-        root[element.feature.c_str()] = element.enabled;
-    }
-    response->setLength();
-    request->send(response);
+                    // Iterate over user features
+                    for (auto &element : userFeatures)
+                    {
+                        root[element.feature.c_str()] = element.enabled;
+                    }
+
+                    return response.send(); });
+
+    ESP_LOGV("FeaturesService", "Registered GET endpoint: %s", FEATURES_SERVICE_PATH);
 }
 
 void FeaturesService::addFeature(String feature, bool enabled)

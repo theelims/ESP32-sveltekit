@@ -14,26 +14,32 @@
 
 #include <MqttStatus.h>
 
-MqttStatus::MqttStatus(AsyncWebServer *server,
-                       MqttSettingsService *mqttSettingsService,
-                       SecurityManager *securityManager) : _mqttSettingsService(mqttSettingsService)
+MqttStatus::MqttStatus(PsychicHttpServer *server, MqttSettingsService *mqttSettingsService, SecurityManager *securityManager) : _server(server),
+                                                                                                                                _securityManager(securityManager),
+                                                                                                                                _mqttSettingsService(mqttSettingsService)
 {
-    server->on(MQTT_STATUS_SERVICE_PATH,
-               HTTP_GET,
-               securityManager->wrapRequest(std::bind(&MqttStatus::mqttStatus, this, std::placeholders::_1),
-                                            AuthenticationPredicates::IS_AUTHENTICATED));
+    ESP_LOGV("MqttStatus", "MQTT Status Service initialized");
 }
 
-void MqttStatus::mqttStatus(AsyncWebServerRequest *request)
+void MqttStatus::begin()
 {
-    AsyncJsonResponse *response = new AsyncJsonResponse(false, MAX_MQTT_STATUS_SIZE);
-    JsonObject root = response->getRoot();
+    _server->on(MQTT_STATUS_SERVICE_PATH,
+                HTTP_GET,
+                _securityManager->wrapRequest(std::bind(&MqttStatus::mqttStatus, this, std::placeholders::_1),
+                                              AuthenticationPredicates::IS_AUTHENTICATED));
+
+    ESP_LOGV("MqttStatus", "Registered GET endpoint: %s", MQTT_STATUS_SERVICE_PATH);
+}
+
+esp_err_t MqttStatus::mqttStatus(PsychicRequest *request)
+{
+    PsychicJsonResponse response = PsychicJsonResponse(request, false, MAX_MQTT_STATUS_SIZE);
+    JsonObject root = response.getRoot();
 
     root["enabled"] = _mqttSettingsService->isEnabled();
     root["connected"] = _mqttSettingsService->isConnected();
     root["client_id"] = _mqttSettingsService->getClientId();
     root["disconnect_reason"] = (uint8_t)_mqttSettingsService->getDisconnectReason();
 
-    response->setLength();
-    request->send(response);
+    return response.send();
 }

@@ -7,11 +7,14 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Added postscript to platform.io build process to copy, rename and calculate MD5 checksum of \*.bin file. These files are ready for uploading to the Github Release page.
+- Added more information to SystemStatus API
+- Added generateToken API for security settings
 
 ### Changed
 
 - Better route protection for user page with deep link.
 - Changed build_interface.py script to check for modified files in the interface sources before re-building the interface. Saves some time on the compilation process.
+- Upload firmware binary allows uploading of MD5 checksum file in advance to verify downloaded firmware package.
 
 ### Removed
 

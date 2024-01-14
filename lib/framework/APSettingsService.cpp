@@ -14,19 +14,23 @@
 
 #include <APSettingsService.h>
 
-APSettingsService::APSettingsService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager) : _httpEndpoint(APSettings::read, APSettings::update, this, server, AP_SETTINGS_SERVICE_PATH, securityManager),
-                                                                                                         _fsPersistence(APSettings::read, APSettings::update, this, fs, AP_SETTINGS_FILE),
-                                                                                                         _dnsServer(nullptr),
-                                                                                                         _lastManaged(0),
-                                                                                                         _reconfigureAp(false)
+APSettingsService::APSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager) : _server(server),
+                                                                                                            _securityManager(securityManager),
+                                                                                                            _httpEndpoint(APSettings::read, APSettings::update, this, server, AP_SETTINGS_SERVICE_PATH, securityManager),
+                                                                                                            _fsPersistence(APSettings::read, APSettings::update, this, fs, AP_SETTINGS_FILE),
+                                                                                                            _dnsServer(nullptr),
+                                                                                                            _lastManaged(0),
+                                                                                                            _reconfigureAp(false)
 {
     addUpdateHandler([&](const String &originId)
                      { reconfigureAP(); },
                      false);
+    ESP_LOGV("APSettingsService", "AP Settings Service initialized");
 }
 
 void APSettingsService::begin()
 {
+    _httpEndpoint.begin();
     _fsPersistence.readFromFS();
     reconfigureAP();
 }
@@ -82,6 +86,9 @@ void APSettingsService::startAP()
     Serial.println(F("Starting software access point"));
     WiFi.softAPConfig(_state.localIP, _state.gatewayIP, _state.subnetMask);
     WiFi.softAP(_state.ssid.c_str(), _state.password.c_str(), _state.channel, _state.ssidHidden, _state.maxClients);
+#if CONFIG_IDF_TARGET_ESP32C3
+    WiFi.setTxPower(WIFI_POWER_8_5dBm); // https://www.wemos.cc/en/latest/c3/c3_mini_1_0_0.html#about-wifi
+#endif
     if (!_dnsServer)
     {
         IPAddress apIp = WiFi.softAPIP();

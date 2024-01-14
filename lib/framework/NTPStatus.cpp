@@ -14,12 +14,20 @@
 
 #include <NTPStatus.h>
 
-NTPStatus::NTPStatus(AsyncWebServer *server, SecurityManager *securityManager)
+NTPStatus::NTPStatus(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
+                                                                                    _securityManager(securityManager)
 {
-    server->on(NTP_STATUS_SERVICE_PATH,
-               HTTP_GET,
-               securityManager->wrapRequest(std::bind(&NTPStatus::ntpStatus, this, std::placeholders::_1),
-                                            AuthenticationPredicates::IS_AUTHENTICATED));
+    ESP_LOGV("NTPStatus", "NTP Status Service initialized");
+}
+
+void NTPStatus::begin()
+{
+    _server->on(NTP_STATUS_SERVICE_PATH,
+                HTTP_GET,
+                _securityManager->wrapRequest(std::bind(&NTPStatus::ntpStatus, this, std::placeholders::_1),
+                                              AuthenticationPredicates::IS_AUTHENTICATED));
+
+    ESP_LOGV("NTPStatus", "Registered GET endpoint: %s", NTP_STATUS_SERVICE_PATH);
 }
 
 /*
@@ -44,10 +52,10 @@ String toLocalTimeString(tm *time)
     return formatTime(time, "%FT%T");
 }
 
-void NTPStatus::ntpStatus(AsyncWebServerRequest *request)
+esp_err_t NTPStatus::ntpStatus(PsychicRequest *request)
 {
-    AsyncJsonResponse *response = new AsyncJsonResponse(false, MAX_NTP_STATUS_SIZE);
-    JsonObject root = response->getRoot();
+    PsychicJsonResponse response = PsychicJsonResponse(request, false, MAX_NTP_STATUS_SIZE);
+    JsonObject root = response.getRoot();
 
     // grab the current instant in unix seconds
     time_t now = time(nullptr);
@@ -67,6 +75,5 @@ void NTPStatus::ntpStatus(AsyncWebServerRequest *request)
     // device uptime in seconds
     root["uptime"] = millis() / 1000;
 
-    response->setLength();
-    request->send(response);
+    return response.send();
 }

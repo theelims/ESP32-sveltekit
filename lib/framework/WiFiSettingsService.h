@@ -21,6 +21,8 @@
 #include <HttpEndpoint.h>
 #include <JsonUtils.h>
 #include <NotificationEvents.h>
+#include <SecurityManager.h>
+#include <PsychicHttp.h>
 
 #ifndef FACTORY_WIFI_SSID
 #define FACTORY_WIFI_SSID ""
@@ -108,15 +110,17 @@ public:
 class WiFiSettingsService : public StatefulService<WiFiSettings>
 {
 public:
-    WiFiSettingsService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager, NotificationEvents *notificationEvents);
+    WiFiSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, NotificationEvents *notificationEvents);
 
+    void initWiFi();
     void begin();
     void loop();
     String getHostname();
 
 private:
-    HttpEndpoint<WiFiSettings>
-        _httpEndpoint;
+    PsychicHttpServer *_server;
+    SecurityManager *_securityManager;
+    HttpEndpoint<WiFiSettings> _httpEndpoint;
     FSPersistence<WiFiSettings> _fsPersistence;
     NotificationEvents *_notificationEvents;
     unsigned long _lastConnectionAttempt;

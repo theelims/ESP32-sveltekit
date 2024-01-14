@@ -14,24 +14,31 @@
 
 #include <APStatus.h>
 
-APStatus::APStatus(AsyncWebServer *server, SecurityManager *securityManager, APSettingsService *apSettingsService) : _apSettingsService(apSettingsService)
+APStatus::APStatus(PsychicHttpServer *server, SecurityManager *securityManager, APSettingsService *apSettingsService) : _server(server),
+                                                                                                                        _securityManager(securityManager),
+                                                                                                                        _apSettingsService(apSettingsService)
 {
-    server->on(AP_STATUS_SERVICE_PATH,
-               HTTP_GET,
-               securityManager->wrapRequest(std::bind(&APStatus::apStatus, this, std::placeholders::_1),
-                                            AuthenticationPredicates::IS_AUTHENTICATED));
+    ESP_LOGV("APStatus", "AP Status Service initialized");
+}
+void APStatus::begin()
+{
+    _server->on(AP_STATUS_SERVICE_PATH,
+                HTTP_GET,
+                _securityManager->wrapRequest(std::bind(&APStatus::apStatus, this, std::placeholders::_1),
+                                              AuthenticationPredicates::IS_AUTHENTICATED));
+
+    ESP_LOGV("APStatus", "Registered GET endpoint: %s", AP_STATUS_SERVICE_PATH);
 }
 
-void APStatus::apStatus(AsyncWebServerRequest *request)
+esp_err_t APStatus::apStatus(PsychicRequest *request)
 {
-    AsyncJsonResponse *response = new AsyncJsonResponse(false, MAX_AP_STATUS_SIZE);
-    JsonObject root = response->getRoot();
+    PsychicJsonResponse response = PsychicJsonResponse(request, false, MAX_AP_STATUS_SIZE);
+    JsonObject root = response.getRoot();
 
     root["status"] = _apSettingsService->getAPNetworkStatus();
     root["ip_address"] = WiFi.softAPIP().toString();
     root["mac_address"] = WiFi.softAPmacAddress();
     root["station_num"] = WiFi.softAPgetStationNum();
 
-    response->setLength();
-    request->send(response);
+    return response.send();
 }

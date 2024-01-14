@@ -17,6 +17,7 @@
 
 #include <HttpEndpoint.h>
 #include <FSPersistence.h>
+#include <WiFi.h>
 
 #include <time.h>
 #include <lwip/apps/sntp.h>
@@ -72,19 +73,20 @@ public:
 class NTPSettingsService : public StatefulService<NTPSettings>
 {
 public:
-    NTPSettingsService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager);
+    NTPSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager);
 
     void begin();
 
 private:
+    PsychicHttpServer *_server;
+    SecurityManager *_securityManager;
     HttpEndpoint<NTPSettings> _httpEndpoint;
     FSPersistence<NTPSettings> _fsPersistence;
-    AsyncCallbackJsonWebHandler _timeHandler;
 
     void onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t info);
     void onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info);
     void configureNTP();
-    void configureTime(AsyncWebServerRequest *request, JsonVariant &json);
+    esp_err_t configureTime(PsychicRequest *request, JsonVariant &json);
 };
 
 #endif // end NTPSettingsService_h

@@ -14,10 +14,9 @@
  **/
 
 #include <WiFi.h>
-#include <AsyncTCP.h>
 #include <ESPmDNS.h>
 
-#include <ESPAsyncWebServer.h>
+#include <PsychicHttp.h>
 #include <SecurityManager.h>
 
 #define SLEEP_SERVICE_PATH "/rest/sleep"
@@ -33,7 +32,9 @@
 class SleepService
 {
 public:
-    SleepService(AsyncWebServer *server, SecurityManager *securityManager);
+    SleepService(PsychicHttpServer *server, SecurityManager *securityManager);
+
+    void begin();
 
     static void sleepNow();
 
@@ -43,7 +44,9 @@ public:
     }
 
 private:
-    void sleep(AsyncWebServerRequest *request);
+    PsychicHttpServer *_server;
+    SecurityManager *_securityManager;
+    esp_err_t sleep(PsychicRequest *request);
 
 protected:
     static void (*_callbackSleep)();

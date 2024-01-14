@@ -19,8 +19,7 @@
 #include <AsyncTCP.h>
 
 #include <ArduinoJson.h>
-#include <AsyncJson.h>
-#include <ESPAsyncWebServer.h>
+#include <PsychicHttp.h>
 #include <IPAddress.h>
 #include <SecurityManager.h>
 #include <APSettingsService.h>
@@ -31,11 +30,15 @@
 class APStatus
 {
 public:
-    APStatus(AsyncWebServer *server, SecurityManager *securityManager, APSettingsService *apSettingsService);
+    APStatus(PsychicHttpServer *server, SecurityManager *securityManager, APSettingsService *apSettingsService);
+
+    void begin();
 
 private:
+    PsychicHttpServer *_server;
+    SecurityManager *_securityManager;
     APSettingsService *_apSettingsService;
-    void apStatus(AsyncWebServerRequest *request);
+    esp_err_t apStatus(PsychicRequest *request);
 };
 
 #endif // end APStatus_h

@@ -16,51 +16,39 @@
 
 #if FT_ENABLED(FT_SECURITY)
 
-AuthenticationService::AuthenticationService(AsyncWebServer *server, SecurityManager *securityManager) : _securityManager(securityManager),
-                                                                                                         _signInHandler(SIGN_IN_PATH,
-                                                                                                                        std::bind(&AuthenticationService::signIn, this, std::placeholders::_1, std::placeholders::_2))
+AuthenticationService::AuthenticationService(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
+                                                                                                            _securityManager(securityManager)
 {
-    server->on(VERIFY_AUTHORIZATION_PATH,
-               HTTP_GET,
-               std::bind(&AuthenticationService::verifyAuthorization, this, std::placeholders::_1));
-    _signInHandler.setMethod(HTTP_POST);
-    _signInHandler.setMaxContentLength(MAX_AUTHENTICATION_SIZE);
-    server->addHandler(&_signInHandler);
+    ESP_LOGV("AuthenticationService", "Authentication Service initialized");
 }
 
-/**
- * Verifys that the request supplied a valid JWT.
- */
-void AuthenticationService::verifyAuthorization(AsyncWebServerRequest *request)
+void AuthenticationService::begin()
 {
-    Authentication authentication = _securityManager->authenticateRequest(request);
-    request->send(authentication.authenticated ? 200 : 401);
-}
-
-/**
- * Signs in a user if the username and password match. Provides a JWT to be used in the Authorization header in
- * subsequent requests.
- */
-void AuthenticationService::signIn(AsyncWebServerRequest *request, JsonVariant &json)
-{
-    if (json.is<JsonObject>())
-    {
-        String username = json["username"];
-        String password = json["password"];
-        Authentication authentication = _securityManager->authenticate(username, password);
-        if (authentication.authenticated)
-        {
-            User *user = authentication.user;
-            AsyncJsonResponse *response = new AsyncJsonResponse(false, MAX_AUTHENTICATION_SIZE);
-            JsonObject jsonObject = response->getRoot();
-            jsonObject["access_token"] = _securityManager->generateJWT(user);
-            response->setLength();
-            request->send(response);
-            return;
+    // Signs in a user if the username and password match. Provides a JWT to be used in the Authorization header in subsequent requests
+    _server->on(SIGN_IN_PATH, HTTP_POST, [this](PsychicRequest *request, JsonVariant &json)
+                {
+        if (json.is<JsonObject>()) {
+            String         username       = json["username"];
+            String         password       = json["password"];
+            Authentication authentication = _securityManager->authenticate(username, password);
+            if (authentication.authenticated) {
+                PsychicJsonResponse response = PsychicJsonResponse(request, false, 256);
+                JsonObject          root     = response.getRoot();
+                root["access_token"]         = _securityManager->generateJWT(authentication.user);
+                return response.send();
+            }
         }
-    }
-    AsyncWebServerResponse *response = request->beginResponse(401);
-    request->send(response);
+        return request->reply(401); });
+
+    ESP_LOGV("AuthenticationService", "Registered POST endpoint: %s", SIGN_IN_PATH);
+
+    // Verifies that the request supplied a valid JWT
+    _server->on(VERIFY_AUTHORIZATION_PATH, HTTP_GET, [this](PsychicRequest *request)
+                {
+        Authentication authentication = _securityManager->authenticateRequest(request);
+        return request->reply(authentication.authenticated ? 200 : 401); });
+
+    ESP_LOGV("AuthenticationService", "Registered GET endpoint: %s", VERIFY_AUTHORIZATION_PATH);
 }
 
 #endif // end FT_ENABLED(FT_SECURITY)

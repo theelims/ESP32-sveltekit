@@ -14,28 +14,35 @@
 
 #include <NTPSettingsService.h>
 
-NTPSettingsService::NTPSettingsService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager) : _httpEndpoint(NTPSettings::read, NTPSettings::update, this, server, NTP_SETTINGS_SERVICE_PATH, securityManager),
-                                                                                                           _fsPersistence(NTPSettings::read, NTPSettings::update, this, fs, NTP_SETTINGS_FILE),
-                                                                                                           _timeHandler(TIME_PATH,
-                                                                                                                        securityManager->wrapCallback(
-                                                                                                                            std::bind(&NTPSettingsService::configureTime, this, std::placeholders::_1, std::placeholders::_2),
-                                                                                                                            AuthenticationPredicates::IS_ADMIN))
+NTPSettingsService::NTPSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager) : _server(server),
+                                                                                                              _securityManager(securityManager),
+                                                                                                              _httpEndpoint(NTPSettings::read, NTPSettings::update, this, server, NTP_SETTINGS_SERVICE_PATH, securityManager),
+                                                                                                              _fsPersistence(NTPSettings::read, NTPSettings::update, this, fs, NTP_SETTINGS_FILE)
 {
-    _timeHandler.setMethod(HTTP_POST);
-    _timeHandler.setMaxContentLength(MAX_TIME_SIZE);
-    server->addHandler(&_timeHandler);
+    addUpdateHandler([&](const String &originId)
+                     { configureNTP(); },
+                     false);
+
+    ESP_LOGV("NTPSettingsService", "NTP Settings Service initialized");
+}
+
+void NTPSettingsService::begin()
+{
     WiFi.onEvent(
         std::bind(&NTPSettingsService::onStationModeDisconnected, this, std::placeholders::_1, std::placeholders::_2),
         WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
     WiFi.onEvent(std::bind(&NTPSettingsService::onStationModeGotIP, this, std::placeholders::_1, std::placeholders::_2),
                  WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
-    addUpdateHandler([&](const String &originId)
-                     { configureNTP(); },
-                     false);
-}
 
-void NTPSettingsService::begin()
-{
+    _httpEndpoint.begin();
+    _server->on(TIME_PATH,
+                HTTP_POST,
+                _securityManager->wrapCallback(
+                    std::bind(&NTPSettingsService::configureTime, this, std::placeholders::_1, std::placeholders::_2),
+                    AuthenticationPredicates::IS_ADMIN));
+
+    ESP_LOGV("NTPSettingsService", "Registered POST endpoint: %s", TIME_PATH);
+
     _fsPersistence.readFromFS();
     configureNTP();
 }
@@ -67,7 +74,7 @@ void NTPSettingsService::configureNTP()
     }
 }
 
-void NTPSettingsService::configureTime(AsyncWebServerRequest *request, JsonVariant &json)
+esp_err_t NTPSettingsService::configureTime(PsychicRequest *request, JsonVariant &json)
 {
     if (!sntp_enabled() && json.is<JsonObject>())
     {
@@ -79,11 +86,8 @@ void NTPSettingsService::configureTime(AsyncWebServerRequest *request, JsonVaria
             time_t time = mktime(&tm);
             struct timeval now = {.tv_sec = time};
             settimeofday(&now, nullptr);
-            AsyncWebServerResponse *response = request->beginResponse(200);
-            request->send(response);
-            return;
+            return request->reply(200);
         }
     }
-    AsyncWebServerResponse *response = request->beginResponse(400);
-    request->send(response);
+    return request->reply(400);
 }
