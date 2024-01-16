@@ -102,7 +102,6 @@ DownloadFirmwareService::DownloadFirmwareService(PsychicHttpServer *server, Secu
                                                                                                                                                         _notificationEvents(notificationEvents)
 
 {
-    ESP_LOGV("DownloadFirmwareService", "Download Firmware Service initialized");
 }
 
 void DownloadFirmwareService::begin()

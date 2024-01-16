@@ -49,8 +49,6 @@ public:
             [&](const String &originId)
             { transmitData(nullptr, originId); },
             false);
-
-        ESP_LOGV("WebSocketServer", "WebSocketServer for %s initialized", _webSocketPath.c_str());
     }
 
     void begin()

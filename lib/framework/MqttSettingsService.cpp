@@ -52,8 +52,6 @@ MqttSettingsService::MqttSettingsService(PsychicHttpServer *server, FS *fs, Secu
     addUpdateHandler([&](const String &originId)
                      { onConfigUpdated(); },
                      false);
-
-    ESP_LOGV("MqttSettingsService", "MQTT Settings Service initialized");
 }
 
 MqttSettingsService::~MqttSettingsService()

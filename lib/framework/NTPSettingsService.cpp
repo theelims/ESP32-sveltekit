@@ -22,8 +22,6 @@ NTPSettingsService::NTPSettingsService(PsychicHttpServer *server, FS *fs, Securi
     addUpdateHandler([&](const String &originId)
                      { configureNTP(); },
                      false);
-
-    ESP_LOGV("NTPSettingsService", "NTP Settings Service initialized");
 }
 
 void NTPSettingsService::begin()

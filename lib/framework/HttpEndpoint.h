@@ -37,7 +37,6 @@ public:
                  size_t bufferSize = DEFAULT_BUFFER_SIZE)
         : _stateReader(stateReader), _stateUpdater(stateUpdater), _statefulService(statefulService), _server(server), _servicePath(servicePath), _securityManager(securityManager), _authenticationPredicate(authenticationPredicate), _bufferSize(bufferSize)
     {
-        ESP_LOGV("HttpEndpoint", "HttpEndpoint for %s initialized", _servicePath);
     }
 
     // register the web server on() endpoints

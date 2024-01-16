@@ -25,7 +25,6 @@ APSettingsService::APSettingsService(PsychicHttpServer *server, FS *fs, Security
     addUpdateHandler([&](const String &originId)
                      { reconfigureAP(); },
                      false);
-    ESP_LOGV("APSettingsService", "AP Settings Service initialized");
 }
 
 void APSettingsService::begin()

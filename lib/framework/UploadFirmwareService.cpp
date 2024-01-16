@@ -25,7 +25,6 @@ static FileType fileType = ft_none;
 UploadFirmwareService::UploadFirmwareService(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
                                                                                                             _securityManager(securityManager)
 {
-    ESP_LOGV("UploadFirmwareService", "Upload Firmware Service initialized");
 }
 
 void UploadFirmwareService::begin()

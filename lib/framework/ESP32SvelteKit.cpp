@@ -161,7 +161,6 @@ void ESP32SvelteKit::begin()
     Serial.printf("Running Firmware Version: %s\n", APP_VERSION);
 
     // Start the services
-    ESP_LOGV("ESP32SvelteKit", "Starting services and registering REST endpoints");
     _apStatus.begin();
     _notificationEvents.begin();
     _apSettingsService.begin();
@@ -169,6 +168,7 @@ void ESP32SvelteKit::begin()
     _featureService.begin();
     _restartService.begin();
     _systemStatus.begin();
+    _wifiSettingsService.begin();
     _wifiScanner.begin();
     _wifiStatus.begin();
 

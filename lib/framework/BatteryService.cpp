@@ -15,7 +15,6 @@
 
 BatteryService::BatteryService(NotificationEvents *notificationEvents) : _notificationEvents(notificationEvents)
 {
-    ESP_LOGV("BatteryService", "Battery Service initialized");
 }
 
 void BatteryService::batteryEvent()

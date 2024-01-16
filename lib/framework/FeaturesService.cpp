@@ -16,7 +16,6 @@
 
 FeaturesService::FeaturesService(PsychicHttpServer *server) : _server(server)
 {
-    ESP_LOGV("FeaturesService", "Features Service initialized");
 }
 
 void FeaturesService::begin()
@@ -67,6 +66,8 @@ void FeaturesService::begin()
                     root["analytics"] = false;
 #endif
                     root["firmware_version"] = APP_VERSION;
+                    root["firmware_name"] = APP_NAME;
+                    root["firmware_built_target"] = BUILD_TARGET;
 
                     // Iterate over user features
                     for (auto &element : userFeatures)

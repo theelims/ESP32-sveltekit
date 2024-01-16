@@ -17,7 +17,6 @@
 WiFiStatus::WiFiStatus(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
                                                                                       _securityManager(securityManager)
 {
-    ESP_LOGV("WiFiStatus", "WiFi Status Service initialized");
 }
 
 void WiFiStatus::begin()

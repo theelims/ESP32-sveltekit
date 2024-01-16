@@ -17,7 +17,6 @@
 WiFiScanner::WiFiScanner(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
                                                                                         _securityManager(securityManager)
 {
-    ESP_LOGV("WiFiScanner", "WiFi Scanner initialized");
 }
 
 void WiFiScanner::begin()

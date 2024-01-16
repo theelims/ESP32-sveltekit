@@ -14,7 +14,6 @@
  **/
 
 #include <WiFi.h>
-#include <AsyncTCP.h>
 
 #include <ArduinoJson.h>
 #include <PsychicHttp.h>

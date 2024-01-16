@@ -20,7 +20,6 @@ FactoryResetService::FactoryResetService(PsychicHttpServer *server, FS *fs, Secu
                                                                                                                 fs(fs),
                                                                                                                 _securityManager(securityManager)
 {
-    ESP_LOGV("FactoryResetService", "Factory Reset Service initialized");
 }
 
 void FactoryResetService::begin()

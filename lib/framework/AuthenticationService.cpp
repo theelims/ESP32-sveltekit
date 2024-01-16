@@ -19,7 +19,6 @@
 AuthenticationService::AuthenticationService(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
                                                                                                             _securityManager(securityManager)
 {
-    ESP_LOGV("AuthenticationService", "Authentication Service initialized");
 }
 
 void AuthenticationService::begin()

@@ -19,7 +19,6 @@ void (*SleepService::_callbackSleep)() = nullptr;
 SleepService::SleepService(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
                                                                                           _securityManager(securityManager)
 {
-    ESP_LOGV("SleepService", "Sleep Service initialized");
 }
 
 void SleepService::begin()

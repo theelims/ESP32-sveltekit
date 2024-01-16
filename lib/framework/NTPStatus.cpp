@@ -17,7 +17,6 @@
 NTPStatus::NTPStatus(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
                                                                                     _securityManager(securityManager)
 {
-    ESP_LOGV("NTPStatus", "NTP Status Service initialized");
 }
 
 void NTPStatus::begin()

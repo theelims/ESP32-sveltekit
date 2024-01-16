@@ -24,8 +24,6 @@ SecuritySettingsService::SecuritySettingsService(PsychicHttpServer *server, FS *
     addUpdateHandler([&](const String &originId)
                      { configureJWTHandler(); },
                      false);
-
-    ESP_LOGV("SecuritySettingsService", "Security Settings Service initialized");
 }
 
 void SecuritySettingsService::begin()

@@ -17,7 +17,6 @@
 RestartService::RestartService(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
                                                                                               _securityManager(securityManager)
 {
-    ESP_LOGV("RestartService", "Restart Service initialized");
 }
 
 void RestartService::begin()

@@ -66,7 +66,7 @@
 class ESP32SvelteKit
 {
 public:
-    ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEndpoints = 30);
+    ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEndpoints = 115);
 
     void begin();
 

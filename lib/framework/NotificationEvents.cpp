@@ -17,7 +17,6 @@
 
 NotificationEvents::NotificationEvents(PsychicHttpServer *server) : _server(server)
 {
-    ESP_LOGV("NotificationEvents", "Notification Events initialized");
 }
 
 void NotificationEvents::begin()

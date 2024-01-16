@@ -18,7 +18,6 @@ APStatus::APStatus(PsychicHttpServer *server, SecurityManager *securityManager, 
                                                                                                                         _securityManager(securityManager),
                                                                                                                         _apSettingsService(apSettingsService)
 {
-    ESP_LOGV("APStatus", "AP Status Service initialized");
 }
 void APStatus::begin()
 {

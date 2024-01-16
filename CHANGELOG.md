@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## WIP
+## [0.3.0] - WIP
 
 > **Warning**: This update has breaking changes!
 
@@ -46,6 +46,14 @@ Remove the following `build_flags`:
     -D WS_MAX_QUEUED_MESSAGES=64
     -D CONFIG_ASYNC_TCP_RUNNING_CORE=0
     -D NO_GLOBAL_ARDUINOOTA
+```
+
+Add the following `build_flags` and adjust to your app, if needed:
+
+```ini
+    -D BUILD_TARGET=\"$PIOENV\"
+    -D APP_NAME=\"ESP32-Sveltekit\" ; Must only contain characters from [a-zA-Z0-9-_] as this is converted into a filename
+    -D APP_VERSION=\"0.3.0\" ; semver compatible version string
 ```
 
 Change `-D CORE_DEBUG_LEVEL=2` to no higher than 2.

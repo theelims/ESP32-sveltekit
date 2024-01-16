@@ -16,7 +16,6 @@
  **/
 
 #include <WiFi.h>
-#include <AsyncTCP.h>
 
 #include <PsychicHttp.h>
 #include <SecurityManager.h>

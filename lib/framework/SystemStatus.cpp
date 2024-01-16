@@ -34,11 +34,7 @@
 #ifndef STRINGIZE
 #define STRINGIZE(s) #s
 #endif
-#if TASMOTA_SDK
-#define ARDUINO_VERSION_STR(major, minor, patch) "Tasmota Arduino v" STRINGIZE(major) "." STRINGIZE(minor) "." STRINGIZE(patch)
-#else
-#define ARDUINO_VERSION_STR(major, minor, patch) "ESP32 Arduino v" STRINGIZE(major) "." STRINGIZE(minor) "." STRINGIZE(patch)
-#endif
+#define ARDUINO_VERSION_STR(major, minor, patch) "v" STRINGIZE(major) "." STRINGIZE(minor) "." STRINGIZE(patch)
 #define ARDUINO_VERSION ARDUINO_VERSION_STR(ESP_ARDUINO_VERSION_MAJOR, ESP_ARDUINO_VERSION_MINOR, ESP_ARDUINO_VERSION_PATCH)
 #endif
 
@@ -99,7 +95,6 @@ String verbosePrintResetReason(int reason)
 SystemStatus::SystemStatus(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
                                                                                           _securityManager(securityManager)
 {
-    ESP_LOGV("SystemStatus", "System Status Service initialized");
 }
 
 void SystemStatus::begin()

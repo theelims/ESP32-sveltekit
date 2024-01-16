@@ -35,22 +35,16 @@ void setup()
     // start serial and filesystem
     Serial.begin(SERIAL_BAUD_RATE);
 
-    ESP_LOGI("main", "Starting Psychic HTTP Server");
-
     // start the framework and demo project
     esp32sveltekit.setMDNSAppName(APP_NAME);
 
-    ESP_LOGI("main", "Starting ESP32-SvelteKit");
     // start ESP32-SvelteKit
     esp32sveltekit.begin();
 
-    ESP_LOGI("main", "Starting LightStateService");
     // load the initial light settings
     lightStateService.begin();
     // start the light service
     lightMqttSettingsService.begin();
-
-    ESP_LOGI("main", "Ready");
 }
 
 void loop()

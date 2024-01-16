@@ -18,7 +18,6 @@ MqttStatus::MqttStatus(PsychicHttpServer *server, MqttSettingsService *mqttSetti
                                                                                                                                 _securityManager(securityManager),
                                                                                                                                 _mqttSettingsService(mqttSettingsService)
 {
-    ESP_LOGV("MqttStatus", "MQTT Status Service initialized");
 }
 
 void MqttStatus::begin()
