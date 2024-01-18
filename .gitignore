@@ -12,3 +12,4 @@ node_modules
 /src/certs
 /temp
 /build/firmware
+/lib/framework/WWWData.h

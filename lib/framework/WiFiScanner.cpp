@@ -34,7 +34,7 @@ void WiFiScanner::begin()
                                               AuthenticationPredicates::IS_ADMIN));
 
     ESP_LOGV("WiFiScanner", "Registered GET endpoint: %s", LIST_NETWORKS_SERVICE_PATH);
-};
+}
 
 esp_err_t WiFiScanner::scanNetworks(PsychicRequest *request)
 {
@@ -43,7 +43,7 @@ esp_err_t WiFiScanner::scanNetworks(PsychicRequest *request)
         WiFi.scanDelete();
         WiFi.scanNetworks(true);
     }
-    request->reply(202);
+    return request->reply(202);
 }
 
 esp_err_t WiFiScanner::listNetworks(PsychicRequest *request)
