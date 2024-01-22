@@ -13,3 +13,4 @@ node_modules
 /temp
 /build/firmware
 /lib/framework/WWWData.h
+*WWWData.h

@@ -96,7 +96,7 @@ String WiFiSettingsService::getHostname()
 void WiFiSettingsService::manageSTA()
 {
     // Abort if already connected, or if we have no SSID
-    if (WiFi.isConnected() || _state.wifiSettings[0].ssid.length() == 0)
+    if (WiFi.isConnected() || _state.wifiSettings.empty())
     {
         return;
     }

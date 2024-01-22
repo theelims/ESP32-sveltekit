@@ -54,19 +54,15 @@ ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEnd
                                                                                           _factoryResetService(server, &ESPFS, &_securitySettingsService),
                                                                                           _systemStatus(server, &_securitySettingsService)
 {
-    ESP_LOGV("ESP32SvelteKit", "Loading settings from files system");
-    if (!ESPFS.begin(true))
-    {
-        ESP_LOGE("ESP32SvelteKit", "LittleFS Mount Failed. Using default settings.");
-    }
 }
 
 void ESP32SvelteKit::begin()
 {
-    ESP_LOGV("ESP32SvelteKit", "Start WiFi");
+    ESP_LOGV("ESP32SvelteKit", "Loading settings from files system");
+    ESPFS.begin(true);
+
     _wifiSettingsService.initWiFi();
 
-    ESP_LOGV("ESP32SvelteKit", "Starting Psychic HTTP Server");
     // SvelteKit uses a lot of handlers, so we need to increase the max_uri_handlers
     // WWWData has 77 Endpoints, Framework has 27, and Lighstate Demo has 4
     _server->config.max_uri_handlers = _numberEndpoints;

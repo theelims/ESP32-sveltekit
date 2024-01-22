@@ -115,8 +115,16 @@ public:
         if (root["wifi_networks"].is<JsonArray>())
         {
             // iterate over the wifiSettings
+            int i = 0;
             for (auto wifiNetwork : wifiNetworks)
             {
+                // max 5 wifi networks
+                if (i++ >= 5)
+                {
+                    ESP_LOGE("WiFiSettings", "Too many wifi networks");
+                    break;
+                }
+
                 // create JSON object for each wifi network
                 JsonObject wifi = wifiNetwork.as<JsonObject>();
 
@@ -160,6 +168,9 @@ public:
                     // reset scan result
                     wifiSettings.available = false;
                     settings.wifiSettings.push_back(wifiSettings);
+
+                    // increment the wifi network index
+                    i++;
                 }
             }
         }

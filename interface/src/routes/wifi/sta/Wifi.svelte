@@ -239,7 +239,6 @@
 		}
 		// Submit JSON to REST API
 		if (valid) {
-			//postWiFiSettings(wifiSettings);
 			if (newNetwork) {
 				dndNetworkList.push(networkEditable);
 			} else {
