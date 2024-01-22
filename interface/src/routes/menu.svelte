@@ -7,6 +7,8 @@
 	import Health from '~icons/tabler/stethoscope';
 	import Update from '~icons/tabler/refresh-alert';
 	import WiFi from '~icons/tabler/wifi';
+	import Router from '~icons/tabler/router';
+	import AP from '~icons/tabler/access-point';
 	import Remote from '~icons/tabler/network';
 	import Control from '~icons/tabler/adjustments';
 	import Avatar from '~icons/tabler/user-circle';
@@ -57,7 +59,6 @@
 			title: 'Connections',
 			icon: Remote,
 			feature: $page.data.features.mqtt || $page.data.features.ntp,
-			active: true,
 			submenu: [
 				{
 					title: 'MQTT',
@@ -75,7 +76,27 @@
 				}
 			]
 		},
-		{ title: 'Wi-Fi', icon: WiFi, href: '/wifi', feature: true, active: false },
+		{
+			title: 'WiFi',
+			icon: WiFi,
+			feature: true,
+			submenu: [
+				{
+					title: 'WiFi Station',
+					icon: Router,
+					href: '/wifi/sta',
+					feature: true,
+					active: false
+				},
+				{
+					title: 'Access Point',
+					icon: AP,
+					href: '/wifi/ap',
+					feature: true,
+					active: false
+				}
+			]
+		},
 		{
 			title: 'Users',
 			icon: Users,

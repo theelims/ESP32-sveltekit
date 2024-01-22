@@ -1,7 +1,7 @@
 import type { PageLoad } from './$types';
-import { goto } from '$app/navigation';
 
 export const load = (async () => {
-	goto('/');
-	return;
+	return {
+		title: 'Access Point'
+	};
 }) satisfies PageLoad;

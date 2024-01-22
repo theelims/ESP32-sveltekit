@@ -16,38 +16,34 @@
 
 WiFiSettingsService::WiFiSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, NotificationEvents *notificationEvents) : _server(server),
                                                                                                                                                         _securityManager(securityManager),
-                                                                                                                                                        _httpEndpoint(WiFiSettings::read, WiFiSettings::update, this, server, WIFI_SETTINGS_SERVICE_PATH, securityManager),
-                                                                                                                                                        _fsPersistence(WiFiSettings::read, WiFiSettings::update, this, fs, WIFI_SETTINGS_FILE),
+                                                                                                                                                        _httpEndpoint(WiFiSettings::read,
+                                                                                                                                                                      WiFiSettings::update,
+                                                                                                                                                                      this,
+                                                                                                                                                                      server,
+                                                                                                                                                                      WIFI_SETTINGS_SERVICE_PATH,
+                                                                                                                                                                      securityManager,
+                                                                                                                                                                      AuthenticationPredicates::IS_ADMIN,
+                                                                                                                                                                      WIFI_SETTINGS_BUFFER_SIZE),
+                                                                                                                                                        _fsPersistence(WiFiSettings::read,
+                                                                                                                                                                       WiFiSettings::update,
+                                                                                                                                                                       this,
+                                                                                                                                                                       fs,
+                                                                                                                                                                       WIFI_SETTINGS_FILE),
                                                                                                                                                         _lastConnectionAttempt(0),
                                                                                                                                                         _notificationEvents(notificationEvents)
 {
     addUpdateHandler([&](const String &originId)
                      { reconfigureWiFiConnection(); },
                      false);
-    ESP_LOGV("WiFiSettingsService", "WiFi Settings Service initialized");
 }
 
 void WiFiSettingsService::initWiFi()
 {
-    ESP_LOGV("WiFiSettingsService", "WiFi mode: %i", WiFi.getMode());
-
-    // We want the device to come up in opmode=0 (WIFI_OFF), when erasing the flash this is not the default.
-    // If needed, we save opmode=0 before disabling persistence so the device boots with WiFi disabled in the future.
-    // if (WiFi.getMode() != WIFI_OFF)
-    // {
-    //     WiFi.mode(WIFI_OFF);
-    //     ESP_LOGV("WiFiSettingsService", "Forcing WiFi mode to WIFI_OFF");
-    // }
-
-    WiFi.mode(WIFI_MODE_STA); // TODO added otherwise crashes. this is the default.
+    WiFi.mode(WIFI_MODE_STA); // this is the default.
 
     // Disable WiFi config persistance and auto reconnect
     WiFi.persistent(false);
     WiFi.setAutoReconnect(false);
-
-    // Init the wifi driver on ESP32
-    // WiFi.mode(WIFI_MODE_MAX);  // TODO commented out, not sure what use it has
-    // WiFi.mode(WIFI_MODE_NULL);
 
     WiFi.onEvent(
         std::bind(&WiFiSettingsService::onStationModeDisconnected, this, std::placeholders::_1, std::placeholders::_2),
@@ -100,31 +96,124 @@ String WiFiSettingsService::getHostname()
 void WiFiSettingsService::manageSTA()
 {
     // Abort if already connected, or if we have no SSID
-    if (WiFi.isConnected() || _state.ssid.length() == 0)
+    if (WiFi.isConnected() || _state.wifiSettings[0].ssid.length() == 0)
     {
         return;
     }
+
     // Connect or reconnect as required
     if ((WiFi.getMode() & WIFI_STA) == 0)
     {
-        Serial.println(F("Connecting to WiFi."));
-        if (_state.staticIPConfig)
-        {
-            // configure for static IP
-            WiFi.config(_state.localIP, _state.gatewayIP, _state.subnetMask, _state.dnsIP1, _state.dnsIP2);
-        }
-        else
-        {
-            // configure for DHCP
-            WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
-        }
-        WiFi.setHostname(_state.hostname.c_str());
-        // attempt to connect to the network
-        WiFi.begin(_state.ssid.c_str(), _state.password.c_str());
-#if CONFIG_IDF_TARGET_ESP32C3
-        WiFi.setTxPower(WIFI_POWER_8_5dBm); // https://www.wemos.cc/en/latest/c3/c3_mini_1_0_0.html#about-wifi
-#endif
+        Serial.println(F("Connecting to WiFi..."));
+        connectToWiFi();
     }
+}
+
+void WiFiSettingsService::connectToWiFi()
+{
+    // reset availability flag for all stored networks
+    for (auto &network : _state.wifiSettings)
+    {
+        network.available = false;
+    }
+
+    // scanning for available networks
+    int scanResult = WiFi.scanNetworks();
+    if (scanResult == WIFI_SCAN_FAILED)
+    {
+        ESP_LOGE("WiFiSettingsService", "WiFi scan failed.");
+    }
+    else if (scanResult == 0)
+    {
+        ESP_LOGW("WiFiSettingsService", "No networks found.");
+    }
+    else
+    {
+        ESP_LOGI("WiFiSettingsService", "%d networks found.", scanResult);
+
+        // find the best network to connect
+        wifi_settings_t *bestNetwork = NULL;
+        int bestNetworkDb = FACTORY_WIFI_RSSI_THRESHOLD;
+
+        for (int i = 0; i < scanResult; ++i)
+        {
+            String ssid_scan;
+            int32_t rssi_scan;
+            uint8_t sec_scan;
+            uint8_t *BSSID_scan;
+            int32_t chan_scan;
+
+            WiFi.getNetworkInfo(i, ssid_scan, sec_scan, rssi_scan, BSSID_scan, chan_scan);
+            ESP_LOGV("WiFiSettingsService", "SSID: %s, RSSI: %d dbm", ssid_scan.c_str(), rssi_scan);
+
+            for (auto &network : _state.wifiSettings)
+            {
+                if (ssid_scan == network.ssid)
+                { // SSID match
+                    if (rssi_scan > bestNetworkDb)
+                    { // best network
+                        bestNetworkDb = rssi_scan;
+                        bestNetwork = &network;
+                        network.available = true;
+                    }
+                    else if (rssi_scan >= FACTORY_WIFI_RSSI_THRESHOLD)
+                    { // available network
+                        network.available = true;
+                    }
+                }
+                break;
+            }
+        }
+
+        // if configured to prioritize signal strength, use the best network else use the first available network
+        if (_state.priorityBySignalStrength == false)
+        {
+            for (auto &network : _state.wifiSettings)
+            {
+                if (network.available == true)
+                {
+                    ESP_LOGI("WiFiSettingsService", "Connecting to first available network: %s", network.ssid.c_str());
+                    configureNetwork(network);
+                    break;
+                }
+            }
+        }
+        else if (_state.priorityBySignalStrength == true && bestNetwork)
+        {
+            ESP_LOGI("WiFiSettingsService", "Connecting to strongest network: %s", bestNetwork->ssid.c_str());
+            configureNetwork(*bestNetwork);
+            WiFi.begin(bestNetwork->ssid.c_str(), bestNetwork->password.c_str());
+        }
+        else // no suitable network to connect
+        {
+            ESP_LOGI("WiFiSettingsService", "No known networks found.");
+        }
+
+        // delete scan results
+        WiFi.scanDelete();
+    }
+}
+
+void WiFiSettingsService::configureNetwork(wifi_settings_t &network)
+{
+    if (network.staticIPConfig)
+    {
+        // configure for static IP
+        WiFi.config(network.localIP, network.gatewayIP, network.subnetMask, network.dnsIP1, network.dnsIP2);
+    }
+    else
+    {
+        // configure for DHCP
+        WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+    }
+    WiFi.setHostname(_state.hostname.c_str());
+
+    // attempt to connect to the network
+    WiFi.begin(network.ssid.c_str(), network.password.c_str());
+
+#if CONFIG_IDF_TARGET_ESP32C3
+    WiFi.setTxPower(WIFI_POWER_8_5dBm); // https://www.wemos.cc/en/latest/c3/c3_mini_1_0_0.html#about-wifi
+#endif
 }
 
 void WiFiSettingsService::updateRSSI()
