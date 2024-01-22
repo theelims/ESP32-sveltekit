@@ -14,3 +14,4 @@ node_modules
 /build/firmware
 /lib/framework/WWWData.h
 *WWWData.h
+lib/framework/WWWData.h
