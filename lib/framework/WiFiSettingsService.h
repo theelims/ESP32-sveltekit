@@ -49,7 +49,7 @@
 #define WIFI_RECONNECTION_DELAY 1000 * 30
 #define RSSI_EVENT_DELAY 200
 
-#define WIFI_SETTINGS_BUFFER_SIZE 1024
+#define WIFI_SETTINGS_BUFFER_SIZE 2048
 
 // Struct defining the wifi settings
 typedef struct

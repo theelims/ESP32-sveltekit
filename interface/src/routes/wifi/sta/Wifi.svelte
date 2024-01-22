@@ -30,6 +30,7 @@
 	import Edit from '~icons/tabler/pencil';
 	import Delete from '~icons/tabler/trash';
 	import Cancel from '~icons/tabler/x';
+	import Check from '~icons/tabler/check';
 
 	type WifiStatus = {
 		status: number;
@@ -303,6 +304,26 @@
 		});
 	}
 
+	function checkNetworkList() {
+		if (dndNetworkList.length >= 5) {
+			openModal(ConfirmDialog, {
+				title: 'Reached Maximum Networks',
+				message:
+					'You have reached the maximum number of networks. Please delete one to add another.',
+				labels: {
+					cancel: { label: 'Cancel', icon: Cancel },
+					confirm: { label: 'OK', icon: Check }
+				},
+				onConfirm: () => {
+					closeModal();
+				}
+			});
+			return false;
+		} else {
+			return true;
+		}
+	}
+
 	function onDrop({ detail: { from, to } }: CustomEvent<DropEvent>) {
 		if (!to || from === to) {
 			return;
@@ -479,9 +500,10 @@
 					<button
 						class="btn btn-primary text-primary-content btn-md absolute -top-14 right-16"
 						on:click={() => {
-							addNetwork();
-							showNetworkEditor = true;
-							//items = [...items, { ssid: 'test4', password: 'test4', static_ip_config: false }];
+							if (checkNetworkList()) {
+								addNetwork();
+								showNetworkEditor = true;
+							}
 						}}
 					>
 						<Add class="h-6 w-6" /></button
@@ -489,8 +511,10 @@
 					<button
 						class="btn btn-primary text-primary-content btn-md absolute -top-14 right-0"
 						on:click={() => {
-							scanForNetworks();
-							showNetworkEditor = true;
+							if (checkNetworkList()) {
+								scanForNetworks();
+								showNetworkEditor = true;
+							}
 						}}
 					>
 						<Scan class="h-6 w-6" /></button
