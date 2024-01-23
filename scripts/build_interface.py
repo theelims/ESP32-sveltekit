@@ -88,12 +88,8 @@ def buildProgMem():
     progmem = open(OUTPUTFILE,"w")
 
     progmem.write("#include <functional>\n")
-    progmem.write("\n")
-    progmem.write("#if defined(ARDUINO)\n")
-    progmem.write("  #include <Arduino.h>\n")
-    progmem.write("#else\n")
-    progmem.write("  #define PROGMEM\n")
-    progmem.write("#endif\n")
+    progmem.write("#include <Arduino.h>\n")
+
 
     progmemCounter = 0
 
@@ -108,7 +104,7 @@ def buildProgMem():
         asset_mime = mimetypes.types_map['.' + asset_path.split('.')[-1]]
 
         progmem.write('// ' + str(asset_path) + '\n')
-        progmem.write('const uint8_t ' + asset_var + '[] PROGMEM = {\n  ')
+        progmem.write('const uint8_t ' + asset_var + '[] = {\n  ')
         progmemCounter += 1
         
         # Open path as binary file, compress and read into byte array
@@ -125,7 +121,6 @@ def buildProgMem():
         progmem.write('\n};\n\n')
         assetMap[asset_path] = { "name": asset_var, "mime": asset_mime, "size": size }
     
-    progmem.write("#if defined(ARDUINO)\n")
     progmem.write('typedef std::function<void(const String& uri, const String& contentType, const uint8_t * content, size_t len)> RouteRegistrationHandler;\n\n')
     progmem.write('class WWWData {\n')
     progmem.write('  public:\n')
@@ -136,30 +131,9 @@ def buildProgMem():
 
     progmem.write('    }\n')
     progmem.write('};\n')
-    progmem.write("#endif\n")
-    if (False):
-      progmem.write('\n')
-      progmem.write('#define WWW_NR_PAGES ('+ str(len(assetMap.items())) + ')\n')
-      progmem.write('\n')
     
-
-    progmem.write('\n')
-    progmem.write('typedef struct {\n')
-    progmem.write('    const char*    szUrl;\n')
-    progmem.write('    const char*    szcontentType;\n')
-    progmem.write('    const uint8_t* pData;\n')
-    progmem.write('    const uint32_t uiLength;\n')
-    progmem.write('} page_entry_t;\n')
-    progmem.write('\n')
     progmem.write('\n')
 
-    progmem.write('const page_entry_t wwwpages[] = {\n')
-    for asset_path, asset in assetMap.items():
-        progmem.write('      {"/' +  str(asset_path) + '", "' + asset['mime'] + '", ' + asset['name'] + ', ' + str(asset['size']) + '} ,\n')
-
-    progmem.write('};\n')
-    progmem.write('\n')
-    progmem.write('const uint16_t WWW_NR_PAGES (sizeof(wwwpages)/sizeof(page_entry_t));')
 
 def buildWeb():
     os.chdir("interface")

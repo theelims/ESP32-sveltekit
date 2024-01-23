@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 - Added postscript to platform.io build process to copy, rename and calculate MD5 checksum of \*.bin file. These files are ready for uploading to the Github Release page.
 - Added more information to SystemStatus API
 - Added generateToken API for security settings
-- Added Multi-WiFi capability. Add more then one WiFi configuration and connect to either strongest network (default), or by priority.
+- Added Multi-WiFi capability. Add up to five WiFi configurations and connect to either strongest network (default), or by priority.
 
 ### Changed
 
