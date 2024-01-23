@@ -31,6 +31,7 @@
 	import Delete from '~icons/tabler/trash';
 	import Cancel from '~icons/tabler/x';
 	import Check from '~icons/tabler/check';
+	import InfoDialog from '$lib/components/InfoDialog.svelte';
 
 	type WifiStatus = {
 		status: number;
@@ -306,15 +307,12 @@
 
 	function checkNetworkList() {
 		if (dndNetworkList.length >= 5) {
-			openModal(ConfirmDialog, {
+			openModal(InfoDialog, {
 				title: 'Reached Maximum Networks',
 				message:
 					'You have reached the maximum number of networks. Please delete one to add another.',
-				labels: {
-					cancel: { label: 'Cancel', icon: Cancel },
-					confirm: { label: 'OK', icon: Check }
-				},
-				onConfirm: () => {
+				dismiss: { label: 'OK', icon: Check },
+				onDismiss: () => {
 					closeModal();
 				}
 			});

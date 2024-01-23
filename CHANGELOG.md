@@ -6,18 +6,28 @@ All notable changes to this project will be documented in this file.
 
 > **Warning**: This update has breaking changes!
 
+### ToDo's for this release
+
+- [ ] Provide CORS preflight confirmation
+- [ ] Switch AsyncMqttClient to ESP-IDF MQTT Client
+- [ ] Fix glitch in UI that System Status page is not reactive to 2sec polling of status
+- [ ] LightState NimBLE Demo --> Switch LED on and off with BLE HID device. Binding procedure with BLE HID device and BLE HID status page.
+- [ ] Update docs and check for consistency
+
 ### Added
 
 - Added postscript to platform.io build process to copy, rename and calculate MD5 checksum of \*.bin file. These files are ready for uploading to the Github Release page.
 - Added more information to SystemStatus API
 - Added generateToken API for security settings
 - Added Multi-WiFi capability. Add up to five WiFi configurations and connect to either strongest network (default), or by priority.
+- Added InfoDialog as a simpler version of the ConfirmDialog for a simple notification modal.
 
 ### Changed
 
 - Better route protection for user page with deep link.
 - Changed build_interface.py script to check for modified files in the interface sources before re-building the interface. Saves some time on the compilation process.
 - Upload firmware binary allows uploading of MD5 checksum file in advance to verify downloaded firmware package.
+- GithubFirmwareManager checks against PIO build_target in filename to support Github OTA for binaries build for various targets. You should rename your old release \*.bin files on the Github release pages for backward compatibility.
 
 ### Removed
 
@@ -57,17 +67,15 @@ Add the following `build_flags` and adjust to your app, if needed:
     -D APP_VERSION=\"0.3.0\" ; semver compatible version string
 ```
 
-Change `-D CORE_DEBUG_LEVEL=2` to no higher than 2.
-
-Remove the lib dependency `esphome/AsyncTCP-esphome @ ^2.0.0` and add `https://github.com/hoeken/PsychicHttp.git` instead.
+Remove the lib dependency `esphome/AsyncTCP-esphome @ ^2.0.0`.
 
 #### Custom Stateful Services
 
 Adapt the class constructor (`(PsychicHttpServer *server, ...`) to PsychicHttpServer.
 
-Due to the loading sequence HttpEndoint and WebsocketServer both have become a `begin()` function to register their http endpoints with the server. This must be called in your stateful services' own `begin()` function:
+Due to the loading sequence HttpEndoint and WebsocketServer both have gotten a `begin()` function to register their http endpoints with the server. This must be called in your stateful services' own `begin()` function:
 
-```
+```cpp
 void LightStateService::begin()
 {
     _httpEndpoint.begin();
