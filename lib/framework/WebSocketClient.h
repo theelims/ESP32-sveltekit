@@ -146,11 +146,10 @@ protected:
     JsonStateReader<T> _stateReader;
     boolean freshConnected = true;
 
-    static void
-    onWSEventStatic(void *handler_args,
-                    esp_event_base_t base,
-                    int32_t event_id,
-                    void *event_data)
+    static void onWSEventStatic(void *handler_args,
+                                esp_event_base_t base,
+                                int32_t event_id,
+                                void *event_data)
     {
         // Since this is a static function, we need to cast the first argument (void*) back to the class instance type
         WebSocketClient *instance = (WebSocketClient *)handler_args;
