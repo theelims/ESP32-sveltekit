@@ -5,71 +5,334 @@
 
 #include "Arduino.h"
 #include "mqtt_client.h"
-#include <freertos/semphr.h>
+#include "esp_crt_bundle.h"
 
 // user callbacks
-typedef std::function<void(bool sessionPresent)> OnBeforeConnectUserCallback;
 typedef std::function<void(bool sessionPresent)> OnConnectUserCallback;
-typedef std::function<void(char *reason)> OnDisconnectUserCallback;
-typedef std::function<void(uint16_t packetId, uint8_t qos)> OnSubscribeUserCallback;
-typedef std::function<void(uint16_t packetId)> OnUnsubscribeUserCallback;
-typedef std::function<void(char *topic, char *payload, char *properties, size_t len, size_t index, size_t total)> OnMessageUserCallback;
-typedef std::function<void(uint16_t packetId)> OnPublishUserCallback;
-typedef std::function<void(uint16_t packetId)> OnErrorUserCallback;
+typedef std::function<void(bool sessionPresent)> OnDisconnectUserCallback;
+typedef std::function<void(int msgId)> OnSubscribeUserCallback;
+typedef std::function<void(int msgId)> OnUnsubscribeUserCallback;
+typedef std::function<void(char *topic, char *payload, int retain, int qos, bool dup)> OnMessageUserCallback;
+typedef std::function<void(int msgId)> OnPublishUserCallback;
+typedef std::function<void(esp_mqtt_error_codes_t error)> OnErrorUserCallback;
 
+typedef struct
+{
+  char *topic;
+  OnMessageUserCallback callback;
+} OnMessageUserCallback_t;
+
+/**
+ * @class PsychicMqttClient
+ * @brief A class that wraps the ESP-IDF MQTT client and provides a more user friendly interface.
+ * The API is very similar to AsyncMqttClient for the ESP32 by Marvin Roger, so that this library can
+ * be used as a almost drop-in replacement.
+ */
 class PsychicMqttClient
 {
 public:
+  /**
+   * @brief Constructs a new instance of the PsychicMqttClient class.
+   */
   PsychicMqttClient();
+
+  /**
+   * @brief Destroys the instance of the PsychicMqttClient class.
+   */
   ~PsychicMqttClient();
 
+  /**
+   * @brief Sets the keep alive interval in seconds for the MQTT connection.
+   *
+   * @param keepAlive The keep alive interval in seconds. Defaults to 120.
+   * @return A reference to the PsychicMqttClient instance.
+   */
   PsychicMqttClient &setKeepAlive(int keepAlive = 120);
+
+  /**
+   * @brief Sets the auto reconnect flag for the MQTT connection.
+   *
+   * @param reconnect The auto reconnect flag. Defaults to true.
+   * @return A reference to the PsychicMqttClient instance.
+   */
   PsychicMqttClient &setAutoReconnect(bool reconnect = true);
+
+  /**
+   * @brief Sets the client ID for the MQTT connection.
+   *
+   * @param clientId The client ID. Defaults to ESP32_%CHIPID% where
+   * %CHIPID% are the last 3 bytes of MAC address in hex format.
+   * @return A reference to the PsychicMqttClient instance.
+   */
   PsychicMqttClient &setClientId(const char *clientId);
+
+  /**
+   * @brief Sets the clean session flag for the MQTT connection.
+   *
+   * @param cleanSession The clean session flag. Defaults to true.
+   * @return A reference to the PsychicMqttClient instance.
+   */
   PsychicMqttClient &setCleanSession(bool cleanSession = true);
+
+  /**
+   * @brief Sets the size for the MQTT send/receive buffer. If messages exceed
+   * the buffer size, the message will be split into multiple chunks. Received m
+   * essages will be assembled into the original message.
+   *
+   * @param bufferSize The buffer size in bytes. Defaults to 1024.
+   * @return A reference to the PsychicMqttClient instance.
+   */
   PsychicMqttClient &setBufferSize(int bufferSize = 1024);
+
+  /**
+   * @brief Sets the task stack size and priority for the MQTT client task.
+   *
+   * @param stackSize The task stack size in bytes. Defaults to 6144.
+   * @param prio The task priority. Defaults to 5.
+   * @return A reference to the PsychicMqttClient instance.
+   */
+  PsychicMqttClient &setTaskStackAndPriority(int stackSize, int prio);
+
+  /**
+   * @brief Sets the CA root certificate for the MQTT server.
+   *
+   * @param cert The certificate in PEM or DER format.
+   * @param certLen optional length of the certificate shouldn't cert be null-terminated.
+   * @return A reference to the PsychicMqttClient instance.
+   */
+  PsychicMqttClient &setCACert(const char *rootCA, size_t rootCALen = 0);
+
+  /**
+   * @brief Sets a CA root certificate bundle for the MQTT server. Use this
+   * method if you have multiple CA root certificates and this is the only place
+   * using SSL/TLS. Otherwise use attachArduinoCACertBundle() to attach an existing
+   * certificate bundle.
+   *
+   * @param bundle The certificate bundle in PEM or DER format.
+   * @return A reference to the PsychicMqttClient instance.
+   */
+  PsychicMqttClient &setCACertBundle(const uint8_t *bundle);
+
+  /**
+   * @brief Attaches an existing CA root certificate bundle for the MQTT server. Like if you
+   * already use WiFiClientSecure and want to use the same CA root certificate bundle for MQTT.
+   *
+   * @param attach Whether to attach or detach the CA root certificate bundle. Defaults to true.
+   * @return A reference to the PsychicMqttClient instance.
+   */
+  PsychicMqttClient &attachArduinoCACertBundle(bool attach = true);
+
+  /**
+   * @brief The MQTT server can use the ESP-IDF global CA root certificate store. Check ESP-TLS
+   * documentation for more information.
+   *
+   * @param useGlobalCAStore Whether to use the global CA root certificate store. Defaults to true.
+   * @return A reference to the PsychicMqttClient instance.
+   */
+  PsychicMqttClient &useGlobalCAStore(bool useGlobalCAStore = true);
+
+  /**
+   * @brief Sets the credentials for the MQTT connection.
+   *
+   * @param username The username for the MQTT connection. Defaults to nullptr.
+   * @param password The password for the MQTT connection. Defaults to nullptr.
+   * @return A reference to the PsychicMqttClient instance.
+   */
   PsychicMqttClient &setCredentials(const char *username, const char *password = nullptr);
-  PsychicMqttClient &setWill(const char *topic, uint8_t qos, bool retain, const char *payload = nullptr, size_t length = 0);
+
+  /**
+   * @brief Sets the last will and testament for the MQTT connection.
+   *
+   * @param topic The topic for the last will and testament.
+   * @param qos The QoS level for the last will and testament.
+   * @param retain The retain flag for the last will and testament.
+   * @param payload The payload for the last will and testament. Defaults to nullptr.
+   * @param length The length of the payload for the last will and testament. Defaults to 0.
+   * @return A reference to the PsychicMqttClient instance.
+   */
+  PsychicMqttClient &setWill(const char *topic, uint8_t qos, bool retain, const char *payload = nullptr, int length = 0);
+
+  /**
+   * @brief Sets the MQTT server URI. Supports mqtt://, mqtts:// and ws://, wss:// as
+   * transport protocols. Fully supports SSL/TLS.
+   *
+   * Example: mqtt://162.168.10.1
+   *          mqtt://mqtt.eclipseprojects.io
+   *          mqtt://mqtt.eclipseprojects.io:1884
+   *          mqtt://username:password@mqtt.eclipseprojects.io:1884
+   *          mqtts://mqtt.eclipseprojects.io
+   *          mqtts://mqtt.eclipseprojects.io:8884
+   *          ws://mqtt.eclipseprojects.io:80/mqtt
+   *          wss://mqtt.eclipseprojects.io:443/mqtt
+   *
+   * @param uri The MQTT server URI.
+   * @return A reference to the PsychicMqttClient instance.
+   */
   PsychicMqttClient &setServer(const char *uri);
 
-  PsychicMqttClient &onBeforeConnect(OnConnectUserCallback callback);
+  /**
+   * @brief Registers a callback function to be called when the MQTT client is connected.
+   *
+   * @param callback The callback function with the signature void(bool sessionPresent) to be registered.
+   * @return A reference to the PsychicMqttClient instance.
+   */
   PsychicMqttClient &onConnect(OnConnectUserCallback callback);
+
+  /**
+   * @brief Registers a callback function to be called when the MQTT client is disconnected.
+   *
+   * @param callback The callback function with the signature void(bool sessionPresent) to
+   * be registered.
+   * @return A reference to the PsychicMqttClient instance.
+   */
   PsychicMqttClient &onDisconnect(OnDisconnectUserCallback callback);
+
+  /**
+   * @brief Registers a callback function to be called when a topic is subscribed.
+   *
+   * @param callback The callback function with the signature void(int msgId) to be registered.
+   * @return A reference to the PsychicMqttClient instance.
+   */
   PsychicMqttClient &onSubscribe(OnSubscribeUserCallback callback);
+
+  /**
+   * @brief Registers a callback function to be called when a topic is unsubscribed.
+   *
+   * @param callback The callback function with the signature void(int msgId) to be registered.
+   * @return A reference to the PsychicMqttClient instance.
+   */
   PsychicMqttClient &onUnsubscribe(OnUnsubscribeUserCallback callback);
+
+  /**
+   * @brief Registers a callback function to be called when a message is received.
+   * Multipart messages will be reassembled into the original message.
+   *
+   * @param callback The callback function with the signature void(char *topic,
+   * char *payload, int msgId, int retain, int qos, bool dup) to be registered.
+   * @return A reference to the PsychicMqttClient instance.
+   */
   PsychicMqttClient &onMessage(OnMessageUserCallback callback);
-  PsychicMqttClient &onMessage(OnMessageUserCallback callback, const char *topic, int qos);
+
+  /**
+   * @brief Registers a callback function to be called when a message is
+   * received on a specific topic. Multipart messages will be
+   * reassembled into the original message. Fully supports MQTT Wildcards.
+   *
+   * @param topic The topic to listen for. MQTT Wildcards are fully supported.
+   * @param qos The QoS level to listen for.
+   * @param callback The callback function with the signature void(char *topic,
+   * char *payload, int msgId, int retain, int qos, bool dup) to be registered.
+   * @return A reference to the PsychicMqttClient instance.
+   */
+  PsychicMqttClient &onTopic(const char *topic, int qos, OnMessageUserCallback callback);
+
+  /**
+   * @brief Registers a callback function to be called when a message is published.
+   *
+   * @param callback The callback function with the signature void(int msgId) to be registered.
+   * @return A reference to the PsychicMqttClient instance.
+   */
   PsychicMqttClient &onPublish(OnPublishUserCallback callback);
+
+  /**
+   * @brief Registers a callback function to be called when an error occurs.
+   *
+   * @param callback The callback function with the signature void(esp_mqtt_error_codes_t error) to be registered.
+   * @return A reference to the PsychicMqttClient instance.
+   */
   PsychicMqttClient &onError(OnErrorUserCallback callback);
 
+  /**
+   * @brief Checks if the MQTT client is connected.
+   *
+   * @return True if the client is connected, false otherwise.
+   */
   bool connected();
-  void connect();
-  void disconnect(bool force = false);
-  int subscribe(const char *topic, int qos);
-  int unsubscribe(const char *topic);
-  int publish(const char *topic, int qos, bool retain, const char *payload = nullptr, int length = 0);
 
+  /**
+   * @brief Connects the MQTT client to the server.
+   *
+   * @note All parameters must be set before calling this method.
+   */
+  void connect();
+
+  /**
+   * @brief Disconnects the MQTT client from the server.
+   */
+  void disconnect();
+
+  /**
+   * @brief Subscribes to a topic.
+   *
+   * @param topic The topic to subscribe to.
+   * @param qos The QoS level for the subscription.
+   * @return Message ID on success, -1 on failure.
+   */
+  int subscribe(const char *topic, int qos);
+
+  /**
+   * @brief Unsubscribes from a topic.
+   *
+   * @param topic The topic to unsubscribe from.
+   * @return Message ID on success, -1 on failure.
+   */
+  int unsubscribe(const char *topic);
+
+  /**
+   * @brief Publishes a message to a topic.
+   *
+   * @param topic The topic to publish to.
+   * @param qos The QoS level (0-2) for the message.
+   * @param retain The retain flag for the message.
+   * @param payload The payload for the message. Defaults to nullptr.
+   * @param length The length of the payload. Defaults to 0.
+   * @param enqueue Whether to enqueue the message for asynchronous publishing. Defaults to true.
+   * @return Message ID on success, -1 on failure.
+   */
+  int publish(const char *topic, int qos, bool retain, const char *payload = nullptr, int length = 0, bool enqueue = true);
+
+  /**
+   * @brief Gets the client ID of the MQTT client.
+   *
+   * @return The client ID.
+   */
   const char *getClientId();
+
+  /**
+   * @brief Returns the ESP-IDF MQTT client config object of the MQTT client in case
+   * lower level access is needed.
+   *
+   * @return The config object.
+   */
+  esp_mqtt_client_config_t *getMqttConfig();
 
 private:
   esp_mqtt_client_handle_t _client = nullptr;
   esp_mqtt_client_config_t _mqtt_cfg;
+  esp_mqtt_error_codes_t _lastError;
+  bool _connected = false;
 
-  std::vector<OnBeforeConnectUserCallback> _onBeforeConnectUserCallbacks;
+  char *_buffer = nullptr;
+  char *_topic = nullptr;
+
+  static void _onMqttEventStatic(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data);
+  void _onMqttEvent(esp_event_base_t base, int32_t event_id, void *event_data);
+  bool _isTopicMatch(const char *topic, const char *subscription);
+
   std::vector<OnConnectUserCallback> _onConnectUserCallbacks;
   std::vector<OnDisconnectUserCallback> _onDisconnectUserCallbacks;
   std::vector<OnSubscribeUserCallback> _onSubscribeUserCallbacks;
   std::vector<OnUnsubscribeUserCallback> _onUnsubscribeUserCallbacks;
-  std::vector<OnMessageUserCallback> _onMessageUserCallbacks;
+  std::vector<OnMessageUserCallback_t> _onMessageUserCallbacks;
   std::vector<OnPublishUserCallback> _onPublishUserCallbacks;
   std::vector<OnErrorUserCallback> _onErrorUserCallbacks;
 
-  void _onBeforeConnect();
-  void _onConnect();
-  void _onDisconnect();
-  void _onSubscribe();
-  void _onUnsubscribe();
-  void _onMessage();
-  void _onPublish();
-  void _onError();
+  void _onBeforeConnect(esp_mqtt_event_handle_t &event_data, esp_mqtt_client_handle_t &client);
+  void _onConnect(esp_mqtt_event_handle_t &event_data);
+  void _onDisconnect(esp_mqtt_event_handle_t &event_data);
+  void _onSubscribe(esp_mqtt_event_handle_t &event_data);
+  void _onUnsubscribe(esp_mqtt_event_handle_t &event_data);
+  void _onMessage(esp_mqtt_event_handle_t &event_data);
+  void _onPublish(esp_mqtt_event_handle_t &event_data);
+  void _onError(esp_mqtt_event_handle_t &event_data);
 };
