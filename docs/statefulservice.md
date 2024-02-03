@@ -429,7 +429,7 @@ esp32sveltekit.getFeatureService()->addFeature("custom_feature", true); // or fa
 
 ## OTA Firmware Updates
 
-ESP32-SvelteKit offers two different ways to roll out firmware updates to field devices. If the frontend should be updated as well it is necessary to serve it from PROGMEM by activating `-D PROGMEM_WWW`.
+ESP32-SvelteKit offers two different ways to roll out firmware updates to field devices. If the frontend should be updated as well it is necessary to embed it into the firmware binary by activating `-D EMBED_WWW`.
 
 ### Firmware Upload
 

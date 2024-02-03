@@ -43,7 +43,7 @@
 #include <ESPFS.h>
 #include <PsychicHttp.h>
 
-#ifdef PROGMEM_WWW
+#ifdef EMBED_WWW
 #include <WWWData.h>
 #endif
 
@@ -120,7 +120,7 @@ public:
         return &_mqttSettingsService;
     }
 
-    AsyncMqttClient *getMqttClient()
+    PsychicMqttClient *getMqttClient()
     {
         return _mqttSettingsService.getMqttClient();
     }

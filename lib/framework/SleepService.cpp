@@ -23,6 +23,18 @@ SleepService::SleepService(PsychicHttpServer *server, SecurityManager *securityM
 
 void SleepService::begin()
 {
+// OPTIONS (for CORS preflight)
+#ifdef ENABLE_CORS
+    _server->on(SLEEP_SERVICE_PATH,
+                HTTP_OPTIONS,
+                _securityManager->wrapRequest(
+                    [this](PsychicRequest *request)
+                    {
+                        return request->reply(200);
+                    },
+                    AuthenticationPredicates::IS_AUTHENTICATED));
+#endif
+
     _server->on(SLEEP_SERVICE_PATH,
                 HTTP_POST,
                 _securityManager->wrapRequest(std::bind(&SleepService::sleep, this, std::placeholders::_1),

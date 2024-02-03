@@ -2,21 +2,21 @@
 
 The build process is controlled by [platformio.ini](https://github.com/theelims/ESP32-sveltekit/platformio.ini) and automates the build of the front end website with Vite as well as the binary compilation for the ESP32 firmware. Whenever PlatformIO is triggered with the `upload` command this process will call the python script [build_interface.py](https://github.com/theelims/ESP32-sveltekit/scripts/build_interface.py) to action. It will start the Vite build and gzip the resulting files either to the `data/` directory or embed them into a header file. If necessary a file system image for the flash is created for the default build environment and upload to the ESP32 prior to compiling the firmware binary.
 
-## Serving from Flash or PROGMEM
+## Serving from Flash or Embedding into the Binary
 
-The front end website can be served either from the SPIFFS partition of the flash, or embedded into the firmware binary from PROGMEM (default). Later has the advantage that only one binary needs to be distributed easing the OTA process. Further more this is desirable if you like to preserve the settings stored in the SPIFFS partition, or have other files there that need to survive a firmware update. To serve from the SPIFFS partition instead please comment the following build flag out:
+The front end website can be served either from the LITTLEFS partition of the flash, or embedded into the firmware binary (default). Later has the advantage that only one binary needs to be distributed easing the OTA process. Further more this is desirable if you like to preserve the settings stored in the LITTLEFS partition, or have other files there that need to survive a firmware update. To serve from the LITTLEFS partition instead please comment the following build flag out:
 
 ```ini
 build_flags =
     ...
-    -D PROGMEM_WWW
+    -D EMBED_WWW
 ```
 
 ### Partitioning
 
-If you choose to serve the frontend from PROGMEM (default) it becomes part of the firmware binary. As many ESP32 modules only come with 4MB built-in flash this results in the binary being too large for the reserved flash. Therefor a partition scheme with a larger section for the executable code is selected. However, this limits the SPIFFS partition to 200kb. There are a great number of [default partition tables](https://github.com/espressif/arduino-esp32/tree/master/tools/partitions) for Arduino-ESP32 to choose from. If you have 8MB or 16MB flash this would be your first choice. If you don't need OTA you can choose a partition scheme without OTA.
+If you choose to serve the frontend from PROGMEM (default) it becomes part of the firmware binary. As many ESP32 modules only come with 4MB built-in flash this results in the binary being too large for the reserved flash. Therefor a partition scheme with a larger section for the executable code is selected. However, this limits the LITTLEFS partition to 200kb. There are a great number of [default partition tables](https://github.com/espressif/arduino-esp32/tree/master/tools/partitions) for Arduino-ESP32 to choose from. If you have 8MB or 16MB flash this would be your first choice. If you don't need OTA you can choose a partition scheme without OTA.
 
-Should you want to deploy the frontend from the flash's SPIFFS partition on a 4MB chip you need to comment out the following two lines. Otherwise the 200kb will not be large enough to host the front end code.
+Should you want to deploy the frontend from the flash's LITTLEFS partition on a 4MB chip you need to comment out the following two lines. Otherwise the 200kb will not be large enough to host the front end code.
 
 ```ini
 board_build.partitions = min_spiffs.csv

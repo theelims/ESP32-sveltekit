@@ -42,9 +42,11 @@ void SecuritySettingsService::begin()
 
 Authentication SecuritySettingsService::authenticateRequest(PsychicRequest *request)
 {
+    // Load the parameters from the request, as they are only loaded later with the regular handler
     if (request->hasHeader(AUTHORIZATION_HEADER))
     {
         auto value = request->header(AUTHORIZATION_HEADER);
+        // ESP_LOGV("SecuritySettingsService", "Authorization header: %s", value.c_str());
         if (value.startsWith(AUTHORIZATION_HEADER_PREFIX))
         {
             value = value.substring(AUTHORIZATION_HEADER_PREFIX_LEN);
@@ -54,6 +56,7 @@ Authentication SecuritySettingsService::authenticateRequest(PsychicRequest *requ
     else if (request->hasParam(ACCESS_TOKEN_PARAMATER))
     {
         String value = request->getParam(ACCESS_TOKEN_PARAMATER)->value();
+        // ESP_LOGV("SecuritySettingsService", "Access token parameter: %s", value.c_str());
         return authenticateJWT(value);
     }
     return Authentication();
@@ -121,8 +124,25 @@ PsychicRequestFilterFunction SecuritySettingsService::filterRequest(Authenticati
 {
     return [this, predicate](PsychicRequest *request)
     {
+        // ESP_LOGV("SecuritySettingsService", "Authenticating filter request: %s", request->uri().c_str());
+        // ESP_LOGV("SecuritySettingsService", "Request Method: %s", request->methodStr().c_str());
+
+        // TODO: This is a hack to allow bogus websocket filter requests to pass through
+        // This is a temporary fix until the PsychicHttp websocket handler is fixed to not send a bogus filter request
+
+        // Check if we have a bogus filter request and return true
+        if (request->uri().isEmpty() && request->method() == HTTP_DELETE)
+        {
+            ESP_LOGV("SecuritySettingsService", "Bogus filter request - allowing");
+            return true;
+        }
+        else
+            request->loadParams();
+
         Authentication authentication = authenticateRequest(request);
-        return predicate(authentication);
+        bool result = predicate(authentication);
+        ESP_LOGV("SecuritySettingsService", "Filter Request %s", result ? "allowed" : "denied");
+        return result;
     };
 }
 
@@ -182,7 +202,10 @@ SecuritySettingsService::~SecuritySettingsService()
 PsychicRequestFilterFunction SecuritySettingsService::filterRequest(AuthenticationPredicate predicate)
 {
     return [this, predicate](PsychicRequest *request)
-    { return true; };
+    {
+        ESP_LOGV("SecuritySettingsService", "Security disabled - all requests are allowed");
+        return true;
+    };
 }
 
 // Return the admin user on all request - disabling security features

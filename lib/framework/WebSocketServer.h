@@ -18,7 +18,6 @@
 #include <StatefulService.h>
 #include <PsychicHttp.h>
 #include <SecurityManager.h>
-#include "freertos/timers.h"
 
 #define WEB_SOCKET_CLIENT_ID_MSG_SIZE 128
 
@@ -53,7 +52,7 @@ public:
 
     void begin()
     {
-        // _webSocket.setFilter(_securityManager->filterRequest(_authenticationPredicate));
+        _webSocket.setFilter(_securityManager->filterRequest(_authenticationPredicate));
         _webSocket.onOpen(std::bind(&WebSocketServer::onWSOpen,
                                     this,
                                     std::placeholders::_1));
@@ -65,10 +64,6 @@ public:
                                      std::placeholders::_1,
                                      std::placeholders::_2));
         _server->on(_webSocketPath.c_str(), &_webSocket);
-
-        // Doesn't work with PsychicHttpServer
-        // _server->on(_webSocketPath.c_str(), HTTP_GET, [](PsychicRequest *request)
-        //             { return request->reply(403); });
 
         ESP_LOGV("WebSocketServer", "Registered WebSocket handler: %s", _webSocketPath.c_str());
     }

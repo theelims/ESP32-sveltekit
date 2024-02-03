@@ -42,6 +42,19 @@ public:
     // register the web server on() endpoints
     void begin()
     {
+
+// OPTIONS (for CORS preflight)
+#ifdef ENABLE_CORS
+        _server->on(_servicePath,
+                    HTTP_OPTIONS,
+                    _securityManager->wrapRequest(
+                        [this](PsychicRequest *request)
+                        {
+                            return request->reply(200);
+                        },
+                        AuthenticationPredicates::IS_AUTHENTICATED));
+#endif
+
         // GET
         _server->on(_servicePath,
                     HTTP_GET,

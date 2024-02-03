@@ -48,7 +48,7 @@ def findTimestampOutputFile():
      return os.path.getmtime(OUTPUTFILE)
 
 def needtoRegenerateOutputFile():
-    if not flagExists("PROGMEM_WWW"):
+    if not flagExists("EMBED_WWW"):
         return True
     else:
         if (OutputFileExits()):
@@ -143,7 +143,7 @@ def buildWeb():
         env.Execute("npm run build")
         buildPath = Path("build")
         wwwPath = Path("../data/www")        
-        if not flagExists("PROGMEM_WWW"):
+        if not flagExists("EMBED_WWW"):
             if wwwPath.exists() and wwwPath.is_dir():
                 rmtree(wwwPath)
             print("Copying and compress interface to data directory")
@@ -157,7 +157,7 @@ def buildWeb():
 
     finally:
         os.chdir("..")
-        if not flagExists("PROGMEM_WWW"):
+        if not flagExists("EMBED_WWW"):
             print("Build LittleFS file system image and upload to ESP32")
             env.Execute("pio run --target uploadfs")
 

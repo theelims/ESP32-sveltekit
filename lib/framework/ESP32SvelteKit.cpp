@@ -68,7 +68,7 @@ void ESP32SvelteKit::begin()
     _server->config.max_uri_handlers = _numberEndpoints;
     _server->listen(80);
 
-#ifdef PROGMEM_WWW
+#ifdef EMBED_WWW
     // Serve static resources from PROGMEM
     ESP_LOGV("ESP32SvelteKit", "Registering routes from PROGMEM static resources");
     WWWData::registerRoutes(
@@ -92,27 +92,8 @@ void ESP32SvelteKit::begin()
             // this is easier than using webServer.onNotFound()
             if (uri.equals("/index.html"))
             {
-                // TODO: Add CORS pre-flight
                 _server->defaultEndpoint->setHandler(handler);
             }
-
-            // Serving non matching get requests with "/index.html"
-            // OPTIONS get a straight up 200 response
-            // if (uri.equals("/index.html"))
-            // {
-            //     _server->onNotFound([&](PsychicRequest *request)
-            //                         {
-            //         if (request->method() == HTTP_GET) {
-            //             requestHandler(request);
-            //             return ESP_OK;
-            //         } else if (request->method() == HTTP_OPTIONS) {
-            //             // CORS Pre-flight
-            //             ESP_LOGI("ESP32SvelteKit" , "CORS Pre-flight");
-            //             return request->reply(200);
-            //         } else {
-            //             return request->reply(404);
-            //         } });
-            // }
         });
 #else
     // Serve static resources from /www/
@@ -120,7 +101,6 @@ void ESP32SvelteKit::begin()
     _server->serveStatic("/_app/", ESPFS, "/www/_app/");
     _server->serveStatic("/favicon.png", ESPFS, "/www/favicon.png");
     //  Serving all other get requests with "/www/index.htm"
-    //  OPTIONS get a straight up 200 response
     _server->onNotFound([](PsychicRequest *request)
                         {
         if (request->method() == HTTP_GET) {
@@ -128,18 +108,14 @@ void ESP32SvelteKit::begin()
             return response.send();
             // String url = "http://" + request->host() + "/index.html";
             // request->redirect(url.c_str());
-        } else if (request->method() == HTTP_OPTIONS) {
-            ESP_LOGI("ESP32SvelteKit", "CORS Pre-flight");
-            request->reply(200);
-        } else {
-            request->reply(404);
         } });
 #endif
-#ifdef SERVE_CONFIG_FILES
+
+    // Serve static resources from /config/ if set by platformio.ini
+#if SERVE_CONFIG_FILES
     _server->serveStatic("/config/", ESPFS, "/config/");
 #endif
 
-// Enable CORS if required
 #if defined(ENABLE_CORS)
     ESP_LOGV("ESP32SvelteKit", "Enabling CORS headers");
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", CORS_ORIGIN);
