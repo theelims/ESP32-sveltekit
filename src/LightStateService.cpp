@@ -16,7 +16,7 @@
 
 LightStateService::LightStateService(PsychicHttpServer *server,
                                      SecurityManager *securityManager,
-                                     AsyncMqttClient *mqttClient,
+                                     PsychicMqttClient *mqttClient,
                                      LightMqttSettingsService *lightMqttSettingsService) : _httpEndpoint(LightState::read,
                                                                                                          LightState::update,
                                                                                                          this,

@@ -50,6 +50,8 @@
 		uptime: number;
 	};
 
+	let systemStatus: SystemStatus;
+
 	async function getSystemStatus() {
 		try {
 			const response = await fetch('/rest/systemStatus', {
@@ -59,10 +61,11 @@
 					'Content-Type': 'application/json'
 				}
 			});
-			return await response.json();
+			systemStatus = await response.json();
 		} catch (error) {
 			console.log('Error:', error);
 		}
+		return systemStatus;
 	}
 
 	const interval = setInterval(async () => {
@@ -180,7 +183,7 @@
 	<div class="w-full overflow-x-auto">
 		{#await getSystemStatus()}
 			<Spinner />
-		{:then systemStatus}
+		{:then nothing}
 			<div
 				class="flex w-full flex-col space-y-1"
 				transition:slide|local={{ duration: 300, easing: cubicOut }}
@@ -329,9 +332,7 @@
 					<div>
 						<div class="font-bold">Core Temperature</div>
 						<div class="text-sm opacity-75">
-							{systemStatus.core_temp.toFixed(2) == 53.33
-								? 'NaN'
-								: systemStatus.core_temp.toFixed(2) + ' °C'}
+							{systemStatus.core_temp == 53.33 ? 'NaN' : systemStatus.core_temp.toFixed(2) + ' °C'}
 						</div>
 					</div>
 				</div>

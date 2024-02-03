@@ -137,7 +137,6 @@ public:
     }
 
 protected:
-    // TimerHandle_t timerHandle;
     StatefulService<T> *_statefulService;
     esp_websocket_client_handle_t client = nullptr;
     esp_websocket_client_config_t websocket_cfg;

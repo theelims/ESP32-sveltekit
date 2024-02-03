@@ -16,15 +16,12 @@
 #include <LightMqttSettingsService.h>
 #include <LightStateService.h>
 #include <PsychicHttpServer.h>
-#include <PsychicMqttClient.h>
 
 #define SERIAL_BAUD_RATE 115200
 
 PsychicHttpServer server;
 
-PsychicMqttClient mqttClient;
-
-ESP32SvelteKit esp32sveltekit(&server, 115);
+ESP32SvelteKit esp32sveltekit(&server, 125);
 
 LightMqttSettingsService lightMqttSettingsService =
     LightMqttSettingsService(&server, esp32sveltekit.getFS(), esp32sveltekit.getSecurityManager());
@@ -49,11 +46,6 @@ void setup()
     lightStateService.begin();
     // start the light service
     lightMqttSettingsService.begin();
-
-    // start the MQTT client
-    delay(20000);
-    ESP_LOGI("Main", "Connecting to MQTT...");
-    mqttClient.connect();
 }
 
 void loop()

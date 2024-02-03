@@ -16,36 +16,23 @@
 		enabled: boolean;
 		connected: boolean;
 		client_id: string;
-		disconnect_reason: number;
+		last_error: string;
 	};
 
 	type MQTTSettings = {
 		enabled: boolean;
-		host: string;
-		port: number;
+		uri: string;
 		username: string;
 		password: string;
 		client_id: string;
 		keep_alive: number;
 		clean_session: boolean;
-		max_topic_length: number;
 	};
 
 	let mqttSettings: MQTTSettings;
 	let mqttStatus: MQTTStatus;
 
 	let formField: any;
-
-	const disconnectReason = [
-		'TCP Disconnected',
-		'Unacceptable Protocol Version',
-		'Identifier Rejected',
-		'Server unavailable',
-		'Malformed Credentials',
-		'Not Authorized',
-		'Not Enough Memory',
-		'TLS Rejected'
-	];
 
 	async function getMQTTStatus() {
 		try {
@@ -123,27 +110,15 @@
 	function handleSubmitMQTT() {
 		let valid = true;
 
-		// Validate Server
-		// RegEx for IPv4
-		const regexExpIPv4 =
-			/\b(?:(?:2(?:[0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9])\.){3}(?:(?:2([0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9]))\b/;
+		// Validate Server URI
 		const regexExpURL =
-			/[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/i;
+			/(([-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4})|(\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b))(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/i;
 
-		if (!regexExpURL.test(mqttSettings.host) && !regexExpIPv4.test(mqttSettings.host)) {
+		if (!regexExpURL.test(mqttSettings.uri)) {
 			valid = false;
 			formErrors.host = true;
 		} else {
 			formErrors.host = false;
-		}
-
-		// Validate if port is a number and within the right range
-		let port = Number(mqttSettings.port);
-		if (0 <= port && port <= 65536) {
-			formErrors.port = false;
-		} else {
-			formErrors.port = true;
-			valid = false;
 		}
 
 		// Validate if port is a number and within the right range
@@ -194,7 +169,7 @@
 							{:else if !mqttStatus.enabled}
 								MQTT Disabled
 							{:else}
-								{disconnectReason[mqttStatus.disconnect_reason]}
+								{mqttStatus.last_error}
 							{/if}
 						</div>
 					</div>
@@ -231,17 +206,17 @@
 						<span>Enable MQTT</span>
 					</label>
 					<div class="hidden sm:block" />
-					<!-- Host -->
-					<div>
+					<!-- URI -->
+					<div class="sm:col-span-2">
 						<label class="label" for="host">
-							<span class="label-text text-md">Host</span>
+							<span class="label-text text-md">URI</span>
 						</label>
 						<input
 							type="text"
 							class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.host
 								? 'border-error border-2'
 								: ''}"
-							bind:value={mqttSettings.host}
+							bind:value={mqttSettings.uri}
 							id="host"
 							min="3"
 							max="64"
@@ -249,31 +224,9 @@
 						/>
 						<label class="label" for="host">
 							<span class="label-text-alt text-error {formErrors.host ? '' : 'hidden'}"
-								>Must be a valid IPv4 address or URL</span
+								>Must be a valid URI</span
 							>
 						</label>
-					</div>
-					<!-- Port -->
-					<div>
-						<label class="label" for="port">
-							<span class="label-text text-md">Port</span>
-						</label>
-						<input
-							type="number"
-							min="0"
-							max="65536"
-							class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.port
-								? 'border-error border-2'
-								: ''}"
-							bind:value={mqttSettings.port}
-							id="port"
-							required
-						/>
-						<label for="port" class="label"
-							><span class="label-text-alt text-error {formErrors.port ? '' : 'hidden'}"
-								>Port number must be between 0 and 65536</span
-							></label
-						>
 					</div>
 					<!-- Username -->
 					<div>
@@ -306,15 +259,6 @@
 							id="clientid"
 						/>
 					</div>
-					<!-- Clean Session -->
-					<label class="label inline-flex cursor-pointer content-end justify-start gap-4">
-						<input
-							type="checkbox"
-							bind:checked={mqttSettings.clean_session}
-							class="checkbox checkbox-primary mt-2 sm:-mb-8 sm:mt-0"
-						/>
-						<span class="mt-2 sm:-mb-8 sm:mt-0">Clean Session?</span>
-					</label>
 					<!-- Keep Alive -->
 					<div>
 						<label class="label" for="keepalive">
@@ -340,31 +284,15 @@
 							></label
 						>
 					</div>
-					<!-- Max Topic Length -->
-					<div>
-						<label class="label" for="maxtopic">
-							<span class="label-text text-md">Max Topic Length</span>
-						</label>
-						<label for="maxtopic" class="input-group">
-							<input
-								type="number"
-								min="64"
-								max="4096"
-								class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.topic_length
-									? 'border-error border-2'
-									: ''}"
-								bind:value={mqttSettings.max_topic_length}
-								id="maxtopic"
-								required
-							/>
-							<span>Chars</span>
-						</label>
-						<label for="maxtopic" class="label"
-							><span class="label-text-alt text-error {formErrors.topic_length ? '' : 'hidden'}"
-								>Must be between 64 and 4096 characters</span
-							></label
-						>
-					</div>
+					<!-- Clean Session -->
+					<label class="label inline-flex cursor-pointer content-end justify-start gap-4">
+						<input
+							type="checkbox"
+							bind:checked={mqttSettings.clean_session}
+							class="checkbox checkbox-primary"
+						/>
+						<span class="">Clean Session?</span>
+					</label>
 				</div>
 				<div class="divider mb-2 mt-0" />
 				<div class="mx-4 flex flex-wrap justify-end gap-2">

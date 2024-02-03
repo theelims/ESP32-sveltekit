@@ -6,14 +6,6 @@ All notable changes to this project will be documented in this file.
 
 > **Warning**: This update has breaking changes!
 
-### ToDo's for this release
-
-- [ ] Provide CORS preflight confirmation
-- [ ] Switch AsyncMqttClient to ESP-IDF MQTT Client
-- [ ] Fix glitch in UI that System Status page is not reactive to 2sec polling of status
-- [ ] LightState NimBLE Demo --> Switch LED on and off with BLE HID device. Binding procedure with BLE HID device and BLE HID status page.
-- [ ] Update docs and check for consistency
-
 ### Added
 
 - Added postscript to platform.io build process to copy, rename and calculate MD5 checksum of \*.bin file. These files are ready for uploading to the Github Release page.
@@ -21,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Added generateToken API for security settings
 - Added Multi-WiFi capability. Add up to five WiFi configurations and connect to either strongest network (default), or by priority.
 - Added InfoDialog as a simpler version of the ConfirmDialog for a simple notification modal.
+- Added Adafruit certificate repository as the default choice for the X509 certificate bundle.
 
 ### Changed
 
@@ -28,13 +21,19 @@ All notable changes to this project will be documented in this file.
 - Changed build_interface.py script to check for modified files in the interface sources before re-building the interface. Saves some time on the compilation process.
 - Upload firmware binary allows uploading of MD5 checksum file in advance to verify downloaded firmware package.
 - GithubFirmwareManager checks against PIO build_target in filename to support Github OTA for binaries build for various targets. You should rename your old release \*.bin files on the Github release pages for backward compatibility.
+- Changed MQTT Client to an ESP-IDF backed one which supports SSL/TLS X509 root CA bundles and transport over WS.
+- Changed the PROGMEM_WWW flag to EMBED_WWW as there is technically speaking no PROGMEM on ESP32's.
+
+### Fixed
+
+- Fixed reactivity of System Status page.
 
 ### Removed
 
 - Removed support for Arduino ESP OTA.
 - HttpEndpoints and Websocket Server without a securityManager are no longer possible.
 
-### Migrate from ESPAsyncWebServer
+### Migrate from ESPAsyncWebServer to PsychicHttp
 
 #### Migrate `main.cpp`
 
@@ -42,7 +41,7 @@ Change the server and ESPSvelteKit instances to PsychicHttpServer and give the E
 
 ```
 PsychicHttpServer server;
-ESP32SvelteKit esp32sveltekit(&server, 115);
+ESP32SvelteKit esp32sveltekit(&server, 125);
 ```
 
 Remove `server.begin();` in `void setup()`. This is handled by ESP32SvelteKit now.
@@ -57,6 +56,7 @@ Remove the following `build_flags`:
     -D WS_MAX_QUEUED_MESSAGES=64
     -D CONFIG_ASYNC_TCP_RUNNING_CORE=0
     -D NO_GLOBAL_ARDUINOOTA
+    -D PROGMEM_WWW
 ```
 
 Add the following `build_flags` and adjust to your app, if needed:
@@ -65,9 +65,29 @@ Add the following `build_flags` and adjust to your app, if needed:
     -D BUILD_TARGET=\"$PIOENV\"
     -D APP_NAME=\"ESP32-Sveltekit\" ; Must only contain characters from [a-zA-Z0-9-_] as this is converted into a filename
     -D APP_VERSION=\"0.3.0\" ; semver compatible version string
+    -D EMBED_WWW
 ```
 
-Remove the lib dependency `esphome/AsyncTCP-esphome @ ^2.0.0`.
+Remove the lib dependency `esphome/AsyncTCP-esphome @ ^2.0.0` and add `https://github.com/theelims/PsychicMqttClient.git`
+
+Consider adjusting `board_ssl_cert_source = adafruit`, so that the new MQTT client has universal SSL/TLS support with a wide range of CA root certificates.
+
+#### Migrate `factory_settings.ini`
+
+The new MQTT client has slightly renamed factory settings:
+
+```ini
+  ; MQTT settings
+  -D FACTORY_MQTT_ENABLED=false
+  -D FACTORY_MQTT_URI=\"mqtts://mqtt.eclipseprojects.io:8883\"
+  -D FACTORY_MQTT_USERNAME=\"\" ; supports placeholders
+  -D FACTORY_MQTT_PASSWORD=\"\"
+  -D FACTORY_MQTT_CLIENT_ID=\"#{platform}-#{unique_id}\" ; supports placeholders
+  -D FACTORY_MQTT_KEEP_ALIVE=120
+  -D FACTORY_MQTT_CLEAN_SESSION=true
+```
+
+Max Topic Length is no longer needed.
 
 #### Custom Stateful Services
 

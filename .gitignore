@@ -15,3 +15,4 @@ node_modules
 /lib/framework/WWWData.h
 *WWWData.h
 lib/framework/WWWData.h
+ssl_certs/cacert.pem

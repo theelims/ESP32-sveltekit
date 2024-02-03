@@ -16,7 +16,7 @@
  **/
 
 #include <StatefulService.h>
-#include <AsyncMqttClient.h>
+#include <PsychicMqttClient.h>
 
 #define MQTT_ORIGIN_ID "mqtt"
 
@@ -25,10 +25,12 @@ class MqttConnector
 {
 protected:
     StatefulService<T> *_statefulService;
-    AsyncMqttClient *_mqttClient;
+    PsychicMqttClient *_mqttClient;
     size_t _bufferSize;
 
-    MqttConnector(StatefulService<T> *statefulService, AsyncMqttClient *mqttClient, size_t bufferSize) : _statefulService(statefulService), _mqttClient(mqttClient), _bufferSize(bufferSize)
+    MqttConnector(StatefulService<T> *statefulService, PsychicMqttClient *mqttClient, size_t bufferSize) : _statefulService(statefulService),
+                                                                                                           _mqttClient(mqttClient),
+                                                                                                           _bufferSize(bufferSize)
     {
         _mqttClient->onConnect(std::bind(&MqttConnector::onConnect, this));
     }
@@ -36,7 +38,7 @@ protected:
     virtual void onConnect() = 0;
 
 public:
-    inline AsyncMqttClient *getMqttClient() const
+    inline PsychicMqttClient *getMqttClient() const
     {
         return _mqttClient;
     }
@@ -48,7 +50,7 @@ class MqttPub : virtual public MqttConnector<T>
 public:
     MqttPub(JsonStateReader<T> stateReader,
             StatefulService<T> *statefulService,
-            AsyncMqttClient *mqttClient,
+            PsychicMqttClient *mqttClient,
             const String &pubTopic = "",
             bool retain = false,
             size_t bufferSize = DEFAULT_BUFFER_SIZE) : MqttConnector<T>(statefulService, mqttClient, bufferSize),
@@ -109,9 +111,11 @@ class MqttSub : virtual public MqttConnector<T>
 public:
     MqttSub(JsonStateUpdater<T> stateUpdater,
             StatefulService<T> *statefulService,
-            AsyncMqttClient *mqttClient,
+            PsychicMqttClient *mqttClient,
             const String &subTopic = "",
-            size_t bufferSize = DEFAULT_BUFFER_SIZE) : MqttConnector<T>(statefulService, mqttClient, bufferSize), _stateUpdater(stateUpdater), _subTopic(subTopic)
+            size_t bufferSize = DEFAULT_BUFFER_SIZE) : MqttConnector<T>(statefulService, mqttClient, bufferSize),
+                                                       _stateUpdater(stateUpdater),
+                                                       _subTopic(subTopic)
     {
         MqttConnector<T>::_mqttClient->onMessage(std::bind(&MqttSub::onMqttMessage,
                                                            this,
@@ -119,8 +123,7 @@ public:
                                                            std::placeholders::_2,
                                                            std::placeholders::_3,
                                                            std::placeholders::_4,
-                                                           std::placeholders::_5,
-                                                           std::placeholders::_6));
+                                                           std::placeholders::_5));
     }
 
     void setSubTopic(const String &subTopic)
@@ -158,10 +161,9 @@ private:
 
     void onMqttMessage(char *topic,
                        char *payload,
-                       AsyncMqttClientMessageProperties properties,
-                       size_t len,
-                       size_t index,
-                       size_t total)
+                       int retain,
+                       int qos,
+                       bool dup)
     {
         // we only care about the topic we are watching in this class
         if (strcmp(_subTopic.c_str(), topic))
@@ -171,7 +173,7 @@ private:
 
         // deserialize from string
         DynamicJsonDocument json(MqttConnector<T>::_bufferSize);
-        DeserializationError error = deserializeJson(json, payload, len);
+        DeserializationError error = deserializeJson(json, payload);
         if (!error && json.is<JsonObject>())
         {
             JsonObject jsonObject = json.as<JsonObject>();
@@ -187,7 +189,7 @@ public:
     MqttPubSub(JsonStateReader<T> stateReader,
                JsonStateUpdater<T> stateUpdater,
                StatefulService<T> *statefulService,
-               AsyncMqttClient *mqttClient,
+               PsychicMqttClient *mqttClient,
                const String &pubTopic = "",
                const String &subTopic = "",
                bool retain = false,

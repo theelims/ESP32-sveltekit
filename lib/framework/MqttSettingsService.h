@@ -18,7 +18,7 @@
 #include <StatefulService.h>
 #include <HttpEndpoint.h>
 #include <FSPersistence.h>
-#include <AsyncMqttClient.h>
+#include <PsychicMqttClient.h>
 #include <SettingValue.h>
 #include <WiFi.h>
 
@@ -68,8 +68,7 @@ class MqttSettings
 public:
     // host and port - if enabled
     bool enabled;
-    String host;
-    uint16_t port;
+    String uri;
 
     // username and password
     String username;
@@ -81,32 +80,27 @@ public:
     // connection settings
     uint16_t keepAlive;
     bool cleanSession;
-    uint16_t maxTopicLength;
 
     static void read(MqttSettings &settings, JsonObject &root)
     {
         root["enabled"] = settings.enabled;
-        root["host"] = settings.host;
-        root["port"] = settings.port;
+        root["uri"] = settings.uri;
         root["username"] = settings.username;
         root["password"] = settings.password;
         root["client_id"] = settings.clientId;
         root["keep_alive"] = settings.keepAlive;
         root["clean_session"] = settings.cleanSession;
-        root["max_topic_length"] = settings.maxTopicLength;
     }
 
     static StateUpdateResult update(JsonObject &root, MqttSettings &settings)
     {
         settings.enabled = root["enabled"] | FACTORY_MQTT_ENABLED;
-        settings.host = root["host"] | FACTORY_MQTT_HOST;
-        settings.port = root["port"] | FACTORY_MQTT_PORT;
+        settings.uri = root["uri"] | FACTORY_MQTT_URI;
         settings.username = root["username"] | SettingValue::format(FACTORY_MQTT_USERNAME);
         settings.password = root["password"] | FACTORY_MQTT_PASSWORD;
         settings.clientId = root["client_id"] | SettingValue::format(FACTORY_MQTT_CLIENT_ID);
         settings.keepAlive = root["keep_alive"] | FACTORY_MQTT_KEEP_ALIVE;
         settings.cleanSession = root["clean_session"] | FACTORY_MQTT_CLEAN_SESSION;
-        settings.maxTopicLength = root["max_topic_length"] | FACTORY_MQTT_MAX_TOPIC_LENGTH;
         return StateUpdateResult::CHANGED;
     }
 };
@@ -122,8 +116,8 @@ public:
     bool isEnabled();
     bool isConnected();
     const char *getClientId();
-    AsyncMqttClientDisconnectReason getDisconnectReason();
-    AsyncMqttClient *getMqttClient();
+    String getLastError();
+    PsychicMqttClient *getMqttClient();
 
 protected:
     void onConfigUpdated();
@@ -135,7 +129,7 @@ private:
     FSPersistence<MqttSettings> _fsPersistence;
 
     // Pointers to hold retained copies of the mqtt client connection strings.
-    // This is required as AsyncMqttClient holds refrences to the supplied connection strings.
+    // This is required as AsyncMqttClient holds references to the supplied connection strings.
     char *_retainedHost;
     char *_retainedClientId;
     char *_retainedUsername;
@@ -143,19 +137,17 @@ private:
 
     // variable to help manage connection
     bool _reconfigureMqtt;
-    unsigned long _disconnectedAt;
-
-    // connection status
-    AsyncMqttClientDisconnectReason _disconnectReason;
+    String _lastError;
 
     // the MQTT client instance
-    AsyncMqttClient _mqttClient;
+    PsychicMqttClient _mqttClient;
 
     void onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t info);
     void onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info);
 
     void onMqttConnect(bool sessionPresent);
-    void onMqttDisconnect(AsyncMqttClientDisconnectReason reason);
+    void onMqttDisconnect(bool sessionPresent);
+    void onMqttError(esp_mqtt_error_codes_t error);
     void configureMqtt();
 };
 

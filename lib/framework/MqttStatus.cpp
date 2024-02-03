@@ -38,7 +38,7 @@ esp_err_t MqttStatus::mqttStatus(PsychicRequest *request)
     root["enabled"] = _mqttSettingsService->isEnabled();
     root["connected"] = _mqttSettingsService->isConnected();
     root["client_id"] = _mqttSettingsService->getClientId();
-    root["disconnect_reason"] = (uint8_t)_mqttSettingsService->getDisconnectReason();
+    root["last_error"] = _mqttSettingsService->getLastError();
 
     return response.send();
 }

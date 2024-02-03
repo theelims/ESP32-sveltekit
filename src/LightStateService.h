@@ -83,7 +83,7 @@ class LightStateService : public StatefulService<LightState>
 public:
     LightStateService(PsychicHttpServer *server,
                       SecurityManager *securityManager,
-                      AsyncMqttClient *mqttClient,
+                      PsychicMqttClient *mqttClient,
                       LightMqttSettingsService *lightMqttSettingsService);
     void begin();
 
@@ -92,7 +92,7 @@ private:
     MqttPubSub<LightState> _mqttPubSub;
     WebSocketServer<LightState> _webSocketServer;
     //  WebSocketClient<LightState> _webSocketClient;
-    AsyncMqttClient *_mqttClient;
+    PsychicMqttClient *_mqttClient;
     LightMqttSettingsService *_lightMqttSettingsService;
 
     void registerConfig();

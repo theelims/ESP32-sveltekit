@@ -14,6 +14,8 @@
 
 #include <MqttSettingsService.h>
 
+extern const uint8_t rootca_crt_bundle_start[] asm("_binary_src_certs_x509_crt_bundle_bin_start");
+
 /**
  * Retains a copy of the cstr provided in the pointer provided using dynamic allocation.
  *
@@ -45,13 +47,14 @@ MqttSettingsService::MqttSettingsService(PsychicHttpServer *server, FS *fs, Secu
                                                                                                                 _retainedUsername(nullptr),
                                                                                                                 _retainedPassword(nullptr),
                                                                                                                 _reconfigureMqtt(false),
-                                                                                                                _disconnectedAt(0),
-                                                                                                                _disconnectReason(AsyncMqttClientDisconnectReason::TCP_DISCONNECTED),
-                                                                                                                _mqttClient()
+                                                                                                                _mqttClient(),
+                                                                                                                _lastError("None")
 {
     addUpdateHandler([&](const String &originId)
                      { onConfigUpdated(); },
                      false);
+
+    _mqttClient.setCACertBundle(rootca_crt_bundle_start);
 }
 
 MqttSettingsService::~MqttSettingsService()
@@ -67,6 +70,7 @@ void MqttSettingsService::begin()
                  WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
     _mqttClient.onConnect(std::bind(&MqttSettingsService::onMqttConnect, this, std::placeholders::_1));
     _mqttClient.onDisconnect(std::bind(&MqttSettingsService::onMqttDisconnect, this, std::placeholders::_1));
+    _mqttClient.onError(std::bind(&MqttSettingsService::onMqttError, this, std::placeholders::_1));
 
     _httpEndpoint.begin();
     _fsPersistence.readFromFS();
@@ -74,14 +78,13 @@ void MqttSettingsService::begin()
 
 void MqttSettingsService::loop()
 {
-    if (_reconfigureMqtt || (_disconnectedAt && (unsigned long)(millis() - _disconnectedAt) >= MQTT_RECONNECTION_DELAY))
+    if (_reconfigureMqtt)
     {
         // reconfigure MQTT client
         configureMqtt();
 
         // clear the reconnection flags
         _reconfigureMqtt = false;
-        _disconnectedAt = 0;
     }
 }
 
@@ -97,51 +100,50 @@ bool MqttSettingsService::isConnected()
 
 const char *MqttSettingsService::getClientId()
 {
-    return _mqttClient.getClientId();
+    // return _mqttClient.getClientId();
+    return _state.clientId.c_str();
 }
 
-AsyncMqttClientDisconnectReason MqttSettingsService::getDisconnectReason()
-{
-    return _disconnectReason;
-}
-
-AsyncMqttClient *MqttSettingsService::getMqttClient()
+PsychicMqttClient *MqttSettingsService::getMqttClient()
 {
     return &_mqttClient;
 }
 
-void MqttSettingsService::onMqttConnect(bool sessionPresent)
+String MqttSettingsService::getLastError()
 {
-    Serial.print(F("Connected to MQTT, "));
-    if (sessionPresent)
-    {
-        Serial.println(F("with persistent session"));
-    }
-    else
-    {
-        Serial.println(F("without persistent session"));
-    }
+    return _lastError;
 }
 
-void MqttSettingsService::onMqttDisconnect(AsyncMqttClientDisconnectReason reason)
+void MqttSettingsService::onMqttConnect(bool sessionPresent)
 {
-    Serial.print(F("Disconnected from MQTT reason: "));
-    Serial.println((uint8_t)reason);
-    _disconnectReason = reason;
-    _disconnectedAt = millis();
+    Serial.printf("Connected to MQTT: %s\n", _mqttClient.getMqttConfig()->uri);
+    _lastError = "None";
+}
+
+void MqttSettingsService::onMqttDisconnect(bool sessionPresent)
+{
+    Serial.println("Disconnected from MQTT.");
+}
+
+void MqttSettingsService::onMqttError(esp_mqtt_error_codes_t error)
+{
+    if (error.error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT)
+    {
+        _lastError = strerror(error.esp_transport_sock_errno);
+        Serial.printf("MQTT error: %s\n", _lastError.c_str());
+    }
 }
 
 void MqttSettingsService::onConfigUpdated()
 {
     _reconfigureMqtt = true;
-    _disconnectedAt = 0;
 }
 
 void MqttSettingsService::onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
 {
     if (_state.enabled)
     {
-        Serial.println(F("WiFi connection dropped, starting MQTT client."));
+        Serial.println(F("WiFi connection established, starting MQTT client."));
         onConfigUpdated();
     }
 }
@@ -164,7 +166,7 @@ void MqttSettingsService::configureMqtt()
     if (_state.enabled && WiFi.isConnected())
     {
         Serial.println(F("Connecting to MQTT..."));
-        _mqttClient.setServer(retainCstr(_state.host.c_str(), &_retainedHost), _state.port);
+        _mqttClient.setServer(retainCstr(_state.uri.c_str(), &_retainedHost));
         if (_state.username.length() > 0)
         {
             _mqttClient.setCredentials(
@@ -178,7 +180,6 @@ void MqttSettingsService::configureMqtt()
         _mqttClient.setClientId(retainCstr(_state.clientId.c_str(), &_retainedClientId));
         _mqttClient.setKeepAlive(_state.keepAlive);
         _mqttClient.setCleanSession(_state.cleanSession);
-        _mqttClient.setMaxTopicLength(_state.maxTopicLength);
         _mqttClient.connect();
     }
 }
