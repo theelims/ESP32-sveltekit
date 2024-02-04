@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.3.0] - WIP
+## [0.3.0] - 2023-02-05
 
 > [!CAUTION]
 > This update has breaking changes!
@@ -23,7 +23,7 @@ All notable changes to this project will be documented in this file.
 - Upload firmware binary allows uploading of MD5 checksum file in advance to verify downloaded firmware package.
 - GithubFirmwareManager checks against PIO build_target in filename to support Github OTA for binaries build for various targets. You should rename your old release \*.bin files on the Github release pages for backward compatibility.
 - Changed MQTT Client to an ESP-IDF backed one which supports SSL/TLS X509 root CA bundles and transport over WS.
-- Changed the PROGMEM_WWW flag to EMBED_WWW as there is technically speaking no PROGMEM on ESP32's.
+- Changed the `PROGMEM_WWW` flag to `EMBED_WWW` as there is technically speaking no PROGMEM on ESP32's.
 
 ### Fixed
 
