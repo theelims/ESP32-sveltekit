@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [0.3.0] - WIP
 
-> **Warning**: This update has breaking changes!
+> [!CAUTION]
+> This update has breaking changes!
 
 ### Added
 

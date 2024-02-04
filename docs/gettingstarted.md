@@ -78,7 +78,7 @@ If your board is not listed in the platformio.ini you may look in the [official 
 
 !!! info "Default setup is for an ESP32-S3-DevKitC/M board"
 
-    The projects platformio.ini defaults for an ESP32-S3-DevKitC/M board by Espressif connected to the UART USB port. If you use an other board and the projects shows undesired a behavior it is likely that some parts do not match with pin definitions.
+    The projects platformio.ini defaults for an ESP32-S3-DevKitC/M board by Espressif connected to the UART USB port. If you use an other board and the projects shows an undesired behavior it is likely that some parts do not match with pin definitions.
 
 ### Build & Upload Process
 
@@ -86,7 +86,7 @@ After you've changed [platformio.ini](https://github.com/theelims/ESP32-svelteki
 
 ![PIO Build](media/PIO-upload.png)
 
-The first build process will take a while. After a couple of minutes you can see the ESP32 outputting information on the terminal.
+The first build process will take a while. After a couple of minutes you can see the ESP32 outputting information on the terminal. Some of the python scripts might need to install additional packages. In that case the first build process will fail. Just run it a second time.
 
 !!! tip "Use several terminals in parallel"
 
@@ -118,10 +118,6 @@ proxy: {
 !!! tip
 
     You must restart the development server for changes of the proxy location to come into effect.
-
-!!! tip
-
-    You can (optionally) speed up the build by commenting out the call to build_interface.py under "extra scripts" during local development. This will prevent the npm process from building the production release every time the firmware is compiled significantly decreasing the build time.
 
 ### Development Server
 

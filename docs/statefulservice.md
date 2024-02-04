@@ -12,10 +12,10 @@ The following code creates the web server and esp32sveltekit framework:
 
 ```cpp
 PsychicHttpServer server;
-ESP32SvelteKit esp32sveltekit(&server, 115);
+ESP32SvelteKit esp32sveltekit(&server, 120);
 ```
 
-ESP32SvelteKit is instantiated with a reference to the server and a number of HTTP endpoints. The underlying ESP-IDF HTTP Server statically allocates memory for each endpoint and needs to know how many there are. Best is to inspect your WWWData.h file for the number of Endpoints from SvelteKit, the framework itself has 27 endpoints, and Lighstate Demo has 4 endpoints. Each `_server.on()` counts as an endpoint. Don't forget to add a couple of spare, just in case.
+ESP32SvelteKit is instantiated with a reference to the server and a number of HTTP endpoints. The underlying ESP-IDF HTTP Server statically allocates memory for each endpoint and needs to know how many there are. Best is to inspect your WWWData.h file for the number of Endpoints from SvelteKit (currently 60), the framework itself has 37 endpoints, and Lighstate Demo has 7 endpoints. Each `_server.on()` counts as an endpoint. Don't forget to add a couple of spare, just in case.
 
 Now in the `setup()` function the initialization is performed:
 
@@ -25,10 +25,11 @@ void setup() {
   Serial.begin(SERIAL_BAUD_RATE);
 
   // start the framework and demo project
-  esp32sveltekit.setMDNSAppName("ESP32 SvelteKit Demo App");
   esp32sveltekit.begin();
 }
 ```
+
+`server.begin()` is called by ESP32-SvelteKit, as the start-up sequence is crucial.
 
 ## Stateful Service
 
@@ -163,6 +164,10 @@ class LightStateService : public StatefulService<LightState> {
       _httpEndpoint(LightState::read, LightState::update, this, server, "/rest/lightState", securityManager,AuthenticationPredicates::IS_AUTHENTICATED) {
   }
 
+  void begin(); {
+    _httpEndpoint.begin();
+  }
+
  private:
   HttpEndpoint<LightState> _httpEndpoint;
 };
@@ -203,6 +208,10 @@ class LightStateService : public StatefulService<LightState> {
       _webSocket(LightState::read, LightState::update, this, server, "/ws/lightState", securityManager, AuthenticationPredicates::IS_AUTHENTICATED), {
   }
 
+  void begin() {
+    _webSocketServer.begin();
+  }
+
  private:
   WebSocketServer<LightState> _webSocketServer;
 };
@@ -210,7 +219,7 @@ class LightStateService : public StatefulService<LightState> {
 
 WebSocket security is provided by authentication predicates which are [documented below](#security-features). The SecurityManager and authentication predicate must be provided, even if no secure endpoint is required. The placeholder project shows how endpoints can be secured.
 
-To register the HTTP endpoints with the web server the function `_webSocketServer.begin()` must be called in the custom StatefulService Class' own `void begin()` function.
+To register the WS endpoint with the web server the function `_webSocketServer.begin()` must be called in the custom StatefulService Class' own `void begin()` function.
 
 ### MQTT
 
@@ -264,6 +273,12 @@ You can use the security manager to wrap any request handler function with an au
 server->on("/rest/someService", HTTP_GET,
   _securityManager->wrapRequest(std::bind(&SomeService::someService, this, std::placeholders::_1), AuthenticationPredicates::IS_AUTHENTICATED)
 );
+```
+
+In case of a websocket connection the JWT token is supplied as a search parameter in the URL when establishing the connection:
+
+```
+/ws/lightState?access_token={JWT Token}
 ```
 
 ## Placeholder substitution
@@ -421,7 +436,7 @@ esp32sveltekit.getBatteryService()->setCharging(boolean isCharging); // notify t
 
 ### Custom Features
 
-You may use the compile time feature service also to enable or disable custom features at runtime and thus control the frontend. A custom feature can only be added during initializing the ESP32 and ESP32-SvelteKit. A feature can't be updated on runtime once it is set once.
+You may use the compile time feature service also to enable or disable custom features at runtime and thus control the frontend. A custom feature can only be added during initializing the ESP32 and ESP32-SvelteKit. A feature can't be updated on runtime once it is set.
 
 ```cpp
 esp32sveltekit.getFeatureService()->addFeature("custom_feature", true); // or false to disable it
@@ -442,10 +457,10 @@ By enabling `FT_DOWNLOAD_FIRMWARE=1` in [features.ini](https://github.com/theeli
 ```ini
     -D BUILD_TARGET="$PIOENV"
     -D APP_NAME=\"ESP32-Sveltekit\" ; Must only contain characters from [a-zA-Z0-9-_] as this is converted into a filename
-    -D APP_VERSION=\"0.2.2\" ; semver compatible version string
+    -D APP_VERSION=\"0.3.0\" ; semver compatible version string
 ```
 
-A build script copies the firmware binary files for all build environment to `build/firmware`. It renames them into `{APP_NAME}_{PIOENV}_{APP_VERSION}.bin`. It also creates a MD5 checksum file for verification during the OTA process. These files can be used as attachment on the GitHub release pages.
+A build script copies the firmware binary files for all build environment to `build/firmware`. It renames them into `{APP_NAME}_{$PIOENV}_{APP_VERSION}.bin`. It also creates a MD5 checksum file for verification during the OTA process. These files can be used as attachment on the GitHub release pages.
 
 !!! info
 

@@ -1,6 +1,6 @@
 # Build Process
 
-The build process is controlled by [platformio.ini](https://github.com/theelims/ESP32-sveltekit/platformio.ini) and automates the build of the front end website with Vite as well as the binary compilation for the ESP32 firmware. Whenever PlatformIO is triggered with the `upload` command this process will call the python script [build_interface.py](https://github.com/theelims/ESP32-sveltekit/scripts/build_interface.py) to action. It will start the Vite build and gzip the resulting files either to the `data/` directory or embed them into a header file. If necessary a file system image for the flash is created for the default build environment and upload to the ESP32 prior to compiling the firmware binary.
+The build process is controlled by [platformio.ini](https://github.com/theelims/ESP32-sveltekit/platformio.ini) and automates the build of the front end website with Vite as well as the binary compilation for the ESP32 firmware. Whenever PlatformIO is building a new binary it will call the python script [build_interface.py](https://github.com/theelims/ESP32-sveltekit/scripts/build_interface.py) to action. It will check the frontend files for changes. If necessary it will start the Vite build and gzip the resulting files either to the `data/` directory or embed them into a header file. In case the WWW files go into a LITTLEFS partition a file system image for the flash is created for the default build environment and upload to the ESP32.
 
 ## Serving from Flash or Embedding into the Binary
 
@@ -14,7 +14,7 @@ build_flags =
 
 ### Partitioning
 
-If you choose to serve the frontend from PROGMEM (default) it becomes part of the firmware binary. As many ESP32 modules only come with 4MB built-in flash this results in the binary being too large for the reserved flash. Therefor a partition scheme with a larger section for the executable code is selected. However, this limits the LITTLEFS partition to 200kb. There are a great number of [default partition tables](https://github.com/espressif/arduino-esp32/tree/master/tools/partitions) for Arduino-ESP32 to choose from. If you have 8MB or 16MB flash this would be your first choice. If you don't need OTA you can choose a partition scheme without OTA.
+If you choose to embed the frontend it becomes part of the firmware binary (default). As many ESP32 modules only come with 4MB built-in flash this results in the binary being too large for the reserved flash. Therefor a partition scheme with a larger section for the executable code is selected. However, this limits the LITTLEFS partition to 200kb. There are a great number of [default partition tables](https://github.com/espressif/arduino-esp32/tree/master/tools/partitions) for Arduino-ESP32 to choose from. If you have 8MB or 16MB flash this would be your first choice. If you don't need OTA you can choose a partition scheme without OTA.
 
 Should you want to deploy the frontend from the flash's LITTLEFS partition on a 4MB chip you need to comment out the following two lines. Otherwise the 200kb will not be large enough to host the front end code.
 
@@ -78,7 +78,7 @@ By default, the factory settings configure two user accounts with the following 
 | admin    | admin    |
 | guest    | guest    |
 
-It is recommended that you change the user credentials from their defaults better protect your device. You can do this in the user interface, or by modifying [factory_settings.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini) as mentioned above.
+It is recommended that you change the user credentials from their defaults to better protect your device. You can do this in the user interface, or by modifying [factory_settings.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini) as mentioned above.
 
 ### Customizing the factory time zone setting
 
@@ -125,7 +125,7 @@ build_flags =
 	-DCORE_DEBUG_LEVEL=5
 ```
 
-It accepts values from 1 (Verbose) to 5 (Errors) for different information depths to be logged on the serial terminal.
+It accepts values from 5 (Verbose) to 1 (Errors) for different information depths to be logged on the serial terminal. If commented out there won't be debug messages from the core libraries. For a production build you should comment this out.
 
 ### Serve Config Files
 
@@ -139,16 +139,16 @@ build_flags =
 
 ## SSL Root Certificate Store
 
-Some features like firmware download require a SSL connection. For that the SSL Root CA certificate must be known to the ESP32. The build system contains a python script derived from Espressif ESP-IDF building a certificate store containing one or more certificates. In order to create the store you must uncomment the three lines below in `platformio.ini`.
+Some features like firmware download or the MQTT client require a SSL connection. For that the SSL Root CA certificate must be known to the ESP32. The build system contains a python script derived from Espressif ESP-IDF building a certificate store containing one or more certificates. In order to create the store you must uncomment the three lines below in `platformio.ini`.
 
 ```ini
 extra_scripts =
     pre:scripts/generate_cert_bundle.py
 board_build.embed_files = src/certs/x509_crt_bundle.bin
-board_ssl_cert_source = folder
+board_ssl_cert_source = adafruit
 ```
 
-The script will download a public certificate store from Mozilla, builds a binary containing all certs and embeds this into the firmware. This will add ~65kb to the firmware image. Should you only need a few known certificates you can place their `*.pem` or `*.der` files in the [ssl_certs](https://github.com/theelims/ESP32-sveltekit/blob/main/ssl_certs) folder and change `board_ssl_cert_source = folder`. Then only these certificates will be included in the store. This is especially useful, if you only need to connect to know servers and need to shave some kb off the firmware image:
+The script will download a public certificate store from Mozilla (`board_ssl_cert_source = mozilla`) or a repository curated by Adafruit (`board_ssl_cert_source = adafruit`), builds a binary containing all certs and embeds this into the firmware. This will add ~65kb to the firmware image. Should you only need a few known certificates you can place their `*.pem` or `*.der` files in the [ssl_certs](https://github.com/theelims/ESP32-sveltekit/blob/main/ssl_certs) folder and change `board_ssl_cert_source = folder`. Then only these certificates will be included in the store. This is especially useful, if you only need to connect to know servers and need to shave some kb off the firmware image:
 
 !!! info
 

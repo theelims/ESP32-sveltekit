@@ -21,7 +21,7 @@
 
 PsychicHttpServer server;
 
-ESP32SvelteKit esp32sveltekit(&server, 125);
+ESP32SvelteKit esp32sveltekit(&server, 120);
 
 LightMqttSettingsService lightMqttSettingsService =
     LightMqttSettingsService(&server, esp32sveltekit.getFS(), esp32sveltekit.getSecurityManager());
@@ -35,9 +35,6 @@ void setup()
 {
     // start serial and filesystem
     Serial.begin(SERIAL_BAUD_RATE);
-
-    // start the framework and demo project
-    esp32sveltekit.setMDNSAppName(APP_NAME);
 
     // start ESP32-SvelteKit
     esp32sveltekit.begin();

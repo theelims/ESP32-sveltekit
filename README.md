@@ -35,11 +35,11 @@ Manage different user of your app with two authorization levels. An administrato
 
 ### :airplane: OTA Upgrade Service
 
-The framework can provide three different channels for Over-the-Air updates. Either by uploading a \*.bin file from the web interface or by pulling a firmware image from an update server. This is implemented with the github release page as an example.
+The framework can provide two different channels for Over-the-Air updates. Either by uploading a \*.bin file from the web interface. Or by pulling a firmware image from an update server. This is implemented with the github release page as an example. It is even possible to have different build environments at the same time and the Github OTA process pulls the correct binary.
 
 ### :building_construction: Automated Build Chain
 
-The automated build chain takes out the pain and tears of getting all the bits and pieces play nice together. The repository contains a PlatformIO project at its heart. A SvelteKit project for the frontend code and a mkdocs project for the documentation go alongside. The PlatformIO build tools not only build the SvelteKit frontend with Vite, but also ensure that the build results are gzipped and find their way into the flash memory of the ESP32. You have two choices to serve the frontend either from the flash partition, or embedded into the firmware binary from PROGMEM. The latter is much more friendly if your frontend code should be distributed OTA as well, leaving all configuration files intact.
+The automated build chain takes out the pain and tears of getting all the bits and pieces play nice together. The repository contains a PlatformIO project at its heart. A SvelteKit project for the frontend code and a mkdocs project for the documentation go alongside. The PlatformIO build tools not only build the SvelteKit frontend with Vite, but also ensure that the build results are gzipped and find their way into the flash memory of the ESP32. You have two choices to serve the frontend either from the flash partition, or embedded into the firmware binary. The latter is much more friendly if your frontend code should be distributed OTA as well, leaving all configuration files intact.
 
 ### :icecream: Compatible with all ESP32 Flavours
 
@@ -60,7 +60,7 @@ The code runs on many variants of the ESP32 chip family. From the plain old ESP3
 - [svelte-dnd-list](https://github.com/tarb/svelte-dnd-list)
 - [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
 - [PsychicHttp](https://github.com/hoeken/PsychicHttp)
-- [AsyncMqttClient](https://github.com/marvinroger/async-mqtt-client)
+- [PsychicMqttClient](https://github.com/theelims/PsychicMqttClient)
 
 ## Licensing
 
