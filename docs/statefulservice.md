@@ -15,7 +15,7 @@ PsychicHttpServer server;
 ESP32SvelteKit esp32sveltekit(&server, 120);
 ```
 
-ESP32SvelteKit is instantiated with a reference to the server and a number of HTTP endpoints. The underlying ESP-IDF HTTP Server statically allocates memory for each endpoint and needs to know how many there are. Best is to inspect your WWWData.h file for the number of Endpoints from SvelteKit (currently 60), the framework itself has 37 endpoints, and Lighstate Demo has 7 endpoints. Each `_server.on()` counts as an endpoint. Don't forget to add a couple of spare, just in case.
+ESP32SvelteKit is instantiated with a reference to the server and a number of HTTP endpoints. The underlying ESP-IDF HTTP Server statically allocates memory for each endpoint and needs to know how many there are. Best is to inspect your WWWData.h file for the number of Endpoints from SvelteKit (currently 60), the framework itself has 37 endpoints, and Lighstate Demo has 7 endpoints. Each `_server.on()` counts as an endpoint. Don't forget to add a couple of spare, just in case. Each HttpEndpoint adds 2 endpoints, if CORS is enabled it adds an other endpoint for the CORS preflight request.
 
 Now in the `setup()` function the initialization is performed:
 

@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 > [!CAUTION]
 > This update has breaking changes!
 
+This is a major change getting rid of all ESPAsyncTPC and ESPAsyncWebserver dependencies. Despite their popularity they are plagued with countless bugs, since years unmaintained, not SSL capable and simply not suitable for a production build. Although several attempts exist to fix the most pressing bugs even these libraries lead to frequent crashes. This new version replaces them with ESP-IDF based components. [PsychicHttp](https://github.com/hoeken/PsychicHttp) and [PsychicMqttClient](https://github.com/theelims/PsychicMqttClient) both wrap the ESP-IDF components in a familiar wrapper for easy porting of the code base. However, this will break existing code and will require some effort on your codebase. In return the stability is improved greatly and the RAM usage more friendly. Now e.g. running Bluetooth in parallel becomes possible.
+
 ### Added
 
 - Added postscript to platform.io build process to copy, rename and calculate MD5 checksum of \*.bin file. These files are ready for uploading to the Github Release page.
@@ -24,6 +26,7 @@ All notable changes to this project will be documented in this file.
 - GithubFirmwareManager checks against PIO build_target in filename to support Github OTA for binaries build for various targets. You should rename your old release \*.bin files on the Github release pages for backward compatibility.
 - Changed MQTT Client to an ESP-IDF backed one which supports SSL/TLS X509 root CA bundles and transport over WS.
 - Changed the `PROGMEM_WWW` flag to `EMBED_WWW` as there is technically speaking no PROGMEM on ESP32's.
+- Updated dependencies to the latest version. Except SvelteKit.
 
 ### Fixed
 
