@@ -15,11 +15,13 @@
 #include <ESP32SvelteKit.h>
 #include <LightMqttSettingsService.h>
 #include <LightStateService.h>
+#include <PsychicHttpServer.h>
 
 #define SERIAL_BAUD_RATE 115200
 
-AsyncWebServer server(80);
-ESP32SvelteKit esp32sveltekit(&server);
+PsychicHttpServer server;
+
+ESP32SvelteKit esp32sveltekit(&server, 120);
 
 LightMqttSettingsService lightMqttSettingsService =
     LightMqttSettingsService(&server, esp32sveltekit.getFS(), esp32sveltekit.getSecurityManager());
@@ -34,18 +36,13 @@ void setup()
     // start serial and filesystem
     Serial.begin(SERIAL_BAUD_RATE);
 
-    // start the framework and demo project
-    esp32sveltekit.setMDNSAppName("ESP32 SvelteKit Demo App");
+    // start ESP32-SvelteKit
     esp32sveltekit.begin();
 
     // load the initial light settings
     lightStateService.begin();
-
     // start the light service
     lightMqttSettingsService.begin();
-
-    // start the server
-    server.begin();
 }
 
 void loop()

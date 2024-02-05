@@ -16,8 +16,7 @@
  **/
 
 #include <Features.h>
-#include <AsyncJson.h>
-#include <ESPAsyncWebServer.h>
+#include <PsychicHttp.h>
 #include <SecurityManager.h>
 
 #define VERIFY_AUTHORIZATION_PATH "/rest/verifyAuthorization"
@@ -30,15 +29,13 @@
 class AuthenticationService
 {
 public:
-    AuthenticationService(AsyncWebServer *server, SecurityManager *securityManager);
+    AuthenticationService(PsychicHttpServer *server, SecurityManager *securityManager);
+
+    void begin();
 
 private:
     SecurityManager *_securityManager;
-    AsyncCallbackJsonWebHandler _signInHandler;
-
-    // endpoint functions
-    void signIn(AsyncWebServerRequest *request, JsonVariant &json);
-    void verifyAuthorization(AsyncWebServerRequest *request);
+    PsychicHttpServer *_server;
 };
 
 #endif // end FT_ENABLED(FT_SECURITY)

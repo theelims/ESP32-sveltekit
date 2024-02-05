@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import Accesspoint from './Accesspoint.svelte';
 	import Wifi from './Wifi.svelte';
 
 	export let data: PageData;
@@ -11,5 +10,4 @@
      sm:mx-8 sm:my-8"
 >
 	<Wifi />
-	<Accesspoint />
 </div>

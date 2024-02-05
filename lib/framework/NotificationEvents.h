@@ -14,61 +14,32 @@
  **/
 
 #include <WiFi.h>
-#include <AsyncTCP.h>
 
 #include <ArduinoJson.h>
-#include <AsyncJson.h>
-#include <ESPAsyncWebServer.h>
+#include <PsychicHttp.h>
 
 #define EVENT_NOTIFICATION_SERVICE_PATH "/events"
 
 enum pushEvent
 {
-    ERROR,
-    WARNING,
-    INFO,
-    SUCCESS
+    PUSHERROR,
+    PUSHWARNING,
+    PUSHINFO,
+    PUSHSUCCESS
 };
 
 class NotificationEvents
 {
 protected:
-    AsyncEventSource _eventSource;
+    PsychicHttpServer *_server;
+    PsychicEventSource _eventSource;
 
 public:
-    NotificationEvents(AsyncWebServer *server) : _eventSource(EVENT_NOTIFICATION_SERVICE_PATH)
-    {
-        server->addHandler(&_eventSource);
-        _eventSource.onConnect([&](AsyncEventSourceClient *client) { // client->send("hello", NULL, millis(), 1000);
-            Serial.printf("New client connected to Event Source: %i Clients connected\n", _eventSource.count());
-        });
-    };
+    NotificationEvents(PsychicHttpServer *server);
 
-    void pushNotification(String message, pushEvent event, int id = 0)
-    {
-        String eventType;
-        switch (event)
-        {
-        case (ERROR):
-            eventType = "errorToast";
-            break;
-        case (WARNING):
-            eventType = "warningToast";
-            break;
-        case (INFO):
-            eventType = "infoToast";
-            break;
-        case (SUCCESS):
-            eventType = "successToast";
-            break;
-        default:
-            return;
-        }
-        _eventSource.send(message.c_str(), eventType.c_str(), id);
-    };
+    void begin();
 
-    void send(String message, String event, int id = 0)
-    {
-        _eventSource.send(message.c_str(), event.c_str(), id);
-    };
+    void pushNotification(String message, pushEvent event, int id = 0);
+
+    void send(String message, String event, int id = 0);
 };

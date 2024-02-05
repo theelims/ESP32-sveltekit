@@ -93,9 +93,17 @@ On the root level there are two more files which you can customize to your needs
 
 ## Github Firmware Update
 
-If the feature `FT_DOWNLOAD_FIRMWARE` is enabled, ESP32 SvelteKit pulls the Github Release section through the Github API for firmware updates (stable only) once per hour. Also the firmware update menu shows all available firmware releases allowing the user to up- and downgrade has he pleases. If you're using the Github releases section you must first tell the frontend your correct path to your github repository as described [here](sveltekit.md#changing-the-app-name).
+If the feature `FT_DOWNLOAD_FIRMWARE` is enabled, ESP32 SvelteKit pulls the Github Release section through the Github API for firmware updates (stable only) once per hour. Also the firmware update menu shows all available firmware releases allowing the user to up- and downgrade has they please. If you're using the Github releases section you must first tell the frontend your correct path to your github repository as described [here](sveltekit.md#changing-the-app-name).
 
-Also you must make use of the '-D FIRMWARE_VERSION=' flag in [factory_settings.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini) and give it the same semantic version number as the release tag on Github. On Github create a new release with the matching tag name. Attach the firmware binary file found under `.pio/build/{env}/firmware.bin`. The frontend searches for the first attachment found and uses this as the update link. If you upload further attachments the binary must be the first element, otherwise the update will fail.
+Also you must make use of couple build flags in [platformio.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/platformio.ini):
+
+```ini
+    -D BUILD_TARGET=\"$PIOENV\"
+    -D APP_NAME=\"ESP32-Sveltekit\" ; Must only contain characters from [a-zA-Z0-9-_] as this is converted into a filename
+    -D APP_VERSION=\"0.3.0\" ; semver compatible version string
+```
+
+Out of these flags the [rename_fw.py](https://github.com/theelims/ESP32-sveltekit/blob/main/scripts/rename_fw.py) script will copy and rename the firmware binary to `/build/firmware/{APP_NAME}_{$PIOENV}_{APP_VERSION}.bin`. In addition it will also create a corresponding MD5 checksum file. These files are ready to be uploaded to the Github release page without any further changes. The frontend searches for the a firmware binary which matches the build environment and uses this as the update link. This allows you to serve different build targets from the same release page.
 
 ### Custom Update Server
 

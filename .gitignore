@@ -3,7 +3,6 @@
 .gcc-flags.json
 *Thumbs.db
 /data/www
-/lib/framework/WWWData.h
 /interface/build
 /interface/node_modules
 /interface/.eslintcache
@@ -12,4 +11,8 @@ node_modules
 /releases
 /src/certs
 /temp
-
+/build/firmware
+/lib/framework/WWWData.h
+*WWWData.h
+lib/framework/WWWData.h
+ssl_certs/cacert.pem

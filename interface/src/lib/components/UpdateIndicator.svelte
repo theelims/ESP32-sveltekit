@@ -29,14 +29,24 @@
 				}
 			);
 			const results = await response.json();
+
+			update = false;
+			firmwareVersion = '';
+
 			if (compareVersions(results.tag_name, $page.data.features.firmware_version) === 1) {
-				update = true;
-				firmwareVersion = results.tag_name;
-				firmwareDownloadLink = results.assets[0].browser_download_url;
-				notifications.info('Firmware update available.', 5000);
-			} else {
-				update = false;
-				firmwareVersion = '';
+				// iterate over assets and find the correct one
+				for (let i = 0; i < results.assets.length; i++) {
+					// check if the asset is of type *.bin
+					if (
+						results.assets[i].name.includes('.bin') &&
+						results.assets[i].name.includes($page.data.features.firmware_built_target)
+					) {
+						update = true;
+						firmwareVersion = results.tag_name;
+						firmwareDownloadLink = results.assets[i].browser_download_url;
+						notifications.info('Firmware update available.', 5000);
+					}
+				}
 			}
 		} catch (error) {
 			console.error('Error:', error);
@@ -61,9 +71,12 @@
 	onMount(() => {
 		if ($page.data.features.download_firmware && (!$page.data.features.security || $user.admin)) {
 			getGithubAPI();
-			const interval = setInterval(async () => {
-				getGithubAPI();
-			}, 60 * 60 * 1000); // once per hour
+			const interval = setInterval(
+				async () => {
+					getGithubAPI();
+				},
+				60 * 60 * 1000
+			); // once per hour
 		}
 	});
 

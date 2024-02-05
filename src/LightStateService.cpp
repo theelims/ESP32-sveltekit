@@ -14,9 +14,9 @@
 
 #include <LightStateService.h>
 
-LightStateService::LightStateService(AsyncWebServer *server,
+LightStateService::LightStateService(PsychicHttpServer *server,
                                      SecurityManager *securityManager,
-                                     AsyncMqttClient *mqttClient,
+                                     PsychicMqttClient *mqttClient,
                                      LightMqttSettingsService *lightMqttSettingsService) : _httpEndpoint(LightState::read,
                                                                                                          LightState::update,
                                                                                                          this,
@@ -58,6 +58,8 @@ LightStateService::LightStateService(AsyncWebServer *server,
 
 void LightStateService::begin()
 {
+    _httpEndpoint.begin();
+    _webSocketServer.begin();
     _state.ledOn = DEFAULT_LED_STATE;
     onConfigUpdated();
 }

@@ -1,4 +1,4 @@
-#   ESP32 SvelteKit
+#   ESP32 SvelteKit --
 #
 #   A simple, secure and extensible framework for IoT projects for ESP32 platforms
 #   with responsive Sveltekit front-end built with TailwindCSS and DaisyUI.
@@ -6,6 +6,7 @@
 #
 #   Copyright (C) 2018 - 2023 rjwats
 #   Copyright (C) 2023 theelims
+#   Copyright (C) 2023 Maxtrium B.V. [ code available under dual license ]
 #
 #   All Rights Reserved. This software may be modified and distributed under
 #   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -13,11 +14,62 @@
 from pathlib import Path
 from shutil import copytree, rmtree, copyfileobj
 from subprocess import check_output, Popen, PIPE, STDOUT, CalledProcessError
+from os.path import exists
+from typing import Final
 import os
 import gzip
 import mimetypes
+import glob
+from datetime import datetime
 
 Import("env")
+
+# print("Current build environment:")
+# print(env.ParseFlags(env["BUILD_FLAGS"]).get("CPPDEFINES"))
+
+# print("Current CLI targets", COMMAND_LINE_TARGETS)
+# print("Current Build targets", BUILD_TARGETS)
+
+OUTPUTFILE: Final[str] = env["PROJECT_DIR"] + "/lib/framework/WWWData.h"
+SOURCEWWWDIR: Final[str] = env["PROJECT_DIR"] + "/interface/src"
+
+def OutputFileExits():
+    return os.path.exists(OUTPUTFILE)
+
+def findLastestTimeStampWWWInterface():
+  list_of_files = glob.glob(SOURCEWWWDIR+'/**/*', recursive=True) 
+  # print(list_of_files)
+  latest_file = max(list_of_files, key=os.path.getmtime)
+  # print(latest_file)
+
+  return os.path.getmtime(latest_file)
+
+def findTimestampOutputFile():
+     return os.path.getmtime(OUTPUTFILE)
+
+def needtoRegenerateOutputFile():
+    if not flagExists("EMBED_WWW"):
+        return True
+    else:
+        if (OutputFileExits()):
+            latestWWWInterface = findLastestTimeStampWWWInterface()
+            timestampOutputFile = findTimestampOutputFile()
+
+            # print timestamp of newest file in interface directory and timestamp of outputfile nicely formatted as time
+            print(f'Newest interface file: {datetime.fromtimestamp(latestWWWInterface):%Y-%m-%d %H:%M:%S}, WWW Outputfile: {datetime.fromtimestamp(timestampOutputFile):%Y-%m-%d %H:%M:%S}')
+            # print(f'Newest interface file: {latestWWWInterface:.2f}, WWW Outputfile: {timestampOutputFile:.2f}')
+            
+            sourceEdited=( timestampOutputFile < latestWWWInterface )
+            if (sourceEdited):
+                print("Svelte source files are updated. Need to regenerate.")
+                return True
+            else:
+                print("Current outputfile is O.K. No need to regenerate.")
+                return False
+
+        else:
+            print("WWW outputfile does not exists. Need to regenerate.")
+            return True
 
 def gzipFile(file):
     with open(file, 'rb') as f_in:
@@ -33,8 +85,11 @@ def flagExists(flag):
 
 def buildProgMem():
     mimetypes.init()
-    progmem = open('../lib/framework/WWWData.h', 'w')
-    progmem.write('#include <Arduino.h>\n')
+    progmem = open(OUTPUTFILE,"w")
+
+    progmem.write("#include <functional>\n")
+    progmem.write("#include <Arduino.h>\n")
+
 
     progmemCounter = 0
 
@@ -49,7 +104,7 @@ def buildProgMem():
         asset_mime = mimetypes.types_map['.' + asset_path.split('.')[-1]]
 
         progmem.write('// ' + str(asset_path) + '\n')
-        progmem.write('const uint8_t ' + asset_var + '[] PROGMEM = {\n  ')
+        progmem.write('const uint8_t ' + asset_var + '[] = {\n  ')
         progmemCounter += 1
         
         # Open path as binary file, compress and read into byte array
@@ -76,8 +131,9 @@ def buildProgMem():
 
     progmem.write('    }\n')
     progmem.write('};\n')
-
     
+    progmem.write('\n')
+
 
 def buildWeb():
     os.chdir("interface")
@@ -87,7 +143,7 @@ def buildWeb():
         env.Execute("npm run build")
         buildPath = Path("build")
         wwwPath = Path("../data/www")        
-        if not flagExists("PROGMEM_WWW"):
+        if not flagExists("EMBED_WWW"):
             if wwwPath.exists() and wwwPath.is_dir():
                 rmtree(wwwPath)
             print("Copying and compress interface to data directory")
@@ -101,12 +157,28 @@ def buildWeb():
 
     finally:
         os.chdir("..")
-        if not flagExists("PROGMEM_WWW"):
+        if not flagExists("EMBED_WWW"):
             print("Build LittleFS file system image and upload to ESP32")
             env.Execute("pio run --target uploadfs")
-    
-if ("upload" in BUILD_TARGETS):
-    print(BUILD_TARGETS)
-    buildWeb()
-else:
-    print("Skipping build interface step for target(s): " + ", ".join(BUILD_TARGETS))
+
+print("running: build_interface.py")
+
+# Dump global construction environment (for debug purpose)
+#print(env.Dump())
+
+# Dump project construction environment (for debug purpose)
+#print(projenv.Dump())
+
+if (needtoRegenerateOutputFile()):
+     buildWeb()
+
+#env.AddPreAction("${BUILD_DIR}/src/HTTPServer.o", buildWebInterface)
+
+# if ("upload" in BUILD_TARGETS):
+#     print(BUILD_TARGETS)
+#     if (needtoRegenerateOutputFile()):
+#         buildWeb()
+# else:
+#     print("Skipping build interface step for target(s): " + ", ".join(BUILD_TARGETS))
+
+

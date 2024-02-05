@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import OtaSettings from './OTASettings.svelte';
 	import UploadFirmware from './UploadFirmware.svelte';
 	import GithubFirmwareManager from './GithubFirmwareManager.svelte';
 	import { user } from '$lib/stores/user';
@@ -15,10 +14,6 @@
 >
 	{#if $page.data.features.download_firmware && (!$page.data.features.security || $user.admin)}
 		<GithubFirmwareManager />
-	{/if}
-
-	{#if $page.data.features.ota && (!$page.data.features.security || $user.admin)}
-		<OtaSettings />
 	{/if}
 
 	{#if $page.data.features.upload_firmware && (!$page.data.features.security || $user.admin)}

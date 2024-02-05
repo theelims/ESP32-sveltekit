@@ -23,23 +23,34 @@
 	import Temperature from '~icons/tabler/temperature';
 	import Health from '~icons/tabler/stethoscope';
 	import Stopwatch from '~icons/tabler/24-hours';
+	import SDK from '~icons/tabler/sdk';
 
 	type SystemStatus = {
 		esp_platform: string;
+		firmware_version: string;
 		max_alloc_heap: number;
 		psram_size: number;
 		free_psram: number;
 		cpu_freq_mhz: number;
+		cpu_type: string;
+		cpu_rev: number;
+		cpu_cores: number;
 		free_heap: number;
+		min_free_heap: number;
 		sketch_size: number;
 		free_sketch_space: number;
 		sdk_version: string;
+		arduino_version: string;
 		flash_chip_size: number;
 		flash_chip_speed: number;
 		fs_total: number;
 		fs_used: number;
-		firmware_version: string;
+		core_temp: number;
+		cpu_reset_reason: string;
+		uptime: number;
 	};
+
+	let systemStatus: SystemStatus;
 
 	async function getSystemStatus() {
 		try {
@@ -50,10 +61,11 @@
 					'Content-Type': 'application/json'
 				}
 			});
-			return await response.json();
+			systemStatus = await response.json();
 		} catch (error) {
 			console.log('Error:', error);
 		}
+		return systemStatus;
 	}
 
 	const interval = setInterval(async () => {
@@ -171,7 +183,7 @@
 	<div class="w-full overflow-x-auto">
 		{#await getSystemStatus()}
 			<Spinner />
-		{:then systemStatus}
+		{:then nothing}
 			<div
 				class="flex w-full flex-col space-y-1"
 				transition:slide|local={{ duration: 300, easing: cubicOut }}
@@ -181,9 +193,21 @@
 						<CPU class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">Device (Platform / SDK)</div>
+						<div class="font-bold">Chip</div>
 						<div class="text-sm opacity-75">
-							{systemStatus.esp_platform} / {systemStatus.sdk_version}
+							{systemStatus.cpu_type} Rev {systemStatus.cpu_rev}
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
+						<SDK class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">SDK Version</div>
+						<div class="text-sm opacity-75">
+							ESP-IDF {systemStatus.sdk_version} / Arduino {systemStatus.arduino_version}
 						</div>
 					</div>
 				</div>
@@ -207,7 +231,9 @@
 					<div>
 						<div class="font-bold">CPU Frequency</div>
 						<div class="text-sm opacity-75">
-							{systemStatus.cpu_freq_mhz} MHz
+							{systemStatus.cpu_freq_mhz} MHz {systemStatus.cpu_cores == 2
+								? 'Dual Core'
+								: 'Single Core'}
 						</div>
 					</div>
 				</div>
@@ -306,9 +332,31 @@
 					<div>
 						<div class="font-bold">Core Temperature</div>
 						<div class="text-sm opacity-75">
-							{systemStatus.core_temp.toFixed(2) == 53.33
-								? 'NaN'
-								: systemStatus.core_temp.toFixed(2) + ' °C'}
+							{systemStatus.core_temp == 53.33 ? 'NaN' : systemStatus.core_temp.toFixed(2) + ' °C'}
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10">
+						<Stopwatch class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Uptime</div>
+						<div class="text-sm opacity-75">
+							{convertSeconds(systemStatus.uptime)}
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
+						<Power class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Reset Reason</div>
+						<div class="text-sm opacity-75">
+							{systemStatus.cpu_reset_reason}
 						</div>
 					</div>
 				</div>

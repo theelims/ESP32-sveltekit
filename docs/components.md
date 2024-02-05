@@ -81,7 +81,7 @@ Three slots are available. Besides the main slot for the content there is a name
 
 The component exports two properties to determine its behavior. `collapsible` is a boolean describing wether the component should behave like a collapsible in the first place. `open` is a boolean as well and if set true shows the full content of the body on mount.
 
-## Spinner (OBSOLETE)
+## Spinner
 
 A small component showing an animated spinner which can be used while waiting for data.
 
@@ -117,3 +117,41 @@ This is a modal showing the update progress, possible error messages and makes a
 ## Update Indicator
 
 The update indicator is a small widget shown in the upper right corner of the status bar. It indicates the availability of a newer stable firmware release then the current one. Upon pressing the icon it will automatically update the firmware to the latest stable release. By default this works through the Github Latest Release API. This must be customized should you use a different update server. Have a look at the [source file](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/components/GithubUpdateDialog.svelte) to see what portions to update.
+
+## Info Dialog
+
+Shows a modal on the UI which must be deliberately dismissed. It features a `title` and a `message` property. The dismiss button can be customized via the `dismiss` property with a label and an icon. `onDismiss` call back must close the modal and can be used to do something when closing the info dialog.
+
+```ts
+import InfoDialog from "$lib/components/InfoDialog.svelte";
+
+openModal(InfoDialog, {
+  title: 'You have a new Info',
+  message:
+    'Something really important happened that justifies showing you a modal which must be clicked away.',
+  dismiss: { label: 'OK', icon: Check },
+  onDismiss: () => closeModal();
+});
+```
+
+This modal is based on [svelte-modals](https://svelte-modals.mattjennings.io/) where you can find further information.
+
+## Confirm Dialog
+
+Shows a confirm modal on the UI which must be confirmed to proceed, or can be canceled. It features a `title` and a `message` property. The `confirm` and `cancel` buttons can be customized via the `labels` property with a label and an icon. `onConfirm` call back must close the modal and can be used to do proceed.
+
+```ts
+import ConfirmDialog from "$lib/components/ConfirmDialog.svelte";
+
+openModal(ConfirmDialog, {
+  title: "Confirm what you are doing",
+  message: "Are you sure you want to proceed? This could break stuff!",
+  labels: {
+    cancel: { label: "Abort", icon: Cancel },
+    confirm: { label: "Confirm", icon: Check },
+  },
+  onConfirm: () => closeModal(),
+});
+```
+
+This modal is based on [svelte-modals](https://svelte-modals.mattjennings.io/) where you can find further information.

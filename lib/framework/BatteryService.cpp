@@ -13,10 +13,8 @@
 
 #include <BatteryService.h>
 
-BatteryService::BatteryService(NotificationEvents *notificationEvents)
+BatteryService::BatteryService(NotificationEvents *notificationEvents) : _notificationEvents(notificationEvents)
 {
-    // Store SSE
-    _notificationEvents = notificationEvents;
 }
 
 void BatteryService::batteryEvent()
