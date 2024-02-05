@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 > [!CAUTION]
 > This update has breaking changes!
 
-This is a major change getting rid of all ESPAsyncTPC and ESPAsyncWebserver dependencies. Despite their popularity they are plagued with countless bugs, since years unmaintained, not SSL capable and simply not suitable for a production build. Although several attempts exist to fix the most pressing bugs even these libraries lead to frequent crashes. This new version replaces them with ESP-IDF based components. [PsychicHttp](https://github.com/hoeken/PsychicHttp) and [PsychicMqttClient](https://github.com/theelims/PsychicMqttClient) both wrap the ESP-IDF components in a familiar wrapper for easy porting of the code base. However, this will break existing code and will require some effort on your codebase. In return the stability is improved greatly and the RAM usage more friendly. Now e.g. running Bluetooth in parallel becomes possible.
+This is a major change getting rid of all ESPAsyncTCP and ESPAsyncWebserver dependencies. Despite their popularity they are plagued with countless bugs, since years unmaintained, not SSL capable and simply not suitable for a production build. Although several attempts exist to fix the most pressing bugs even these libraries lead to frequent crashes. This new version replaces them with ESP-IDF based components. [PsychicHttp](https://github.com/hoeken/PsychicHttp) and [PsychicMqttClient](https://github.com/theelims/PsychicMqttClient) both wrap the ESP-IDF components in a familiar wrapper for easy porting of the code base. However, this will break existing code and will require some effort on your codebase. In return the stability is improved greatly and the RAM usage more friendly. Now e.g. running Bluetooth in parallel becomes possible.
 
 ### Added
 
@@ -45,7 +45,7 @@ Change the server and ESPSvelteKit instances to PsychicHttpServer and give the E
 
 ```
 PsychicHttpServer server;
-ESP32SvelteKit esp32sveltekit(&server, 125);
+ESP32SvelteKit esp32sveltekit(&server, 120);
 ```
 
 Remove `server.begin();` in `void setup()`. This is handled by ESP32SvelteKit now.

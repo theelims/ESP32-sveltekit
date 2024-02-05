@@ -133,7 +133,7 @@ PsychicRequestFilterFunction SecuritySettingsService::filterRequest(Authenticati
         // Check if we have a bogus filter request and return true
         if (request->uri().isEmpty() && request->method() == HTTP_DELETE)
         {
-            ESP_LOGV("SecuritySettingsService", "Bogus filter request - allowing");
+            // ESP_LOGV("SecuritySettingsService", "Bogus filter request - allowing");
             return true;
         }
         else
@@ -141,7 +141,7 @@ PsychicRequestFilterFunction SecuritySettingsService::filterRequest(Authenticati
 
         Authentication authentication = authenticateRequest(request);
         bool result = predicate(authentication);
-        ESP_LOGV("SecuritySettingsService", "Filter Request %s", result ? "allowed" : "denied");
+        // ESP_LOGV("SecuritySettingsService", "Filter Request %s", result ? "allowed" : "denied");
         return result;
     };
 }
@@ -203,7 +203,7 @@ PsychicRequestFilterFunction SecuritySettingsService::filterRequest(Authenticati
 {
     return [this, predicate](PsychicRequest *request)
     {
-        ESP_LOGV("SecuritySettingsService", "Security disabled - all requests are allowed");
+        // ESP_LOGV("SecuritySettingsService", "Security disabled - all requests are allowed");
         return true;
     };
 }
