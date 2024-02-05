@@ -14,7 +14,6 @@
  **/
 
 #include <WiFi.h>
-
 #include <ArduinoJson.h>
 #include <ESPFS.h>
 #include <NotificationEvents.h>

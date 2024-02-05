@@ -110,6 +110,9 @@ void ESP32SvelteKit::begin()
             // request->redirect(url.c_str());
         } });
 #endif
+#ifdef SERVE_CONFIG_FILES
+    server->serveStatic("/config/", ESPFS, "/config/");
+#endif
 
     // Serve static resources from /config/ if set by platformio.ini
 #if SERVE_CONFIG_FILES
@@ -167,6 +170,9 @@ void ESP32SvelteKit::begin()
 #endif
 #if FT_ENABLED(FT_SLEEP)
     _sleepService.begin();
+#endif
+#if FT_ENABLED(FT_ANALYTICS)
+    _analyticsService.begin();
 #endif
 
     // Start the loop task

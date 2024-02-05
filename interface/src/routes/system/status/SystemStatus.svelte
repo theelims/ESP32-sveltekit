@@ -360,6 +360,30 @@
 						</div>
 					</div>
 				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10">
+						<Stopwatch class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Uptime</div>
+						<div class="text-sm opacity-75">
+							{convertSeconds(systemStatus.uptime)}
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
+						<Power class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Reset Reason</div>
+						<div class="text-sm opacity-75">
+							{systemStatus.cpu_reset_reason}
+						</div>
+					</div>
+				</div>
 			</div>
 		{/await}
 	</div>

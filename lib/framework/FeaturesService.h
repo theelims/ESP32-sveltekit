@@ -40,6 +40,8 @@ public:
 
     void addFeature(String feature, bool enabled);
 
+    void addFeature(String feature, bool enabled);
+
 private:
     PsychicHttpServer *_server;
     std::vector<UserFeature> userFeatures;

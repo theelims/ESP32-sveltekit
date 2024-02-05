@@ -137,6 +137,16 @@ build_flags =
   -D SERVE_CONFIG_FILES
 ```
 
+### Serve Config Files
+
+By enabling this build flag the ESP32 will serve all config files stored on the LittleFS flash partition under `http:\\[IP]\config\[filename].json`. This can be helpful to troubleshoot problems. However, it is strongly advised to disable this for production builds.
+
+```ini
+build_flags =
+...
+  -D SERVE_CONFIG_FILES
+```
+
 ## SSL Root Certificate Store
 
 Some features like firmware download or the MQTT client require a SSL connection. For that the SSL Root CA certificate must be known to the ESP32. The build system contains a python script derived from Espressif ESP-IDF building a certificate store containing one or more certificates. In order to create the store you must uncomment the three lines below in `platformio.ini`.
