@@ -88,12 +88,3 @@ void FeaturesService::addFeature(String feature, bool enabled)
 
     userFeatures.push_back(newFeature);
 }
-
-void FeaturesService::addFeature(String feature, bool enabled)
-{
-    UserFeature newFeature;
-    newFeature.feature = feature;
-    newFeature.enabled = enabled;
-
-    userFeatures.push_back(newFeature);
-}
