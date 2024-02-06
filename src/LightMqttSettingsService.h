@@ -48,7 +48,7 @@ public:
 class LightMqttSettingsService : public StatefulService<LightMqttSettings>
 {
 public:
-    LightMqttSettingsService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager);
+    LightMqttSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager);
     void begin();
 
 private:

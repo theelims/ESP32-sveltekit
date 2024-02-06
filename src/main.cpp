@@ -13,6 +13,7 @@
 #include <ESPmDNS.h>
 #include <LightMqttSettingsService.h>
 #include <LightStateService.h>
+#include <PsychicHttpServer.h>
 #include <StrokeEngine.h>
 #include <SettingValue.h>
 #include <StrokeEngineControlService.h>
@@ -35,8 +36,9 @@
 StrokeEngine Stroker;
 
 // ESP32-SvelteKit #################################################################################
-AsyncWebServer server(80);
-ESP32SvelteKit esp32sveltekit(&server);
+PsychicHttpServer server;
+
+ESP32SvelteKit esp32sveltekit(&server, 130);
 
 LightMqttSettingsService lightMqttSettingsService = LightMqttSettingsService(&server,
                                                                              esp32sveltekit.getFS(),
@@ -130,8 +132,7 @@ void setup()
     // start serial and filesystem
     Serial.begin(SERIAL_BAUD_RATE);
 
-    // start the framework and LUST-motion
-    esp32sveltekit.setMDNSAppName("LUST-motion");
+    // start ESP32-SvelteKit
     esp32sveltekit.begin();
     MDNS.addService("stroking", "tcp", 80);
     MDNS.addServiceTxt("stroking", "tcp", "FirmwareVersion", FIRMWARE_VERSION);
@@ -145,7 +146,6 @@ void setup()
 
     // load the initial light settings
     lightStateService.begin();
-
     // start the light service
     lightMqttSettingsService.begin();
 
@@ -158,9 +158,6 @@ void setup()
 
     // start the stroke engine control service
     strokeEngineControlService.begin();
-
-    // start the server
-    server.begin();
 }
 
 void loop()

@@ -16,18 +16,39 @@
 // Definition of static member variable
 void (*SleepService::_callbackSleep)() = nullptr;
 
-SleepService::SleepService(AsyncWebServer *server, SecurityManager *securityManager)
+SleepService::SleepService(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
+                                                                                          _securityManager(securityManager)
 {
-    server->on(SLEEP_SERVICE_PATH,
-               HTTP_POST,
-               securityManager->wrapRequest(std::bind(&SleepService::sleep, this, std::placeholders::_1),
-                                            AuthenticationPredicates::IS_AUTHENTICATED));
 }
 
-void SleepService::sleep(AsyncWebServerRequest *request)
+void SleepService::begin()
 {
-    request->onDisconnect(SleepService::sleepNow);
-    request->send(200);
+// OPTIONS (for CORS preflight)
+#ifdef ENABLE_CORS
+    _server->on(SLEEP_SERVICE_PATH,
+                HTTP_OPTIONS,
+                _securityManager->wrapRequest(
+                    [this](PsychicRequest *request)
+                    {
+                        return request->reply(200);
+                    },
+                    AuthenticationPredicates::IS_AUTHENTICATED));
+#endif
+
+    _server->on(SLEEP_SERVICE_PATH,
+                HTTP_POST,
+                _securityManager->wrapRequest(std::bind(&SleepService::sleep, this, std::placeholders::_1),
+                                              AuthenticationPredicates::IS_AUTHENTICATED));
+
+    ESP_LOGV("SleepService", "Registered POST endpoint: %s", SLEEP_SERVICE_PATH);
+}
+
+esp_err_t SleepService::sleep(PsychicRequest *request)
+{
+    request->reply(200);
+    sleepNow();
+
+    return ESP_OK;
 }
 
 void SleepService::sleepNow()

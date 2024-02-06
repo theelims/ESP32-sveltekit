@@ -29,7 +29,7 @@ String ArduinoJsonJWT::getSecret()
 }
 
 /*
- * ESP32 uses mbedtls, ESP2866 uses bearssl.
+ * ESP32 uses mbedtls,
  *
  * Both come with decent HMAC implmentations supporting sha256, as well as others.
  *

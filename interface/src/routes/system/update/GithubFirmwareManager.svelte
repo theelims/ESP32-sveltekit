@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
-	import { openModal, closeAllModals } from 'svelte-modals';
+	import { openModal, closeModal, closeAllModals } from 'svelte-modals';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
@@ -14,6 +14,9 @@
 	import Error from '~icons/tabler/circle-x';
 	import { compareVersions } from 'compare-versions';
 	import GithubUpdateDialog from '$lib/components/GithubUpdateDialog.svelte';
+	import { assets } from '$app/paths';
+	import InfoDialog from '$lib/components/InfoDialog.svelte';
+	import Check from '~icons/tabler/check';
 
 	async function getGithubAPI() {
 		try {
@@ -50,7 +53,30 @@
 		}
 	}
 
-	function confirmGithubUpdate(url: string) {
+	function confirmGithubUpdate(assets: any) {
+		let url = '';
+		// iterate over assets and find the correct one
+		for (let i = 0; i < assets.length; i++) {
+			// check if the asset is of type *.bin
+			if (
+				assets[i].name.includes('.bin') &&
+				assets[i].name.includes($page.data.features.firmware_built_target)
+			) {
+				url = assets[i].browser_download_url;
+			}
+		}
+		if (url === '') {
+			// if no asset was found, use the first one
+			openModal(InfoDialog, {
+				title: 'No matching firmware found',
+				message:
+					'No matching firmware was found for the current device. Upload the firmware manually or build from sources.',
+				dismiss: { label: 'OK', icon: Check },
+				onDismiss: () => closeModal()
+			});
+			return;
+		}
+
 		openModal(ConfirmDialog, {
 			title: 'Confirm flashing new firmware to the device',
 			message: 'Are you sure you want to overwrite the existing firmware with a new one?',
@@ -76,7 +102,7 @@
 	{:then githubReleases}
 		<div class="relative w-full overflow-visible">
 			<div class="overflow-x-auto" transition:slide|local={{ duration: 300, easing: cubicOut }}>
-				<table class="table table w-full table-auto">
+				<table class="table w-full table-auto">
 					<thead>
 						<tr class="font-bold">
 							<th align="left">Release</th>
@@ -116,7 +142,9 @@
 									{#if compareVersions($page.data.features.firmware_version, release.tag_name) != 0}
 										<button
 											class="btn btn-ghost btn-circle btn-sm"
-											on:click={() => confirmGithubUpdate(release.assets[0].browser_download_url)}
+											on:click={() => {
+												confirmGithubUpdate(release.assets);
+											}}
 										>
 											<CloudDown class="text-secondary h-6 w-6" />
 										</button>

@@ -17,7 +17,6 @@
 
 #include <Arduino.h>
 
-#include <AsyncTCP.h>
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include <AnalyticsService.h>
@@ -33,7 +32,6 @@
 #include <NotificationEvents.h>
 #include <NTPSettingsService.h>
 #include <NTPStatus.h>
-#include <OTASettingsService.h>
 #include <UploadFirmwareService.h>
 #include <RestartService.h>
 #include <SecuritySettingsService.h>
@@ -43,8 +41,9 @@
 #include <WiFiSettingsService.h>
 #include <WiFiStatus.h>
 #include <ESPFS.h>
+#include <PsychicHttp.h>
 
-#ifdef PROGMEM_WWW
+#ifdef EMBED_WWW
 #include <WWWData.h>
 #endif
 
@@ -52,8 +51,12 @@
 #define CORS_ORIGIN "*"
 #endif
 
-#ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "demo"
+#ifndef APP_VERSION
+#define APP_VERSION "demo"
+#endif
+
+#ifndef APP_NAME
+#define APP_NAME "ESP32 SvelteKit Demo"
 #endif
 
 #ifndef ESP32SVELTEKIT_RUNNING_CORE
@@ -63,7 +66,7 @@
 class ESP32SvelteKit
 {
 public:
-    ESP32SvelteKit(AsyncWebServer *server);
+    ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEndpoints = 115);
 
     void begin();
 
@@ -72,7 +75,7 @@ public:
         return &ESPFS;
     }
 
-    AsyncWebServer *getServer()
+    PsychicHttpServer *getServer()
     {
         return _server;
     }
@@ -111,20 +114,13 @@ public:
     }
 #endif
 
-#if FT_ENABLED(FT_OTA)
-    StatefulService<OTASettings> *getOTASettingsService()
-    {
-        return &_otaSettingsService;
-    }
-#endif
-
 #if FT_ENABLED(FT_MQTT)
     StatefulService<MqttSettings> *getMqttSettingsService()
     {
         return &_mqttSettingsService;
     }
 
-    AsyncMqttClient *getMqttClient()
+    PsychicMqttClient *getMqttClient()
     {
         return _mqttSettingsService.getMqttClient();
     }
@@ -165,7 +161,8 @@ public:
     }
 
 private:
-    AsyncWebServer *_server;
+    PsychicHttpServer *_server;
+    unsigned int _numberEndpoints;
     FeaturesService _featureService;
     SecuritySettingsService _securitySettingsService;
     WiFiSettingsService _wifiSettingsService;
@@ -177,9 +174,6 @@ private:
 #if FT_ENABLED(FT_NTP)
     NTPSettingsService _ntpSettingsService;
     NTPStatus _ntpStatus;
-#endif
-#if FT_ENABLED(FT_OTA)
-    OTASettingsService _otaSettingsService;
 #endif
 #if FT_ENABLED(FT_UPLOAD_FIRMWARE)
     UploadFirmwareService _uploadFirmwareService;
@@ -207,7 +201,7 @@ private:
     FactoryResetService _factoryResetService;
     SystemStatus _systemStatus;
 
-    String _appName = "ESP32 SvelteKit Demo";
+    String _appName = APP_NAME;
 
 protected:
     static void _loopImpl(void *_this) { static_cast<ESP32SvelteKit *>(_this)->_loop(); }

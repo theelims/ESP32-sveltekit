@@ -19,6 +19,7 @@
 #include <HttpEndpoint.h>
 #include <FSPersistence.h>
 #include <JsonUtils.h>
+#include <WiFi.h>
 
 #include <DNSServer.h>
 #include <IPAddress.h>
@@ -145,7 +146,7 @@ public:
 class APSettingsService : public StatefulService<APSettings>
 {
 public:
-    APSettingsService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager);
+    APSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager);
 
     void begin();
     void loop();
@@ -153,6 +154,8 @@ public:
     void recoveryMode();
 
 private:
+    PsychicHttpServer *_server;
+    SecurityManager *_securityManager;
     HttpEndpoint<APSettings> _httpEndpoint;
     FSPersistence<APSettings> _fsPersistence;
 

@@ -44,6 +44,9 @@
 #define SECURITY_SETTINGS_FILE "/config/securitySettings.json"
 #define SECURITY_SETTINGS_PATH "/rest/securitySettings"
 
+#define GENERATE_TOKEN_SIZE 512
+#define GENERATE_TOKEN_PATH "/rest/generateToken"
+
 #if FT_ENABLED(FT_SECURITY)
 
 class SecuritySettings
@@ -94,22 +97,27 @@ public:
 class SecuritySettingsService : public StatefulService<SecuritySettings>, public SecurityManager
 {
 public:
-    SecuritySettingsService(AsyncWebServer *server, FS *fs);
+    SecuritySettingsService(PsychicHttpServer *server, FS *fs);
 
     void begin();
 
     // Functions to implement SecurityManager
     Authentication authenticate(const String &username, const String &password);
-    Authentication authenticateRequest(AsyncWebServerRequest *request);
+    Authentication authenticateRequest(PsychicRequest *request);
     String generateJWT(User *user);
-    ArRequestFilterFunction filterRequest(AuthenticationPredicate predicate);
-    ArRequestHandlerFunction wrapRequest(ArRequestHandlerFunction onRequest, AuthenticationPredicate predicate);
-    ArJsonRequestHandlerFunction wrapCallback(ArJsonRequestHandlerFunction callback, AuthenticationPredicate predicate);
+
+    PsychicRequestFilterFunction filterRequest(AuthenticationPredicate predicate);
+    PsychicHttpRequestCallback wrapRequest(PsychicHttpRequestCallback onRequest, AuthenticationPredicate predicate);
+    PsychicJsonRequestCallback wrapCallback(PsychicJsonRequestCallback onRequest, AuthenticationPredicate predicate);
 
 private:
+    PsychicHttpServer *_server;
+
     HttpEndpoint<SecuritySettings> _httpEndpoint;
     FSPersistence<SecuritySettings> _fsPersistence;
     ArduinoJsonJWT _jwtHandler;
+
+    esp_err_t generateToken(PsychicRequest *request);
 
     void configureJWTHandler();
 
@@ -129,14 +137,14 @@ private:
 class SecuritySettingsService : public SecurityManager
 {
 public:
-    SecuritySettingsService(AsyncWebServer *server, FS *fs);
+    SecuritySettingsService(PsychicHttpServer *server, FS *fs);
     ~SecuritySettingsService();
 
     // minimal set of functions to support framework with security settings disabled
-    Authentication authenticateRequest(AsyncWebServerRequest *request);
-    ArRequestFilterFunction filterRequest(AuthenticationPredicate predicate);
-    ArRequestHandlerFunction wrapRequest(ArRequestHandlerFunction onRequest, AuthenticationPredicate predicate);
-    ArJsonRequestHandlerFunction wrapCallback(ArJsonRequestHandlerFunction onRequest, AuthenticationPredicate predicate);
+    Authentication authenticateRequest(PsychicRequest *request);
+    PsychicRequestFilterFunction filterRequest(AuthenticationPredicate predicate);
+    PsychicHttpRequestCallback wrapRequest(PsychicHttpRequestCallback onRequest, AuthenticationPredicate predicate);
+    PsychicJsonRequestCallback wrapCallback(PsychicJsonRequestCallback onRequest, AuthenticationPredicate predicate);
 };
 
 #endif // end FT_ENABLED(FT_SECURITY)
