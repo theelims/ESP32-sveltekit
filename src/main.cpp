@@ -22,6 +22,8 @@
 #include <StrokeEngineSafetyService.h>
 #include <WebSocketRawDataStreaming.h>
 
+#define SERIAL_BAUD_RATE 115200
+
 #ifndef DATA_STREAMING_INTERVAL
 #define DATA_STREAMING_INTERVAL 50
 #endif
@@ -135,7 +137,7 @@ void setup()
     // start ESP32-SvelteKit
     esp32sveltekit.begin();
     MDNS.addService("stroking", "tcp", 80);
-    MDNS.addServiceTxt("stroking", "tcp", "FirmwareVersion", FIRMWARE_VERSION);
+    MDNS.addServiceTxt("stroking", "tcp", "FirmwareVersion", APP_VERSION);
     MDNS.addServiceTxt("stroking", "tcp", "DeviceID", SettingValue::format("LUST-motion-#{unique_id}"));
 
 #ifdef DATA_STREAMING
@@ -155,6 +157,9 @@ void setup()
 
     // Start the stroke engine safety service
     strokeEngineSafetyService.begin();
+
+    // Start the stroke engine environment service
+    strokeEngineEnvironmentService.begin();
 
     // start the stroke engine control service
     strokeEngineControlService.begin();

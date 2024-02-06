@@ -47,7 +47,7 @@ public:
         settings.depthLimit = root["depth_limit"] | -1.0;
         settings.strokeLimit = root["stroke_limit"] | -1.0;
         settings.rateLimit = root["rate_limit"] | MOTION_MAX_RATE;
-        settings.heartbeatMode = root["heartbeat_mode"] | HeartbeatMode::NONE;
+        settings.heartbeatMode = root["heartbeat_mode"] | HeartbeatMode::HB_NONE;
         settings.easeInSpeed = root["ease_in_speed"] | MOTION_FACTORY_EASE_IN_SPEED;
 
         return StateUpdateResult::CHANGED;
@@ -58,7 +58,7 @@ class StrokeEngineSafetyService : public StatefulService<StrokeEngineSafety>
 {
 public:
     StrokeEngineSafetyService(StrokeEngine *stroker,
-                              AsyncWebServer *server,
+                              PsychicHttp *server,
                               FS *fs,
                               SecurityManager *securityManager,
                               StrokeEngineControlService *strokeEngineControlService);

@@ -9,8 +9,7 @@
  **/
 
 #include <ArduinoJson.h>
-#include <AsyncJson.h>
-#include <ESPAsyncWebServer.h>
+#include <PsychicHttp.h>
 #include <StrokeEngine.h>
 #include <MotorConfigurationService.h>
 
@@ -20,10 +19,12 @@
 class StrokeEngineEnvironmentService
 {
 public:
-    StrokeEngineEnvironmentService(StrokeEngine *strokeEngine, AsyncWebServer *server, MotorConfigurationService *motorConfigurationService);
+    StrokeEngineEnvironmentService(StrokeEngine *strokeEngine, PsychicHttp *server, MotorConfigurationService *motorConfigurationService);
+
+    void begin();
 
 private:
     StrokeEngine *_strokeEngine;
     MotorConfigurationService *_motorConfigurationService;
-    void environment(AsyncWebServerRequest *request);
+    esp_err_t environment(PsychicWebServerRequest *request);
 };

@@ -9,15 +9,19 @@
 
 #include <StrokeEngineEnvironmentService.h>
 
-StrokeEngineEnvironmentService::StrokeEngineEnvironmentService(StrokeEngine *strokeEngine, AsyncWebServer *server, MotorConfigurationService *motorConfigurationService) : _strokeEngine(strokeEngine),
-                                                                                                                                                                           _motorConfigurationService(motorConfigurationService)
+StrokeEngineEnvironmentService::StrokeEngineEnvironmentService(StrokeEngine *strokeEngine, PsychicHttp *server, MotorConfigurationService *motorConfigurationService) : _strokeEngine(strokeEngine),
+                                                                                                                                                                        _motorConfigurationService(motorConfigurationService)
 {
-    server->on(ENVIRONMENT_SERVICE_PATH, HTTP_GET, std::bind(&StrokeEngineEnvironmentService::environment, this, std::placeholders::_1));
 }
 
-void StrokeEngineEnvironmentService::environment(AsyncWebServerRequest *request)
+void StrokeEngineEnvironmentService::begin()
 {
-    AsyncJsonResponse *response = new AsyncJsonResponse(false, MAX_ENVIRONMENT_SIZE);
+    _server->on(ENVIRONMENT_SERVICE_PATH, HTTP_GET, std::bind(&StrokeEngineEnvironmentService::environment, this, std::placeholders::_1));
+}
+
+esp_err_t StrokeEngineEnvironmentService::environment(PsychicWebServerRequest *request)
+{
+    PsychicJsonResponse response = PsychicJsonResponse(request, false, MAX_ENVIRONMENT_SIZE);
     JsonObject root = response->getRoot();
     root["depth"] = _strokeEngine->getMotor()->getMaxPosition();
     root["max_rate"] = MOTION_MAX_RATE;
@@ -34,6 +38,5 @@ void StrokeEngineEnvironmentService::environment(AsyncWebServerRequest *request)
     root["valueB"] = _strokeEngine->getMotor()->getMotionPointLabel().labelValueB;
     root["motor"] = _motorConfigurationService->getDriverName();
 
-    response->setLength();
-    request->send(response);
+    return response.send();
 }

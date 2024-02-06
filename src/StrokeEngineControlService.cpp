@@ -15,25 +15,25 @@
 #include <StrokeEngineControlService.h>
 
 StrokeEngineControlService::StrokeEngineControlService(StrokeEngine *strokeEngine,
-                                                       AsyncWebServer *server,
+                                                       PsychicHttp *server,
                                                        SecurityManager *securityManager,
-                                                       AsyncMqttClient *mqttClient) : _strokeEngine(strokeEngine),
-                                                                                      _httpEndpoint(StrokeEngineControl::read,
-                                                                                                    StrokeEngineControl::update,
-                                                                                                    this,
-                                                                                                    server,
-                                                                                                    SE_CONTROL_SETTINGS_ENDPOINT_PATH,
-                                                                                                    securityManager,
-                                                                                                    AuthenticationPredicates::IS_AUTHENTICATED),
-                                                                                      _mqttPubSub(StrokeEngineControl::read, StrokeEngineControl::update, this, mqttClient),
-                                                                                      _webSocketServer(StrokeEngineControl::read,
-                                                                                                       StrokeEngineControl::update,
-                                                                                                       this,
-                                                                                                       server,
-                                                                                                       SE_CONTROL_SETTINGS_SOCKET_PATH,
-                                                                                                       securityManager,
-                                                                                                       AuthenticationPredicates::IS_AUTHENTICATED),
-                                                                                      _mqttClient(mqttClient)
+                                                       PsychicMqttClient *mqttClient) : _strokeEngine(strokeEngine),
+                                                                                        _httpEndpoint(StrokeEngineControl::read,
+                                                                                                      StrokeEngineControl::update,
+                                                                                                      this,
+                                                                                                      server,
+                                                                                                      SE_CONTROL_SETTINGS_ENDPOINT_PATH,
+                                                                                                      securityManager,
+                                                                                                      AuthenticationPredicates::IS_AUTHENTICATED),
+                                                                                        _mqttPubSub(StrokeEngineControl::read, StrokeEngineControl::update, this, mqttClient),
+                                                                                        _webSocketServer(StrokeEngineControl::read,
+                                                                                                         StrokeEngineControl::update,
+                                                                                                         this,
+                                                                                                         server,
+                                                                                                         SE_CONTROL_SETTINGS_SOCKET_PATH,
+                                                                                                         securityManager,
+                                                                                                         AuthenticationPredicates::IS_AUTHENTICATED),
+                                                                                        _mqttClient(mqttClient)
 /*  _webSocketClient(StrokeEngineControl::read,
 StrokeEngineControl::update,
 this,
@@ -47,6 +47,8 @@ SE_CONTROL_SETTINGS_SOCKET_PATH)*/
 
 void StrokeEngineControlService::begin()
 {
+    _httpEndpoint.begin();
+
     _state.go = false;
     _state.depth = _strokeEngine->getParameter(StrokeParameter::DEPTH);
     _state.stroke = _strokeEngine->getParameter(StrokeParameter::STROKE);

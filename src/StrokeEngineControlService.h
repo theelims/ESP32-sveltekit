@@ -10,7 +10,8 @@
  **/
 
 #include <LightMqttSettingsService.h>
-
+#include <PsychicHttp.h>
+#include <PsychicMqttClient.h>
 #include <MqttPubSub.h>
 #include <WebSocketServer.h>
 #include <HttpEndpoint.h>
@@ -58,9 +59,9 @@
 
 enum HeartbeatMode
 {
-    NONE,
-    ANY,
-    LAST
+    HB_NONE,
+    HB_ANY,
+    HB_LAST
 };
 
 class StrokeEngineControl
@@ -123,9 +124,9 @@ class StrokeEngineControlService : public StatefulService<StrokeEngineControl>
 {
 public:
     StrokeEngineControlService(StrokeEngine *strokeEngine,
-                               AsyncWebServer *server,
+                               PsychicHttp *server,
                                SecurityManager *securityManager,
-                               AsyncMqttClient *mqttClient);
+                               PsychicMqttClient *mqttClient);
 
     void begin();
 
@@ -134,7 +135,7 @@ private:
     MqttPubSub<StrokeEngineControl> _mqttPubSub;
     WebSocketServer<StrokeEngineControl> _webSocketServer;
     // WebSocketClient<StrokeEngineControl> _webSocketClient;
-    AsyncMqttClient *_mqttClient;
+    PsychicMqttClient *_mqttClient;
     StrokeEngine *_strokeEngine;
 
     void onConfigUpdated(String originId);

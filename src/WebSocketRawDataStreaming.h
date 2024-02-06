@@ -12,7 +12,7 @@
  *
  **/
 
-#include <WebSocketServer.h>
+#include <PsychicHttp.h>
 #include <ESP32SvelteKit.h>
 #include "CBOR.h"
 #include <CBOR_parsing.h>
@@ -27,18 +27,23 @@
 class WebSocketRawDataStreamer
 {
 public:
-    WebSocketRawDataStreamer(AsyncWebServer *server) : _server(server)
+    WebSocketRawDataStreamer(PsychicHttp *server) : _server(server)
     {
-        // add raw data websocket
-        ws.onEvent(std::bind(&WebSocketRawDataStreamer::onWSEvent,
-                             this,
-                             std::placeholders::_1,
-                             std::placeholders::_2,
-                             std::placeholders::_3,
-                             std::placeholders::_4,
-                             std::placeholders::_5,
-                             std::placeholders::_6));
-        _server->addHandler(&ws);
+    }
+
+    void begin()
+    {
+        _webSocket.onOpen(std::bind(&WebSocketServer::onWSOpen,
+                                    this,
+                                    std::placeholders::_1));
+        _webSocket.onClose(std::bind(&WebSocketServer::onWSClose,
+                                     this,
+                                     std::placeholders::_1));
+        _webSocket.onFrame(std::bind(&WebSocketServer::onWSFrame,
+                                     this,
+                                     std::placeholders::_1,
+                                     std::placeholders::_2));
+        _server->on(RAW_POSITION_SOCKET_PATH, &_webSocket);
 
         // prepare buffer
         rawDataWSPrint.reset();
@@ -66,8 +71,10 @@ public:
     }
 
 private:
-    AsyncWebServer *_server;
-    AsyncWebSocket ws = AsyncWebSocket(RAW_POSITION_SOCKET_PATH);
+    PsychicHttp *_server;
+    PsychicWebSocketHandler _webSocket;
+    String _webSocketPath;
+    size_t _bufferSize;
     uint8_t rawDataWSBytes[CBORS_DEFAULT_ARRAY_SIZE]{0};
     qindesign::cbor::BytesPrint rawDataWSPrint{rawDataWSBytes, sizeof(rawDataWSBytes)};
     qindesign::cbor::Writer cborWS{rawDataWSPrint};
@@ -80,7 +87,7 @@ private:
 
         // Send data over websocket
         size_t length = cborWS.getWriteSize();
-        ws.binaryAll(reinterpret_cast<uint8_t *>(&rawDataWSBytes), length);
+        _webSocket.sendAll(HTTPD_WS_TYPE_BINARY, reinterpret_cast<uint8_t *>(&rawDataWSBytes), length);
 
         // Prepare buffer for next chunk of data
         rawDataWSPrint.reset();
@@ -88,24 +95,19 @@ private:
         cborWS.beginIndefiniteArray();
     }
 
-    void onWSEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
+    void onWSOpen(PsychicWebSocketClient *client)
     {
-        if (type == WS_EVT_CONNECT)
-        {
-            Serial.printf("ws[%s][%u] connect\n", server->url(), client->id());
-            client->ping();
-        }
-        else if (type == WS_EVT_DISCONNECT)
-        {
-            Serial.printf("ws[%s][%u] disconnect\n", server->url(), client->id());
-        }
-        else if (type == WS_EVT_ERROR)
-        {
-            Serial.printf("ws[%s][%u] error(%u): %s\n", server->url(), client->id(), *((uint16_t *)arg), (char *)data);
-        }
-        else if (type == WS_EVT_PONG)
-        {
-            Serial.printf("ws[%s][%u] pong[%u]: %s\n", server->url(), client->id(), len, (len) ? (char *)data : "");
-        }
+        ESP_LOGI("WebSocketStreamer", "ws[%s][%u] connect", client->remoteIP().toString(), client->socket());
+    }
+
+    void onWSClose(PsychicWebSocketClient *client)
+    {
+        ESP_LOGI("WebSocketStreamer", "ws[%s][%u] disconnect", client->remoteIP().toString(), client->socket());
+    }
+
+    esp_err_t onWSFrame(PsychicWebSocketRequest *request, httpd_ws_frame *frame)
+    {
+        ESP_LOGV("WebSocketStreamer", "ws[%s][%u] opcode[%d]", request->client()->remoteIP().toString(), request->client()->socket(), frame->type);
+        return ESP_OK;
     }
 };
