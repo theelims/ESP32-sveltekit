@@ -696,6 +696,17 @@ protected:
 };
 
 /**************************************************************************/
+/*!
+  TODO: New Pattern Ideas
+    - RandomDepth: Like HalfnHalf, but the depth is random between 0 and 100%.
+                Stroke Velocity is constant. Shorter strokes are faster paced.
+    - KnottyJoy: A series of rapid 50% depth strokes followed by a regular
+                speed 100% stroke and a pause. Sensation controls the number
+                of rapid strokes and the hold time.
+*/
+/**************************************************************************/
+
+/**************************************************************************/
 /*
   Array holding all different patterns. Please include any custom pattern here.
 */
