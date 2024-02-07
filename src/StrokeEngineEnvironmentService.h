@@ -19,12 +19,14 @@
 class StrokeEngineEnvironmentService
 {
 public:
-    StrokeEngineEnvironmentService(StrokeEngine *strokeEngine, PsychicHttp *server, MotorConfigurationService *motorConfigurationService);
+    StrokeEngineEnvironmentService(StrokeEngine *strokeEngine, PsychicHttpServer *server, MotorConfigurationService *motorConfigurationService, SecurityManager *securityManager);
 
     void begin();
 
 private:
     StrokeEngine *_strokeEngine;
     MotorConfigurationService *_motorConfigurationService;
-    esp_err_t environment(PsychicWebServerRequest *request);
+    PsychicHttpServer *_server;
+    SecurityManager *_securityManager;
+    esp_err_t environment(PsychicRequest *request);
 };

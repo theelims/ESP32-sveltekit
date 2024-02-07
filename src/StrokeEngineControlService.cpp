@@ -15,7 +15,7 @@
 #include <StrokeEngineControlService.h>
 
 StrokeEngineControlService::StrokeEngineControlService(StrokeEngine *strokeEngine,
-                                                       PsychicHttp *server,
+                                                       PsychicHttpServer *server,
                                                        SecurityManager *securityManager,
                                                        PsychicMqttClient *mqttClient) : _strokeEngine(strokeEngine),
                                                                                         _httpEndpoint(StrokeEngineControl::read,

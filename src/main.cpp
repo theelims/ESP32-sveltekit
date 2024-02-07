@@ -64,7 +64,8 @@ MotorConfigurationService motorConfigurationService = MotorConfigurationService(
 
 StrokeEngineEnvironmentService strokeEngineEnvironmentService = StrokeEngineEnvironmentService(&Stroker,
                                                                                                &server,
-                                                                                               &motorConfigurationService);
+                                                                                               &motorConfigurationService,
+                                                                                               esp32sveltekit.getSecurityManager());
 
 StrokeEngineSafetyService strokeEngineSafetyService = StrokeEngineSafetyService(&Stroker,
                                                                                 &server,

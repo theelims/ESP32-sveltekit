@@ -58,7 +58,7 @@ class StrokeEngineSafetyService : public StatefulService<StrokeEngineSafety>
 {
 public:
     StrokeEngineSafetyService(StrokeEngine *stroker,
-                              PsychicHttp *server,
+                              PsychicHttpServer *server,
                               FS *fs,
                               SecurityManager *securityManager,
                               StrokeEngineControlService *strokeEngineControlService);

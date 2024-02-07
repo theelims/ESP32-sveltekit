@@ -9,16 +9,16 @@
 
 #include <StrokeEngineSafetyService.h>
 
-StrokeEngineSafetyService::StrokeEngineSafetyService(StrokeEngine *stroker, PsychicHttp *server, FS *fs, SecurityManager *securityManager, StrokeEngineControlService *strokeEngineControlService) : _strokeEngine(stroker),
-                                                                                                                                                                                                     _httpEndpoint(StrokeEngineSafety::read,
-                                                                                                                                                                                                                   StrokeEngineSafety::update,
-                                                                                                                                                                                                                   this,
-                                                                                                                                                                                                                   server,
-                                                                                                                                                                                                                   SAFETY_CONFIG_PATH,
-                                                                                                                                                                                                                   securityManager,
-                                                                                                                                                                                                                   AuthenticationPredicates::NONE_REQUIRED),
-                                                                                                                                                                                                     _fsPersistence(StrokeEngineSafety::read, StrokeEngineSafety::update, this, fs, SAFETY_CONFIG_FILE),
-                                                                                                                                                                                                     _strokeEngineControlService(strokeEngineControlService)
+StrokeEngineSafetyService::StrokeEngineSafetyService(StrokeEngine *stroker, PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, StrokeEngineControlService *strokeEngineControlService) : _strokeEngine(stroker),
+                                                                                                                                                                                                           _httpEndpoint(StrokeEngineSafety::read,
+                                                                                                                                                                                                                         StrokeEngineSafety::update,
+                                                                                                                                                                                                                         this,
+                                                                                                                                                                                                                         server,
+                                                                                                                                                                                                                         SAFETY_CONFIG_PATH,
+                                                                                                                                                                                                                         securityManager,
+                                                                                                                                                                                                                         AuthenticationPredicates::NONE_REQUIRED),
+                                                                                                                                                                                                           _fsPersistence(StrokeEngineSafety::read, StrokeEngineSafety::update, this, fs, SAFETY_CONFIG_FILE),
+                                                                                                                                                                                                           _strokeEngineControlService(strokeEngineControlService)
 {
     // configure settings service update handler to update state
     addUpdateHandler([&](const String &originId)

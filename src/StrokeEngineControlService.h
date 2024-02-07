@@ -124,7 +124,7 @@ class StrokeEngineControlService : public StatefulService<StrokeEngineControl>
 {
 public:
     StrokeEngineControlService(StrokeEngine *strokeEngine,
-                               PsychicHttp *server,
+                               PsychicHttpServer *server,
                                SecurityManager *securityManager,
                                PsychicMqttClient *mqttClient);
 

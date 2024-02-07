@@ -9,20 +9,25 @@
 
 #include <StrokeEngineEnvironmentService.h>
 
-StrokeEngineEnvironmentService::StrokeEngineEnvironmentService(StrokeEngine *strokeEngine, PsychicHttp *server, MotorConfigurationService *motorConfigurationService) : _strokeEngine(strokeEngine),
-                                                                                                                                                                        _motorConfigurationService(motorConfigurationService)
+StrokeEngineEnvironmentService::StrokeEngineEnvironmentService(StrokeEngine *strokeEngine, PsychicHttpServer *server, MotorConfigurationService *motorConfigurationService, SecurityManager *securityManager) : _strokeEngine(strokeEngine),
+                                                                                                                                                                                                                _motorConfigurationService(motorConfigurationService),
+                                                                                                                                                                                                                _server(server),
+                                                                                                                                                                                                                _securityManager(securityManager)
 {
 }
 
 void StrokeEngineEnvironmentService::begin()
 {
-    _server->on(ENVIRONMENT_SERVICE_PATH, HTTP_GET, std::bind(&StrokeEngineEnvironmentService::environment, this, std::placeholders::_1));
+    _server->on(ENVIRONMENT_SERVICE_PATH,
+                HTTP_GET,
+                _securityManager->wrapRequest(std::bind(&StrokeEngineEnvironmentService::environment, this, std::placeholders::_1),
+                                              AuthenticationPredicates::IS_AUTHENTICATED));
 }
 
-esp_err_t StrokeEngineEnvironmentService::environment(PsychicWebServerRequest *request)
+esp_err_t StrokeEngineEnvironmentService::environment(PsychicRequest *request)
 {
     PsychicJsonResponse response = PsychicJsonResponse(request, false, MAX_ENVIRONMENT_SIZE);
-    JsonObject root = response->getRoot();
+    JsonObject root = response.getRoot();
     root["depth"] = _strokeEngine->getMotor()->getMaxPosition();
     root["max_rate"] = MOTION_MAX_RATE;
     root["heartbeat"] = false; // TODO implement heartbeat in StrokeEngineControlService

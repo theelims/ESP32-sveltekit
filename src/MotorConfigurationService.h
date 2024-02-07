@@ -197,7 +197,7 @@ public:
 class MotorConfigurationService : public StatefulService<MotorConfiguration>
 {
 public:
-    MotorConfigurationService(StrokeEngine *strokeEngine, PsychicHttp *server, FS *fs, SecurityManager *securityManager, NotificationEvents *notificationEvent);
+    MotorConfigurationService(StrokeEngine *strokeEngine, PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, NotificationEvents *notificationEvent);
     void begin();
 
     String getDriverName();

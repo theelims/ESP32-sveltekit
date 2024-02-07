@@ -22,24 +22,23 @@
 #define CBORS_DEFAULT_ARRAY_SIZE 256
 #define WS_PACKET_AGGREGATION_ARRAY 5
 
-#define rdTAG "RawPositionStreaming"
-
+#define rdTAG "RawPositionStreamer"
 class WebSocketRawDataStreamer
 {
 public:
-    WebSocketRawDataStreamer(PsychicHttp *server) : _server(server)
+    WebSocketRawDataStreamer(PsychicHttpServer *server) : _server(server)
     {
     }
 
     void begin()
     {
-        _webSocket.onOpen(std::bind(&WebSocketServer::onWSOpen,
+        _webSocket.onOpen(std::bind(&WebSocketRawDataStreamer::onWSOpen,
                                     this,
                                     std::placeholders::_1));
-        _webSocket.onClose(std::bind(&WebSocketServer::onWSClose,
+        _webSocket.onClose(std::bind(&WebSocketRawDataStreamer::onWSClose,
                                      this,
                                      std::placeholders::_1));
-        _webSocket.onFrame(std::bind(&WebSocketServer::onWSFrame,
+        _webSocket.onFrame(std::bind(&WebSocketRawDataStreamer::onWSFrame,
                                      this,
                                      std::placeholders::_1,
                                      std::placeholders::_2));
@@ -71,7 +70,7 @@ public:
     }
 
 private:
-    PsychicHttp *_server;
+    PsychicHttpServer *_server;
     PsychicWebSocketHandler _webSocket;
     String _webSocketPath;
     size_t _bufferSize;

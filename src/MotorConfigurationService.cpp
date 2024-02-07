@@ -9,16 +9,16 @@
 
 #include <MotorConfigurationService.h>
 
-MotorConfigurationService::MotorConfigurationService(StrokeEngine *strokeEngine, PsychicHttp *server, FS *fs, SecurityManager *securityManager, NotificationEvents *notificationEvent) : _strokeEngine(strokeEngine),
-                                                                                                                                                                                         _httpEndpoint(MotorConfiguration::read,
-                                                                                                                                                                                                       MotorConfiguration::update,
-                                                                                                                                                                                                       this,
-                                                                                                                                                                                                       server,
-                                                                                                                                                                                                       MOTOR_CONFIG_PATH,
-                                                                                                                                                                                                       securityManager,
-                                                                                                                                                                                                       AuthenticationPredicates::IS_ADMIN),
-                                                                                                                                                                                         _fsPersistence(MotorConfiguration::read, MotorConfiguration::update, this, fs, MOTOR_CONFIG_FILE),
-                                                                                                                                                                                         _notificationEvent(notificationEvent)
+MotorConfigurationService::MotorConfigurationService(StrokeEngine *strokeEngine, PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, NotificationEvents *notificationEvent) : _strokeEngine(strokeEngine),
+                                                                                                                                                                                               _httpEndpoint(MotorConfiguration::read,
+                                                                                                                                                                                                             MotorConfiguration::update,
+                                                                                                                                                                                                             this,
+                                                                                                                                                                                                             server,
+                                                                                                                                                                                                             MOTOR_CONFIG_PATH,
+                                                                                                                                                                                                             securityManager,
+                                                                                                                                                                                                             AuthenticationPredicates::IS_ADMIN),
+                                                                                                                                                                                               _fsPersistence(MotorConfiguration::read, MotorConfiguration::update, this, fs, MOTOR_CONFIG_FILE),
+                                                                                                                                                                                               _notificationEvent(notificationEvent)
 
 {
     // configure settings service update handler to update state
