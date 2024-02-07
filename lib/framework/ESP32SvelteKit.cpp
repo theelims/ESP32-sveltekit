@@ -111,7 +111,7 @@ void ESP32SvelteKit::begin()
         } });
 #endif
 #ifdef SERVE_CONFIG_FILES
-    server->serveStatic("/config/", ESPFS, "/config/");
+    _server->serveStatic("/config/", ESPFS, "/config/");
 #endif
 
     // Serve static resources from /config/ if set by platformio.ini
