@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [WIP] - Work in Progress
+
+### Added
+
+### Changed
+
+- more generic board definition in platformio.ini (#20)
+
+### Fixed
+
+- Duplicate method in FeatureService (#18)
+- Fixed compile error with FLAG `-D SERVE_CONFIG_FILES`
+
 ## [0.3.0] - 2023-02-05
 
 > [!CAUTION]
