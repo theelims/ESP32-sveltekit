@@ -44,6 +44,8 @@ public:
                                      std::placeholders::_2));
         _server->on(RAW_POSITION_SOCKET_PATH, &_webSocket);
 
+        ESP_LOGV(rdTAG, "Registered WebSocket handler: %s", _webSocketPath.c_str());
+
         // prepare buffer
         rawDataWSPrint.reset();
         cborWS.resetWriteSize();

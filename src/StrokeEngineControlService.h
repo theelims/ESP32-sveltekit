@@ -9,7 +9,6 @@
  *   the terms of the MIT license. See the LICENSE file for details.
  **/
 
-#include <LightMqttSettingsService.h>
 #include <PsychicHttp.h>
 #include <PsychicMqttClient.h>
 #include <MqttPubSub.h>
@@ -18,6 +17,7 @@
 #include <FSPersistence.h>
 #include <JsonUtils.h>
 #include <StrokeEngine.h>
+#include <MqttBrokerSettingsService.h>
 
 #ifdef OSSM_REF
 #include <boards/OSSMReferenceBoard.h>
@@ -126,7 +126,8 @@ public:
     StrokeEngineControlService(StrokeEngine *strokeEngine,
                                PsychicHttpServer *server,
                                SecurityManager *securityManager,
-                               PsychicMqttClient *mqttClient);
+                               PsychicMqttClient *mqttClient,
+                               MqttBrokerSettingsService *mqttBrokerSettingsService);
 
     void begin();
 
@@ -137,6 +138,7 @@ private:
     // WebSocketClient<StrokeEngineControl> _webSocketClient;
     PsychicMqttClient *_mqttClient;
     StrokeEngine *_strokeEngine;
+    MqttBrokerSettingsService *_mqttBrokerSettingsService;
 
     void onConfigUpdated(String originId);
 };

@@ -198,7 +198,7 @@ esp_err_t PsychicWebSocketHandler::handleRequest(PsychicRequest *request)
       free(buf);
       return ret;
     }
-    ESP_LOGI(PH_TAG, "Got packet with message: %s", ws_pkt.payload);
+    // ESP_LOGI(PH_TAG, "Got packet with message: %s", ws_pkt.payload);
   }
 
   // Text messages are our payload.
@@ -242,7 +242,7 @@ void PsychicWebSocketHandler::sendAll(httpd_ws_frame_t *ws_pkt)
 {
   for (PsychicClient *client : _clients)
   {
-    ESP_LOGI(PH_TAG, "Active client (fd=%d) -> sending async message", client->socket());
+    // ESP_LOGI(PH_TAG, "Active client (fd=%d) -> sending async message", client->socket());
 
     if (client->_friend == NULL)
     {

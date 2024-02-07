@@ -11,11 +11,10 @@
 
 #include <ESP32SvelteKit.h>
 #include <ESPmDNS.h>
-#include <LightMqttSettingsService.h>
-#include <LightStateService.h>
 #include <PsychicHttpServer.h>
 #include <StrokeEngine.h>
 #include <SettingValue.h>
+#include <MqttBrokerSettingsService.h>
 #include <StrokeEngineControlService.h>
 #include <MotorConfigurationService.h>
 #include <StrokeEngineEnvironmentService.h>
@@ -42,19 +41,15 @@ PsychicHttpServer server;
 
 ESP32SvelteKit esp32sveltekit(&server, 130);
 
-LightMqttSettingsService lightMqttSettingsService = LightMqttSettingsService(&server,
-                                                                             esp32sveltekit.getFS(),
-                                                                             esp32sveltekit.getSecurityManager());
-
-LightStateService lightStateService = LightStateService(&server,
-                                                        esp32sveltekit.getSecurityManager(),
-                                                        esp32sveltekit.getMqttClient(),
-                                                        &lightMqttSettingsService);
+MqttBrokerSettingsService mqttBrokerSettingsService = MqttBrokerSettingsService(&server,
+                                                                                esp32sveltekit.getFS(),
+                                                                                esp32sveltekit.getSecurityManager());
 
 StrokeEngineControlService strokeEngineControlService = StrokeEngineControlService(&Stroker,
                                                                                    &server,
                                                                                    esp32sveltekit.getSecurityManager(),
-                                                                                   esp32sveltekit.getMqttClient());
+                                                                                   esp32sveltekit.getMqttClient(),
+                                                                                   &mqttBrokerSettingsService);
 
 MotorConfigurationService motorConfigurationService = MotorConfigurationService(&Stroker,
                                                                                 &server,
@@ -72,8 +67,9 @@ StrokeEngineSafetyService strokeEngineSafetyService = StrokeEngineSafetyService(
                                                                                 esp32sveltekit.getFS(),
                                                                                 esp32sveltekit.getSecurityManager(),
                                                                                 &strokeEngineControlService);
+
 #ifdef DATA_STREAMING
-WebSocketRawDataStreamer PositionStream(&server);
+WebSocketRawDataStreamer positionStream(&server);
 #endif
 
 /*#################################################################################################
@@ -86,7 +82,7 @@ void streamMotorData(unsigned int time, float position, float speed, float value
 {
 #ifdef DATA_STREAMING
     // Send raw motor data to the websocket
-    PositionStream.streamRawData(time, position, speed, valueA, valueB);
+    positionStream.streamRawData(time, position, speed, valueA, valueB);
 #endif
 
     static int lastMillis = 0;
@@ -147,11 +143,6 @@ void setup()
     esp32sveltekit.getFeatureService()->addFeature("data_streaming", false);
 #endif
 
-    // load the initial light settings
-    lightStateService.begin();
-    // start the light service
-    lightMqttSettingsService.begin();
-
     // Start motor control service
     motorConfigurationService.begin();
     Stroker.getMotor()->attachPositionFeedback(streamMotorData, DATA_STREAMING_INTERVAL);
@@ -164,6 +155,14 @@ void setup()
 
     // start the stroke engine control service
     strokeEngineControlService.begin();
+
+    // Start the MQTT broker settings service
+    mqttBrokerSettingsService.begin();
+
+#ifdef DATA_STREAMING
+    // Start the websocket raw data streaming
+    positionStream.begin();
+#endif
 }
 
 void loop()
