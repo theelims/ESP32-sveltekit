@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - more generic board definition in platformio.ini (#20)
+- refactored MqttPubSub.h into a single class to improve readability
 
 ### Fixed
 

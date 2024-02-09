@@ -9,7 +9,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2023 - 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -21,109 +21,46 @@
 #define MQTT_ORIGIN_ID "mqtt"
 
 template <class T>
-class MqttConnector
-{
-protected:
-    StatefulService<T> *_statefulService;
-    PsychicMqttClient *_mqttClient;
-    size_t _bufferSize;
-
-    MqttConnector(StatefulService<T> *statefulService, PsychicMqttClient *mqttClient, size_t bufferSize) : _statefulService(statefulService),
-                                                                                                           _mqttClient(mqttClient),
-                                                                                                           _bufferSize(bufferSize)
-    {
-        _mqttClient->onConnect(std::bind(&MqttConnector::onConnect, this));
-    }
-
-    virtual void onConnect() = 0;
-
-public:
-    inline PsychicMqttClient *getMqttClient() const
-    {
-        return _mqttClient;
-    }
-};
-
-template <class T>
-class MqttPub : virtual public MqttConnector<T>
+class MqttPubSub
 {
 public:
-    MqttPub(JsonStateReader<T> stateReader,
-            StatefulService<T> *statefulService,
-            PsychicMqttClient *mqttClient,
-            const String &pubTopic = "",
-            bool retain = false,
-            size_t bufferSize = DEFAULT_BUFFER_SIZE) : MqttConnector<T>(statefulService, mqttClient, bufferSize),
-                                                       _stateReader(stateReader),
-                                                       _pubTopic(pubTopic),
-                                                       _retain(retain)
+    MqttPubSub(JsonStateReader<T> stateReader,
+               JsonStateUpdater<T> stateUpdater,
+               StatefulService<T> *statefulService,
+               PsychicMqttClient *mqttClient,
+               const String &pubTopic = "",
+               const String &subTopic = "",
+               bool retain = false,
+               size_t bufferSize = DEFAULT_BUFFER_SIZE) : _stateReader(stateReader),
+                                                          _stateUpdater(stateUpdater),
+                                                          _statefulService(statefulService),
+                                                          _mqttClient(mqttClient),
+                                                          _pubTopic(pubTopic),
+                                                          _subTopic(subTopic),
+                                                          _retain(retain),
+                                                          _bufferSize(bufferSize)
+
     {
-        MqttConnector<T>::_statefulService->addUpdateHandler([&](const String &originId)
-                                                             { publish(); },
-                                                             false);
+        _statefulService->addUpdateHandler([&](const String &originId)
+                                           { publish(); },
+                                           false);
+
+        _mqttClient->onConnect(std::bind(&MqttPubSub::onConnect, this));
+
+        _mqttClient->onMessage(std::bind(&MqttPubSub::onMqttMessage,
+                                         this,
+                                         std::placeholders::_1,
+                                         std::placeholders::_2,
+                                         std::placeholders::_3,
+                                         std::placeholders::_4,
+                                         std::placeholders::_5));
     }
 
-    void setRetain(const bool retain)
-    {
-        _retain = retain;
-        publish();
-    }
-
-    void setPubTopic(const String &pubTopic)
-    {
-        _pubTopic = pubTopic;
-        publish();
-    }
-
-protected:
-    virtual void onConnect()
-    {
-        publish();
-    }
-
-private:
-    JsonStateReader<T> _stateReader;
-    String _pubTopic;
-    bool _retain;
-
-    void publish()
-    {
-        if (_pubTopic.length() > 0 && MqttConnector<T>::_mqttClient->connected())
-        {
-            // serialize to json doc
-            DynamicJsonDocument json(MqttConnector<T>::_bufferSize);
-            JsonObject jsonObject = json.to<JsonObject>();
-            MqttConnector<T>::_statefulService->read(jsonObject, _stateReader);
-
-            // serialize to string
-            String payload;
-            serializeJson(json, payload);
-
-            // publish the payload
-            MqttConnector<T>::_mqttClient->publish(_pubTopic.c_str(), 0, _retain, payload.c_str());
-        }
-    }
-};
-
-template <class T>
-class MqttSub : virtual public MqttConnector<T>
-{
 public:
-    MqttSub(JsonStateUpdater<T> stateUpdater,
-            StatefulService<T> *statefulService,
-            PsychicMqttClient *mqttClient,
-            const String &subTopic = "",
-            size_t bufferSize = DEFAULT_BUFFER_SIZE) : MqttConnector<T>(statefulService, mqttClient, bufferSize),
-                                                       _stateUpdater(stateUpdater),
-                                                       _subTopic(subTopic)
+    void configureTopics(const String &pubTopic, const String &subTopic)
     {
-        MqttConnector<T>::_mqttClient->onMessage(std::bind(&MqttSub::onMqttMessage,
-                                                           this,
-                                                           std::placeholders::_1,
-                                                           std::placeholders::_2,
-                                                           std::placeholders::_3,
-                                                           std::placeholders::_4,
-                                                           std::placeholders::_5));
+        setSubTopic(subTopic);
+        setPubTopic(pubTopic);
     }
 
     void setSubTopic(const String &subTopic)
@@ -133,7 +70,7 @@ public:
             // unsubscribe from the existing topic if one was set
             if (_subTopic.length() > 0)
             {
-                MqttConnector<T>::_mqttClient->unsubscribe(_subTopic.c_str());
+                _mqttClient->unsubscribe(_subTopic.c_str());
             }
             // set the new topic and re-configure the subscription
             _subTopic = subTopic;
@@ -141,23 +78,50 @@ public:
         }
     }
 
-protected:
-    virtual void onConnect()
+    void setPubTopic(const String &pubTopic)
     {
-        subscribe();
+        _pubTopic = pubTopic;
+        publish();
     }
 
-private:
-    JsonStateUpdater<T> _stateUpdater;
-    String _subTopic;
-
-    void subscribe()
+    void setRetain(const bool retain)
     {
-        if (_subTopic.length() > 0)
+        _retain = retain;
+        publish();
+    }
+
+    void publish()
+    {
+        if (_pubTopic.length() > 0 && _mqttClient->connected())
         {
-            MqttConnector<T>::_mqttClient->subscribe(_subTopic.c_str(), 2);
+            // serialize to json doc
+            DynamicJsonDocument json(_bufferSize);
+            JsonObject jsonObject = json.to<JsonObject>();
+            _statefulService->read(jsonObject, _stateReader);
+
+            // serialize to string
+            String payload;
+            serializeJson(json, payload);
+
+            // publish the payload
+            _mqttClient->publish(_pubTopic.c_str(), 0, _retain, payload.c_str());
         }
     }
+
+    PsychicMqttClient *getMqttClient()
+    {
+        return _mqttClient;
+    }
+
+protected:
+    StatefulService<T> *_statefulService;
+    PsychicMqttClient *_mqttClient;
+    int _bufferSize;
+    JsonStateUpdater<T> _stateUpdater;
+    JsonStateReader<T> _stateReader;
+    String _subTopic;
+    String _pubTopic;
+    bool _retain;
 
     void onMqttMessage(char *topic,
                        char *payload,
@@ -172,45 +136,27 @@ private:
         }
 
         // deserialize from string
-        DynamicJsonDocument json(MqttConnector<T>::_bufferSize);
+        DynamicJsonDocument json(_bufferSize);
         DeserializationError error = deserializeJson(json, payload);
         if (!error && json.is<JsonObject>())
         {
             JsonObject jsonObject = json.as<JsonObject>();
-            MqttConnector<T>::_statefulService->update(jsonObject, _stateUpdater, MQTT_ORIGIN_ID);
+            _statefulService->update(jsonObject, _stateUpdater, MQTT_ORIGIN_ID);
         }
     }
-};
 
-template <class T>
-class MqttPubSub : public MqttPub<T>, public MqttSub<T>
-{
-public:
-    MqttPubSub(JsonStateReader<T> stateReader,
-               JsonStateUpdater<T> stateUpdater,
-               StatefulService<T> *statefulService,
-               PsychicMqttClient *mqttClient,
-               const String &pubTopic = "",
-               const String &subTopic = "",
-               bool retain = false,
-               size_t bufferSize = DEFAULT_BUFFER_SIZE) : MqttConnector<T>(statefulService, mqttClient, bufferSize),
-                                                          MqttPub<T>(stateReader, statefulService, mqttClient, pubTopic, retain, bufferSize),
-                                                          MqttSub<T>(stateUpdater, statefulService, mqttClient, subTopic, bufferSize)
-    {
-    }
-
-public:
-    void configureTopics(const String &pubTopic, const String &subTopic)
-    {
-        MqttSub<T>::setSubTopic(subTopic);
-        MqttPub<T>::setPubTopic(pubTopic);
-    }
-
-protected:
     void onConnect()
     {
-        MqttSub<T>::onConnect();
-        MqttPub<T>::onConnect();
+        subscribe();
+        publish();
+    }
+
+    void subscribe()
+    {
+        if (_subTopic.length() > 0)
+        {
+            _mqttClient->subscribe(_subTopic.c_str(), 2);
+        }
     }
 };
 
