@@ -26,7 +26,7 @@
 	Chart.register(ChartStreaming);
 
 	type ControlState = {
-		go: boolean;
+		command: string;
 		depth: number;
 		stroke: number;
 		rate: number;
@@ -38,7 +38,7 @@
 	};
 
 	let controlState: ControlState = {
-		go: false,
+		command: 'STOP',
 		depth: 0.0,
 		stroke: 0.0,
 		rate: 0.0,
@@ -48,6 +48,8 @@
 		vibration_amplitude: 0.0,
 		vibration_frequency: 0.0
 	};
+
+	let go: boolean = false;
 
 	let positionChartElement: HTMLCanvasElement;
 	let positionChart: Chart;
@@ -118,6 +120,11 @@
 
 		controlSocket.onmessage = (event) => {
 			controlState = JSON.parse(event.data);
+			// if command is STOP (not case sensitive) then go is false (stop the pattern)
+			if (controlState.command.toUpperCase() === 'STOP') {
+				go = false;
+			}
+
 			oldStroke = controlState.stroke;
 			// console.log(controlState);
 		};
@@ -132,10 +139,12 @@
 	}
 
 	function controlSession() {
-		if (controlState.go === true) {
-			controlState.go = false;
+		if (go === true) {
+			controlState.command = 'STOP';
+			go = false;
 		} else {
-			controlState.go = true;
+			controlState.command = 'playpattern';
+			go = true;
 		}
 		sendControl();
 	}
@@ -340,7 +349,7 @@
 	<div class="m-4 flex flex-wrap gap-6 justify-between">
 		<div class="flex flex-nowrap justify-start gap-6">
 			<button class="btn btn-primary inline-flex items-center w-32" on:click={controlSession}>
-				{#if controlState.go === false}
+				{#if go === false}
 					<Start class="mr-2 h-5 w-5" /><span>Start</span>
 				{:else}
 					<Stop class="mr-2 h-5 w-5" /><span>Stop</span>

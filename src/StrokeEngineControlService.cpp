@@ -52,7 +52,12 @@ void StrokeEngineControlService::begin()
     _httpEndpoint.begin();
     _webSocketServer.begin();
 
-    _state.go = false;
+    String controlTopic;
+    _mqttBrokerSettingsService->read([&](MqttBrokerSettings &settings)
+                                     { controlTopic = settings.controlTopic; });
+    _mqttPubSub.configureTopics(controlTopic.c_str(), controlTopic.c_str());
+
+    _state.command = "STOP";
     _state.depth = _strokeEngine->getParameter(StrokeParameter::DEPTH);
     _state.stroke = _strokeEngine->getParameter(StrokeParameter::STROKE);
     _state.rate = _strokeEngine->getParameter(StrokeParameter::RATE);
@@ -104,11 +109,11 @@ void StrokeEngineControlService::onConfigUpdated(String originId)
     }
 
     // Change running state of the stroke engine
-    if ((_state.go == true) && (_strokeEngine->isActive() == false))
+    if ((_state.command.equalsIgnoreCase("playpattern")) && (_strokeEngine->isActive() == false))
     {
         _strokeEngine->startPattern();
     }
-    else if ((_state.go == false) && (_strokeEngine->isActive() == true))
+    else if ((_state.command.equalsIgnoreCase("STOP")) && (_strokeEngine->isActive() == true))
     {
         _strokeEngine->stopMotion();
     }

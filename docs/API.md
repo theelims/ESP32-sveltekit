@@ -26,11 +26,11 @@ The main control API to control LUST-motion. Starts and stops the motion, change
 | GET    | /rest/control | `NONE_REQUIRED` |
 | POST   | /rest/control | `NONE_REQUIRED` |
 | WS     | /ws/control   | `NONE_REQUIRED` |
-| MQTT   | -             | `NONE_REQUIRED` |
+| MQTT   | -             | N/A             |
 
 | Parameter           | Type    | Range            | Info                                                                                                                   | Failure Mode         |
 | ------------------- | ------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| go                  | boolean | true / false     | Starts & stops the motion                                                                                              | false                |
+| command             | string  | {command}        | Controls the machine like start a pattern, activate streaming or stop it. Commands are not case sensitive              | STOP                 |
 | depth               | number  | 0.0 - `travel`   | maximum depth of the motion                                                                                            | truncated into range |
 | stroke              | number  | 0.0 - `travel`   | length of the stroke                                                                                                   | truncated into range |
 | rate                | number  | 0.0 - `max_rate` | rate in strokes per minute                                                                                             | truncated into range |
@@ -40,11 +40,18 @@ The main control API to control LUST-motion. Starts and stops the motion, change
 | vibration_amplitude | number  | 0.0 - 5.0        | amplitude of a vibration overlay, 0.0 == off                                                                           | truncated into range |
 | vibration_frequency | number  | 10.0 - 50.0      | frequency in HZ of the vibration overlay                                                                               | truncated into range |
 
+|    Command    | Description                                                            |
+| :-----------: | ---------------------------------------------------------------------- |
+|    "STOP"     | Stops the machine instantly                                            |
+| "playpattern" | Starts the motion with the selected pattern                            |
+|   "retract"   | Moves the endeffector to the far end (home position) with a safe speed |
+| "startstream" | Listens on the streaming API for incoming commands and executes them   |
+
 #### JSON
 
 ```JSON
 {
-    "go": true,
+    "command": "STOP",
     "depth": 120.0,
     "stroke": 80.5,
     "rate": 30.0,
@@ -106,6 +113,7 @@ This API will provide the information about the environment like maximum travel 
 | Method | URL               | Authentication  |
 | ------ | ----------------- | --------------- |
 | GET    | /rest/environment | `NONE_REQUIRED` |
+| MQTT   | -                 | N/A             |
 
 | Parameter | Type             | Info                                                                                                 |
 | --------- | ---------------- | ---------------------------------------------------------------------------------------------------- |
@@ -131,6 +139,10 @@ This API will provide the information about the environment like maximum travel 
 }
 ```
 
+#### MQTT
+
+Environment messages are always send with the flag `retain` and QoS = 1 to make it available for all new consumers. Environment messages are sent out whenever it connects to the broker or the topic is reconfigured. Additionally a MQTT client may request an environment JSON by sending a payload with "environment" to the environment topic.
+
 ### StrokeEngine Streaming _write-only_
 
 Instead of pattern the motion commands can be provided via this streaming interface, too. Messages are queued up with a queue length of 5. Writing to a full queue will result in the message being discarded. An empty queue will stop the motion. Changing `go` or `pattern` in the [Control API](#strokeengine-control) will erase the queue. That way streaming always starts with a fresh queue. This service is write only. Changes won't propagate to other clients and a GET request will return an empty JSON.
@@ -141,7 +153,7 @@ Instead of pattern the motion commands can be provided via this streaming interf
 | ------ | --------------- | --------------- |
 | POST   | /rest/streaming | `NONE_REQUIRED` |
 | WS     | /ws/streaming   | `NONE_REQUIRED` |
-| MQTT   | -               | `NONE_REQUIRED` |
+| MQTT   | -               | /N/A            |
 
 | Parameter           | Type   | Range       | Info                                                                                       | Failure Mode                |
 | ------------------- | ------ | ----------- | ------------------------------------------------------------------------------------------ | --------------------------- |

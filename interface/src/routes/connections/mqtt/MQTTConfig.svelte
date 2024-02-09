@@ -135,7 +135,7 @@
 						/>
 						<label class="label" for="control">
 							<span class="label-text-alt text-error {formErrors.control ? '' : 'hidden'}"
-								>MQTT toptic is limited to 64 characters</span
+								>MQTT topic is limited to 64 characters</span
 							>
 						</label>
 					</div>
@@ -156,7 +156,7 @@
 						/>
 						<label class="label" for="environment">
 							<span class="label-text-alt text-error {formErrors.environment ? '' : 'hidden'}"
-								>MQTT toptic is limited to 64 characters</span
+								>MQTT topic is limited to 64 characters</span
 							>
 						</label>
 					</div>
@@ -177,7 +177,7 @@
 						/>
 						<label class="label" for="streaming">
 							<span class="label-text-alt text-error {formErrors.streaming ? '' : 'hidden'}"
-								>MQTT toptic is limited to 64 characters</span
+								>MQTT topic is limited to 64 characters</span
 							>
 						</label>
 					</div>

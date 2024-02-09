@@ -489,7 +489,7 @@ private:
                 result.position = _trapezoidalRamp[0].position + _trapezoidalRamp[0].speed * t + 0.5 * _acceleration * sq(t);
             }
             // if (_profilePhaseDebugMessages < 1) {
-            ESP_LOGV("VirtualMotor", "Phase 0: Deceleration");
+            // ESP_LOGV("VirtualMotor", "Phase 0: Deceleration");
             //     _profilePhaseDebugMessages = 1;
             // }
         }
@@ -507,7 +507,7 @@ private:
                 result.position = _trapezoidalRamp[1].position - 0.5 * _acceleration * sq(t - _trapezoidalRamp[1].time);
             }
             // if (_profilePhaseDebugMessages < 2) {
-            ESP_LOGV("VirtualMotor", "Phase 1: Acceleration");
+            // ESP_LOGV("VirtualMotor", "Phase 1: Acceleration");
             //     _profilePhaseDebugMessages = 2;
             // }
         }
@@ -517,7 +517,7 @@ private:
             result.speed = _trapezoidalRamp[2].speed;
             result.position = _trapezoidalRamp[2].position + _trapezoidalRamp[2].speed * (t - _trapezoidalRamp[2].time);
             // if (_profilePhaseDebugMessages < 3) {
-            ESP_LOGV("VirtualMotor", "Phase 2: Coasting");
+            // ESP_LOGV("VirtualMotor", "Phase 2: Coasting");
             //     _profilePhaseDebugMessages = 3;
             // }
         }
@@ -535,7 +535,7 @@ private:
                 result.position = _trapezoidalRamp[3].position + _trapezoidalRamp[3].speed * (t - _trapezoidalRamp[3].time) + 0.5 * _acceleration * sq(t - _trapezoidalRamp[3].time);
             }
             // if (_profilePhaseDebugMessages < 4) {
-            ESP_LOGV("VirtualMotor", "Phase 3: Deceleration");
+            // ESP_LOGV("VirtualMotor", "Phase 3: Deceleration");
             //     _profilePhaseDebugMessages = 4;
             // }
         }
@@ -545,7 +545,7 @@ private:
             result.position = _trapezoidalRamp[4].position;
             _motionCompleted = true;
             // if (_profilePhaseDebugMessages > 4) {
-            ESP_LOGV("VirtualMotor", "Phase 4: Motion Complete");
+            // ESP_LOGV("VirtualMotor", "Phase 4: Motion Complete");
             //     _profilePhaseDebugMessages = 5;
             // }
         }

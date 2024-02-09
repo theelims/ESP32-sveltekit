@@ -9,10 +9,17 @@
 
 #include <StrokeEngineEnvironmentService.h>
 
-StrokeEngineEnvironmentService::StrokeEngineEnvironmentService(StrokeEngine *strokeEngine, PsychicHttpServer *server, MotorConfigurationService *motorConfigurationService, SecurityManager *securityManager) : _strokeEngine(strokeEngine),
-                                                                                                                                                                                                                _motorConfigurationService(motorConfigurationService),
-                                                                                                                                                                                                                _server(server),
-                                                                                                                                                                                                                _securityManager(securityManager)
+StrokeEngineEnvironmentService::StrokeEngineEnvironmentService(StrokeEngine *strokeEngine,
+                                                               PsychicHttpServer *server,
+                                                               MotorConfigurationService *motorConfigurationService,
+                                                               SecurityManager *securityManager,
+                                                               PsychicMqttClient *mqttClient,
+                                                               MqttBrokerSettingsService *mqttBrokerSettingsService) : _strokeEngine(strokeEngine),
+                                                                                                                       _motorConfigurationService(motorConfigurationService),
+                                                                                                                       _server(server),
+                                                                                                                       _securityManager(securityManager),
+                                                                                                                       _mqttClient(mqttClient),
+                                                                                                                       _mqttBrokerSettingsService(mqttBrokerSettingsService)
 {
 }
 
@@ -22,12 +29,48 @@ void StrokeEngineEnvironmentService::begin()
                 HTTP_GET,
                 _securityManager->wrapRequest(std::bind(&StrokeEngineEnvironmentService::environment, this, std::placeholders::_1),
                                               AuthenticationPredicates::IS_AUTHENTICATED));
+
+    String environmentTopic;
+    _mqttBrokerSettingsService->read([&](MqttBrokerSettings &settings)
+                                     { environmentTopic = settings.environmentTopic; });
+
+    // publish the environment on every change of a broker setting
+    _mqttBrokerSettingsService->addUpdateHandler([&](const String &originId)
+                                                 { mqttPublishEnvironment(); },
+                                                 false);
+
+    // publish environment on connect and as reply to a message on the environment topic
+    _mqttClient->onTopic(environmentTopic.c_str(), 1, std::bind(&StrokeEngineEnvironmentService::mqttPingBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5));
+    _mqttClient->onConnect(std::bind(&StrokeEngineEnvironmentService::mqttPublishEnvironment, this, std::placeholders::_1));
 }
 
-esp_err_t StrokeEngineEnvironmentService::environment(PsychicRequest *request)
+void StrokeEngineEnvironmentService::mqttPingBack(const char *topic, const char *payload, int retain, int qos, bool dup)
 {
-    PsychicJsonResponse response = PsychicJsonResponse(request, false, MAX_ENVIRONMENT_SIZE);
-    JsonObject root = response.getRoot();
+    if (strcmp(payload, "environment") == 0)
+        mqttPublishEnvironment();
+}
+
+void StrokeEngineEnvironmentService::mqttPublishEnvironment(bool session)
+{
+    // create JSON object
+    StaticJsonDocument<MAX_ENVIRONMENT_SIZE> doc;
+    JsonObject root = doc.to<JsonObject>();
+    createEnvironmentJson(root);
+
+    String payloadString;
+    serializeJson(doc, payloadString);
+
+    // get the environment topic
+    String environmentTopic;
+    _mqttBrokerSettingsService->read([&](MqttBrokerSettings &settings)
+                                     { environmentTopic = settings.environmentTopic; });
+
+    // publish the environment
+    _mqttClient->publish(environmentTopic.c_str(), 1, true, payloadString.c_str());
+}
+
+void StrokeEngineEnvironmentService::createEnvironmentJson(JsonObject root)
+{
     root["depth"] = _strokeEngine->getMotor()->getMaxPosition();
     root["max_rate"] = MOTION_MAX_RATE;
     root["heartbeat"] = false; // TODO implement heartbeat in StrokeEngineControlService
@@ -42,6 +85,12 @@ esp_err_t StrokeEngineEnvironmentService::environment(PsychicRequest *request)
     root["valueA"] = _strokeEngine->getMotor()->getMotionPointLabel().labelValueA;
     root["valueB"] = _strokeEngine->getMotor()->getMotionPointLabel().labelValueB;
     root["motor"] = _motorConfigurationService->getDriverName();
+}
 
+esp_err_t StrokeEngineEnvironmentService::environment(PsychicRequest *request)
+{
+    PsychicJsonResponse response = PsychicJsonResponse(request, false, MAX_ENVIRONMENT_SIZE);
+    JsonObject root = response.getRoot();
+    createEnvironmentJson(root);
     return response.send();
 }

@@ -60,7 +60,9 @@ MotorConfigurationService motorConfigurationService = MotorConfigurationService(
 StrokeEngineEnvironmentService strokeEngineEnvironmentService = StrokeEngineEnvironmentService(&Stroker,
                                                                                                &server,
                                                                                                &motorConfigurationService,
-                                                                                               esp32sveltekit.getSecurityManager());
+                                                                                               esp32sveltekit.getSecurityManager(),
+                                                                                               esp32sveltekit.getMqttClient(),
+                                                                                               &mqttBrokerSettingsService);
 
 StrokeEngineSafetyService strokeEngineSafetyService = StrokeEngineSafetyService(&Stroker,
                                                                                 &server,
@@ -139,6 +141,7 @@ void setup()
 
 #ifdef DATA_STREAMING
     esp32sveltekit.getFeatureService()->addFeature("data_streaming", true);
+    positionStream.begin();
 #else
     esp32sveltekit.getFeatureService()->addFeature("data_streaming", false);
 #endif
@@ -146,6 +149,9 @@ void setup()
     // Start motor control service
     motorConfigurationService.begin();
     Stroker.getMotor()->attachPositionFeedback(streamMotorData, DATA_STREAMING_INTERVAL);
+
+    // Start the MQTT broker settings service
+    mqttBrokerSettingsService.begin();
 
     // Start the stroke engine safety service
     strokeEngineSafetyService.begin();
@@ -155,14 +161,6 @@ void setup()
 
     // start the stroke engine control service
     strokeEngineControlService.begin();
-
-    // Start the MQTT broker settings service
-    mqttBrokerSettingsService.begin();
-
-#ifdef DATA_STREAMING
-    // Start the websocket raw data streaming
-    positionStream.begin();
-#endif
 }
 
 void loop()

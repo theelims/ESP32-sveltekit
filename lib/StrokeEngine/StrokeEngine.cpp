@@ -326,7 +326,7 @@ void StrokeEngine::_stroking()
   while (1)
   { // infinite loop
 
-    ESP_LOGV("StrokeEngine", "StrokeEngine is %s.", _active ? "active" : "not active");
+    // ESP_LOGV("StrokeEngine", "StrokeEngine is %s.", _active ? "active" : "not active");
 
     // Check if motor is still available
     if (_motor->isActive() == false)

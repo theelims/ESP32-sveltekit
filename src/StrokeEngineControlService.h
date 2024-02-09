@@ -67,7 +67,7 @@ enum HeartbeatMode
 class StrokeEngineControl
 {
 public:
-    bool go;
+    String command;
     float depth;
     float stroke;
     float rate;
@@ -79,14 +79,14 @@ public:
 
     bool operator==(const StrokeEngineControl &settings) const
     {
-        return go == settings.go && depth == settings.depth && stroke == settings.stroke &&
+        return command == settings.command && depth == settings.depth && stroke == settings.stroke &&
                rate == settings.rate && sensation == settings.sensation && pattern == settings.pattern &&
                vibrationOverride == settings.vibrationOverride && vibrationAmplitude == settings.vibrationAmplitude && vibrationFrequency == settings.vibrationFrequency;
     }
 
     static void read(StrokeEngineControl &settings, JsonObject &root)
     {
-        root["go"] = settings.go;
+        root["command"] = settings.command;
         root["depth"] = settings.depth;
         root["stroke"] = settings.stroke;
         root["rate"] = settings.rate;
@@ -101,7 +101,7 @@ public:
     {
         StrokeEngineControl newSettings = {};
         // All parameters will be cropped or sanitized inside StrokeEngine
-        newSettings.go = root["go"] | false;
+        newSettings.command = root["command"] | "STOP";
         newSettings.depth = root["depth"];
         newSettings.stroke = root["stroke"];
         newSettings.rate = root["rate"];
