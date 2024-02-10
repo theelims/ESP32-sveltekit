@@ -35,19 +35,29 @@ void WiFiStatus::begin()
 
 void WiFiStatus::onStationModeConnected(WiFiEvent_t event, WiFiEventInfo_t info)
 {
-    Serial.println(F("WiFi Connected."));
+    ESP_LOGI("WiFiStatus", "WiFi Connected.");
+
+#ifdef SERIAL_INFO
+    Serial.println("WiFi Connected.");
+#endif
 }
 
 void WiFiStatus::onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info)
 {
-    Serial.print(F("WiFi Disconnected. Reason code="));
+    ESP_LOGI("WiFiStatus", "WiFi Disconnected. Reason code=%d", info.wifi_sta_disconnected.reason);
+
+#ifdef SERIAL_INFO
+    Serial.print("WiFi Disconnected. Reason code=");
     Serial.println(info.wifi_sta_disconnected.reason);
+#endif
 }
 
 void WiFiStatus::onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
 {
-    Serial.printf_P(
-        PSTR("WiFi Got IP. localIP=%s, hostName=%s\r\n"), WiFi.localIP().toString().c_str(), WiFi.getHostname());
+    ESP_LOGI("WiFiStatus", "WiFi Got IP. localIP=%s, hostName=%s", WiFi.localIP().toString().c_str(), WiFi.getHostname());
+#ifdef SERIAL_INFO
+    Serial.printf("WiFi Got IP. localIP=%s, hostName=%s\r\n", WiFi.localIP().toString().c_str(), WiFi.getHostname());
+#endif
 }
 
 esp_err_t WiFiStatus::wifiStatus(PsychicRequest *request)

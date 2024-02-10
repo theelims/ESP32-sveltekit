@@ -104,7 +104,9 @@ void WiFiSettingsService::manageSTA()
     // Connect or reconnect as required
     if ((WiFi.getMode() & WIFI_STA) == 0)
     {
+#ifdef SERIAL_INFO
         Serial.println("Connecting to WiFi...");
+#endif
         connectToWiFi();
     }
 }
@@ -223,7 +225,6 @@ void WiFiSettingsService::updateRSSI()
     {
         String rssi = String(WiFi.RSSI());
         _notificationEvents->send(rssi, "rssi", millis());
-        // Serial.printf("SSE RSSI: %i \n", rssi.toInt());
     }
     else
     {
