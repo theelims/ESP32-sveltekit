@@ -53,7 +53,10 @@ esp_err_t SleepService::sleep(PsychicRequest *request)
 
 void SleepService::sleepNow()
 {
+#ifdef SERIAL_INFO
     Serial.println("Going into deep sleep now");
+#endif
+    ESP_LOGI("SleepService", "Going into deep sleep now");
     // Callback for main code sleep preparation
     if (_callbackSleep != nullptr)
     {
@@ -77,7 +80,10 @@ void SleepService::sleepNow()
     esp_sleep_enable_ext1_wakeup(bitmask, (esp_sleep_ext1_wakeup_mode_t)WAKEUP_SIGNAL);
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
 #endif
+
+#ifdef SERIAL_INFO
     Serial.println("Good by!");
+#endif
 
     // Just to be sure
     delay(100);

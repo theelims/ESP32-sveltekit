@@ -21,12 +21,10 @@ NotificationEvents::NotificationEvents(PsychicHttpServer *server) : _server(serv
 
 void NotificationEvents::begin()
 {
-    _eventSource.onOpen([&](PsychicEventSourceClient *client) { // client->send("hello", NULL, millis(), 1000);
-        Serial.printf("New client connected to Event Source: #%u connected from %s\n", client->socket(), client->remoteIP().toString());
-    });
-    _eventSource.onClose([&](PsychicEventSourceClient *client) { // client->send("hello", NULL, millis(), 1000);
-        Serial.printf("Client closed connection to Event Source: #%u connected from %s\n", client->socket(), client->remoteIP().toString());
-    });
+    _eventSource.onOpen([&](PsychicEventSourceClient *client)
+                        { ESP_LOGI("NotificationEvents", "New client connected to Event Source: #%u connected from %s", client->socket(), client->remoteIP().toString()); });
+    _eventSource.onClose([&](PsychicEventSourceClient *client)
+                         { ESP_LOGI("NotificationEvents", "Client closed connection to Event Source: #%u connected from %s", client->socket(), client->remoteIP().toString()); });
     _server->on(EVENT_NOTIFICATION_SERVICE_PATH, &_eventSource);
 
     ESP_LOGV("NotificationEvents", "Registered Event Source endpoint: %s", EVENT_NOTIFICATION_SERVICE_PATH);

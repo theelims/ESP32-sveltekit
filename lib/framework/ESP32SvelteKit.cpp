@@ -133,7 +133,9 @@ void ESP32SvelteKit::begin()
     MDNS.addService("ws", "tcp", 80);
     MDNS.addServiceTxt("http", "tcp", "Firmware Version", APP_VERSION);
 
+#ifdef SERIAL_INFO
     Serial.printf("Running Firmware Version: %s\n", APP_VERSION);
+#endif
 
     // Start the services
     _apStatus.begin();

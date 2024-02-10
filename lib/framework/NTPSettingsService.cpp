@@ -47,13 +47,13 @@ void NTPSettingsService::begin()
 
 void NTPSettingsService::onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
 {
-    Serial.println(F("Got IP address, starting NTP Synchronization"));
+    ESP_LOGI("NTPSettingsService", "Got IP address, starting NTP Synchronization");
     configureNTP();
 }
 
 void NTPSettingsService::onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info)
 {
-    Serial.println(F("WiFi connection dropped, stopping NTP."));
+    ESP_LOGI("NTPSettingsService", "WiFi connection dropped, stopping NTP.");
     configureNTP();
 }
 
@@ -61,7 +61,7 @@ void NTPSettingsService::configureNTP()
 {
     if (WiFi.isConnected() && _state.enabled)
     {
-        Serial.println(F("Starting NTP..."));
+        ESP_LOGI("NTPSettingsService", "Starting NTP...");
         configTzTime(_state.tzFormat.c_str(), _state.server.c_str());
     }
     else
