@@ -438,7 +438,7 @@ private:
   void _unsafeGoToPosition(float position, float speed, float acceleration)
   {
     // Translate between metric and steps
-    int speedInHz = int(0.5 + speed * _stepsPerMillimeter);
+    unsigned int speedInHz = uint32_t(0.5 + speed * _stepsPerMillimeter);
     int stepAcceleration = int(0.5 + acceleration * _stepsPerMillimeter);
     int positionInSteps = int(0.5 + position * _stepsPerMillimeter);
     ESP_LOGD("OSSMRefBoardV2", "Going to unsafe position %i steps @ %i steps/s, %i steps/s^2", positionInSteps, speedInHz, stepAcceleration);
@@ -629,7 +629,7 @@ private:
   int _maxStepPerSecond;
   int _maxStepAcceleration;
   static void _homingProcedureImpl(void *_this) { static_cast<OSSMRefBoardV2Motor *>(_this)->_homingProcedure(); }
-  int _homingSpeed;
+  unsigned int _homingSpeed;
   TaskHandle_t _taskHomingHandle = NULL;
   static void _measureProcedureImpl(void *_this) { static_cast<OSSMRefBoardV2Motor *>(_this)->_measureProcedure(); }
   TaskHandle_t _taskMeasuringHandle = NULL;

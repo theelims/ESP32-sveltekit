@@ -296,7 +296,7 @@ private:
   void _unsafeGoToPosition(float position, float speed, float acceleration)
   {
     // Translate between metric and steps
-    int speedInHz = int(0.5 + speed * _stepsPerMillimeter);
+    unsigned int speedInHz = uint32_t(0.5 + speed * _stepsPerMillimeter);
     int stepAcceleration = int(0.5 + acceleration * _stepsPerMillimeter);
     int positionInSteps = int(0.5 + position * _stepsPerMillimeter);
     ESP_LOGD("GenericStepper", "Going to unsafe position %i steps @ %i steps/s, %i steps/s^2", positionInSteps, speedInHz, stepAcceleration);
@@ -409,7 +409,7 @@ private:
   int _maxStepPerSecond;
   int _maxStepAcceleration;
   static void _homingProcedureImpl(void *_this) { static_cast<GenericStepperMotor *>(_this)->_homingProcedure(); }
-  int _homingSpeed;
+  unsigned int _homingSpeed;
   float _homePosition;
   int _homingPin = -1;
   bool _homingActiveLow; /*> Polarity of the homing signal*/
