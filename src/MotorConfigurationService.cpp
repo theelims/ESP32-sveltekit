@@ -114,7 +114,7 @@ void MotorConfigurationService::onConfigUpdated(String originId)
         return;
 
     // stop stroke engine
-    _strokeEngine->stopMotion();
+    _strokeEngine->runCommand(StrokeCommand::STOP);
 
     // wait for motor to stop
     while (_motor->motionCompleted() == false)

@@ -15,6 +15,7 @@ void StrokeEngine::attachMotor(MotorInterface *motor)
   _stroke = constrain(MOTION_FACTORY_STROKE, 0.0, _depthLimit);
   _timeOfStroke = constrain(60.0 / MOTION_FACTORY_RATE, _timeOfStrokeLimit, 120.0);
   _sensation = MOTION_FACTORY_SENSATION;
+  _easeInVelocity = MOTION_FACTORY_EASE_IN_VELOCITY;
 
   ESP_LOGD("StrokeEngine", "Stroke Parameter Depth = %f", _depth);
   ESP_LOGD("StrokeEngine", "Stroke Parameter Depth Limit = %f", _depthLimit);
@@ -24,6 +25,71 @@ void StrokeEngine::attachMotor(MotorInterface *motor)
   ESP_LOGD("StrokeEngine", "Stroke Parameter Sensation = %f", _sensation);
 
   ESP_LOGI("StrokeEngine", "Attached Motor successfully to Stroke Engine!");
+}
+
+bool StrokeEngine::runCommand(StrokeCommand command)
+{
+  // Catch all commands if motor is not active
+  if (!_motor->isActive())
+  {
+    // Stop command is always allowed
+    if (command == StrokeCommand::STOP)
+    {
+      _command = command;
+      _active = false; // catch to be sure
+      return true;
+    }
+    else
+    {
+      ESP_LOGE("StrokeEngine", "Failed to execute command! Motor is not active!");
+      return false;
+    }
+  }
+
+  // Process command
+  switch (command)
+  {
+  case StrokeCommand::STOP:
+    _stopMotion();
+    break;
+
+  case StrokeCommand::RETRACT:
+    _stopMotion();
+    _motor->goToPosition(
+        0.0,
+        _easeInVelocity,
+        _easeInVelocity * 10.0);
+    break;
+
+  case StrokeCommand::DEPTH:
+    return false;
+
+  case StrokeCommand::STROKE:
+    return false;
+
+  case StrokeCommand::PATTERN:
+    _startPattern();
+    break;
+
+  case StrokeCommand::STROKESTREAM:
+    return false;
+
+  case StrokeCommand::POSITIONSTREAM:
+    return false;
+
+  default:
+    _stopMotion();
+    break;
+  }
+
+  // Store command as internal state and return true
+  _command = command;
+  return true;
+}
+
+StrokeCommand StrokeEngine::getCommand()
+{
+  return _command;
 }
 
 float StrokeEngine::setParameter(StrokeParameter parameter, float value)
@@ -155,6 +221,22 @@ float StrokeEngine::getLimit(StrokeLimit limit)
   return debugValue;
 }
 
+float StrokeEngine::setEaseInVelocity(float value)
+{
+  if (xSemaphoreTake(_parameterMutex, portMAX_DELAY) == pdTRUE)
+  {
+    _easeInVelocity = constrain(value, 0.0, _motor->getMaxSpeed());
+    xSemaphoreGive(_parameterMutex);
+    return _easeInVelocity;
+  }
+  return _easeInVelocity;
+}
+
+float StrokeEngine::getEaseInVelocity()
+{
+  return _easeInVelocity;
+}
+
 void StrokeEngine::applyChangesNow()
 {
   if (xSemaphoreTake(_parameterMutex, portMAX_DELAY) == pdTRUE)
@@ -242,15 +324,20 @@ String StrokeEngine::getCurrentPatternName()
   return String(patternTable[_patternIndex]->getName());
 }
 
-bool StrokeEngine::startPattern()
+String StrokeEngine::getPatternName(int index)
 {
-  // Only valid if state is ready
-  if (!_motor->isActive())
+  if (index >= 0 && index <= patternTableSize)
   {
-    ESP_LOGE("StrokeEngine", "Failed to start pattern! Motor is not active!");
-    return false;
+    return String(patternTable[index]->getName());
   }
+  else
+  {
+    return String("Invalid");
+  }
+}
 
+void StrokeEngine::_startPattern()
+{
   Pattern *pattern = patternTable[_patternIndex];
   ESP_LOGI("StrokeEngine", "Starting pattern %s", pattern->getName());
 
@@ -292,26 +379,14 @@ bool StrokeEngine::startPattern()
     ESP_LOGD("StrokeEngine", "Resumed Pattern Task.");
   }
 
-  return true;
+  return;
 }
 
-void StrokeEngine::stopMotion()
+void StrokeEngine::_stopMotion()
 {
   ESP_LOGI("StrokeEngine", "Stopping Motion!");
   _active = false;
   _motor->stopMotion();
-}
-
-String StrokeEngine::getPatternName(int index)
-{
-  if (index >= 0 && index <= patternTableSize)
-  {
-    return String(patternTable[index]->getName());
-  }
-  else
-  {
-    return String("Invalid");
-  }
 }
 
 void StrokeEngine::_stroking()

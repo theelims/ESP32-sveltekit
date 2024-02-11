@@ -40,12 +40,15 @@ The main control API to control LUST-motion. Starts and stops the motion, change
 | vibration_amplitude | number  | 0.0 - 5.0        | amplitude of a vibration overlay, 0.0 == off                                                                           | truncated into range |
 | vibration_frequency | number  | 10.0 - 50.0      | frequency in HZ of the vibration overlay                                                                               | truncated into range |
 
-|    Command    | Description                                                            |
-| :-----------: | ---------------------------------------------------------------------- |
-|    "STOP"     | Stops the machine instantly                                            |
-| "playpattern" | Starts the motion with the selected pattern                            |
-|   "retract"   | Moves the endeffector to the far end (home position) with a safe speed |
-| "startstream" | Listens on the streaming API for incoming commands and executes them   |
+|     Command     | Description                                                                                                                                                                                                                                          |
+| :-------------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|     "STOP"      | Stops the machine instantly                                                                                                                                                                                                                          |
+|    "retract"    | Moves the endeffector to the far end (home position) with a safe speed                                                                                                                                                                               |
+|     "depth"     | Retracts the motor to the home position with the ease-in speed. This is the default state after the motor is homed.                                                                                                                                  |
+|    "stroke"     | Moves the motor to the depth-stroke position a.k.a. the start of the stroke with the ease-in speed. Whenever the parameter stroke is changed, the motor will move to the new depth-stroke.                                                           |
+|  "playpattern"  | Starts the pattern generator and runs the pattern.                                                                                                                                                                                                   |
+| "strokestream"  | Starts the stream input and interprets them as trapezoidal moves with 1/3 acceleration, 1/3 constant speed and 1/3 deceleration. The stream input is interpreted as relative positions on the scale [0.0 - 1.0] and mapped to [depth, depth-stroke]. |
+| "positionstream | Starts the stream input and interprets them as relative positions on the scale [0.0 - 1.0] and maps them to [depth, depth-stroke].                                                                                                                   |
 
 #### JSON
 
@@ -80,7 +83,7 @@ This API can be used to restrict the mechanical reach of the machine and limit t
 | stroke_limit   | number | 0.0 - `depth`    | length of the stroke                                                                | truncated into range |
 | rate_limit     | number | 0.0 - `max_rate` | affects the feeling of a pattern                                                    | truncated into range |
 | heartbeat_mode | number | 0 - 2            | selects the heartbeat mode and how to enter safestate if a client looses connection | 1                    |
-| ease_in_speed  | number | 0.0 - 30.0       | speed in mm/s it takes to ease in changes in stroke or depth                        | truncated into range |
+| ease_in_speed  | number | 0.0 - 30.0       | velocity in mm/s to ease in changes in stroke or depth or move to predefined depths | truncated into range |
 
 #### Heart Beat Mode
 

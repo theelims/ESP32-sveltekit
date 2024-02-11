@@ -111,11 +111,11 @@ void StrokeEngineControlService::onConfigUpdated(String originId)
     // Change running state of the stroke engine
     if ((_state.command.equalsIgnoreCase("playpattern")) && (_strokeEngine->isActive() == false))
     {
-        _strokeEngine->startPattern();
+        _strokeEngine->runCommand(StrokeCommand::PATTERN);
     }
     else if ((_state.command.equalsIgnoreCase("STOP")) && (_strokeEngine->isActive() == true))
     {
-        _strokeEngine->stopMotion();
+        _strokeEngine->runCommand(StrokeCommand::STOP);
     }
 
     // propagate sanitized changes to StatefulService if necessary but prevent infinite loop

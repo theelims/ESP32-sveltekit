@@ -83,13 +83,6 @@ public:
     */
     char *getName() { return _name; }
 
-    //! A pattern my command StrokeEngine to superimpose a transfer speed on the returned positions.
-    //  This is useful for pattern using small oscillations to reach their target.
-    /*!
-      @return bool wether the concept of transfer speed should by applied to a patterns response
-    */
-    virtual bool utilizeTransferspeed() { return false; }
-
     //! Calculate the position of the next stroke based on the various parameters
     /*!
       @param index index of a stroke. Increments with every new stroke.
@@ -141,57 +134,6 @@ protected:
     {
         return (millis() > (_startDelayMillis + _delayInMillis)) ? false : true;
     }
-};
-
-/**************************************************************************/
-/*!
-  @brief  Simple pattern where the sensation value can change the speed
-  ratio between in and out. Sensation > 0 make the in move faster (up to 3x)
-  giving a hard pounding sensation. Values < 0 make the out move going
-  faster. This gives a more pleasing sensation. The time for the overall
-  stroke remains the same.
-*/
-/**************************************************************************/
-class DepthAdjustment : public Pattern
-{
-public:
-    DepthAdjustment(const char *str) : Pattern(str) {}
-    bool utilizeTransferspeed() { return true; }
-    motionParameter nextTarget(unsigned int index, bool retract = false)
-    {
-        float adjustDistance = 0.0;
-        float adjustFraction = 0.0;
-        float relativeTarget = _stroke * fscale(-100.0, 100.0, 0.0, 1.0, _sensation, 0.0);
-
-        // TODO: How does this react when depth changes? Where does the speed come from?
-        if (relativeTarget != _lastStroke)
-        {
-
-            // calculate relative distance from last position
-            adjustDistance = abs(relativeTarget - _lastStroke);
-            adjustFraction = adjustDistance / _stroke;
-
-            // maximum speed of the trapezoidal motion for the move distance
-            _nextMove.speed = 1.5 * adjustDistance / (0.5 * _timeOfStroke * adjustFraction);
-
-            // acceleration to meet the profile
-            _nextMove.acceleration = 3.0 * _nextMove.speed / (0.5 * _timeOfStroke * adjustFraction);
-
-            // new relative target
-            _nextMove.stroke = relativeTarget;
-            _lastStroke = relativeTarget;
-            _nextMove.skip = false;
-        }
-        else
-        {
-            _nextMove.skip = true;
-        }
-        _index = index;
-        return _nextMove;
-    }
-
-protected:
-    float _lastStroke = 0.0;
 };
 
 /**************************************************************************/
@@ -712,7 +654,6 @@ protected:
 */
 /**************************************************************************/
 static Pattern *patternTable[] = {
-    //  new DepthAdjustment("DepthAdjustment"),
     new TeasingPounding("PoundingTeasing"),
     new RoboStroke("RoboStroke"),
     new HalfnHalf("Half'n'Half"),
