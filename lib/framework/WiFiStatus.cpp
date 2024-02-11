@@ -39,7 +39,7 @@ void WiFiStatus::onStationModeConnected(WiFiEvent_t event, WiFiEventInfo_t info)
 
 #ifdef SERIAL_INFO
     Serial.println("WiFi Connected.");
-#ifdef SERIAL_INFO
+#endif
 }
 
 void WiFiStatus::onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info)

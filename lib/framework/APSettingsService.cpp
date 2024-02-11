@@ -98,7 +98,7 @@ void APSettingsService::startAP()
 #ifdef SERIAL_INFO
         Serial.print("Starting captive portal on ");
         Serial.println(apIp);
-#ifdef SERIAL_INFO
+#endif
         _dnsServer = new DNSServer;
         _dnsServer->start(DNS_PORT, "*", apIp);
     }

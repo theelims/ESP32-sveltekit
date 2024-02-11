@@ -135,7 +135,7 @@ esp_err_t DownloadFirmwareService::downloadUpdate(PsychicRequest *request, JsonV
     ESP_LOGI("Download OTA", "Starting OTA from: %s", downloadURL.c_str());
 #ifdef SERIAL_INFO
     Serial.println("Starting OTA from: " + downloadURL);
-#ifdef SERIAL_INFO
+#endif
 
     doc["status"] = "preparing";
     doc["progress"] = 0;
