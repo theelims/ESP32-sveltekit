@@ -72,4 +72,6 @@
 // Available motor drivers - VIRTUAL driver is enabled by default
 #define DRIVER_GENERIC_STEPPER   // Generic stepper driver with endstop switch
 #define DRIVER_OSSM_REF_BOARD_V2 // OSSM Reference Board V2 with sensorless homing via current sensor
-#define DRIVER_IHSV_SERVO_V6     // iHSV servo driver with firmware V6 and sensorless homing via servo torque feedback
+
+// disabled for now, due to bug on emodbus library
+// #define DRIVER_IHSV_SERVO_V6     // iHSV servo driver with firmware V6 and sensorless homing via servo torque feedback
