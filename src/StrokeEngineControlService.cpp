@@ -47,6 +47,7 @@ SE_CONTROL_SETTINGS_SOCKET_PATH)*/
                      { onConfigUpdated(originId); },
                      false);
 
+    // configure hook for watchdog
     addHookHandler([&](const String &originId, StateUpdateResult &result)
                    { 
                         // trigger watchdog if originId is not "Watchdog" or "onConfigUpdated"

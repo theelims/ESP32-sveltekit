@@ -134,7 +134,7 @@ void HeartbeatWatchdog::_startHealthCheck()
 void HeartbeatWatchdog::_missingClient(std::string clientId)
 {
     _clientHeartbeatMap.erase(clientId);
-    ESP_LOGW(TAG, "Client [%s] went missing. %s clients remaining", clientId.c_str(), numberOfClients());
+    ESP_LOGW(TAG, "Client [%s] went missing. %d clients remaining", clientId.c_str(), numberOfClients());
     for (auto &callback : _onClientMissingCallbacks)
     {
         callback(String(clientId.c_str()));

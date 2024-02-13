@@ -15,3 +15,4 @@
 #include <StatefulService.h>
 
 update_handler_id_t StateUpdateHandlerInfo::currentUpdatedHandlerId = 0;
+hook_handler_id_t StateHookHandlerInfo::currentHookHandlerId = 0;
