@@ -12,6 +12,7 @@
 #include <HttpEndpoint.h>
 #include <StrokeEngine.h>
 #include <StrokeEngineControlService.h>
+#include <HeartbeatWatchdog.h>
 
 #ifndef MOTION_FACTORY_EASE_IN_SPEED
 #define MOTION_FACTORY_EASE_IN_SPEED 20.0
@@ -30,7 +31,7 @@ public:
     float depthLimit;
     float strokeLimit;
     float rateLimit;
-    HeartbeatMode heartbeatMode;
+    WatchdogMode heartbeatMode;
     float easeInSpeed;
 
     static void read(StrokeEngineSafety &settings, JsonObject &root)
@@ -47,7 +48,7 @@ public:
         settings.depthLimit = root["depth_limit"] | -1.0;
         settings.strokeLimit = root["stroke_limit"] | -1.0;
         settings.rateLimit = root["rate_limit"] | MOTION_MAX_RATE;
-        settings.heartbeatMode = root["heartbeat_mode"] | HeartbeatMode::HB_NONE;
+        settings.heartbeatMode = root["heartbeat_mode"] | WatchdogMode::WATCHDOG_MODE_NONE;
         settings.easeInSpeed = root["ease_in_speed"] | MOTION_FACTORY_EASE_IN_SPEED;
 
         return StateUpdateResult::CHANGED;

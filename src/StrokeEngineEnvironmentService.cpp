@@ -12,10 +12,12 @@
 StrokeEngineEnvironmentService::StrokeEngineEnvironmentService(StrokeEngine *strokeEngine,
                                                                PsychicHttpServer *server,
                                                                MotorConfigurationService *motorConfigurationService,
+                                                               StrokeEngineSafetyService *strokeEngineSafetyService,
                                                                SecurityManager *securityManager,
                                                                PsychicMqttClient *mqttClient,
                                                                MqttBrokerSettingsService *mqttBrokerSettingsService) : _strokeEngine(strokeEngine),
                                                                                                                        _motorConfigurationService(motorConfigurationService),
+                                                                                                                       _strokeEngineSafetyService(strokeEngineSafetyService),
                                                                                                                        _server(server),
                                                                                                                        _securityManager(securityManager),
                                                                                                                        _mqttClient(mqttClient),
@@ -73,7 +75,10 @@ void StrokeEngineEnvironmentService::createEnvironmentJson(JsonObject root)
 {
     root["depth"] = _strokeEngine->getMotor()->getMaxPosition();
     root["max_rate"] = MOTION_MAX_RATE;
-    root["heartbeat"] = false; // TODO implement heartbeat in StrokeEngineControlService
+    WatchdogMode heartbeatMode;
+    _strokeEngineSafetyService->read([&](StrokeEngineSafety &safety)
+                                     { heartbeatMode = safety.heartbeatMode; });
+    root["heartbeat_mode"] = heartbeatMode;
 
     // create a new array for patterns
     JsonArray patterns = root.createNestedArray("patterns");

@@ -14,6 +14,7 @@
 #include <SecurityManager.h>
 #include <StrokeEngine.h>
 #include <MotorConfigurationService.h>
+#include <StrokeEngineSafetyService.h>
 #include <MqttBrokerSettingsService.h>
 
 #define MAX_ENVIRONMENT_SIZE 512
@@ -22,13 +23,20 @@
 class StrokeEngineEnvironmentService
 {
 public:
-    StrokeEngineEnvironmentService(StrokeEngine *strokeEngine, PsychicHttpServer *server, MotorConfigurationService *motorConfigurationService, SecurityManager *securityManager, PsychicMqttClient *mqttClient, MqttBrokerSettingsService *mqttBrokerSettingsService);
+    StrokeEngineEnvironmentService(StrokeEngine *strokeEngine,
+                                   PsychicHttpServer *server,
+                                   MotorConfigurationService *motorConfigurationService,
+                                   StrokeEngineSafetyService *strokeEngineSafetyService,
+                                   SecurityManager *securityManager,
+                                   PsychicMqttClient *mqttClient,
+                                   MqttBrokerSettingsService *mqttBrokerSettingsService);
 
     void begin();
 
 private:
     StrokeEngine *_strokeEngine;
     MotorConfigurationService *_motorConfigurationService;
+    StrokeEngineSafetyService *_strokeEngineSafetyService;
     PsychicHttpServer *_server;
     SecurityManager *_securityManager;
     PsychicMqttClient *_mqttClient;

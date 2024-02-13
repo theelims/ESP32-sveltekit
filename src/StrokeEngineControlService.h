@@ -18,6 +18,7 @@
 #include <JsonUtils.h>
 #include <StrokeEngine.h>
 #include <MqttBrokerSettingsService.h>
+#include <HeartbeatWatchdog.h>
 
 #ifdef OSSM_REF
 #include <boards/OSSMReferenceBoard.h>
@@ -56,13 +57,6 @@
 
 #define SE_CONTROL_SETTINGS_ENDPOINT_PATH "/rest/control"
 #define SE_CONTROL_SETTINGS_SOCKET_PATH "/ws/control"
-
-enum HeartbeatMode
-{
-    HB_NONE,
-    HB_ANY,
-    HB_LAST
-};
 
 class StrokeEngineControl
 {
@@ -111,6 +105,8 @@ public:
         newSettings.vibrationAmplitude = root["vibration_amplitude"];
         newSettings.vibrationFrequency = root["vibration_frequency"];
 
+        // TODO: Trigger Watchdog from here
+
         if (newSettings == settings)
         {
             return StateUpdateResult::UNCHANGED;
@@ -118,6 +114,8 @@ public:
         settings = newSettings;
         return StateUpdateResult::CHANGED;
     }
+
+protected:
 };
 
 class StrokeEngineControlService : public StatefulService<StrokeEngineControl>
@@ -131,6 +129,8 @@ public:
 
     void begin();
 
+    void setHeartbeatMode(WatchdogMode mode);
+
 private:
     HttpEndpoint<StrokeEngineControl> _httpEndpoint;
     MqttPubSub<StrokeEngineControl> _mqttPubSub;
@@ -139,6 +139,9 @@ private:
     PsychicMqttClient *_mqttClient;
     StrokeEngine *_strokeEngine;
     MqttBrokerSettingsService *_mqttBrokerSettingsService;
+    HeartbeatWatchdog _heartbeatWatchdog;
 
     void onConfigUpdated(String originId);
+
+    void watchdogTriggered(String originId);
 };

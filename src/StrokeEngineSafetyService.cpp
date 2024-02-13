@@ -87,7 +87,7 @@ void StrokeEngineSafetyService::onConfigUpdated(String originId)
     // _strokeEngine->setEaseInSpeed(_state.easeInSpeed);
 
     // update stroke engine control service
-    //_strokeEngineControlService->setHeartbeatMode(_state.heartbeatMode);
+    _strokeEngineControlService->setHeartbeatMode(_state.heartbeatMode);
 
     // Propagate sanitized changes to StatefulService, but prevent infinite loop
     if (sanitized && originId != "onConfigUpdated")

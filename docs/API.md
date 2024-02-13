@@ -118,15 +118,15 @@ This API will provide the information about the environment like maximum travel 
 | GET    | /rest/environment | `NONE_REQUIRED` |
 | MQTT   | -                 | N/A             |
 
-| Parameter | Type             | Info                                                                                                 |
-| --------- | ---------------- | ---------------------------------------------------------------------------------------------------- |
-| depth     | number           | maximum travel of the machine. Used for depth and stroke                                             |
-| max_rate  | number           | maximum rate in FPM that the machine is capable                                                      |
-| heartbeat | boolean          | if heartbeat is true the control message must be sent every second, regardless wether it has changed |
-| patterns  | array of strings | array of all available pattern names                                                                 |
-| valueA    | string           | Label of the valueA data stream                                                                      |
-| valueB    | string           | Label of the valueB data stream                                                                      |
-| motor     | string           | Which motor driver is loaded: `VIRTUAL`, `GENERIC_STEPPER`, `OSSM_REF_BOARD_V2` or `IHSV_SERVO_V6`   |
+| Parameter      | Type             | Info                                                                                                   |
+| -------------- | ---------------- | ------------------------------------------------------------------------------------------------------ |
+| depth          | number           | maximum travel of the machine. Used for depth and stroke                                               |
+| max_rate       | number           | maximum rate in FPM that the machine is capable                                                        |
+| heartbeat_mode | number           | heartbeat mode. If > 0 the control message must be sent every second, regardless wether it has changed |
+| patterns       | array of strings | array of all available pattern names                                                                   |
+| valueA         | string           | Label of the valueA data stream                                                                        |
+| valueB         | string           | Label of the valueB data stream                                                                        |
+| motor          | string           | Which motor driver is loaded: `VIRTUAL`, `GENERIC_STEPPER`, `OSSM_REF_BOARD_V2` or `IHSV_SERVO_V6`     |
 
 #### JSON
 
@@ -134,7 +134,7 @@ This API will provide the information about the environment like maximum travel 
 {
     "depth": 150.0,
     "max_rate": 30.0,
-    "heartbeat": true,
+    "heartbeat_mode": 1,
     "pattern": ["Depth Adjustment", "Streaming", "Pounding or Teasing", "Robo Stroke"],
     "valueA" : "Real Position",
     "valueB" : "Torque",

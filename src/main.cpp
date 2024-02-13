@@ -56,18 +56,19 @@ MotorConfigurationService motorConfigurationService = MotorConfigurationService(
                                                                                 esp32sveltekit.getSecurityManager(),
                                                                                 esp32sveltekit.getNotificationEvents());
 
-StrokeEngineEnvironmentService strokeEngineEnvironmentService = StrokeEngineEnvironmentService(&Stroker,
-                                                                                               &server,
-                                                                                               &motorConfigurationService,
-                                                                                               esp32sveltekit.getSecurityManager(),
-                                                                                               esp32sveltekit.getMqttClient(),
-                                                                                               &mqttBrokerSettingsService);
-
 StrokeEngineSafetyService strokeEngineSafetyService = StrokeEngineSafetyService(&Stroker,
                                                                                 &server,
                                                                                 esp32sveltekit.getFS(),
                                                                                 esp32sveltekit.getSecurityManager(),
                                                                                 &strokeEngineControlService);
+
+StrokeEngineEnvironmentService strokeEngineEnvironmentService = StrokeEngineEnvironmentService(&Stroker,
+                                                                                               &server,
+                                                                                               &motorConfigurationService,
+                                                                                               &strokeEngineSafetyService,
+                                                                                               esp32sveltekit.getSecurityManager(),
+                                                                                               esp32sveltekit.getMqttClient(),
+                                                                                               &mqttBrokerSettingsService);
 
 WebSocketRawDataStreamer positionStream(&server);
 

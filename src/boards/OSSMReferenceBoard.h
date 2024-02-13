@@ -60,11 +60,13 @@
 #define MODBUS_TX_PIN 17   // modbus tx pin
 #define NEOPIXEL_PIN 25    // neopixel data pin
 
-// Board properties
-#define AMPERE_PER_MILLIVOLT 2.5e-3                // ADC conversion factor current reading: 2.5mA per mV
-#define AMPERE_OFFSET_IN_MILLIVOLT 1666            // ADC offset in mV for 0A
-#define VOLT_PER_MILLIVOLT 4.0e-2                  // ADC conversion factor voltage reading: 40mV per V
-#define MAX_AMPERE 5.0                             // maximum range current sensor in Ampere
+// Current sensor properties
+#define AMPERE_PER_MILLIVOLT 2.5e-3     // ADC conversion factor current reading: 2.5mA per mV
+#define AMPERE_OFFSET_IN_MILLIVOLT 1666 // ADC offset in mV for 0A
+#define VOLT_PER_MILLIVOLT 4.0e-2       // ADC conversion factor voltage reading: 40mV per V
+#define MAX_AMPERE 5.0                  // maximum range current sensor in Ampere
+
+// Neopixel properties
 #define NEOPIXEL_COUNT 1                           // number of neopixel LEDs
 #define NEOPIXEL_METHODE NeoEsp32Rmt0Ws2812xMethod // NeoPixelBus method for neopixel
 #define NEOPIXEL_COLOR_ORDER NeoGrbFeature         // NeoPixelBus color order for neopixel
