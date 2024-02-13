@@ -6,7 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Added build flag `-D SERIAL_INFO` to platformio.ini to enable / disable all `Serial.print()` statements. On some boards with native USB those Serial prints have been reported to block anc make the server unresponsive.
+- Added build flag `-D SERIAL_INFO` to platformio.ini to enable / disable all `Serial.print()` statements. On some boards with native USB those Serial prints have been reported to block and make the server unresponsive.
+- Added a hook handler to StatefulService. Unlike an UPDATE a hook is called every time a state receives and updated, even if the result is UNCHANGED or ERROR.
 
 ### Changed
 

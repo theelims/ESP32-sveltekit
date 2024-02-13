@@ -77,6 +77,20 @@ An "originId" is passed to the update handler which may be used to identify the 
 | mqtt                       | An update sent over MQTT (MqttPubSub)           |
 | websocketserver:{clientId} | An update sent over WebSocket (WebSocketServer) |
 
+Sometimes if can be desired to hook into every update of an state, even if the StateUpdateResult is `StateUpdateResult::UNCHANGED` and the update handler isn't called. In such cases you can use the hook handler. Similarly it can be removed later.
+
+```cpp
+// register an update handler
+hook_handler_id_t myHookHandler = lightStateService.addHookHandler(
+  [&](const String& originId, StateUpdateResult &result) {
+    Serial.printf("The light's state has been updated by: %s with result %d\n", originId, result);
+  }
+);
+
+// remove the update handler
+lightStateService.removeHookHandler(myHookHandler);
+```
+
 StatefulService exposes a read function which you may use to safely read the state. This function takes care of protecting against parallel access to the state in multi-core environments such as the ESP32.
 
 ```cpp
