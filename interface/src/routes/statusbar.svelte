@@ -13,7 +13,7 @@
 	import Error from '~icons/tabler/alert-triangle-filled';
 	import RssiIndicator from '$lib/components/RSSIIndicator.svelte';
 	import BatteryIndicator from '$lib/components/BatteryIndicator.svelte';
-	import UpdateIndicator from '$lib/components/UpdateIndicator.svelte';
+	import UpdateIndicator from '$lib/components/UpdateIndicatorNoOTA.svelte';
 
 	async function postSleep() {
 		const response = await fetch('/rest/sleep', {
