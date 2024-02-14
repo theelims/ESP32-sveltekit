@@ -19,7 +19,7 @@
 
 	export let data: PageData;
 
-	//$: console.log($environment);
+	// $: console.log($environment);
 
 	Chart.register(...registerables);
 	Chart.register(LuxonAdapter);
@@ -158,9 +158,12 @@
 		sendControl();
 	}
 
+	let interval: number;
+
 	onDestroy(() => {
 		dataSocket.close();
 		controlSocket.close();
+		clearInterval(interval);
 	});
 
 	onMount(() => {
@@ -269,7 +272,19 @@
 				}
 			});
 		}
+		// create a timer to send control messages every 1000ms
+		if ($environment.heartbeat_mode > 0) {
+			// if heartbeat mode is enabled, send control messages every 1000ms
+			interval = setInterval(sendControl, 1000);
+		}
 	});
+
+	$: if ($environment.heartbeat_mode > 0) {
+		// if heartbeat mode is enabled, send control messages every 1000ms
+		interval = setInterval(sendControl, 1000);
+	} else {
+		clearInterval(interval);
+	}
 </script>
 
 {#if $page.data.features.data_streaming === true}

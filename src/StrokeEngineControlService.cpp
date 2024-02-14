@@ -36,7 +36,7 @@ StrokeEngineControlService::StrokeEngineControlService(StrokeEngine *strokeEngin
                                                                                                                                 AuthenticationPredicates::IS_AUTHENTICATED),
                                                                                                                _mqttClient(mqttClient),
                                                                                                                _mqttBrokerSettingsService(mqttBrokerSettingsService),
-                                                                                                               _heartbeatWatchdog(1000)
+                                                                                                               _heartbeatWatchdog(1200)
 /*  _webSocketClient(StrokeEngineControl::read,
 StrokeEngineControl::update,
 this,
@@ -46,17 +46,6 @@ SE_CONTROL_SETTINGS_SOCKET_PATH)*/
     addUpdateHandler([&](const String &originId)
                      { onConfigUpdated(originId); },
                      false);
-
-    // configure hook for watchdog
-    addHookHandler([&](const String &originId, StateUpdateResult &result)
-                   { 
-                        // trigger watchdog if originId is not "Watchdog" or "onConfigUpdated"
-                        if (originId != "Watchdog" && originId != "onConfigUpdated")
-                            _heartbeatWatchdog.heartbeat(originId); },
-                   false);
-
-    _heartbeatWatchdog.onWatchdog([&](const String &originId)
-                                  { watchdogTriggered(originId); });
 }
 
 void StrokeEngineControlService::begin()
@@ -78,6 +67,17 @@ void StrokeEngineControlService::begin()
     _state.vibrationOverride = false;
     _state.vibrationAmplitude = MOTION_FACTORY_VIBRATION_AMPLITUDE;
     _state.vibrationFrequency = MOTION_FACTORY_VIBRATION_FREQUENCY;
+
+    // configure hook for watchdog
+    addHookHandler([&](const String &originId, StateUpdateResult &result)
+                   { 
+                        // trigger watchdog if originId is not "Watchdog" or "onConfigUpdated"
+                        if (originId != "Watchdog" && originId != "onConfigUpdated")
+                            _heartbeatWatchdog.heartbeat(originId); },
+                   false);
+
+    _heartbeatWatchdog.onWatchdog([&](const String &originId)
+                                  { watchdogTriggered(originId); });
 }
 
 void StrokeEngineControlService::onConfigUpdated(String originId)
@@ -147,7 +147,7 @@ void StrokeEngineControlService::setHeartbeatMode(WatchdogMode mode)
 
 void StrokeEngineControlService::watchdogTriggered(String originId)
 {
-    ESP_LOGW("StrokeEngineControlService", "Watchdog triggered - Stopping StrokeEngine");
+    ESP_LOGW("StrokeEngineControlService", "Watchdog triggered [%s]- Stopping StrokeEngine", originId.c_str());
     _state.command = "STOP";
     update([&](StrokeEngineControl &state)
            { return StateUpdateResult::CHANGED; },

@@ -26,7 +26,7 @@
 		ease_in_speed: 0
 	};
 
-	//$: console.log(safetySettings);
+	// $: console.log(safetySettings);
 
 	async function getSafetySettings() {
 		try {
@@ -38,7 +38,13 @@
 				}
 			});
 			safetySettings = await response.json();
-			//console.log(safetySettings);
+			// console.log(safetySettings);
+			environment.update((n) => {
+				return {
+					...n,
+					heartbeat_mode: safetySettings.heartbeat_mode
+				};
+			});
 		} catch (error) {
 			console.error('Error:', error);
 		}
@@ -58,6 +64,12 @@
 			if (response.status == 200) {
 				notifications.success('Safety settings updated.', 3000);
 				safetySettings = await response.json();
+				environment.update((n) => {
+					return {
+						...n,
+						heartbeat_mode: safetySettings.heartbeat_mode
+					};
+				});
 				//console.log(safetySettings);
 			} else {
 				notifications.error('User not authorized.', 3000);
@@ -72,7 +84,7 @@
 	});
 
 	function onChange(event: any) {
-		safetySettings.heartbeat_mode = event.currentTarget.value;
+		safetySettings.heartbeat_mode = parseInt(event.currentTarget.value);
 	}
 </script>
 

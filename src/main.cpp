@@ -143,6 +143,9 @@ void setup()
     motorConfigurationService.begin();
     Stroker.getMotor()->attachPositionFeedback(streamMotorData, DATA_STREAMING_INTERVAL);
 
+    // start the stroke engine control service
+    strokeEngineControlService.begin();
+
     // Start the MQTT broker settings service
     mqttBrokerSettingsService.begin();
 
@@ -151,9 +154,6 @@ void setup()
 
     // Start the stroke engine environment service
     strokeEngineEnvironmentService.begin();
-
-    // start the stroke engine control service
-    strokeEngineControlService.begin();
 }
 
 void loop()

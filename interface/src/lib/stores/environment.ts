@@ -3,7 +3,7 @@ import { writable } from 'svelte/store';
 let environment_data = {
 	depth: 150,
 	max_rate: 240,
-	heartbeat: false,
+	heartbeat_mode: 0,
 	patterns: <string[]>[],
 	valueA: 'None',
 	valueB: 'None',

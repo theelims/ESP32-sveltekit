@@ -81,9 +81,18 @@ void HeartbeatWatchdog::removeClient(String clientId)
     // acquire lock
     if (xSemaphoreTake(_parameterMutex, portMAX_DELAY) == pdTRUE)
     {
-        _clientHeartbeatMap.erase(clientId.c_str());
+        if (numberOfClients() > 1)
+        {
+            _clientHeartbeatMap.erase(clientId.c_str());
+            ESP_LOGI(TAG, "Removed client [%s]", clientId.c_str());
+        }
+        else
+        {
+            _missingClient(clientId.c_str());
+            ESP_LOGW(TAG, "Last client safely removed: Watchdog Alarm triggered");
+        }
+
         xSemaphoreGive(_parameterMutex);
-        ESP_LOGI(TAG, "Removed client [%s]", clientId.c_str());
     }
 }
 
@@ -133,15 +142,14 @@ void HeartbeatWatchdog::_startHealthCheck()
 
 void HeartbeatWatchdog::_missingClient(std::string clientId)
 {
-    _clientHeartbeatMap.erase(clientId);
-    ESP_LOGW(TAG, "Client [%s] went missing. %d clients remaining", clientId.c_str(), numberOfClients());
+    ESP_LOGW(TAG, "Client [%s] went missing. %d clients remaining", clientId.c_str(), numberOfClients() - 1);
     for (auto &callback : _onClientMissingCallbacks)
     {
         callback(String(clientId.c_str()));
     }
 
     // trigger watchdog if no clients are left or mode is set to any
-    if ((!_mode == WATCHDOG_MODE_NONE && numberOfClients() == 0) || _mode == WATCHDOG_MODE_ANY)
+    if ((_mode != WATCHDOG_MODE_NONE && numberOfClients() == 0) || _mode == WATCHDOG_MODE_ANY)
     {
         ESP_LOGW(TAG, "Watchdog Alarm triggered");
         for (auto &callback : _onWatchdogCallbacks)
@@ -149,6 +157,9 @@ void HeartbeatWatchdog::_missingClient(std::string clientId)
             callback(String(clientId.c_str()));
         }
     }
+
+    // Delete the client only after we do not need the client anymore
+    _clientHeartbeatMap.erase(clientId);
 }
 
 void HeartbeatWatchdog::_healthCheck()
@@ -159,11 +170,22 @@ void HeartbeatWatchdog::_healthCheck()
         // acquire lock
         if (xSemaphoreTake(_parameterMutex, portMAX_DELAY) == pdTRUE)
         {
-            for (auto &client : _clientHeartbeatMap)
+            if (numberOfClients() == 0)
             {
-                if (millis() - client.second > _heartbeatInterval)
+                for (auto &callback : _onWatchdogCallbacks)
                 {
-                    _missingClient(client.first);
+                    callback("NoClients");
+                }
+            }
+            else
+            {
+                for (auto &client : _clientHeartbeatMap)
+                {
+
+                    if (millis() - client.second > _heartbeatInterval)
+                    {
+                        _missingClient(client.first);
+                    }
                 }
             }
             xSemaphoreGive(_parameterMutex);

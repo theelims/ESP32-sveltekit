@@ -45,11 +45,13 @@ typedef enum
 
 /**
  * @brief Class for monitoring the heartbeat of several clients. Each client
- * is a is expected to send a heartbeat at regular intervals. The class can
+ * is expected to send a heartbeat at regular intervals. The class can
  * be configured to trigger a watchdog alarm when any of the clients goes missing,
  * or if the last available client goes missing. It can be disabled by setting
  * the watchdog mode to none. By actively removing clients from the list of
- * clients to monitor, the watchdog alarm can be avoided for that client.
+ * clients to monitor, the watchdog alarm can be avoided for that client. Unless
+ * this was the last client being monitored, in which case the watchdog alarm
+ * will be triggered nonetheless.
  */
 class HeartbeatWatchdog
 {
@@ -97,7 +99,7 @@ public:
 
     /**
      * @brief Add a client to the list of clients to monitor. ClientID
-     *       is used as the unique identifier for the client.
+     *        is used as the unique identifier for the client.
      *
      * @param clientId The ID of the client to add.
      */
@@ -105,7 +107,9 @@ public:
 
     /**
      * @brief Safely remove a client from the list of clients to monitor
-     *       without triggering the watchdog alarm.
+     *        without triggering the watchdog alarm. If this was the last
+     *        client being monitored, the watchdog alarm will be triggered
+     *        nonetheless.
      *
      * @param clientId The ID of the client to remove.
      */

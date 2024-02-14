@@ -83,7 +83,6 @@ void StrokeEngineSafetyService::onConfigUpdated(String originId)
     // Apply new values immediately
     _strokeEngine->applyChangesNow();
 
-    // TODO implement heartbeat mode
     // _strokeEngine->setEaseInSpeed(_state.easeInSpeed);
 
     // update stroke engine control service
