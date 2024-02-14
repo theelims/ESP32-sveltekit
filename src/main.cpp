@@ -131,9 +131,10 @@ void setup()
 
     // start ESP32-SvelteKit
     esp32sveltekit.begin();
-    MDNS.addService("stroking", "tcp", 80);
-    MDNS.addServiceTxt("stroking", "tcp", "FirmwareVersion", APP_VERSION);
-    MDNS.addServiceTxt("stroking", "tcp", "DeviceID", SettingValue::format("LUST-motion-#{unique_id}"));
+    MDNS.addService("LUST-Service", "tcp", 80);
+    MDNS.addServiceTxt("LUST-Service", "tcp", "FirmwareVersion", APP_VERSION);
+    MDNS.addServiceTxt("LUST-Service", "tcp", "DeviceID", SettingValue::format("LUST-motion-#{unique_id}"));
+    MDNS.addServiceTxt("LUST-Service", "tcp", "Service", "LUST-motion");
 
     esp32sveltekit.getFeatureService()->addFeature("data_streaming", true);
     positionStream.begin();

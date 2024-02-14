@@ -148,7 +148,7 @@ Environment messages are always send with the flag `retain` and QoS = 1 to make 
 
 ### StrokeEngine Streaming _write-only_
 
-Instead of pattern the motion commands can be provided via this streaming interface, too. Messages are queued up with a queue length of 5. Writing to a full queue will result in the message being discarded. An empty queue will stop the motion. Changing `go` or `pattern` in the [Control API](#strokeengine-control) will erase the queue. That way streaming always starts with a fresh queue. This service is write only. Changes won't propagate to other clients and a GET request will return an empty JSON.
+Instead of pattern the motion commands can be provided via this streaming interface, too. Messages are queued up with a queue length of 5. Writing to a full queue will result in the message being discarded. An empty queue will stop the motion. Changing `command` in the [Control API](#strokeengine-control) will erase the queue. That way streaming always starts with a fresh queue. This service is write only. Changes won't propagate to other clients and a GET request will return an empty JSON.
 
 > Defined in `StrokeEngineStreamingService.h`
 
@@ -220,6 +220,24 @@ This REST endpoint configures the motor driver and important parameters during r
     "sensorless_trigger": 20,
 }
 ```
+
+## Websocket Raw Data Streaming
+
+> Defined in `WebSocketRawDataStreaming.h`
+
+A constant stream of position, velocity and other parameters are available on a websocket connection. These values are send in a binary CBOR format and contain an array of several data points for a given time slot. The binary format is chosen to save bandwidth and typically 5 data points are aggregated into one message to reduce the message rate. This can be used as a direct user feedback of what is happening with the machine.
+
+| Method | URL             | Authentication  |
+| ------ | --------------- | --------------- |
+| GET    | /ws/rawPosition | `NONE_REQUIRED` |
+
+| Parameter | Type         | Info                                                                     |
+| --------- | ------------ | ------------------------------------------------------------------------ |
+| time      | unsigned int | time in milliseconds since device started                                |
+| position  | float        | the real-time position in [mm]                                           |
+| speed     | float        | the real-time velocity in [mm/s]                                         |
+| valueA    | float        | An analog value the motor driver can send. e.g. current, force or torque |
+| valueB    | float        | An analog value the motor driver can send. e.g. current, force or torque |
 
 ## Server Sent Events
 
