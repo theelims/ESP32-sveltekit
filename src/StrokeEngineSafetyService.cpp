@@ -73,6 +73,13 @@ void StrokeEngineSafetyService::onConfigUpdated(String originId)
         sanitized = true;
     }
 
+    float velocityLimit = _strokeEngine->setLimit(StrokeLimit::VELOCITY, _state.velocityLimit);
+    if (velocityLimit != _state.velocityLimit)
+    {
+        _state.velocityLimit = velocityLimit;
+        sanitized = true;
+    }
+
     float rateLimit = _strokeEngine->setLimit(StrokeLimit::RATE, _state.rateLimit);
     if (rateLimit != _state.rateLimit)
     {

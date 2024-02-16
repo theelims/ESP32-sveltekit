@@ -75,6 +75,7 @@ void StrokeEngineEnvironmentService::createEnvironmentJson(JsonObject root)
 {
     root["depth"] = _strokeEngine->getMotor()->getMaxPosition();
     root["max_rate"] = MOTION_MAX_RATE;
+    root["max_velocity"] = _strokeEngine->getMotor()->getMaxSpeed();
     WatchdogMode heartbeatMode;
     _strokeEngineSafetyService->read([&](StrokeEngineSafety &safety)
                                      { heartbeatMode = safety.heartbeatMode; });

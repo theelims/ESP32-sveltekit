@@ -14,6 +14,9 @@
 	import Stop from '~icons/tabler/player-stop';
 	import Metronome from '~icons/tabler/metronome';
 	import Speed from '~icons/tabler/brand-speedtest';
+	import MaxOut from '~icons/tabler/arrow-narrow-left';
+	import FullRetract from '~icons/tabler/arrow-bar-to-right';
+	import StrokeStart from '~icons/tabler/arrow-move-left';
 	import { decode } from 'cbor-x/decode';
 	import { daisyColor } from '$lib/DaisyUiHelper';
 
@@ -121,7 +124,13 @@
 		controlSocket.onmessage = (event) => {
 			controlState = JSON.parse(event.data);
 			// if command is STOP (not case sensitive) then go is false (stop the pattern)
-			if (controlState.command.toUpperCase() === 'STOP') {
+			if (
+				controlState.command.toUpperCase() === 'PLAYPATTERN' ||
+				controlState.command.toUpperCase() === 'STROKESTREAM' ||
+				controlState.command.toUpperCase() === 'POSITIONSTREAM'
+			) {
+				go = true;
+			} else {
 				go = false;
 			}
 
@@ -155,6 +164,24 @@
 			controlState.rate = (oldStroke / controlState.stroke) * controlState.rate;
 		}
 		oldStroke = controlState.stroke;
+		sendControl();
+	}
+
+	function commandDepth() {
+		go = false;
+		controlState.command = 'depth';
+		sendControl();
+	}
+
+	function commandStroke() {
+		go = false;
+		controlState.command = 'stroke';
+		sendControl();
+	}
+
+	function commandRetract() {
+		go = false;
+		controlState.command = 'retract';
 		sendControl();
 	}
 
@@ -362,35 +389,53 @@
 	</div>
 
 	<div class="m-4 flex flex-wrap gap-6 justify-between">
-		<div class="flex flex-nowrap justify-start gap-6">
-			<button class="btn btn-primary inline-flex items-center w-32" on:click={controlSession}>
-				{#if go === false}
-					<Start class="mr-2 h-5 w-5" /><span>Start</span>
-				{:else}
-					<Stop class="mr-2 h-5 w-5" /><span>Stop</span>
-				{/if}
-			</button>
-			<select
-				class="select select-primary w-52"
-				bind:value={controlState.pattern}
-				on:change={sendControl}
-			>
-				{#each $environment.patterns as pattern}
-					<option>{pattern}</option>
-				{/each}
-			</select>
-		</div>
-		<div
-			class="tooltip tooltip-left"
-			data-tip={constSpeed ? 'Keep velocity constant' : 'Keep pace constant'}
+		<button
+			class="btn btn-primary inline-flex items-center sm:w-32 w-full"
+			on:click={controlSession}
 		>
-			<label class="swap swap-flip text-4xl text-primary">
-				<!-- this hidden checkbox controls the state -->
-				<input type="checkbox" bind:checked={constSpeed} />
+			{#if go === false}
+				<Start class="mr-2 h-5 w-5" /><span>Start</span>
+			{:else}
+				<Stop class="mr-2 h-5 w-5" /><span>Stop</span>
+			{/if}
+		</button>
+		<select
+			class="select select-primary grow sm:grow-0 sm:w-64"
+			bind:value={controlState.pattern}
+			on:change={sendControl}
+		>
+			{#each $environment.patterns as pattern}
+				<option>{pattern}</option>
+			{/each}
+		</select>
 
-				<div class="swap-on"><Speed /></div>
-				<div class="swap-off"><Metronome /></div>
-			</label>
+		<div class="grow inline-flex flex-nowrap items-center justify-items-end">
+			<div class="grow h-full" />
+			<div
+				class="tooltip tooltip-left justify-items-end"
+				data-tip={constSpeed ? 'Keep velocity constant' : 'Keep pace constant'}
+			>
+				<label class="swap swap-flip text-4xl text-primary">
+					<!-- this hidden checkbox controls the state -->
+					<input type="checkbox" bind:checked={constSpeed} />
+
+					<div class="swap-on"><Speed /></div>
+					<div class="swap-off"><Metronome /></div>
+				</label>
+			</div>
 		</div>
+	</div>
+	<div class="join join-vertical sm:join-horizontal mx-4 mb-4">
+		<button class="btn btn-primary join-item grow inline-flex items-center" on:click={commandDepth}
+			><MaxOut class="mr-2 h-5 w-5" /><span>Maximum Out</span></button
+		>
+		<button class="btn btn-primary join-item grow inline-flex items-center" on:click={commandStroke}
+			><StrokeStart class="mr-2 h-5 w-5" /><span>Stroke Start</span></button
+		>
+		<button
+			class="btn btn-primary join-item grow inline-flex items-center"
+			on:click={commandRetract}
+			><FullRetract class="mr-2 h-5 w-5" /><span>Full Retract</span></button
+		>
 	</div>
 </div>

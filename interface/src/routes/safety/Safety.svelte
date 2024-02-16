@@ -14,6 +14,7 @@
 		depth_limit: number;
 		stroke_limit: number;
 		rate_limit: number;
+		velocity_limit: number;
 		heartbeat_mode: number;
 		ease_in_speed: number;
 	};
@@ -22,6 +23,7 @@
 		depth_limit: 0,
 		stroke_limit: 0,
 		rate_limit: 0,
+		velocity_limit: 0,
 		heartbeat_mode: 0,
 		ease_in_speed: 0
 	};
@@ -92,7 +94,7 @@
 	<Safety slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">Safety Settings</span>
 	<div class="w-full">
-		<h1 class="text-xl font-semibold">Limit Range</h1>
+		<h1 class="text-xl font-semibold">Range Limit</h1>
 		<div class="alert my-2 shadow-lg bg-base-100">
 			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
 			<span
@@ -143,7 +145,29 @@
 			</label>
 		</div>
 		<div class="divider" />
-		<h1 class="text-xl font-semibold">Ease In Speed</h1>
+		<h1 class="text-xl font-semibold">Velocity Limit</h1>
+		<div class="alert my-2 shadow-lg bg-base-100">
+			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
+			<span
+				>Limits the maximum velocity of the machine. This is an additional safety feature to prevent
+				injuries due to sudden fast and unexpected movements. Especially when remote controlled this
+				is an important safety feature to ensure that the remote drivers stays within your
+				abilities.
+			</span>
+		</div>
+		<div class="mt-4 mx-4">
+			<input
+				type="range"
+				min="0"
+				max={$environment.max_velocity}
+				bind:value={safetySettings.velocity_limit}
+				class="range range-primary range-xs"
+			/>
+			<label class="label mt-0 pt-0">
+				<span class="label-text"><b>Velocity Limit</b></span>
+				<span class="label-text-alt">{safetySettings.velocity_limit} mm/s</span>
+			</label>
+		</div>
 		<div class="alert my-2 shadow-lg bg-base-100">
 			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
 			<span

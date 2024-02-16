@@ -18,8 +18,8 @@
 #define MOTION_FACTORY_EASE_IN_SPEED 20.0
 #endif
 
-#ifndef MOTION_MAX_RATE
-#define MOTION_MAX_RATE 240.0
+#ifndef MOTION_MAX_VELOCITY
+#define MOTION_MAX_VELOCITY 500.0
 #endif
 
 #define SAFETY_CONFIG_PATH "/rest/safety"
@@ -30,6 +30,7 @@ class StrokeEngineSafety
 public:
     float depthLimit;
     float strokeLimit;
+    float velocityLimit;
     float rateLimit;
     WatchdogMode heartbeatMode;
     float easeInSpeed;
@@ -38,6 +39,7 @@ public:
     {
         root["depth_limit"] = settings.depthLimit;
         root["stroke_limit"] = settings.strokeLimit;
+        root["velocity_limit"] = settings.velocityLimit;
         root["rate_limit"] = settings.rateLimit;
         root["heartbeat_mode"] = settings.heartbeatMode;
         root["ease_in_speed"] = settings.easeInSpeed;
@@ -47,8 +49,9 @@ public:
     {
         settings.depthLimit = root["depth_limit"] | -1.0;
         settings.strokeLimit = root["stroke_limit"] | -1.0;
+        settings.velocityLimit = root["velocity_limit"] | MOTION_MAX_VELOCITY;
         settings.rateLimit = root["rate_limit"] | MOTION_MAX_RATE;
-        settings.heartbeatMode = root["heartbeat_mode"] | WatchdogMode::WATCHDOG_MODE_NONE;
+        settings.heartbeatMode = root["heartbeat_mode"] | WatchdogMode::WATCHDOG_MODE_ANY;
         settings.easeInSpeed = root["ease_in_speed"] | MOTION_FACTORY_EASE_IN_SPEED;
 
         return StateUpdateResult::CHANGED;

@@ -77,13 +77,14 @@ This API can be used to restrict the mechanical reach of the machine and limit t
 | GET    | /rest/safety | `NONE_REQUIRED` |
 | POST   | /rest/safety | `NONE_REQUIRED` |
 
-| Parameter      | Type   | Range            | Info                                                                                | Failure Mode         |
-| -------------- | ------ | ---------------- | ----------------------------------------------------------------------------------- | -------------------- |
-| depth_limit    | number | 0.0 - `depth`    | maximum depth of the motion                                                         | truncated into range |
-| stroke_limit   | number | 0.0 - `depth`    | length of the stroke                                                                | truncated into range |
-| rate_limit     | number | 0.0 - `max_rate` | affects the feeling of a pattern                                                    | truncated into range |
-| heartbeat_mode | number | 0 - 2            | selects the heartbeat mode and how to enter safestate if a client looses connection | 1                    |
-| ease_in_speed  | number | 0.0 - 30.0       | velocity in mm/s to ease in changes in stroke or depth or move to predefined depths | truncated into range |
+| Parameter      | Type   | Range                | Info                                                                                | Failure Mode         |
+| -------------- | ------ | -------------------- | ----------------------------------------------------------------------------------- | -------------------- |
+| depth_limit    | number | 0.0 - `depth`        | maximum depth of the motion                                                         | truncated into range |
+| stroke_limit   | number | 0.0 - `depth`        | length of the stroke                                                                | truncated into range |
+| rate_limit     | number | 0.5 - 600            | maximum rate the machine is limited to                                              | truncated into range |
+| velocity_limit | number | 0.0 - `max_velocity` | velocity limit in mm/s for regular moves. Vibration is not affected by this limit   | truncated into range |
+| heartbeat_mode | number | 0 - 1                | selects the heartbeat mode and how to enter safestate if a client looses connection | 1                    |
+| ease_in_speed  | number | 0.0 - 30.0           | velocity in mm/s to ease in changes in stroke or depth or move to predefined depths | truncated into range |
 
 #### Heart Beat Mode
 
@@ -122,6 +123,7 @@ This API will provide the information about the environment like maximum travel 
 | -------------- | ---------------- | ------------------------------------------------------------------------------------------------------ |
 | depth          | number           | maximum travel of the machine. Used for depth and stroke                                               |
 | max_rate       | number           | maximum rate in FPM that the machine is capable                                                        |
+| max_velocity   | number           | maximum velocity in mm/s. Given by the maximum RPM and the gearing ratio.                              |
 | heartbeat_mode | number           | heartbeat mode. If > 0 the control message must be sent every second, regardless wether it has changed |
 | patterns       | array of strings | array of all available pattern names                                                                   |
 | valueA         | string           | Label of the valueA data stream                                                                        |

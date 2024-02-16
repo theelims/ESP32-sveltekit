@@ -50,11 +50,13 @@
 #define MOTION_MAX_RATE 240.0
 #endif
 
-#define MIN_TIME_OF_STROKE 60.0 / MOTION_MAX_RATE
+#ifndef MOTION_MAX_VELOCITY
+#define MOTION_MAX_VELOCITY 500.0
+#endif
 
 enum class StrokeParameter
 {
-  // RATE - Range 0.5 to 6000 Strokes / Min
+  // RATE - Range 0.5 to 600 Strokes / Min
   // Can allow better control typically than just SPEED, as other machines use
   RATE,
 
@@ -73,9 +75,13 @@ enum class StrokeParameter
 
 enum class StrokeLimit
 {
-  // RATE - Range 0.5 to 6000 Strokes / Min
+  // RATE - Range 0.5 to 600 Strokes / Min
   // Can allow better control typically than just SPEED, as other machines use
   RATE,
+
+  // VELOCITY - Range 0.0 to 2000.0 mm/s
+  // Limits the speed a regular motion can reach. Vibrations are not affected.
+  VELOCITY,
 
   // DEPTH - Range is constrained by motionBounds from MotorInterface
   // Is the point at which the stroke ends
@@ -251,6 +257,14 @@ public:
   /**************************************************************************/
   unsigned int getNumberOfPattern() { return patternTableSize; }
 
+  /**************************************************************************/
+  /*!
+    @brief  Updates the fixed position of the motor. This is used for the
+    commands DEPTH and STROKE to move the motor to the new position.
+  */
+  /**************************************************************************/
+  void updateFixedPosition();
+
   bool isActive() { return _active; }
 
 protected:
@@ -266,7 +280,8 @@ protected:
   float _stroke;
   float _strokeLimit;
   float _timeOfStroke;
-  float _timeOfStrokeLimit = MIN_TIME_OF_STROKE;
+  float _timeOfStrokeLimit;
+  float _strokeVelocityLimit;
   float _sensation;
   float _easeInVelocity;
 

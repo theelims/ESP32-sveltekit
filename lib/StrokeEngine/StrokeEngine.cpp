@@ -8,7 +8,8 @@ void StrokeEngine::attachMotor(MotorInterface *motor)
   _motor = motor;
 
   // Initialize with default values
-  _timeOfStrokeLimit = MIN_TIME_OF_STROKE;
+  _strokeVelocityLimit = MOTION_MAX_VELOCITY;
+  _timeOfStrokeLimit = 60.0 / MOTION_MAX_RATE;
   _depthLimit = _motor->getMaxPosition();
   _strokeLimit = _motor->getMaxPosition();
   _depth = _motor->getMaxPosition();
@@ -54,28 +55,29 @@ bool StrokeEngine::runCommand(StrokeCommand command)
     break;
 
   case StrokeCommand::RETRACT:
-    _stopMotion();
-    _motor->goToPosition(
-        0.0,
-        _easeInVelocity,
-        _easeInVelocity * 10.0);
+    if (_active)
+      _stopMotion();
     break;
 
   case StrokeCommand::DEPTH:
-    return false;
+    if (_active)
+      _stopMotion();
+    break;
 
   case StrokeCommand::STROKE:
-    return false;
+    if (_active)
+      _stopMotion();
+    break;
 
   case StrokeCommand::PATTERN:
     _startPattern();
     break;
 
   case StrokeCommand::STROKESTREAM:
-    return false;
+    break;
 
   case StrokeCommand::POSITIONSTREAM:
-    return false;
+    break;
 
   default:
     _stopMotion();
@@ -143,6 +145,23 @@ float StrokeEngine::setParameter(StrokeParameter parameter, float value)
   return 0.0f;
 }
 
+float StrokeEngine::getParameter(StrokeParameter parameter)
+{
+  switch (parameter)
+  {
+  case StrokeParameter::RATE:
+    return 60.0 / _timeOfStroke;
+  case StrokeParameter::DEPTH:
+    return _depth;
+  case StrokeParameter::STROKE:
+    return _stroke;
+  case StrokeParameter::SENSATION:
+    return _sensation;
+  default:
+    return 0; // Should never be reached
+  }
+}
+
 float StrokeEngine::setLimit(StrokeLimit limit, float value)
 {
   String name = "";
@@ -156,11 +175,17 @@ float StrokeEngine::setLimit(StrokeLimit limit, float value)
       name = "ToS";
       // Convert FPM into seconds to complete a full stroke
       // Constrain stroke time between 100ms and 120 seconds
-      _timeOfStrokeLimit = constrain(60.0 / value, MIN_TIME_OF_STROKE, 120.0);
+      _timeOfStrokeLimit = constrain(60.0 / value, 0.1, 120.0);
       // constrain current stroke time to new limit
       _timeOfStroke = constrain(_timeOfStroke, _timeOfStrokeLimit, 120.0);
       debugValue = _timeOfStrokeLimit;
       sanitizedValue = 60.0 / _timeOfStrokeLimit;
+      break;
+
+    case StrokeLimit::VELOCITY:
+      name = "Velocity";
+      debugValue = _strokeVelocityLimit = constrain(value, 0.0, _motor->getMaxSpeed());
+      sanitizedValue = _strokeVelocityLimit;
       break;
 
     case StrokeLimit::DEPTH:
@@ -169,6 +194,9 @@ float StrokeEngine::setLimit(StrokeLimit limit, float value)
       // constrain current depth to new limit
       _depth = constrain(_depth, 0.0, _depthLimit);
       sanitizedValue = _depthLimit;
+
+      if (_command == StrokeCommand::DEPTH)
+        updateFixedPosition();
       break;
 
     case StrokeLimit::STROKE:
@@ -177,6 +205,9 @@ float StrokeEngine::setLimit(StrokeLimit limit, float value)
       // constrain current stroke to new limit
       _stroke = constrain(_stroke, 0.0, _strokeLimit);
       sanitizedValue = _strokeLimit;
+
+      if (_command == StrokeCommand::STROKE || _command == StrokeCommand::DEPTH)
+        updateFixedPosition();
       break;
     }
 
@@ -203,6 +234,11 @@ float StrokeEngine::getLimit(StrokeLimit limit)
   case StrokeLimit::RATE:
     name = "Rate";
     debugValue = 60.0 / _timeOfStrokeLimit;
+    break;
+
+  case StrokeLimit::VELOCITY:
+    name = "Velocity";
+    debugValue = _strokeVelocityLimit;
     break;
 
   case StrokeLimit::DEPTH:
@@ -297,23 +333,6 @@ bool StrokeEngine::setPattern(String patternName, bool applyNow)
   return false;
 }
 
-float StrokeEngine::getParameter(StrokeParameter parameter)
-{
-  switch (parameter)
-  {
-  case StrokeParameter::RATE:
-    return 60.0 / _timeOfStroke;
-  case StrokeParameter::DEPTH:
-    return _depth;
-  case StrokeParameter::STROKE:
-    return _stroke;
-  case StrokeParameter::SENSATION:
-    return _sensation;
-  default:
-    return 0; // Should never be reached
-  }
-}
-
 int StrokeEngine::getCurrentPattern()
 {
   return _patternIndex;
@@ -334,6 +353,36 @@ String StrokeEngine::getPatternName(int index)
   {
     return String("Invalid");
   }
+}
+
+void StrokeEngine::updateFixedPosition()
+{
+  float target;
+
+  switch (_command)
+  {
+  case StrokeCommand::RETRACT:
+    target = 0.0;
+    break;
+
+  case StrokeCommand::DEPTH:
+    target = _depth;
+    break;
+
+  case StrokeCommand::STROKE:
+    target = _depth - _stroke;
+    break;
+
+  default:
+    return;
+  }
+
+  float speed = _easeInVelocity;
+  float acceleration = _easeInVelocity * 2.0;
+
+  // Apply new trapezoidal motion profile to servo
+  ESP_LOGI("StrokeEngine", "Fixed Position Move [%d] to: %05.1f mm @ %05.1f mm/s and %05.1f mm/s^2", _command, target, speed, acceleration);
+  _motor->goToPosition(target, speed, acceleration);
 }
 
 void StrokeEngine::_startPattern()
@@ -440,6 +489,9 @@ void StrokeEngine::_stroking()
           currentMotion.acceleration = _motor->getAcceleration();
         }
 
+        // Limit speed to the velocity limit
+        currentMotion.speed = constrain(currentMotion.speed, 0.0, _strokeVelocityLimit);
+
         // Apply new trapezoidal motion profile to servo
         ESP_LOGI("StrokeEngine", "Stroking Index (UPDATE): %d @ %05.1f mm %05.1f mm/s and %05.1f mm/s^2", _index, currentMotion.stroke, currentMotion.speed, currentMotion.acceleration);
         _motor->goToPosition(
@@ -461,6 +513,8 @@ void StrokeEngine::_stroking()
         currentMotion.stroke = constrain(currentMotion.stroke, 0.0, _stroke);
         // Offset stroke by depth
         targetPosition = (_depth - _stroke) + currentMotion.stroke;
+        // Limit speed to the velocity limit
+        currentMotion.speed = constrain(currentMotion.speed, 0.0, _strokeVelocityLimit);
 
         // Pattern may introduce pauses between strokes
         if (currentMotion.skip == false)
