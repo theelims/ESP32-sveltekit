@@ -3,16 +3,17 @@
  *   A library to create a variety of stroking motions with a stepper or servo motor on an ESP32.
  *   https://github.com/theelims/StrokeEngine
  *
- * Copyright (C) 2023 theelims <elims@gmx.net>
+ * Copyright (C) 2024 theelims <elims@gmx.net>
  *
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
  */
 
-#pragma once
+#ifndef STROKE_ENGINE_SAFE_GUARD_H
+#define STROKE_ENGINE_SAFE_GUARD_H
 
-#include <pattern/pattern.h>
-#include <pattern/patternMath.h>
+#include <pattern.h>
+#include <patternMath.h>
 #include <motor/motor.h>
 
 #ifndef RATE_LOWER_LIMIT
@@ -33,9 +34,6 @@ typedef struct
 class StrokeEngineSafeGuard
 {
 public:
-    StrokeEngineSafeGuard(){};
-    ~StrokeEngineSafeGuard(){};
-
     void begin(MotorInterface *motor, float depth, float stroke, float rate, float depthLimit, float strokeLimit, float rateLimit, float velocityLimit, float easeInSpeed);
 
     float setDepth(float depth);
@@ -86,3 +84,5 @@ protected:
     unsigned int _easeInDepthReachedTime;
     unsigned int _easeInStrokeReachedTime;
 };
+
+#endif // STROKE_ENGINE_SAFE_GUARD_H

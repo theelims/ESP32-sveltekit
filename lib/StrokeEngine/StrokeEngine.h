@@ -3,15 +3,16 @@
  *   A library to create a variety of stroking motions with a stepper or servo motor on an ESP32.
  *   https://github.com/theelims/StrokeEngine
  *
- * Copyright (C) 2023 theelims <elims@gmx.net>
+ * Copyright (C) 2024 theelims <elims@gmx.net>
  *
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
  */
 
-#pragma once
+#ifndef STROKE_ENGINE_H
+#define STROKE_ENGINE_H
 
-#include <pattern/pattern.h>
+#include <pattern.h>
 #include <motor/motor.h>
 #include <StrokeEngineSafeGuard.h>
 #include <functional>
@@ -263,17 +264,11 @@ public:
     @return The number of patterns available.
   */
   /**************************************************************************/
-  unsigned int getNumberOfPattern() { return patternTableSize; }
-
-  /**************************************************************************/
-  /*!
-    @brief  Returns true if there is a pattern running or it is in a streaming
-            mode.
-    @return true if there is a pattern running or it is in a streaming mode.
-            false otherwise.
-  */
-  /**************************************************************************/
-  bool isActive() { return _active; }
+  unsigned int getNumberOfPattern()
+  {
+    unsigned int patternTableSize = 0; // Declare and initialize 'patternTableSize'
+    return patternTableSize;
+  }
 
   /**************************************************************************/
   /*!
@@ -285,10 +280,18 @@ public:
   /**************************************************************************/
   void onNotify(StrokeEngineNotifyCallback callback);
 
+  /**************************************************************************/
+  /*!
+    @brief  Returns wether StrokeEngine is running a pattern or is streaming.
+    @return TRUE if the pattern or streaming are active, FALSE if it is not.
+  */
+  /**************************************************************************/
+  bool isActive() { return _active; }
+
 protected:
   bool _active = false;
   MotorInterface *_motor;
-  StrokeEngineSafeGuard _safeGuard = StrokeEngineSafeGuard(); // all setting & makeSafe calls must be made within the scope of a Taken _parameterMutex
+  StrokeEngineSafeGuard _safeGuard; // all setting & makeSafe calls must be made within the scope of a Taken _parameterMutex
   StrokeCommand _command = StrokeCommand::STOP;
 
   int _patternIndex = 0;
@@ -312,3 +315,5 @@ protected:
   std::vector<StrokeEngineNotifyCallback> _onNotifyCallbacks;
   void _notify(String message);
 };
+
+#endif // STROKE_ENGINE_H

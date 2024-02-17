@@ -8,7 +8,8 @@
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
  */
-#pragma once
+#ifndef IHSV_SERVO_V6_H
+#define IHSV_SERVO_V6_H
 
 #include <Arduino.h>
 #include <FastAccelStepper.h>
@@ -831,3 +832,5 @@ private:
   float _servoRatedTorque;
   int _servoPositionOffset = 0;
 };
+
+#endif // IHSV_SERVO_V6_H

@@ -9,7 +9,8 @@
  * of the MIT license.  See the LICENSE file for details.
  */
 
-#pragma once
+#ifndef GENERIC_STEPPER_H
+#define GENERIC_STEPPER_H
 
 #include <Arduino.h>
 #include <FastAccelStepper.h>
@@ -415,3 +416,5 @@ private:
   bool _homingActiveLow; /*> Polarity of the homing signal*/
   TaskHandle_t _taskHomingHandle = NULL;
 };
+
+#endif // GENERIC_STEPPER_H

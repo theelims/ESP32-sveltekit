@@ -9,7 +9,8 @@
  * of the MIT license.  See the LICENSE file for details.
  */
 
-#pragma once
+#ifndef MOTOR_INTERFACE_H
+#define MOTOR_INTERFACE_H
 
 #include "Arduino.h"
 #include "freertos/FreeRTOS.h"
@@ -441,3 +442,5 @@ protected:
     }
   }
 };
+
+#endif // MOTOR_INTERFACE_H

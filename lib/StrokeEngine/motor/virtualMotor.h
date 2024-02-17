@@ -9,7 +9,8 @@
  * of the MIT license.  See the LICENSE file for details.
  */
 
-#pragma once
+#ifndef VIRTUAL_MOTOR_H
+#define VIRTUAL_MOTOR_H
 
 #include "motor.h"
 #include "math.h"
@@ -553,3 +554,5 @@ private:
         return result;
     }
 };
+
+#endif // VIRTUAL_MOTOR_H

@@ -3,18 +3,19 @@
  *   A library to create a variety of stroking motions with a stepper or servo motor on an ESP32.
  *   https://github.com/theelims/StrokeEngine
  *
- * Copyright (C) 2023 theelims <elims@gmx.net>
+ * Copyright (C) 2024 theelims <elims@gmx.net>
  *
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
  */
 
-#pragma once
+#ifndef PATTERN_H
+#define PATTERN_H
 
 #include <Arduino.h>
-#include "StrokeEngine.h"
+#include <StrokeEngine.h>
 #include <math.h>
-#include "PatternMath.h"
+#include <PatternMath.h>
 
 #ifndef STRING_LEN
 #define STRING_LEN 64 // Bytes used to initialize char array. No path, topic, name, etc. should exceed this value
@@ -663,3 +664,5 @@ static Pattern *patternTable[] = {
 };
 
 static const unsigned int patternTableSize = sizeof(patternTable) / sizeof(patternTable[0]);
+
+#endif // PATTERN_H

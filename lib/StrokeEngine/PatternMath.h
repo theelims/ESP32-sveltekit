@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PATTERNMATH_H
+#define PATTERNMATH_H
 
 #include <math.h>
 #include <Arduino.h>
@@ -146,3 +147,5 @@ inline float mapSensationToFactor(float maximumFactor, float inputValue, float c
     return 1.0 / fscaledValue;
   }
 }
+
+#endif // PATTERNMATH_H

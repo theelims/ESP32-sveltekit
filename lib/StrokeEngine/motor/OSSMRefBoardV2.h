@@ -8,7 +8,8 @@
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
  */
-#pragma once
+#ifndef OSSM_REF_BOARD_V2_H
+#define OSSM_REF_BOARD_V2_H
 
 #include <Arduino.h>
 #include <FastAccelStepper.h>
@@ -636,3 +637,5 @@ private:
   MeasureCallbackType _callBackMeasuring;
   float _currentThreshold; /*> Current threshold to count as hitting into an mechanical stop */
 };
+
+#endif // OSSM_REF_BOARD_V2_H
