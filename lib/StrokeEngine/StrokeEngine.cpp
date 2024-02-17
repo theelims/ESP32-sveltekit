@@ -190,8 +190,8 @@ float StrokeEngine::setLimit(StrokeLimit limit, float value)
     return sanitizedValue;
   }
 
-  // if (value != sanitizedValue)
-  //   _notify("Parameter restricted");
+  if (value != sanitizedValue)
+    _notify("Parameter restricted");
 
   return 0.0f;
 }

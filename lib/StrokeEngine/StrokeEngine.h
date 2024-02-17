@@ -264,11 +264,7 @@ public:
     @return The number of patterns available.
   */
   /**************************************************************************/
-  unsigned int getNumberOfPattern()
-  {
-    unsigned int patternTableSize = 0; // Declare and initialize 'patternTableSize'
-    return patternTableSize;
-  }
+  unsigned int getNumberOfPattern() { return patternTableSize; }
 
   /**************************************************************************/
   /*!

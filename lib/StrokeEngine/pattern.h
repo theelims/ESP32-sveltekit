@@ -13,7 +13,6 @@
 #define PATTERN_H
 
 #include <Arduino.h>
-#include <StrokeEngine.h>
 #include <math.h>
 #include <PatternMath.h>
 

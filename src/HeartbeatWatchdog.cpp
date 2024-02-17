@@ -9,15 +9,13 @@
 
 #include <HeartbeatWatchdog.h>
 
-const char *TAG = "HeartbeatWatchdog";
-
 HeartbeatWatchdog::HeartbeatWatchdog(uint32_t interval) : _heartbeatInterval(interval),
                                                           _mode(WATCHDOG_MODE_NONE),
                                                           _onWatchdogCallbacks(),
                                                           _onClientMissingCallbacks()
 {
     _parameterMutex = xSemaphoreCreateMutex();
-    ESP_LOGV(TAG, "HeartbeatWatchdog created with interval %d ms", interval);
+    ESP_LOGV("HeartbeatWatchdog", "HeartbeatWatchdog created with interval %d ms", interval);
 }
 
 HeartbeatWatchdog::~HeartbeatWatchdog()
@@ -34,13 +32,13 @@ void HeartbeatWatchdog::setWatchdogMode(WatchdogMode mode)
 
     if (_mode != WATCHDOG_MODE_NONE)
     {
-        ESP_LOGI(TAG, "Enabling watchdog mode: %d", _mode);
+        ESP_LOGI("HeartbeatWatchdog", "Enabling watchdog mode: %d", _mode);
         _clientHeartbeatMap.clear(); // clear all clients and start over fresh
         _startHealthCheck();
     }
     else
     {
-        ESP_LOGI(TAG, "Disabling watchdog");
+        ESP_LOGI("HeartbeatWatchdog", "Disabling watchdog");
         if (_taskHealthCheckHandle != NULL)
         {
             vTaskDelete(_taskHealthCheckHandle);
@@ -57,7 +55,7 @@ WatchdogMode HeartbeatWatchdog::getWatchdogMode()
 void HeartbeatWatchdog::setHeartbeatInterval(uint32_t interval)
 {
     _heartbeatInterval = interval;
-    ESP_LOGI(TAG, "Heartbeat interval set to %d ms", interval);
+    ESP_LOGI("HeartbeatWatchdog", "Heartbeat interval set to %d ms", interval);
 }
 
 uint32_t HeartbeatWatchdog::getHeartbeatInterval()
@@ -72,7 +70,7 @@ void HeartbeatWatchdog::addClient(String clientId)
     {
         _clientHeartbeatMap[clientId.c_str()] = millis();
         xSemaphoreGive(_parameterMutex);
-        ESP_LOGI(TAG, "Added client [%s]", clientId.c_str());
+        ESP_LOGI("HeartbeatWatchdog", "Added client [%s]", clientId.c_str());
     }
 }
 
@@ -84,12 +82,12 @@ void HeartbeatWatchdog::removeClient(String clientId)
         if (numberOfClients() > 1)
         {
             _clientHeartbeatMap.erase(clientId.c_str());
-            ESP_LOGI(TAG, "Removed client [%s]", clientId.c_str());
+            ESP_LOGI("HeartbeatWatchdog", "Removed client [%s]", clientId.c_str());
         }
         else
         {
             _missingClient(clientId.c_str());
-            ESP_LOGW(TAG, "Last client safely removed: Watchdog Alarm triggered");
+            ESP_LOGW("HeartbeatWatchdog", "Last client safely removed: Watchdog Alarm triggered");
         }
 
         xSemaphoreGive(_parameterMutex);
@@ -102,7 +100,7 @@ void HeartbeatWatchdog::heartbeat(String clientId)
     if (xSemaphoreTake(_parameterMutex, portMAX_DELAY) == pdTRUE)
     {
         _clientHeartbeatMap[clientId.c_str()] = millis();
-        ESP_LOGV(TAG, "Heartbeat tick for client [%s]", clientId.c_str());
+        ESP_LOGV("HeartbeatWatchdog", "Heartbeat tick for client [%s]", clientId.c_str());
         xSemaphoreGive(_parameterMutex);
     }
 }
@@ -129,7 +127,7 @@ bool HeartbeatWatchdog::isClientAlive(String clientId)
     {
         bool alive = _clientHeartbeatMap.find(clientId.c_str()) != _clientHeartbeatMap.end();
         xSemaphoreGive(_parameterMutex);
-        ESP_LOGV(TAG, "Client [%s] is %s", clientId.c_str(), alive ? "alive" : "dead");
+        ESP_LOGV("HeartbeatWatchdog", "Client [%s] is %s", clientId.c_str(), alive ? "alive" : "dead");
         return alive;
     }
     return false;
@@ -142,7 +140,7 @@ void HeartbeatWatchdog::_startHealthCheck()
 
 void HeartbeatWatchdog::_missingClient(std::string clientId)
 {
-    ESP_LOGW(TAG, "Client [%s] went missing. %d clients remaining", clientId.c_str(), numberOfClients() - 1);
+    ESP_LOGW("HeartbeatWatchdog", "Client [%s] went missing. %d clients remaining", clientId.c_str(), numberOfClients() - 1);
     for (auto &callback : _onClientMissingCallbacks)
     {
         callback(String(clientId.c_str()));
@@ -151,7 +149,7 @@ void HeartbeatWatchdog::_missingClient(std::string clientId)
     // trigger watchdog if no clients are left or mode is set to any
     if ((_mode != WATCHDOG_MODE_NONE && numberOfClients() == 0) || _mode == WATCHDOG_MODE_ANY)
     {
-        ESP_LOGW(TAG, "Watchdog Alarm triggered");
+        ESP_LOGW("HeartbeatWatchdog", "Watchdog Alarm triggered");
         for (auto &callback : _onWatchdogCallbacks)
         {
             callback(String(clientId.c_str()));
@@ -166,7 +164,7 @@ void HeartbeatWatchdog::_healthCheck()
 {
     while (1)
     {
-        ESP_LOGV(TAG, "Health check running");
+        ESP_LOGV("HeartbeatWatchdog", "Health check running");
         // acquire lock
         if (xSemaphoreTake(_parameterMutex, portMAX_DELAY) == pdTRUE)
         {
