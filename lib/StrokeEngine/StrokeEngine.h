@@ -11,8 +11,11 @@
 
 #pragma once
 
-#include <pattern.h>
+#include <pattern/pattern.h>
 #include <motor/motor.h>
+#include <StrokeEngineSafeGuard.h>
+#include <functional>
+#include <vector>
 
 #ifndef MOTION_FACTORY_TRAVEL
 #define MOTION_FACTORY_TRAVEL 150.0
@@ -128,6 +131,8 @@ enum class StrokeCommand
 
 };
 
+typedef std::function<void(String message)> StrokeEngineNotifyCallback;
+
 /**************************************************************************/
 /*!
   @brief  Stroke Engine provides a convenient package for stroking motions
@@ -152,7 +157,10 @@ public:
   /**************************************************************************/
   /*!
     @brief  Starts the StrokeEngine. This will start the motor and the
-    pattern generator. The motor will be homed if it is not already.
+    pattern generator. The motor will be homed if it is not already. To make
+    the motor follow changes on the depth and stroke parameters, the runCommand
+    method with StrokeCommand::DEPTH or StrokeCommand::STROKE must be called
+    again after changing depth or stroke.
     @param  command The StrokeCommand to execute
     @return TRUE on success, FALSE if command is not possible
   */
@@ -259,41 +267,48 @@ public:
 
   /**************************************************************************/
   /*!
-    @brief  Updates the fixed position of the motor. This is used for the
-    commands DEPTH and STROKE to move the motor to the new position.
+    @brief  Returns true if there is a pattern running or it is in a streaming
+            mode.
+    @return true if there is a pattern running or it is in a streaming mode.
+            false otherwise.
   */
   /**************************************************************************/
-  void updateFixedPosition();
-
   bool isActive() { return _active; }
+
+  /**************************************************************************/
+  /*!
+    @brief  Registers a callback that will be called when the StrokeEngine
+            changes something internally and the UI should be updated.
+    @param callback Function pointer to a function that takes a String as
+                    argument.
+  */
+  /**************************************************************************/
+  void onNotify(StrokeEngineNotifyCallback callback);
 
 protected:
   bool _active = false;
   MotorInterface *_motor;
+  StrokeEngineSafeGuard _safeGuard = StrokeEngineSafeGuard(); // all setting & makeSafe calls must be made within the scope of a Taken _parameterMutex
   StrokeCommand _command = StrokeCommand::STOP;
 
   int _patternIndex = 0;
   int _index = 0;
 
-  float _depth;
-  float _depthLimit;
-  float _stroke;
-  float _strokeLimit;
-  float _timeOfStroke;
-  float _timeOfStrokeLimit;
-  float _strokeVelocityLimit;
   float _sensation;
-  float _easeInVelocity;
 
   bool _applyUpdate = false;
 
   void _startPattern();
   void _stopMotion();
+  void _updateFixedPosition();
 
   SemaphoreHandle_t _parameterMutex = xSemaphoreCreateMutex();
-  void _sendParameters(int patternIndex);
+  void _sendParametersToPattern(int patternIndex);
 
   static void _strokingImpl(void *_this) { static_cast<StrokeEngine *>(_this)->_stroking(); }
   void _stroking();
   TaskHandle_t _taskStrokingHandle = NULL;
+
+  std::vector<StrokeEngineNotifyCallback> _onNotifyCallbacks;
+  void _notify(String message);
 };

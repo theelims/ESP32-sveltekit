@@ -31,9 +31,8 @@ typedef struct
     float stroke;       //!< Absolute and properly constrained target position of a move in [mm}
     float speed;        //!< Speed of a move in [mm/s]
     float acceleration; //!< Acceleration to get to speed or halt in [mm/s^2]
-    float strokeTime;   //!< Time in [s] it will take to execute that stroke
     bool skip;          //!< no valid stroke, skip this set an query for the next --> allows pauses between strokes
-} motionParameter;
+} motionParameters_t;
 
 /**************************************************************************/
 /*!
@@ -89,7 +88,7 @@ public:
       @param retract this is a hint StrokeEngine gives
       @return Set of motion parameters like speed, acceleration & position
     */
-    virtual motionParameter nextTarget(unsigned int index, bool retract = false)
+    virtual motionParameters_t nextTarget(unsigned int index, bool retract = false)
     {
         _index = index;
         return _nextMove;
@@ -102,7 +101,7 @@ protected:
     const float _infinite = 1.0e30; // an approximation for infinite should maximum machine speed and acceleration are needed.
     int _index = -1;
     char _name[STRING_LEN];
-    motionParameter _nextMove = {0.0, 0.0, 0.0, false};
+    motionParameters_t _nextMove = {0.0, 0.0, 0.0, false};
     int _startDelayMillis = 0;
     int _delayInMillis = 0;
 
@@ -159,7 +158,7 @@ public:
         _timeOfStroke = speed;
         _updateStrokeTiming();
     }
-    motionParameter nextTarget(unsigned int index, bool retract = false)
+    motionParameters_t nextTarget(unsigned int index, bool retract = false)
     {
         // odd stroke is moving out
         if (index % 2)
@@ -243,7 +242,7 @@ public:
         }
     }
 
-    motionParameter nextTarget(unsigned int index, bool retract = false)
+    motionParameters_t nextTarget(unsigned int index, bool retract = false)
     {
         // maximum speed of the trapezoidal motion
         _nextMove.speed = _stroke / ((1 - _x) * _timeOfStroke);
@@ -295,7 +294,7 @@ public:
         _timeOfStroke = speed;
         _updateStrokeTiming();
     }
-    motionParameter nextTarget(unsigned int index, bool retract = false)
+    motionParameters_t nextTarget(unsigned int index, bool retract = false)
     {
         // check if this is the very first
         if (index == 0)
@@ -396,7 +395,7 @@ public:
         }
     }
 
-    motionParameter nextTarget(unsigned int index, bool retract = false)
+    motionParameters_t nextTarget(unsigned int index, bool retract = false)
     {
         // How many steps is each stroke advancing
         float slope = _stroke / float(_countStrokesForRamp);
@@ -464,7 +463,7 @@ public:
         _updateDelay(map(sensation, -100, 100, 100, 10000));
     }
 
-    motionParameter nextTarget(unsigned int index, bool retract = false)
+    motionParameters_t nextTarget(unsigned int index, bool retract = false)
     {
         // maximum speed of the trapezoidal motion
         _nextMove.speed = 1.5 * _stroke / _timeOfStroke;
@@ -577,7 +576,7 @@ public:
         _updateStrokeTiming();
     }
 
-    motionParameter nextTarget(unsigned int index, bool retract = false)
+    motionParameters_t nextTarget(unsigned int index, bool retract = false)
     {
 
         // acceleration & speed to meet the profile

@@ -28,7 +28,7 @@ typedef struct
   String labelValueB;
 } MotionPointLabel;
 
-using HomingCallbackType = std::function<void()>;
+typedef std::function<void()> HomingCallbackType;
 
 /**************************************************************************/
 /*!

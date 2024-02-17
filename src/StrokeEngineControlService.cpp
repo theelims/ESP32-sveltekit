@@ -82,6 +82,12 @@ void StrokeEngineControlService::begin()
 
 void StrokeEngineControlService::onConfigUpdated(String originId)
 {
+    if (originId == "onConfigUpdated")
+    {
+        ESP_LOGI("StrokeEngineControlService", "onConfigUpdated 2nd round trip - skipping update");
+        return;
+    }
+
     ESP_LOGI("StrokeEngineControlService", "Config updated");
     bool sanitized = false;
 
@@ -132,17 +138,14 @@ void StrokeEngineControlService::onConfigUpdated(String originId)
     else if (_state.command.equalsIgnoreCase("retract"))
     {
         _strokeEngine->runCommand(StrokeCommand::RETRACT);
-        _strokeEngine->updateFixedPosition();
     }
     else if (_state.command.equalsIgnoreCase("stroke"))
     {
         _strokeEngine->runCommand(StrokeCommand::STROKE);
-        _strokeEngine->updateFixedPosition();
     }
     else if (_state.command.equalsIgnoreCase("depth"))
     {
         _strokeEngine->runCommand(StrokeCommand::DEPTH);
-        _strokeEngine->updateFixedPosition();
     }
 
     // propagate sanitized changes to StatefulService if necessary but prevent infinite loop

@@ -21,7 +21,7 @@
                      facilitate inverting the ranges
   @param inputValue  the variable for input that will mapped to the given ranges,
                      this variable is constrained to
-                     originaMin <= inputValue <= originalMax
+                     originalMin <= inputValue <= originalMax
   @param curve       curve is the curve which can be made to favor either
                      end of the output scale in the mapping.
                      Parameters are from -10 to 10 with 0 being a linear mapping

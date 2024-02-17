@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <StrokeEngine.h>
-#include <pattern.h>
+#include <pattern/pattern.h>
 
 void StrokeEngine::attachMotor(MotorInterface *motor)
 {
@@ -8,23 +8,19 @@ void StrokeEngine::attachMotor(MotorInterface *motor)
   _motor = motor;
 
   // Initialize with default values
-  _strokeVelocityLimit = MOTION_MAX_VELOCITY;
-  _timeOfStrokeLimit = 60.0 / MOTION_MAX_RATE;
-  _depthLimit = _motor->getMaxPosition();
-  _strokeLimit = _motor->getMaxPosition();
-  _depth = _motor->getMaxPosition();
-  _stroke = constrain(MOTION_FACTORY_STROKE, 0.0, _depthLimit);
-  _timeOfStroke = constrain(60.0 / MOTION_FACTORY_RATE, _timeOfStrokeLimit, 120.0);
+  _safeGuard.begin(_motor,
+                   _motor->getMaxPosition(),
+                   MOTION_FACTORY_STROKE,
+                   MOTION_FACTORY_RATE,
+                   _motor->getMaxPosition(),
+                   _motor->getMaxPosition(),
+                   MOTION_MAX_RATE,
+                   MOTION_MAX_VELOCITY,
+                   MOTION_FACTORY_EASE_IN_VELOCITY);
+
   _sensation = MOTION_FACTORY_SENSATION;
-  _easeInVelocity = MOTION_FACTORY_EASE_IN_VELOCITY;
 
-  ESP_LOGD("StrokeEngine", "Stroke Parameter Depth = %f", _depth);
-  ESP_LOGD("StrokeEngine", "Stroke Parameter Depth Limit = %f", _depthLimit);
-  ESP_LOGD("StrokeEngine", "Stroke Parameter Stroke = %f", _stroke);
-  ESP_LOGD("StrokeEngine", "Stroke Parameter Stroke Limit = %f", _strokeLimit);
-  ESP_LOGD("StrokeEngine", "Stroke Parameter Time of Stroke = %f", _timeOfStroke);
-  ESP_LOGD("StrokeEngine", "Stroke Parameter Sensation = %f", _sensation);
-
+  ESP_LOGD("StrokeEngine", "Stroke Parameter Sensation = %.2f", _sensation);
   ESP_LOGI("StrokeEngine", "Attached Motor successfully to Stroke Engine!");
 }
 
@@ -47,6 +43,9 @@ bool StrokeEngine::runCommand(StrokeCommand command)
     }
   }
 
+  // Store command as internal state and return true
+  _command = command;
+
   // Process command
   switch (command)
   {
@@ -57,16 +56,19 @@ bool StrokeEngine::runCommand(StrokeCommand command)
   case StrokeCommand::RETRACT:
     if (_active)
       _stopMotion();
+    _updateFixedPosition();
     break;
 
   case StrokeCommand::DEPTH:
     if (_active)
       _stopMotion();
+    _updateFixedPosition();
     break;
 
   case StrokeCommand::STROKE:
     if (_active)
       _stopMotion();
+    _updateFixedPosition();
     break;
 
   case StrokeCommand::PATTERN:
@@ -74,18 +76,25 @@ bool StrokeEngine::runCommand(StrokeCommand command)
     break;
 
   case StrokeCommand::STROKESTREAM:
+    // Stop while streaming is not implemented yet
+    if (_active)
+      _stopMotion();
+    _command = StrokeCommand::STOP;
     break;
 
   case StrokeCommand::POSITIONSTREAM:
+    // Stop while streaming is not implemented yet
+    if (_active)
+      _stopMotion();
+    _command = StrokeCommand::STOP;
     break;
 
   default:
     _stopMotion();
+    _command = StrokeCommand::STOP;
     break;
   }
 
-  // Store command as internal state and return true
-  _command = command;
   return true;
 }
 
@@ -96,46 +105,33 @@ StrokeCommand StrokeEngine::getCommand()
 
 float StrokeEngine::setParameter(StrokeParameter parameter, float value)
 {
-  String name = "";
-  float debugValue;
   float sanitizedValue;
   if (xSemaphoreTake(_parameterMutex, portMAX_DELAY) == pdTRUE)
   {
     switch (parameter)
     {
     case StrokeParameter::RATE:
-      name = "ToS";
-      // Convert FPM into seconds to complete a full stroke
-      // Constrain stroke time between 100ms and 120 seconds
-      _timeOfStroke = constrain(60.0 / value, _timeOfStrokeLimit, 120.0);
-      debugValue = _timeOfStroke;
-      sanitizedValue = 60.0 / _timeOfStroke;
+      sanitizedValue = _safeGuard.setRate(value);
       break;
 
     case StrokeParameter::DEPTH:
-      name = "Depth";
-      debugValue = _depth = constrain(value, 0.0, _depthLimit);
-      sanitizedValue = _depth;
+      sanitizedValue = _safeGuard.setDepth(value);
       break;
 
     case StrokeParameter::STROKE:
-      name = "Stroke";
-      debugValue = _stroke = constrain(value, 0.0, _strokeLimit);
-      sanitizedValue = _stroke;
+      sanitizedValue = _safeGuard.setStroke(value);
       break;
 
     case StrokeParameter::SENSATION:
-      name = "Sensation";
-      debugValue = _sensation = constrain(value, -100.0, 100.0);
+      _sensation = constrain(value, -100.0, 100.0);
+      ESP_LOGD("StrokeEngine", "Set Stroke Parameter Sensation = %.2f", _sensation);
       sanitizedValue = _sensation;
       break;
     }
 
-    _sendParameters(_patternIndex);
+    _sendParametersToPattern(_patternIndex);
 
     xSemaphoreGive(_parameterMutex);
-
-    ESP_LOGD("StrokeEngine", "Stroke Parameter %s - %.2f", name, debugValue);
 
     // return the actually used value after input sanitizing
     return sanitizedValue;
@@ -150,11 +146,11 @@ float StrokeEngine::getParameter(StrokeParameter parameter)
   switch (parameter)
   {
   case StrokeParameter::RATE:
-    return 60.0 / _timeOfStroke;
+    return _safeGuard.getRate();
   case StrokeParameter::DEPTH:
-    return _depth;
+    return _safeGuard.getDepth();
   case StrokeParameter::STROKE:
-    return _stroke;
+    return _safeGuard.getStroke();
   case StrokeParameter::SENSATION:
     return _sensation;
   default:
@@ -164,62 +160,38 @@ float StrokeEngine::getParameter(StrokeParameter parameter)
 
 float StrokeEngine::setLimit(StrokeLimit limit, float value)
 {
-  String name = "";
-  float debugValue;
   float sanitizedValue;
   if (xSemaphoreTake(_parameterMutex, portMAX_DELAY) == pdTRUE)
   {
     switch (limit)
     {
     case StrokeLimit::RATE:
-      name = "ToS";
-      // Convert FPM into seconds to complete a full stroke
-      // Constrain stroke time between 100ms and 120 seconds
-      _timeOfStrokeLimit = constrain(60.0 / value, 0.1, 120.0);
-      // constrain current stroke time to new limit
-      _timeOfStroke = constrain(_timeOfStroke, _timeOfStrokeLimit, 120.0);
-      debugValue = _timeOfStrokeLimit;
-      sanitizedValue = 60.0 / _timeOfStrokeLimit;
+      sanitizedValue = _safeGuard.setRate(value);
       break;
 
     case StrokeLimit::VELOCITY:
-      name = "Velocity";
-      debugValue = _strokeVelocityLimit = constrain(value, 0.0, _motor->getMaxSpeed());
-      sanitizedValue = _strokeVelocityLimit;
+      sanitizedValue = _safeGuard.setVelocityLimit(value);
       break;
 
     case StrokeLimit::DEPTH:
-      name = "Depth";
-      debugValue = _depthLimit = constrain(value, 0.0, _motor->getMaxPosition());
-      // constrain current depth to new limit
-      _depth = constrain(_depth, 0.0, _depthLimit);
-      sanitizedValue = _depthLimit;
-
-      if (_command == StrokeCommand::DEPTH)
-        updateFixedPosition();
+      sanitizedValue = _safeGuard.setDepthLimit(value);
       break;
 
     case StrokeLimit::STROKE:
-      name = "Stroke";
-      debugValue = _strokeLimit = constrain(value, 0.0, _motor->getMaxPosition());
-      // constrain current stroke to new limit
-      _stroke = constrain(_stroke, 0.0, _strokeLimit);
-      sanitizedValue = _strokeLimit;
-
-      if (_command == StrokeCommand::STROKE || _command == StrokeCommand::DEPTH)
-        updateFixedPosition();
+      sanitizedValue = _safeGuard.setStrokeLimit(value);
       break;
     }
 
-    _sendParameters(_patternIndex);
+    _sendParametersToPattern(_patternIndex);
 
     // Give mutex back
     xSemaphoreGive(_parameterMutex);
 
-    ESP_LOGD("StrokeEngine", "Stroke Limits %s - %.2f", name, debugValue);
-
     return sanitizedValue;
   }
+
+  // if (value != sanitizedValue)
+  //   _notify("Parameter restricted");
 
   return 0.0f;
 }
@@ -233,22 +205,22 @@ float StrokeEngine::getLimit(StrokeLimit limit)
   {
   case StrokeLimit::RATE:
     name = "Rate";
-    debugValue = 60.0 / _timeOfStrokeLimit;
+    debugValue = _safeGuard.getRateLimit();
     break;
 
   case StrokeLimit::VELOCITY:
     name = "Velocity";
-    debugValue = _strokeVelocityLimit;
+    debugValue = _safeGuard.getVelocityLimit();
     break;
 
   case StrokeLimit::DEPTH:
     name = "Depth";
-    debugValue = _depthLimit;
+    debugValue = _safeGuard.getDepthLimit();
     break;
 
   case StrokeLimit::STROKE:
     name = "Stroke";
-    debugValue = _strokeLimit;
+    debugValue = _safeGuard.getStrokeLimit();
     break;
   }
 
@@ -259,18 +231,18 @@ float StrokeEngine::getLimit(StrokeLimit limit)
 
 float StrokeEngine::setEaseInVelocity(float value)
 {
+  float easeInVelocity = 0.0;
   if (xSemaphoreTake(_parameterMutex, portMAX_DELAY) == pdTRUE)
   {
-    _easeInVelocity = constrain(value, 0.0, _motor->getMaxSpeed());
+    easeInVelocity = _safeGuard.setEaseInSpeed(value);
     xSemaphoreGive(_parameterMutex);
-    return _easeInVelocity;
   }
-  return _easeInVelocity;
+  return easeInVelocity;
 }
 
 float StrokeEngine::getEaseInVelocity()
 {
-  return _easeInVelocity;
+  return _safeGuard.getEaseInSpeed();
 }
 
 void StrokeEngine::applyChangesNow()
@@ -284,10 +256,10 @@ void StrokeEngine::applyChangesNow()
 }
 
 // WARNING: This function must be called only within the scope of a Taken _parameterMutex
-void StrokeEngine::_sendParameters(int patternIndex)
+void StrokeEngine::_sendParametersToPattern(int patternIndex)
 {
-  patternTable[patternIndex]->setTimeOfStroke(_timeOfStroke);
-  patternTable[patternIndex]->setStroke(_stroke);
+  patternTable[patternIndex]->setTimeOfStroke(_safeGuard.getTimeOfStroke());
+  patternTable[patternIndex]->setStroke(_safeGuard.getStroke());
   patternTable[patternIndex]->setSensation(_sensation);
 }
 
@@ -301,7 +273,7 @@ bool StrokeEngine::setPattern(int patternIndex, bool applyNow)
       _patternIndex = patternIndex;
 
       // Inject current motion parameters into new pattern
-      _sendParameters(_patternIndex);
+      _sendParametersToPattern(_patternIndex);
 
       // Reset index counter
       _index = 0;
@@ -355,7 +327,19 @@ String StrokeEngine::getPatternName(int index)
   }
 }
 
-void StrokeEngine::updateFixedPosition()
+void StrokeEngine::onNotify(StrokeEngineNotifyCallback callback)
+{
+  _onNotifyCallbacks.push_back(callback);
+}
+
+void StrokeEngine::_notify(String message)
+{
+  for (auto &callback : _onNotifyCallbacks)
+  {
+    callback(message);
+  }
+}
+void StrokeEngine::_updateFixedPosition()
 {
   float target;
 
@@ -366,19 +350,19 @@ void StrokeEngine::updateFixedPosition()
     break;
 
   case StrokeCommand::DEPTH:
-    target = _depth;
+    target = _safeGuard.getDepth();
     break;
 
   case StrokeCommand::STROKE:
-    target = _depth - _stroke;
+    target = _safeGuard.getDepth() - _safeGuard.getStroke();
     break;
 
   default:
     return;
   }
 
-  float speed = _easeInVelocity;
-  float acceleration = _easeInVelocity * 2.0;
+  float speed = _safeGuard.getEaseInSpeed();
+  float acceleration = speed * 2.0;
 
   // Apply new trapezoidal motion profile to servo
   ESP_LOGI("StrokeEngine", "Fixed Position Move [%d] to: %05.1f mm @ %05.1f mm/s and %05.1f mm/s^2", _command, target, speed, acceleration);
@@ -400,7 +384,7 @@ void StrokeEngine::_startPattern()
   _index = -1;
   if (xSemaphoreTake(_parameterMutex, portMAX_DELAY) == pdTRUE)
   {
-    _sendParameters(_patternIndex);
+    _sendParametersToPattern(_patternIndex);
     xSemaphoreGive(_parameterMutex);
   }
 
@@ -440,12 +424,9 @@ void StrokeEngine::_stopMotion()
 
 void StrokeEngine::_stroking()
 {
-  motionParameter currentMotion;
+  motionParameters_t currentMotion;
+  SafeStrokeParameters_t safeMotion;
   float targetPosition;
-
-  // SemaphoreHandle_t semaphore = motor->claimMotorControl();
-
-  // ESP_LOGD("StrokeEngine", "Hi, I am the pattern task.");
 
   while (1)
   { // infinite loop
@@ -457,6 +438,8 @@ void StrokeEngine::_stroking()
     {
       ESP_LOGW("StrokeEngine", "Motor is no longer active! Attempting to suspend pattern.");
       _active = false;
+      _command = StrokeCommand::STOP;
+      _notify("Motor Error");
     }
 
     // Suspend task, if motor is not active
@@ -476,28 +459,15 @@ void StrokeEngine::_stroking()
         // Ask pattern for update on motion parameters
         currentMotion = patternTable[_patternIndex]->nextTarget(_index);
 
-        // Constrain stroke to ensure it obeys to motion boundaries
-        currentMotion.stroke = constrain(currentMotion.stroke, 0.0, _stroke);
-        // Offset stroke by depth
-        targetPosition = (_depth - _stroke) + currentMotion.stroke;
-
-        // Increase deceleration if required to avoid crash
-        if (_motor->getAcceleration() > currentMotion.acceleration)
-        {
-
-          ESP_LOGW("StrokeEngine", "Crash avoidance! Set Acceleration from %05.1f to %05.1f", currentMotion.acceleration, _motor->getAcceleration());
-          currentMotion.acceleration = _motor->getAcceleration();
-        }
-
-        // Limit speed to the velocity limit
-        currentMotion.speed = constrain(currentMotion.speed, 0.0, _strokeVelocityLimit);
+        // Run safety system on new motion parameters
+        safeMotion = _safeGuard.makeSafe(currentMotion);
 
         // Apply new trapezoidal motion profile to servo
-        ESP_LOGI("StrokeEngine", "Stroking Index (UPDATE): %d @ %05.1f mm %05.1f mm/s and %05.1f mm/s^2", _index, currentMotion.stroke, currentMotion.speed, currentMotion.acceleration);
+        ESP_LOGI("StrokeEngine", "Stroking Index (UPDATE): %d @ %05.1f mm %05.1f mm/s and %05.1f mm/s^2", _index, safeMotion.absoluteTargetPosition, safeMotion.speed, safeMotion.acceleration);
         _motor->goToPosition(
-            targetPosition,
-            currentMotion.speed,
-            currentMotion.acceleration);
+            safeMotion.absoluteTargetPosition,
+            safeMotion.speed,
+            safeMotion.acceleration);
       }
 
       // If motor has stopped issue moveTo command to next position
@@ -509,21 +479,18 @@ void StrokeEngine::_stroking()
         // Query new set of pattern parameters
         currentMotion = patternTable[_patternIndex]->nextTarget(_index);
 
-        // Constrain stroke to ensure it obeys to motion boundaries
-        currentMotion.stroke = constrain(currentMotion.stroke, 0.0, _stroke);
-        // Offset stroke by depth
-        targetPosition = (_depth - _stroke) + currentMotion.stroke;
-        // Limit speed to the velocity limit
-        currentMotion.speed = constrain(currentMotion.speed, 0.0, _strokeVelocityLimit);
-
         // Pattern may introduce pauses between strokes
         if (currentMotion.skip == false)
         {
-          ESP_LOGI("StrokeEngine", "Stroking Index (AT_TARGET): %d @ %05.1f mm %05.1f mm/s and %05.1f mm/s^2", _index, currentMotion.stroke, currentMotion.speed, currentMotion.acceleration);
+          // Run safety system on new motion parameters
+          safeMotion = _safeGuard.makeSafe(currentMotion);
+
+          // Apply new trapezoidal motion profile to servo
+          ESP_LOGI("StrokeEngine", "Stroking Index (AT_TARGET): %d @ %05.1f mm %05.1f mm/s and %05.1f mm/s^2", _index, safeMotion.absoluteTargetPosition, safeMotion.speed, safeMotion.acceleration);
           _motor->goToPosition(
-              targetPosition,
-              currentMotion.speed,
-              currentMotion.acceleration);
+              safeMotion.absoluteTargetPosition,
+              safeMotion.speed,
+              safeMotion.acceleration);
         }
         else
         {
