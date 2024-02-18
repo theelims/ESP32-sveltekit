@@ -193,7 +193,7 @@ protected:
     {
         // calculate the time it takes to complete the faster stroke
         // Division by 2 because reference is a half stroke
-        _timeOfFastStroke = (0.5 * _timeOfStroke) / fscale(0.0, 100.0, 1.0, 2.0, abs(_sensation), 0.0);
+        _timeOfFastStroke = (0.5 * _timeOfStroke) / fscale(0.0, 100.0, 1.0, 3.0, abs(_sensation), -2.0);
         // positive sensation, in is faster
         if (_sensation > 0.0)
         {
@@ -346,7 +346,7 @@ protected:
     {
         // calculate the time it takes to complete the faster stroke
         // Division by 2 because reference is a half stroke
-        _timeOfFastStroke = (0.5 * _timeOfStroke) / fscale(0.0, 100.0, 1.0, 2.0, abs(_sensation), 0.0);
+        _timeOfFastStroke = (0.5 * _timeOfStroke) / fscale(0.0, 100.0, 1.0, 3.0, abs(_sensation), -2.0);
         // positive sensation, in is faster
         if (_sensation > 0.0)
         {
@@ -698,7 +698,7 @@ protected:
     {
         // calculate the time it takes to complete the faster stroke
         // Division by 2 because reference is a half stroke
-        _timeOfFastStroke = (0.5 * _timeOfStroke) / fscale(0.0, 100.0, 1.0, 2.0, abs(_sensation), 0.0);
+        _timeOfFastStroke = (0.5 * _timeOfStroke) / fscale(0.0, 100.0, 1.0, 3.0, abs(_sensation), -2.0);
         // positive sensation, in is faster
         if (_sensation > 0.0)
         {

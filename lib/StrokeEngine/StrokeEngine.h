@@ -12,8 +12,8 @@
 #ifndef STROKE_ENGINE_H
 #define STROKE_ENGINE_H
 
-#include <pattern.h>
-#include <motor/motor.h>
+#include <StrokeEnginePattern.h>
+#include <motor/StrokeEngineMotor.h>
 #include <StrokeEngineSafeGuard.h>
 #include <functional>
 #include <vector>

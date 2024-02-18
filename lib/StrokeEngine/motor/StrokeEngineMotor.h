@@ -30,6 +30,7 @@ typedef struct
 } MotionPointLabel;
 
 typedef std::function<void()> HomingCallbackType;
+typedef std::function<void(unsigned int timestamp, float position, float speed, float valueA, float valueB)> MotionPointCallbackType;
 
 /**************************************************************************/
 /*!
@@ -317,7 +318,7 @@ public:
     reported in [ms]
   */
   /**************************************************************************/
-  void attachPositionFeedback(void (*cbMotionPoint)(unsigned int, float, float, float, float), unsigned int timeInMs = 50)
+  void attachPositionFeedback(MotionPointCallbackType cbMotionPoint, unsigned int timeInMs = 50)
   {
     _cbMotionPoint = cbMotionPoint;
     _timeSliceInMs = timeInMs / portTICK_PERIOD_MS;
@@ -419,8 +420,8 @@ protected:
   bool _invertDirection = false;
 
   TickType_t _timeSliceInMs = 50;
-  void (*_cbMotionPoint)(unsigned int, float, float, float, float) = NULL;
-  HomingCallbackType _callBackHoming;
+  MotionPointCallbackType _cbMotionPoint = NULL;
+  HomingCallbackType _callBackHoming = NULL;
   static void _positionFeedbackTaskImpl(void *_this)
   {
     static_cast<MotorInterface *>(_this)->_positionFeedbackTask();

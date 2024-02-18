@@ -12,8 +12,9 @@
 #ifndef VIRTUAL_MOTOR_H
 #define VIRTUAL_MOTOR_H
 
-#include "motor.h"
+#include "StrokeEngineMotor.h"
 #include "math.h"
+#include <functional>
 
 /**************************************************************************/
 /*!
@@ -57,9 +58,7 @@ public:
 
     /**************************************************************************/
     /*!
-      @brief  Initializes the virtual motor Arduino Style. It also attaches a
-      callback function where the speed and position are reported on a regular
-      interval specified with timeInMs.
+      @brief  Initializes the virtual motor Arduino Style.
       @param timeInMs time interval at which speed and position should be
       reported in [ms]
     */

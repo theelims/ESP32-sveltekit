@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <StrokeEngine.h>
-#include <pattern.h>
+#include <StrokeEnginePattern.h>
 
 void StrokeEngine::attachMotor(MotorInterface *motor)
 {

@@ -12,9 +12,9 @@
 #ifndef STROKE_ENGINE_SAFE_GUARD_H
 #define STROKE_ENGINE_SAFE_GUARD_H
 
-#include <pattern.h>
+#include <StrokeEnginePattern.h>
 #include <patternMath.h>
-#include <motor/motor.h>
+#include <motor/StrokeEngineMotor.h>
 
 #ifndef RATE_LOWER_LIMIT
 #define RATE_LOWER_LIMIT 0.5

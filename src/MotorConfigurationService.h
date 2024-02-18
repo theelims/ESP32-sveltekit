@@ -14,7 +14,7 @@
 #include <StrokeEngine.h>
 #include <NotificationEvents.h>
 
-#include <motor/motor.h>
+#include <motor/StrokeEngineMotor.h>
 #include <motor/virtualMotor.h>
 #include <motor/genericStepper.h>
 #include <motor/OSSMRefBoardV2.h>

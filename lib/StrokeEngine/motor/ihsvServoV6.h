@@ -15,7 +15,7 @@
 #include <FastAccelStepper.h>
 #include "ModbusClientRTU.h"
 
-#include "motor.h"
+#include "StrokeEngineMotor.h"
 
 /**************************************************************************/
 /*!

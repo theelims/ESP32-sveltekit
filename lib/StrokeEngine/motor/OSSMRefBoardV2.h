@@ -14,7 +14,7 @@
 #include <Arduino.h>
 #include <FastAccelStepper.h>
 
-#include "motor.h"
+#include "StrokeEngineMotor.h"
 
 /**************************************************************************/
 /*!
