@@ -63,7 +63,7 @@ float StrokeEngineSafeGuard::setRate(float rate)
 {
     _rate = constrain(rate, 0.0, _rateLimit);
     _timeOfStroke = 60.0 / _rate;
-    ESP_LOGD("StrokeEngineSafeGuard", "Set Stroke Parameter Rate = %.2f -> ToS = %.2f", _rate);
+    ESP_LOGD("StrokeEngineSafeGuard", "Set Stroke Parameter Rate = %.2f -> ToS = %.2f", _rate, _timeOfStroke);
     return _rate;
 }
 

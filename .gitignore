@@ -16,4 +16,4 @@ node_modules
 *WWWData.h
 lib/framework/WWWData.h
 ssl_certs/cacert.pem
-
+/logs

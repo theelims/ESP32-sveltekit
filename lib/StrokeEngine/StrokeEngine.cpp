@@ -166,7 +166,7 @@ float StrokeEngine::setLimit(StrokeLimit limit, float value)
     switch (limit)
     {
     case StrokeLimit::RATE:
-      sanitizedValue = _safeGuard.setRate(value);
+      sanitizedValue = _safeGuard.setRateLimit(value);
       break;
 
     case StrokeLimit::VELOCITY:
