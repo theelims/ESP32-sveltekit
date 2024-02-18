@@ -14,7 +14,7 @@
 
 #include <StrokeEnginePattern.h>
 #include <patternMath.h>
-#include <motor/StrokeEngineMotor.h>
+#include <StrokeEngineMotor.h>
 
 #ifndef RATE_LOWER_LIMIT
 #define RATE_LOWER_LIMIT 0.5

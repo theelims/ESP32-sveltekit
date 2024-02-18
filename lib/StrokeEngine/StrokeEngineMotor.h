@@ -12,10 +12,7 @@
 #ifndef MOTOR_INTERFACE_H
 #define MOTOR_INTERFACE_H
 
-#include "Arduino.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_log.h"
+#include <Arduino.h>
 
 /**************************************************************************/
 /*!

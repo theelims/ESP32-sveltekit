@@ -14,11 +14,11 @@
 #include <StrokeEngine.h>
 #include <NotificationEvents.h>
 
-#include <motor/StrokeEngineMotor.h>
-#include <motor/virtualMotor.h>
-#include <motor/genericStepper.h>
-#include <motor/OSSMRefBoardV2.h>
-#include <motor/ihsvServoV6.h>
+#include <StrokeEngineMotor.h>
+#include <virtualMotor.h>
+#include <genericStepper.h>
+#include <OSSMRefBoardV2.h>
+#include <ihsvServoV6.h>
 
 #ifdef OSSM_REF
 #include <boards/OSSMReferenceBoard.h>

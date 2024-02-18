@@ -13,7 +13,7 @@
 #define STROKE_ENGINE_H
 
 #include <StrokeEnginePattern.h>
-#include <motor/StrokeEngineMotor.h>
+#include <StrokeEngineMotor.h>
 #include <StrokeEngineSafeGuard.h>
 #include <functional>
 #include <vector>
