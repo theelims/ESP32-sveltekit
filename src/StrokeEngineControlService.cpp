@@ -78,6 +78,8 @@ void StrokeEngineControlService::begin()
 
     _heartbeatWatchdog.onWatchdog([&](const String &originId)
                                   { watchdogTriggered(originId); });
+
+    _strokeEngine->onNotify(std::bind(&StrokeEngineControlService::onStrokeEngineChanged, this, std::placeholders::_1));
 }
 
 void StrokeEngineControlService::onConfigUpdated(String originId)
@@ -156,6 +158,31 @@ void StrokeEngineControlService::onConfigUpdated(String originId)
                { return StateUpdateResult::CHANGED; },
                "onConfigUpdated");
     }
+}
+
+void StrokeEngineControlService::onStrokeEngineChanged(String reason)
+{
+    update([&](StrokeEngineControl &state)
+           {
+               StrokeEngineControl newSettings = state;
+               newSettings.command = strokeCommandTable[(int)_strokeEngine->getCommand()];
+               newSettings.depth = _strokeEngine->getParameter(StrokeParameter::DEPTH);
+               newSettings.stroke = _strokeEngine->getParameter(StrokeParameter::STROKE);
+               newSettings.rate = _strokeEngine->getParameter(StrokeParameter::RATE);
+               newSettings.sensation = _strokeEngine->getParameter(StrokeParameter::SENSATION);
+
+               if (newSettings == state)
+               {
+                   return StateUpdateResult::UNCHANGED;
+               }
+               else
+               {
+                   state = newSettings;
+                   return StateUpdateResult::CHANGED;
+               }
+               return StateUpdateResult::ERROR;
+           },
+           "StrokeEngine");
 }
 
 void StrokeEngineControlService::setHeartbeatMode(WatchdogMode mode)

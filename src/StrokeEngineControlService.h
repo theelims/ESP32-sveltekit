@@ -58,6 +58,17 @@
 #define SE_CONTROL_SETTINGS_ENDPOINT_PATH "/rest/control"
 #define SE_CONTROL_SETTINGS_SOCKET_PATH "/ws/control"
 
+// Command Lookup Table
+const String strokeCommandTable[] = {
+    "STOP",
+    "retract",
+    "depth",
+    "stroke",
+    "pattern",
+    "strokestream",
+    "positionstream",
+};
+
 class StrokeEngineControl
 {
 public:
@@ -105,8 +116,6 @@ public:
         newSettings.vibrationAmplitude = root["vibration_amplitude"];
         newSettings.vibrationFrequency = root["vibration_frequency"];
 
-        // TODO: Trigger Watchdog from here
-
         if (newSettings == settings)
         {
             return StateUpdateResult::UNCHANGED;
@@ -142,6 +151,8 @@ private:
     HeartbeatWatchdog _heartbeatWatchdog;
 
     void onConfigUpdated(String originId);
+
+    void onStrokeEngineChanged(String reason);
 
     void watchdogTriggered(String originId);
 };
