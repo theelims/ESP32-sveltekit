@@ -15,6 +15,8 @@
 #include <StrokeEnginePattern.h>
 #include <StrokeEngineMotor.h>
 #include <StrokeEngineSafeGuard.h>
+#include <StrokeEngineTrapezoidalMotion.h>
+#include <StrokeEngineEaseIn.h>
 #include <functional>
 #include <vector>
 
@@ -145,6 +147,14 @@ typedef std::function<void(String message)> StrokeEngineNotifyCallback;
 class StrokeEngine
 {
 public:
+  /**************************************************************************/
+  /*!
+    @brief  Attach a motor driver to StrokeEngine. The motor driver must
+    inherit from MotorInterface. It must be loaded before any motion commands
+    are executed.
+    @param motor MotorInterface pointer to the motor driver instance
+  */
+  /**************************************************************************/
   void attachMotor(MotorInterface *motor);
 
   /**************************************************************************/
@@ -287,8 +297,10 @@ public:
 protected:
   bool _active = false;
   MotorInterface *_motor;
-  StrokeEngineSafeGuard _safeGuard; // all setting & makeSafe calls must be made within the scope of a Taken _parameterMutex
+  StrokeEngineSafeGuard _safeGuard; // all setting & makeSafe calls must be made within the scope of a taken _parameterMutex
   StrokeCommand _command = StrokeCommand::STOP;
+  TrapezoidalMotion _trapezoidalProfile;
+  EaseInModifier _easeIn = EaseInModifier(&_trapezoidalProfile, &_safeGuard);
 
   int _patternIndex = 0;
   int _index = 0;

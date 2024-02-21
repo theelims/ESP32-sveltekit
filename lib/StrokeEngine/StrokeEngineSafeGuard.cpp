@@ -163,9 +163,12 @@ SafeStrokeParameters_t StrokeEngineSafeGuard::makeSafe(float stroke, float speed
 {
     SafeStrokeParameters_t safeStrokeParameters;
 
+    // Constraint the stroke
+    safeStrokeParameters.strokeLength = constrain(stroke, 0.0, _stroke);
+
     // Calculate the absolute target position
     // Constraint the stroke and offset by depth
-    safeStrokeParameters.absoluteTargetPosition = (_depth - _stroke) + constrain(stroke, 0.0, _stroke);
+    safeStrokeParameters.absoluteTargetPosition = (_depth - _stroke) + safeStrokeParameters.strokeLength;
 
     // Calculate speed
     // Constrain speed to ensure it obeys to motion boundaries

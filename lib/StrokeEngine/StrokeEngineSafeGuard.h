@@ -27,8 +27,11 @@
 typedef struct
 {
     float absoluteTargetPosition;
+    float strokeLength;
     float speed;
     float acceleration;
+    float vibrationFrequency;
+    float vibrationAmplitude;
 } SafeStrokeParameters_t;
 
 class StrokeEngineSafeGuard
