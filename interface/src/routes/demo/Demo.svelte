@@ -107,18 +107,20 @@
 					<input type="checkbox" bind:checked={lightOn} class="checkbox checkbox-primary" />
 				</label>
 			</div>
-			<div class="flex-grow" />
-			<button class="btn btn-primary inline-flex items-center" on:click={postLightstate}
-				><Save class="mr-2 h-5 w-5" /><span>Save</span></button
-			>
-			<button class="btn btn-primary inline-flex items-center" on:click={getLightstate}
-				><Reload class="mr-2 h-5 w-5" /><span>Reload</span></button
-			>
-			<div class="form-control flex-grow">
+			<div class="form-control w-full mb-2">
 				<label class="label cursor-pointer">
 					<span class="mr-4">Brightness</span>
 					<input type="range" min="0" max="255"  bind:value={lightBrightness} class="range" />
 				</label>
+			</div>
+			<div class="flex-grow"></div>
+			<div>
+				<button class="btn btn-primary inline-flex items-center" on:click={postLightstate}
+					><Save class="mr-2 h-5 w-5" /><span>Save</span></button
+				>
+				<button class="btn btn-primary inline-flex items-center" on:click={getLightstate}
+					><Reload class="mr-2 h-5 w-5" /><span>Reload</span></button
+				>
 			</div>
 		</div>
 		<div class="divider" />
