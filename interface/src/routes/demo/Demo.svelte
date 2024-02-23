@@ -110,7 +110,7 @@
 			<div class="form-control w-full mb-2">
 				<label class="label cursor-pointer">
 					<span class="mr-4">Brightness</span>
-					<input type="range" min="0" max="255"  bind:value={lightBrightness} class="range" />
+					<input type="range" min="0" max="255"  bind:value={lightBrightness} class="range range-primary" />
 				</label>
 			</div>
 			<div class="flex-grow"></div>
@@ -152,7 +152,7 @@
 					type="range"
 					min="0" 
 					max="255" 
-					class="range"
+					class="range range-primary"
 					bind:value={lightState.brightness}
 					on:change={() => {
 						lightStateSocket.send(JSON.stringify(lightState));
