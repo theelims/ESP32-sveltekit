@@ -61,12 +61,13 @@ void LightStateService::begin()
     _httpEndpoint.begin();
     _webSocketServer.begin();
     _state.ledOn = DEFAULT_LED_STATE;
+    _state.brightness = DEFAULT_BRIGHTNESS;
     onConfigUpdated();
 }
 
 void LightStateService::onConfigUpdated()
 {
-    digitalWrite(LED_BUILTIN, _state.ledOn ? 1 : 0);
+    analogWrite(LED_BUILTIN, _state.ledOn ? _state.brightness : 0);
 }
 
 void LightStateService::registerConfig()
@@ -91,7 +92,7 @@ void LightStateService::registerConfig()
     doc["cmd_t"] = "~/set";
     doc["stat_t"] = "~/state";
     doc["schema"] = "json";
-    doc["brightness"] = false;
+    doc["brightness"] = true;
 
     String payload;
     serializeJson(doc, payload);

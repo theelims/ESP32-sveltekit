@@ -11,11 +11,13 @@
 
 	type LightState = {
 		led_on: boolean;
+		brightness: number;
 	};
 
-	let lightState: LightState = { led_on: false };
+	let lightState: LightState = { led_on: false, brightness: 128 };
 
 	let lightOn = false;
+	let lightBrightness = 128;
 
 	async function getLightstate() {
 		try {
@@ -28,6 +30,7 @@
 			});
 			const light = await response.json();
 			lightOn = light.led_on;
+			lightBrightness = light.brightness;
 		} catch (error) {
 			console.error('Error:', error);
 		}
@@ -71,12 +74,13 @@
 					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ led_on: lightOn })
+				body: JSON.stringify({ led_on: lightOn, brightness: lightBrightness })
 			});
 			if (response.status == 200) {
 				notifications.success('Light state updated.', 3000);
 				const light = await response.json();
 				lightOn = light.led_on;
+				lightBrightness = light.brightness;
 			} else {
 				notifications.error('User not authorized.', 3000);
 			}
@@ -103,13 +107,21 @@
 					<input type="checkbox" bind:checked={lightOn} class="checkbox checkbox-primary" />
 				</label>
 			</div>
-			<div class="flex-grow" />
-			<button class="btn btn-primary inline-flex items-center" on:click={postLightstate}
-				><Save class="mr-2 h-5 w-5" /><span>Save</span></button
-			>
-			<button class="btn btn-primary inline-flex items-center" on:click={getLightstate}
-				><Reload class="mr-2 h-5 w-5" /><span>Reload</span></button
-			>
+			<div class="form-control w-full mb-2">
+				<label class="label cursor-pointer">
+					<span class="mr-4">Brightness</span>
+					<input type="range" min="0" max="255"  bind:value={lightBrightness} class="range range-primary" />
+				</label>
+			</div>
+			<div class="flex-grow"></div>
+			<div>
+				<button class="btn btn-primary inline-flex items-center" on:click={postLightstate}
+					><Save class="mr-2 h-5 w-5" /><span>Save</span></button
+				>
+				<button class="btn btn-primary inline-flex items-center" on:click={getLightstate}
+					><Reload class="mr-2 h-5 w-5" /><span>Reload</span></button
+				>
+			</div>
 		</div>
 		<div class="divider" />
 		<h1 class="text-xl font-semibold">Websocket Example</h1>
@@ -127,6 +139,21 @@
 					type="checkbox"
 					class="toggle toggle-primary"
 					bind:checked={lightState.led_on}
+					on:change={() => {
+						lightStateSocket.send(JSON.stringify(lightState));
+					}}
+				/>
+			</label>
+		</div>
+		<div class="form-control">
+			<label class="label cursor-pointer">
+				<span class="mr-4">Brightness </span>
+				<input 
+					type="range"
+					min="0" 
+					max="255" 
+					class="range range-primary"
+					bind:value={lightState.brightness}
 					on:change={() => {
 						lightStateSocket.send(JSON.stringify(lightState));
 					}}
