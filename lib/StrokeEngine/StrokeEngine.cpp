@@ -525,7 +525,7 @@ void StrokeEngine::_stroking()
       xSemaphoreGive(_parameterMutex);
     }
 
-    // Delay 10ms
-    vTaskDelay(10 / portTICK_PERIOD_MS);
+    // Delay 5ms
+    vTaskDelay(5 / portTICK_PERIOD_MS);
   }
 }

@@ -199,6 +199,7 @@ private:
     xLastWakeTime = xTaskGetTickCount();
 
     unsigned int now = millis();
+    unsigned int lastPerformanceMeasurement = now;
     speedAndPosition currentSpeedAndPosition;
 
     while (true)
@@ -212,6 +213,12 @@ private:
       // Return results of current motion point via the callback
       if (_cbMotionPoint != NULL)
         _cbMotionPoint(now, currentSpeedAndPosition.position, currentSpeedAndPosition.speed, 0.0, 0.0);
+
+      if (now - lastPerformanceMeasurement > 60000)
+      {
+        _trapezoidalProfile.logProfilePerformance();
+        lastPerformanceMeasurement = now;
+      }
 
       // Delay the task until the next tick count
       vTaskDelayUntil(&xLastWakeTime, _timeSliceInMs);
