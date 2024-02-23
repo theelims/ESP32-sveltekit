@@ -25,6 +25,7 @@
 #define DEFAULT_LED_STATE false
 #define OFF_STATE "OFF"
 #define ON_STATE "ON"
+#define DEFAULT_BRIGHTNESS 128
 
 #define LIGHT_SETTINGS_ENDPOINT_PATH "/rest/lightState"
 #define LIGHT_SETTINGS_SOCKET_PATH "/ws/lightState"
@@ -33,18 +34,22 @@ class LightState
 {
 public:
     bool ledOn;
+    int brightness;
 
     static void read(LightState &settings, JsonObject &root)
     {
         root["led_on"] = settings.ledOn;
+        root["brightness"] = settings.brightness;
     }
 
     static StateUpdateResult update(JsonObject &root, LightState &lightState)
-    {
+    {   
         boolean newState = root["led_on"] | DEFAULT_LED_STATE;
-        if (lightState.ledOn != newState)
+        int newBrightness = root.containsKey("brightness") ? root["brightness"] : lightState.brightness;
+        if ((lightState.ledOn != newState) || abs(lightState.brightness-newBrightness) > 0)
         {
             lightState.ledOn = newState;
+            lightState.brightness = newBrightness;
             return StateUpdateResult::CHANGED;
         }
         return StateUpdateResult::UNCHANGED;
@@ -53,11 +58,13 @@ public:
     static void homeAssistRead(LightState &settings, JsonObject &root)
     {
         root["state"] = settings.ledOn ? ON_STATE : OFF_STATE;
+        root["brightness"] = settings.brightness;
     }
 
     static StateUpdateResult homeAssistUpdate(JsonObject &root, LightState &lightState)
     {
         String state = root["state"];
+        int newBrightness = root.containsKey("brightness") ? root["brightness"] : lightState.brightness;
         // parse new led state
         boolean newState = false;
         if (state.equals(ON_STATE))
@@ -69,9 +76,10 @@ public:
             return StateUpdateResult::ERROR;
         }
         // change the new state, if required
-        if (lightState.ledOn != newState)
+        if ((lightState.ledOn != newState) || (lightState.brightness != newBrightness))
         {
             lightState.ledOn = newState;
+            lightState.brightness = newBrightness;
             return StateUpdateResult::CHANGED;
         }
         return StateUpdateResult::UNCHANGED;
