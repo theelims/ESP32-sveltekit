@@ -13,9 +13,7 @@
 
 from pathlib import Path
 from shutil import copytree, rmtree, copyfileobj
-from subprocess import check_output, Popen, PIPE, STDOUT, CalledProcessError
-from os.path import exists
-from typing import Final
+from os.path import exists, getmtime
 import os
 import gzip
 import mimetypes
@@ -24,161 +22,165 @@ from datetime import datetime
 
 Import("env")
 
-# print("Current build environment:")
-# print(env.ParseFlags(env["BUILD_FLAGS"]).get("CPPDEFINES"))
+project_dir = env["PROJECT_DIR"]
+buildFlags = env.ParseFlags(env["BUILD_FLAGS"])
 
-# print("Current CLI targets", COMMAND_LINE_TARGETS)
-# print("Current Build targets", BUILD_TARGETS)
+interface_dir = project_dir + "/interface"
+output_file = project_dir + "/lib/framework/WWWData.h"
+source_www_dir = interface_dir + "/src"
+build_dir = "build"
 
-OUTPUTFILE: Final[str] = env["PROJECT_DIR"] + "/lib/framework/WWWData.h"
-SOURCEWWWDIR: Final[str] = env["PROJECT_DIR"] + "/interface/src"
 
-def OutputFileExits():
-    return os.path.exists(OUTPUTFILE)
+def find_latest_timestamp_for_app():
+    return max(
+        (getmtime(f) for f in glob.glob(f"{source_www_dir}/**/*", recursive=True))
+    )
 
-def findLastestTimeStampWWWInterface():
-  list_of_files = glob.glob(SOURCEWWWDIR+'/**/*', recursive=True) 
-  # print(list_of_files)
-  latest_file = max(list_of_files, key=os.path.getmtime)
-  # print(latest_file)
 
-  return os.path.getmtime(latest_file)
-
-def findTimestampOutputFile():
-     return os.path.getmtime(OUTPUTFILE)
-
-def needtoRegenerateOutputFile():
-    if not flagExists("EMBED_WWW"):
+def should_regenerate_output_file():
+    if not flag_exists("EMBED_WWW") or not exists(output_file):
         return True
-    else:
-        if (OutputFileExits()):
-            latestWWWInterface = findLastestTimeStampWWWInterface()
-            timestampOutputFile = findTimestampOutputFile()
+    last_source_change = find_latest_timestamp_for_app()
+    last_build = getmtime(output_file)
 
-            # print timestamp of newest file in interface directory and timestamp of outputfile nicely formatted as time
-            print(f'Newest interface file: {datetime.fromtimestamp(latestWWWInterface):%Y-%m-%d %H:%M:%S}, WWW Outputfile: {datetime.fromtimestamp(timestampOutputFile):%Y-%m-%d %H:%M:%S}')
-            # print(f'Newest interface file: {latestWWWInterface:.2f}, WWW Outputfile: {timestampOutputFile:.2f}')
-            
-            sourceEdited=( timestampOutputFile < latestWWWInterface )
-            if (sourceEdited):
-                print("Svelte source files are updated. Need to regenerate.")
-                return True
-            else:
-                print("Current outputfile is O.K. No need to regenerate.")
-                return False
+    print(
+        f"Newest file: {datetime.fromtimestamp(last_source_change)}, output file: {datetime.fromtimestamp(last_build)}"
+    )
 
-        else:
-            print("WWW outputfile does not exists. Need to regenerate.")
-            return True
+    if last_build < last_source_change:
+        print("Svelte source files are updated. Need to regenerate.")
+        return True
+    print("Output file up-to-date.")
+    return False
 
-def gzipFile(file):
+
+def gzip_file(file):
     with open(file, 'rb') as f_in:
         with gzip.open(file + '.gz', 'wb') as f_out:
             copyfileobj(f_in, f_out)
     os.remove(file)
 
-def flagExists(flag):
-    buildFlags = env.ParseFlags(env["BUILD_FLAGS"])
+
+def flag_exists(flag):
     for define in buildFlags.get("CPPDEFINES"):
         if (define == flag or (isinstance(define, list) and define[0] == flag)):
             return True
 
-def buildProgMem():
+
+def package_manager():
+    if exists(os.path.join(interface_dir, "package-lock.json")):
+        return "npm"
+    elif exists(os.path.join(interface_dir, "pnpm-lock.yaml")):
+        return "pnpm"
+
+
+def is_compressed(filetype):
+    return filetype.lower() in [
+        "zip",
+        "gz",
+        "rar",
+        "7z",
+        "jpg",
+        "jpeg",
+        "png",
+        "mp4",
+        "mp3",
+    ]
+
+
+def build_progmem():
     mimetypes.init()
-    progmem = open(OUTPUTFILE,"w")
+    with open(output_file, "w") as progmem:
+        progmem.write("#include <functional>\n")
+        progmem.write("#include <Arduino.h>\n")
 
-    progmem.write("#include <functional>\n")
-    progmem.write("#include <Arduino.h>\n")
+        assetMap = {}
+
+        for idx, path in enumerate(Path(build_dir).rglob("*.*")):
+            asset_path = path.relative_to(build_dir).as_posix()
+            filetype, asset_mime = (
+                path.suffix.lstrip("."),
+                mimetypes.guess_type(asset_path)[0] or "application/octet-stream",
+            )
+            print(f"Converting {asset_path}")
+
+            asset_var = f"ESP_SVELTEKIT_DATA_{idx}"
+            progmem.write(f"// {asset_path}\n")
+            progmem.write(f"const uint8_t {asset_var}[] = {{\n  ")
+            file_data = (
+                gzip.compress(path.read_bytes())
+                if not is_compressed(filetype)
+                else path.read_bytes()
+            )
+
+            for i, byte in enumerate(file_data):
+                if i and not (i % 16):
+                    progmem.write("\n\t")
+                progmem.write(f"0x{byte:02X},")
+
+            progmem.write("\n};\n\n")
+            assetMap[asset_path] = {
+                "name": asset_var,
+                "mime": asset_mime,
+                "size": len(file_data),
+            }
+
+        progmem.write(
+            "typedef std::function<void(const String& uri, const String& contentType, const uint8_t * content, size_t len)> RouteRegistrationHandler;\n\n"
+        )
+        progmem.write("class WWWData {\n")
+        progmem.write("\tpublic:\n")
+        progmem.write(
+            "\t\tstatic void registerRoutes(RouteRegistrationHandler handler) {\n"
+        )
+
+        for asset_path, asset in assetMap.items():
+            progmem.write(
+                f'\t\t\thandler("/{asset_path}", "{asset["mime"]}", {asset["name"]}, {asset["size"]});\n'
+            )
+
+        progmem.write("\t\t}\n")
+        progmem.write("};\n\n")
 
 
-    progmemCounter = 0
-
-    assetMap = {}
-
-    # Iterate over all files in the build directory
-    for path in Path("build").rglob("*.*"):
-        asset_path = path.relative_to("build").as_posix()
-        print("Converting " + str(asset_path))
-
-        asset_var = 'ESP_SVELTEKIT_DATA_' + str(progmemCounter)
-        asset_mime = mimetypes.types_map['.' + asset_path.split('.')[-1]]
-
-        progmem.write('// ' + str(asset_path) + '\n')
-        progmem.write('const uint8_t ' + asset_var + '[] = {\n  ')
-        progmemCounter += 1
-        
-        # Open path as binary file, compress and read into byte array
-        size = 0
-        with open(path, "rb") as f:
-            zipBuffer = gzip.compress(f.read()) 
-            for byte in zipBuffer:
-                if not (size % 16):
-                    progmem.write('\n  ')
-                
-                progmem.write(f"0x{byte:02X}" + ',')
-                size += 1
-
-        progmem.write('\n};\n\n')
-        assetMap[asset_path] = { "name": asset_var, "mime": asset_mime, "size": size }
-    
-    progmem.write('typedef std::function<void(const String& uri, const String& contentType, const uint8_t * content, size_t len)> RouteRegistrationHandler;\n\n')
-    progmem.write('class WWWData {\n')
-    progmem.write('  public:\n')
-    progmem.write('    static void registerRoutes(RouteRegistrationHandler handler) {\n')
-
-    for asset_path, asset in assetMap.items():
-        progmem.write('      handler("/' + str(asset_path) + '", "' + asset['mime'] + '", ' + asset['name'] + ', ' + str(asset['size']) + ');\n')
-
-    progmem.write('    }\n')
-    progmem.write('};\n')
-    
-    progmem.write('\n')
-
-
-def buildWeb():
+def build_webapp():
     os.chdir("interface")
-    print("Building interface with npm")
-    try:
-        env.Execute("npm install")
-        env.Execute("npm run build")
-        buildPath = Path("build")
-        wwwPath = Path("../data/www")        
-        if not flagExists("EMBED_WWW"):
-            if wwwPath.exists() and wwwPath.is_dir():
-                rmtree(wwwPath)
-            print("Copying and compress interface to data directory")
-            copytree(buildPath, wwwPath)
-            for currentpath, folders, files in os.walk(wwwPath):
-                for file in files:
-                    gzipFile(os.path.join(currentpath, file))
-        else:
-            print("Converting interface to PROGMEM")
-            buildProgMem()
+    if package_manager := package_manager():
+        print(f"Building interface with {package_manager}")
+        env.Execute(f"{package_manager} install")
+        env.Execute(f"{package_manager} run build")
+    else:
+        raise ("No package manager found. Please install npm or pnpm")
 
-    finally:
-        os.chdir("..")
-        if not flagExists("EMBED_WWW"):
-            print("Build LittleFS file system image and upload to ESP32")
-            env.Execute("pio run --target uploadfs")
+
+def package_manager():
+    if os.path.exists("pnpm-lock.yaml"):
+        return "pnpm"
+    elif os.path.exists("package-lock.json"):
+        return "npm"
+
+
+def embed_webapp():
+    if flag_exists("EMBED_WWW"):
+        print("Converting interface to PROGMEM")
+        build_progmem()
+        return
+    build_path = Path(build_dir)
+    www_path = Path("../data/www")
+    if www_path.exists() and www_path.is_dir():
+        rmtree(www_path)
+    print("Copying and compress interface to data directory")
+    copytree(build_path, www_path)
+    for current_path, _, files in os.walk(www_path):
+        for file in files:
+            gzip_file(os.path.join(current_path, file))
+    os.chdir("..")
+    if not flag_exists("EMBED_WWW"):
+        print("Build LittleFS file system image and upload to ESP32")
+        env.Execute("pio run --target uploadfs")
+
 
 print("running: build_interface.py")
-
-# Dump global construction environment (for debug purpose)
-#print(env.Dump())
-
-# Dump project construction environment (for debug purpose)
-#print(projenv.Dump())
-
-if (needtoRegenerateOutputFile()):
-     buildWeb()
-
-#env.AddPreAction("${BUILD_DIR}/src/HTTPServer.o", buildWebInterface)
-
-# if ("upload" in BUILD_TARGETS):
-#     print(BUILD_TARGETS)
-#     if (needtoRegenerateOutputFile()):
-#         buildWeb()
-# else:
-#     print("Skipping build interface step for target(s): " + ", ".join(BUILD_TARGETS))
-
-
+if should_regenerate_output_file():
+    build_webapp()
+embed_webapp()
