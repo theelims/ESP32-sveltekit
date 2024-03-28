@@ -8,7 +8,6 @@
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
 	import { notifications } from '$lib/components/toasts/notifications';
-	import type { TimeZones } from './timezones';
 	import { TIME_ZONES } from './timezones';
 	import NTP from '~icons/tabler/clock-check';
 	import Server from '~icons/tabler/server';

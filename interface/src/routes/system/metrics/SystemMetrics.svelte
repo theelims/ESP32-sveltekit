@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
-	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';

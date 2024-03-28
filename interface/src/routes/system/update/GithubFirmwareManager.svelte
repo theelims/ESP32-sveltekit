@@ -14,7 +14,6 @@
 	import Error from '~icons/tabler/circle-x';
 	import { compareVersions } from 'compare-versions';
 	import GithubUpdateDialog from '$lib/components/GithubUpdateDialog.svelte';
-	import { assets } from '$app/paths';
 	import InfoDialog from '$lib/components/InfoDialog.svelte';
 	import Check from '~icons/tabler/check';
 

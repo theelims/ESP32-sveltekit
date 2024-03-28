@@ -17,8 +17,6 @@
 
 	export let data: LayoutData;
 
-	//$: console.log($analytics);
-
 	onMount(() => {
 		if ($user.bearer_token !== '') {
 			validateUser($user);

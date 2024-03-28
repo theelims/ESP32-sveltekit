@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { closeModal } from 'svelte-modals';
 	import { focusTrap } from 'svelte-focus-trap';
 	import { fly } from 'svelte/transition';
 	import Check from '~icons/tabler/check';

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { openModal, closeModal } from 'svelte-modals';
 	import { slide } from 'svelte/transition';
