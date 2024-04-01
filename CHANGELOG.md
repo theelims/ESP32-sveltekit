@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - Added build flag `-D SERIAL_INFO` to platformio.ini to enable / disable all `Serial.print()` statements. On some boards with native USB those Serial prints have been reported to block and make the server unresponsive.
 - Added a hook handler to StatefulService. Unlike an UPDATE a hook is called every time a state receives and updated, even if the result is UNCHANGED or ERROR.
+- Added missing include for S2 in SystemStatus.cpp (#23)
 
 ### Changed
 
@@ -18,6 +19,10 @@ All notable changes to this project will be documented in this file.
 
 - Duplicate method in FeatureService (#18)
 - Fixed compile error with FLAG `-D SERVE_CONFIG_FILES`
+
+### Removed
+
+- Duplicate lines in Systems Settings view.
 
 ## [0.3.0] - 2023-02-05
 

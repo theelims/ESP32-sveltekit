@@ -22,10 +22,14 @@ NotificationEvents::NotificationEvents(PsychicHttpServer *server) : _server(serv
 void NotificationEvents::begin()
 {
     _eventSource.onOpen([&](PsychicEventSourceClient *client) { // client->send("hello", NULL, millis(), 1000);
+#ifdef SERIAL_INFO
         Serial.printf("New client connected to Event Source: #%u connected from %s\n", client->socket(), client->remoteIP().toString());
+#endif
     });
     _eventSource.onClose([&](PsychicEventSourceClient *client) { // client->send("hello", NULL, millis(), 1000);
+#ifdef SERIAL_INFO
         Serial.printf("Client closed connection to Event Source: #%u connected from %s\n", client->socket(), client->remoteIP().toString());
+#endif
     });
     _server->on(EVENT_NOTIFICATION_SERVICE_PATH, &_eventSource);
 
