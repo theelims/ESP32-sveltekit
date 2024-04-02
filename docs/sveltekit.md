@@ -16,7 +16,7 @@ To build a website that can be served from an ESP32 `adapter-static` is used. Th
 
 ### Changing the App Name
 
-To change the app name first adjust it in the [+layout.ts](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/%2Blayout.ts) file:
+[+layout.ts](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/%2Blayout.ts) bundles a few globally customizable properties like github repository, app name and copyright notice:
 
 ```js
 export const load = (async () => {
@@ -25,17 +25,17 @@ export const load = (async () => {
 	return {
 		features: item,
 		title: 'ESP32-SvelteKit',
-        github: 'theelims/ESP32-sveltekit'
+		github: 'theelims/ESP32-sveltekit',
+		copyright: '2024 theelims',
+		appName: 'ESP32 SvelteKit'
 	};
 }) satisfies LayoutLoad;
 ```
 
-While you're at it update `github` to your repository. It will be used by the link to your repository by the menu footer, as well querying the Github API for firmware updates.
-
-Then change the app name in the [menu.svelte](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/menu.svelte) file as well.
+In [menu.svelte](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/routes/menu.svelte) there is additionally the possibility to add a discord invite, which is disabled by default.
 
 ```js
-const appName = "ESP32 SvelteKit";
+const discord = { href: ".", active: false };
 ```
 
 There is also a manifest file which contains the app name to use when adding the app to a mobile device, so you may wish to also edit [interface/static/manifest.json](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/static/manifest.json):

@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 
 - more generic board definition in platformio.ini (#20)
 - refactored MqttPubSub.h into a single class to improve readability
+- Moves appName and copyright to `layout.ts` to keep customization in one place.
 
 ### Fixed
 
