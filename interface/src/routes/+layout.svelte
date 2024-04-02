@@ -31,10 +31,6 @@
 		NotificationSource?.close();
 	});
 
-	onDestroy(() => {
-		NotificationSource.close();
-	});
-
 	async function validateUser(userdata: userProfile) {
 		try {
 			const response = await fetch('/rest/verifyAuthorization', {
