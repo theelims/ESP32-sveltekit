@@ -1,8 +1,10 @@
-import { writable, derived } from 'svelte/store';
+import { writable, derived, type Writable } from 'svelte/store';
+
+type StateType = 'info' | 'success' | 'warning' | 'error';
 
 type State = {
 	id: string;
-	type: string;
+	type: StateType;
 	message: string;
 	timeout: number;
 };
@@ -11,13 +13,11 @@ function createNotificationStore() {
 	const state: State[] = [];
 	const _notifications = writable(state);
 
-	function send(message: string, type = 'info', timeout: number) {
+	function send(message: string, type: StateType = 'info', timeout: number) {
 		_notifications.update((state) => {
 			return [...state, { id: id(), type, message, timeout }];
 		});
 	}
-
-	let timers = [];
 
 	const notifications = derived(_notifications, ($_notifications, set) => {
 		set($_notifications);
@@ -32,7 +32,7 @@ function createNotificationStore() {
 				clearTimeout(timer);
 			};
 		}
-	});
+	}) as Writable<State[]>;
 	const { subscribe } = notifications;
 
 	return {
