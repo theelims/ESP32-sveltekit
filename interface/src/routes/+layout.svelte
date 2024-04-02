@@ -17,8 +17,6 @@
 
 	export let data: LayoutData;
 
-	//$: console.log($analytics);
-
 	onMount(() => {
 		if ($user.bearer_token !== '') {
 			validateUser($user);
@@ -29,10 +27,6 @@
 
 	onDestroy(() => {
 		NotificationSource?.close();
-	});
-
-	onDestroy(() => {
-		NotificationSource.close();
 	});
 
 	async function validateUser(userdata: userProfile) {
@@ -162,7 +156,7 @@
 
 	function reconnectEventSource() {
 		if (connectionLost === false) {
-			NotificationSource.close;
+			NotificationSource.close();
 			notifications.error('Connection to device lost', 5000);
 			if (reconnectIntervalId === 0) {
 				reconnectIntervalId = setInterval(connectToEventSource, 2000);
