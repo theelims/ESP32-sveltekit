@@ -17,17 +17,14 @@
 
 	export let data: LayoutData;
 
-	onMount(() => {
+	onMount(async () => {
 		if ($user.bearer_token !== '') {
-			validateUser($user);
+			await validateUser($user);
 		}
-		menuOpen = false;
 		connectToEventSource();
 	});
 
-	onDestroy(() => {
-		NotificationSource?.close();
-	});
+	onDestroy(() => disconnectEventSource());
 
 	async function validateUser(userdata: userProfile) {
 		try {
@@ -44,128 +41,74 @@
 		} catch (error) {
 			console.error('Error:', error);
 		}
-		return;
 	}
 
 	let menuOpen = false;
 
-	let NotificationSource: EventSource;
-	let reconnectIntervalId: number = 0;
-	let connectionLost = false;
-	let unresponsiveTimeout: number;
+	let eventSourceUrl = '/events';
+	let eventSource: EventSource;
+	let unresponsiveTimeoutId: number;
 
 	function connectToEventSource() {
-		NotificationSource = new EventSource('/events');
-		console.log('Attempting SSE connection.');
+		eventSource = new EventSource(eventSourceUrl);
 
-		NotificationSource.addEventListener('open', () => {
-			clearInterval(reconnectIntervalId);
-			reconnectIntervalId = 0;
-			connectionLost = false;
-			console.log('SSE connection established');
+		eventSource.addEventListener('open', () => {
 			notifications.success('Connection to device established', 5000);
 			telemetry.setRSSI('found'); // Update store and flag as server being available again
 		});
 
-		NotificationSource.addEventListener(
-			'rssi',
-			(event) => {
-				telemetry.setRSSI(event.data);
-				// Reset a timer to detect unresponsiveness
-				clearTimeout(unresponsiveTimeout);
+		eventSource.addEventListener('rssi', (event) => {
+			telemetry.setRSSI(event.data);
+			resetUnresponsiveCheck();
+		});
 
-				unresponsiveTimeout = setTimeout(() => {
-					console.log('Server is unresponsive');
-					reconnectEventSource();
-				}, 2000); // Detect unresponsiveness after 2 seconds
-			},
-			false
-		);
+		eventSource.addEventListener('error', (event) => {
+			reconnectEventSource();
+		});
 
-		NotificationSource.addEventListener(
-			'error',
-			(event) => {
-				reconnectEventSource();
-			},
-			false
-		);
+		eventSource.addEventListener('infoToast', (event) => {
+			notifications.info(event.data, 5000);
+		});
 
-		NotificationSource.addEventListener(
-			'close',
-			(event) => {
-				reconnectEventSource();
-			},
-			false
-		);
+		eventSource.addEventListener('successToast', (event) => {
+			notifications.success(event.data, 5000);
+		});
 
-		NotificationSource.addEventListener(
-			'infoToast',
-			(event) => {
-				notifications.info(event.data, 5000);
-			},
-			false
-		);
+		eventSource.addEventListener('warningToast', (event) => {
+			notifications.warning(event.data, 5000);
+		});
 
-		NotificationSource.addEventListener(
-			'successToast',
-			(event) => {
-				notifications.success(event.data, 5000);
-			},
-			false
-		);
+		eventSource.addEventListener('errorToast', (event) => {
+			notifications.error(event.data, 5000);
+		});
 
-		NotificationSource.addEventListener(
-			'warningToast',
-			(event) => {
-				notifications.warning(event.data, 5000);
-			},
-			false
-		);
+		eventSource.addEventListener('battery', (event) => {
+			telemetry.setBattery(event.data);
+		});
 
-		NotificationSource.addEventListener(
-			'errorToast',
-			(event) => {
-				notifications.error(event.data, 5000);
-			},
-			false
-		);
+		eventSource.addEventListener('download_ota', (event) => {
+			telemetry.setDownloadOTA(event.data);
+		});
+		eventSource.addEventListener('analytics', (event) => {
+			analytics.addData(event.data);
+		});
+	}
 
-		NotificationSource.addEventListener(
-			'battery',
-			(event) => {
-				telemetry.setBattery(event.data);
-			},
-			false
-		);
-
-		NotificationSource.addEventListener(
-			'download_ota',
-			(event) => {
-				telemetry.setDownloadOTA(event.data);
-			},
-			false
-		);
-		NotificationSource.addEventListener(
-			'analytics',
-			(event) => {
-				analytics.addData(event.data);
-			},
-			false
-		);
+	function disconnectEventSource() {
+		clearTimeout(unresponsiveTimeoutId);
+		eventSource?.close();
 	}
 
 	function reconnectEventSource() {
-		if (connectionLost === false) {
-			NotificationSource.close();
-			notifications.error('Connection to device lost', 5000);
-			if (reconnectIntervalId === 0) {
-				reconnectIntervalId = setInterval(connectToEventSource, 2000);
-				console.log('SSE reconnect Timer ID: ' + reconnectIntervalId);
-			}
-		}
-		connectionLost = true;
+		notifications.error('Connection to device lost', 5000);
+		disconnectEventSource();
+		connectToEventSource();
 	}
 
+	function resetUnresponsiveCheck() {
+		clearTimeout(unresponsiveTimeoutId);
+		unresponsiveTimeoutId = setTimeout(() => reconnectEventSource(), 2000);
+	}
 </script>
 
 <svelte:head>
