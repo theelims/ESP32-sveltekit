@@ -1,3 +1,4 @@
+import { type Analytics } from '$lib/types/models';
 import { writable } from 'svelte/store';
 
 let analytics_data = {
@@ -12,12 +13,11 @@ let analytics_data = {
 };
 
 function createAnalytics() {
-	const { subscribe, set, update } = writable(analytics_data);
+	const { subscribe, update } = writable(analytics_data);
 
 	return {
 		subscribe,
-		addData: (data: string) => {
-			const content = JSON.parse(data);
+		addData: (content: Analytics) => {
 			update((analytics_data) => ({
 				...analytics_data,
 				uptime: [...analytics_data.uptime, content.uptime],

@@ -8,12 +8,7 @@
 	import Spinner from '$lib/components/Spinner.svelte';
 	import MQTT from '~icons/tabler/topology-star-3';
 	import Info from '~icons/tabler/info-circle';
-
-	type BrokerSettings = {
-		mqtt_path: string;
-		name: string;
-		unique_id: string;
-	};
+	import type { BrokerSettings } from '$lib/types/models';
 
 	let brokerSettings: BrokerSettings;
 

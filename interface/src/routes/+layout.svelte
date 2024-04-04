@@ -14,6 +14,7 @@
 	import Menu from './menu.svelte';
 	import Statusbar from './statusbar.svelte';
 	import Login from './login.svelte';
+	import type { Analytics } from '$lib/types/models';
 
 	export let data: LayoutData;
 
@@ -90,7 +91,8 @@
 			telemetry.setDownloadOTA(event.data);
 		});
 		eventSource.addEventListener('analytics', (event) => {
-			analytics.addData(event.data);
+			const data = JSON.parse(event.data) as Analytics;
+			analytics.addData(data);
 		});
 	}
 

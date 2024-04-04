@@ -8,28 +8,13 @@
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
 	import { notifications } from '$lib/components/toasts/notifications';
-	import type { TimeZones } from './timezones';
 	import { TIME_ZONES } from './timezones';
 	import NTP from '~icons/tabler/clock-check';
 	import Server from '~icons/tabler/server';
 	import Clock from '~icons/tabler/clock';
 	import UTC from '~icons/tabler/clock-pin';
 	import Stopwatch from '~icons/tabler/24-hours';
-
-	type NTPStatus = {
-		status: number;
-		utc_time: string;
-		local_time: string;
-		server: string;
-		uptime: number;
-	};
-
-	type NTPSettings = {
-		enabled: boolean;
-		server: string;
-		tz_label: string;
-		tz_format: string;
-	};
+	import type { NTPSettings, NTPStatus } from '$lib/types/models';
 
 	let ntpSettings: NTPSettings;
 	let ntpStatus: NTPStatus;
