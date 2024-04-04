@@ -26,10 +26,13 @@ ESP32SvelteKit esp32sveltekit(&server, 120);
 LightMqttSettingsService lightMqttSettingsService =
     LightMqttSettingsService(&server, esp32sveltekit.getFS(), esp32sveltekit.getSecurityManager());
 
-LightStateService lightStateService = LightStateService(&server,
-                                                        esp32sveltekit.getSecurityManager(),
-                                                        esp32sveltekit.getMqttClient(),
-                                                        &lightMqttSettingsService);
+LightStateService lightStateService = LightStateService(
+    &server,
+    esp32sveltekit.getSocket(),
+    esp32sveltekit.getSecurityManager(),
+    esp32sveltekit.getMqttClient(),
+    &lightMqttSettingsService
+);
 
 void setup()
 {

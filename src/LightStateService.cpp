@@ -14,30 +14,24 @@
 
 #include <LightStateService.h>
 
-LightStateService::LightStateService(PsychicHttpServer *server,
-                                     SecurityManager *securityManager,
-                                     PsychicMqttClient *mqttClient,
-                                     LightMqttSettingsService *lightMqttSettingsService) : _httpEndpoint(LightState::read,
-                                                                                                         LightState::update,
-                                                                                                         this,
-                                                                                                         server,
-                                                                                                         LIGHT_SETTINGS_ENDPOINT_PATH,
-                                                                                                         securityManager,
-                                                                                                         AuthenticationPredicates::IS_AUTHENTICATED),
-                                                                                           _mqttPubSub(LightState::homeAssistRead, LightState::homeAssistUpdate, this, mqttClient),
-                                                                                           _webSocketServer(LightState::read,
-                                                                                                            LightState::update,
-                                                                                                            this,
-                                                                                                            server,
-                                                                                                            LIGHT_SETTINGS_SOCKET_PATH,
-                                                                                                            securityManager,
-                                                                                                            AuthenticationPredicates::IS_AUTHENTICATED),
-                                                                                           _mqttClient(mqttClient),
-                                                                                           _lightMqttSettingsService(lightMqttSettingsService)
-/*  _webSocketClient(LightState::read,
-                   LightState::update,
-                   this,
-                   LIGHT_SETTINGS_SOCKET_PATH)*/
+LightStateService::LightStateService(
+    PsychicHttpServer *server,
+    Socket *socket,
+    SecurityManager *securityManager,
+    PsychicMqttClient *mqttClient,
+    LightMqttSettingsService *lightMqttSettingsService) : 
+    _httpEndpoint(
+        LightState::read,
+        LightState::update,
+        this,
+        server,
+        LIGHT_SETTINGS_ENDPOINT_PATH,
+        securityManager,
+        AuthenticationPredicates::IS_AUTHENTICATED),
+    _mqttPubSub(LightState::homeAssistRead, LightState::homeAssistUpdate, this, mqttClient),
+    _mqttClient(mqttClient),
+    _lightMqttSettingsService(lightMqttSettingsService),
+    _socket(socket)
 {
     // configure led to be output
     pinMode(LED_BUILTIN, OUTPUT);
@@ -59,7 +53,8 @@ LightStateService::LightStateService(PsychicHttpServer *server,
 void LightStateService::begin()
 {
     _httpEndpoint.begin();
-    _webSocketServer.begin();
+    String event = "led";
+    _socket->on(event, std::bind(&LightStateService::handleUpdateLightState, this, std::placeholders::_1));
     _state.ledOn = DEFAULT_LED_STATE;
     onConfigUpdated();
 }
@@ -67,6 +62,13 @@ void LightStateService::begin()
 void LightStateService::onConfigUpdated()
 {
     digitalWrite(LED_BUILTIN, _state.ledOn ? 1 : 0);
+}
+
+void LightStateService::handleUpdateLightState(JsonObject &root)
+{
+    _state.ledOn = root["led_on"];
+    onConfigUpdated();
+    ESP_LOGI("LightStateService", "Received light state update led_on: %s", _state.ledOn ? "true" : "false");
 }
 
 void LightStateService::registerConfig()
@@ -99,3 +101,4 @@ void LightStateService::registerConfig()
 
     _mqttPubSub.configureTopics(pubTopic, subTopic);
 }
+
