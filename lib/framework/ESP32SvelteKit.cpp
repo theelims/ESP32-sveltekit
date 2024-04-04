@@ -24,6 +24,7 @@ ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEnd
                                                                                           _apSettingsService(server, &ESPFS, &_securitySettingsService),
                                                                                           _apStatus(server, &_securitySettingsService, &_apSettingsService),
                                                                                           _notificationEvents(server),
+                                                                                          _socket(server),
 #if FT_ENABLED(FT_NTP)
                                                                                           _ntpSettingsService(server, &ESPFS, &_securitySettingsService),
                                                                                           _ntpStatus(server, &_securitySettingsService),
@@ -140,6 +141,7 @@ void ESP32SvelteKit::begin()
     // Start the services
     _apStatus.begin();
     _notificationEvents.begin();
+    _socket.begin();
     _apSettingsService.begin();
     _factoryResetService.begin();
     _featureService.begin();
