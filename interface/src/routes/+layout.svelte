@@ -23,6 +23,12 @@
 		if ($user.bearer_token !== '') {
 			await validateUser($user);
 		}
+		user.subscribe((value) => {
+			if (value.bearer_token !== '') {
+				const ws_token = $page.data.features.security ? '?access_token=' + $user.bearer_token : ''
+				socket.init(`ws://${window.location.host}/ws${ws_token}`)
+			}
+		});
 		addEventListeners()
 	});
 
@@ -31,8 +37,6 @@
 	});
 	
 	const addEventListeners = () => {
-		const ws_token = $page.data.features.security ? '?access_token=' + $user.bearer_token : ''
-		socket.init(`ws://${window.location.host}/ws${ws_token}`)
 		socket.on("analytics", handleAnalytics)
 		socket.on("open", handleOpen)
 		socket.on("close", handleClose)
@@ -74,6 +78,11 @@
 			console.error('Error:', error);
 		}
 	}
+	
+	const handleOpen = () => {
+		notifications.success('Connection to device established', 5000)
+		telemetry.setRSSI('found')
+	}
 
 	const handleClose = () => notifications.error('Connection to device established', 5000);
 
@@ -82,10 +91,6 @@
 	const handleErrorToast = (data: string) => notifications.error(data, 5000)
 	const handleSuccessToast = (data: string) => notifications.success(data, 5000)
 
-	const handleOpen = () => {
-		notifications.success('Connection to device established', 5000)
-		telemetry.setRSSI('found')
-	}
 	
 	const handleAnalytics = (data: Analytics) => analytics.addData(data)
 
