@@ -19,35 +19,26 @@
 #include <SecurityManager.h>
 #include <list>
 
-#define WEB_SOCKET_CLIENT_ID_MSG_SIZE 128
-
-#define WEB_SOCKET_ORIGIN "wsserver"
-#define WEB_SOCKET_ORIGIN_CLIENT_ID_PREFIX "wsserver:"
-
 #define WEB_SOCKET_SERVICE_PATH "/ws"
-
-#define SOCKET_CONNECT "connect";
-#define SOCKET_DISCONNECT "disconnect";
-#define SOCKET_ERROR "error";
+#define EVENT_NOTIFICATION_SERVICE_PATH "/events"
 
 typedef std::function<void(JsonObject &root)> EventCallback;
 
+enum pushEvent
+{
+    PUSHERROR,
+    PUSHWARNING,
+    PUSHINFO,
+    PUSHSUCCESS
+};
+
 class Socket
 {
-private:
-    PsychicHttpServer *_server;
-    PsychicWebSocketHandler _socket;
-    std::map<String, std::list<int>> client_subscriptions;
-    std::map<String, std::list<EventCallback>> event_callbacks;
-    void handleCallbacks(String event, JsonObject &jsonObject);
-
-    size_t _bufferSize;
-    void onWSOpen(PsychicWebSocketClient *client);
-    void onWSClose(PsychicWebSocketClient *client);
-    esp_err_t onFrame(PsychicWebSocketRequest *request, httpd_ws_frame *frame);
-
 public:
-    Socket(PsychicHttpServer *server);
+    Socket(
+        PsychicHttpServer *server, 
+        SecurityManager *_securityManager, 
+        AuthenticationPredicate authenticationPredicate = AuthenticationPredicates::IS_AUTHENTICATED);
 
     void begin();
 
@@ -57,7 +48,24 @@ public:
 
     void emit(String message, String event);
 
+    void pushNotification(String message, pushEvent event);
+
     void broadcast(String message);
+
+private:
+    PsychicHttpServer *_server;
+    PsychicWebSocketHandler _socket;
+    SecurityManager *_securityManager;
+    AuthenticationPredicate _authenticationPredicate;
+    PsychicEventSource _eventSource;
+    std::map<String, std::list<int>> client_subscriptions;
+    std::map<String, std::list<EventCallback>> event_callbacks;
+    void handleCallbacks(String event, JsonObject &jsonObject);
+
+    size_t _bufferSize;
+    void onWSOpen(PsychicWebSocketClient *client);
+    void onWSClose(PsychicWebSocketClient *client);
+    esp_err_t onFrame(PsychicWebSocketRequest *request, httpd_ws_frame *frame);
 };;
 
 #endif

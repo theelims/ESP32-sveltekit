@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 
-function createWebSocket(url: string | URL) {
+function createWebSocket() {
 	let listeners = new Map<string, Set<(data?: unknown) => void>>();
 	const { subscribe, set } = writable(false);
 	const socketEvents = ['open', 'close', 'error', 'message', 'unresponsive'] as const;
@@ -8,6 +8,12 @@ function createWebSocket(url: string | URL) {
 	let unresponsiveTimeoutId: number;
 	let reconnectTimeoutId: number;
 	let ws: WebSocket;
+	let socketUrl: string | URL;
+
+	function init(url: string | URL) {
+		socketUrl = url;
+		connect();
+	}
 
 	function disconnect(reason: SocketEvent, event?: Event) {
 		ws.close();
@@ -19,7 +25,7 @@ function createWebSocket(url: string | URL) {
 	}
 
 	function connect() {
-		ws = new WebSocket(url);
+		ws = new WebSocket(socketUrl);
 		ws.onopen = (ev) => {
 			set(true);
 			clearTimeout(reconnectTimeoutId);
@@ -31,7 +37,13 @@ function createWebSocket(url: string | URL) {
 		};
 		ws.onmessage = (message) => {
 			resetUnresponsiveCheck();
-			const data = JSON.parse(message.data);
+			let data = message.data;
+			try {
+				data = JSON.parse(message.data);
+			} catch (error) {
+				console.error('Invalid JSON received', message.data);
+				return;
+			}
 			if (data.event) listeners.get(data.event)?.forEach((listener) => listener(data.data));
 			listeners.get('message')?.forEach((listener) => listener(data));
 		};
@@ -67,12 +79,11 @@ function createWebSocket(url: string | URL) {
 		send({ event, data });
 	}
 
-	connect();
-
 	return {
 		subscribe,
 		send,
 		sendEvent,
+		init,
 		on: <T>(event: string, listener: (data: T) => void): (() => void) => {
 			let eventListeners = listeners.get(event);
 			if (!eventListeners) {
@@ -94,4 +105,4 @@ function createWebSocket(url: string | URL) {
 	};
 }
 
-export const socket = createWebSocket(`ws://${window.location.host}/ws`);
+export const socket = createWebSocket();

@@ -14,12 +14,12 @@
  **/
 
 #include <JsonUtils.h>
-#include <NotificationEvents.h>
+#include <Socket.h>
 
 class BatteryService
 {
 public:
-    BatteryService(NotificationEvents *notificationEvents);
+    BatteryService(Socket *socket);
 
     void updateSOC(float stateOfCharge)
     {
@@ -35,7 +35,7 @@ public:
 
 private:
     void batteryEvent();
-    NotificationEvents *_notificationEvents;
+    Socket *_socket;
     int _lastSOC = 100;
     boolean _isCharging = false;
 };

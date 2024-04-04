@@ -23,8 +23,7 @@ ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEnd
                                                                                           _wifiStatus(server, &_securitySettingsService),
                                                                                           _apSettingsService(server, &ESPFS, &_securitySettingsService),
                                                                                           _apStatus(server, &_securitySettingsService, &_apSettingsService),
-                                                                                          _notificationEvents(server),
-                                                                                          _socket(server),
+                                                                                          _socket(server, &_securitySettingsService),
 #if FT_ENABLED(FT_NTP)
                                                                                           _ntpSettingsService(server, &ESPFS, &_securitySettingsService),
                                                                                           _ntpStatus(server, &_securitySettingsService),
@@ -46,7 +45,7 @@ ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEnd
                                                                                           _sleepService(server, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_BATTERY)
-                                                                                          _batteryService(&_notificationEvents),
+                                                                                          _batteryService(&_socket),
 #endif
 #if FT_ENABLED(FT_ANALYTICS)
                                                                                           _analyticsService(&_socket),
@@ -140,7 +139,6 @@ void ESP32SvelteKit::begin()
 
     // Start the services
     _apStatus.begin();
-    _notificationEvents.begin();
     _socket.begin();
     _apSettingsService.begin();
     _factoryResetService.begin();

@@ -29,7 +29,6 @@
 #include <DownloadFirmwareService.h>
 #include <MqttSettingsService.h>
 #include <MqttStatus.h>
-#include <NotificationEvents.h>
 #include <Socket.h>
 #include <NTPSettingsService.h>
 #include <NTPStatus.h>
@@ -84,11 +83,6 @@ public:
     SecurityManager *getSecurityManager()
     {
         return &_securitySettingsService;
-    }
-
-    NotificationEvents *getNotificationEvents()
-    {
-        return &_notificationEvents;
     }
 
     Socket *getSocket()
@@ -176,7 +170,6 @@ private:
     WiFiStatus _wifiStatus;
     APSettingsService _apSettingsService;
     APStatus _apStatus;
-    NotificationEvents _notificationEvents;
     Socket _socket;
 #if FT_ENABLED(FT_NTP)
     NTPSettingsService _ntpSettingsService;

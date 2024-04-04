@@ -31,6 +31,8 @@
 	});
 	
 	const addEventListeners = () => {
+		const ws_token = $page.data.features.security ? '?access_token=' + $user.bearer_token : ''
+		socket.init(`ws://${window.location.host}/ws${ws_token}`)
 		socket.on("analytics", handleAnalytics)
 		socket.on("open", handleOpen)
 		socket.on("close", handleClose)
