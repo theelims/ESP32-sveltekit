@@ -27,7 +27,16 @@ LightStateService::LightStateService(
         server,
         LIGHT_SETTINGS_ENDPOINT_PATH,
         securityManager,
-        AuthenticationPredicates::IS_AUTHENTICATED),
+        AuthenticationPredicates::IS_AUTHENTICATED
+    ),
+    _webSocketServer(
+        LightState::read,
+        LightState::update,
+        this,
+        socket,
+        LIGHT_SETTINGS_EVENT,
+        LIGHT_SETTINGS_MAX_BUFFER_SIZE
+    ),
     _mqttPubSub(LightState::homeAssistRead, LightState::homeAssistUpdate, this, mqttClient),
     _mqttClient(mqttClient),
     _lightMqttSettingsService(lightMqttSettingsService),
@@ -53,8 +62,6 @@ LightStateService::LightStateService(
 void LightStateService::begin()
 {
     _httpEndpoint.begin();
-    String event = "led";
-    _socket->on(event, std::bind(&LightStateService::handleUpdateLightState, this, std::placeholders::_1));
     _state.ledOn = DEFAULT_LED_STATE;
     onConfigUpdated();
 }
@@ -62,13 +69,6 @@ void LightStateService::begin()
 void LightStateService::onConfigUpdated()
 {
     digitalWrite(LED_BUILTIN, _state.ledOn ? 1 : 0);
-}
-
-void LightStateService::handleUpdateLightState(JsonObject &root)
-{
-    _state.ledOn = root["led_on"];
-    onConfigUpdated();
-    ESP_LOGI("LightStateService", "Received light state update led_on: %s", _state.ledOn ? "true" : "false");
 }
 
 void LightStateService::registerConfig()

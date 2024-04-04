@@ -27,7 +27,8 @@
 #define ON_STATE "ON"
 
 #define LIGHT_SETTINGS_ENDPOINT_PATH "/rest/lightState"
-#define LIGHT_SETTINGS_SOCKET_PATH "/ws/lightState"
+#define LIGHT_SETTINGS_EVENT "led"
+#define LIGHT_SETTINGS_MAX_BUFFER_SIZE 256
 
 class LightState
 {
@@ -90,6 +91,7 @@ public:
 
 private:
     HttpEndpoint<LightState> _httpEndpoint;
+    WebSocketServer<LightState> _webSocketServer;
     MqttPubSub<LightState> _mqttPubSub;
     PsychicMqttClient *_mqttClient;
     LightMqttSettingsService *_lightMqttSettingsService;

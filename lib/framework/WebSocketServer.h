@@ -18,145 +18,61 @@
 #include <StatefulService.h>
 #include <PsychicHttp.h>
 #include <SecurityManager.h>
-
-#define WEB_SOCKET_CLIENT_ID_MSG_SIZE 128
-
-#define WEB_SOCKET_ORIGIN "wsserver"
-#define WEB_SOCKET_ORIGIN_CLIENT_ID_PREFIX "wsserver:"
+#include <Socket.h>
 
 template <class T>
 class WebSocketServer
 {
 public:
-    WebSocketServer(JsonStateReader<T> stateReader,
-                    JsonStateUpdater<T> stateUpdater,
-                    StatefulService<T> *statefulService,
-                    PsychicHttpServer *server,
-                    const char *webSocketPath,
-                    SecurityManager *securityManager,
-                    AuthenticationPredicate authenticationPredicate = AuthenticationPredicates::IS_ADMIN,
-                    size_t bufferSize = DEFAULT_BUFFER_SIZE) : _stateReader(stateReader),
-                                                               _stateUpdater(stateUpdater),
-                                                               _statefulService(statefulService),
-                                                               _server(server),
-                                                               _bufferSize(bufferSize),
-                                                               _webSocketPath(webSocketPath),
-                                                               _authenticationPredicate(authenticationPredicate),
-                                                               _securityManager(securityManager)
+    WebSocketServer(
+        JsonStateReader<T> stateReader,
+        JsonStateUpdater<T> stateUpdater,
+        StatefulService<T> *statefulService,
+        Socket *socket,
+        const char *event,
+        size_t bufferSize = DEFAULT_BUFFER_SIZE
+    ) : 
+        _stateReader(stateReader),
+        _stateUpdater(stateUpdater),
+        _statefulService(statefulService),
+        _socket(socket),
+        _bufferSize(bufferSize),
+        _event(event)
     {
+        _socket->on(event, std::bind(&WebSocketServer::updateState, this, std::placeholders::_1));
         _statefulService->addUpdateHandler(
             [&](const String &originId)
-            { transmitData(nullptr, originId); },
+            { syncState(originId); },
             false);
-    }
-
-    void begin()
-    {
-        _webSocket.setFilter(_securityManager->filterRequest(_authenticationPredicate));
-        _webSocket.onOpen(std::bind(&WebSocketServer::onWSOpen,
-                                    this,
-                                    std::placeholders::_1));
-        _webSocket.onClose(std::bind(&WebSocketServer::onWSClose,
-                                     this,
-                                     std::placeholders::_1));
-        _webSocket.onFrame(std::bind(&WebSocketServer::onWSFrame,
-                                     this,
-                                     std::placeholders::_1,
-                                     std::placeholders::_2));
-        _server->on(_webSocketPath.c_str(), &_webSocket);
-
-        ESP_LOGV("WebSocketServer", "Registered WebSocket handler: %s", _webSocketPath.c_str());
-    }
-
-    void onWSOpen(PsychicWebSocketClient *client)
-    {
-
-        // when a client connects, we transmit it's id and the current payload
-        transmitId(client);
-        transmitData(client, WEB_SOCKET_ORIGIN);
-        ESP_LOGI("WebSocketServer", "ws[%s][%u] connect", client->remoteIP().toString(), client->socket());
-    }
-
-    void onWSClose(PsychicWebSocketClient *client)
-    {
-        ESP_LOGI("WebSocketServer", "ws[%s][%u] disconnect", client->remoteIP().toString(), client->socket());
-    }
-
-    esp_err_t onWSFrame(PsychicWebSocketRequest *request, httpd_ws_frame *frame)
-    {
-        ESP_LOGV("WebSocketServer", "ws[%s][%u] opcode[%d]", request->client()->remoteIP().toString(), request->client()->socket(), frame->type);
-
-        if (frame->type == HTTPD_WS_TYPE_TEXT)
-        {
-            ESP_LOGV("WebSocketServer", "ws[%s][%u] request: %s", request->client()->remoteIP().toString(), request->client()->socket(), (char *)frame->payload);
-
-            DynamicJsonDocument jsonDocument = DynamicJsonDocument(_bufferSize);
-            DeserializationError error = deserializeJson(jsonDocument, (char *)frame->payload, frame->len);
-
-            if (!error && jsonDocument.is<JsonObject>())
-            {
-                JsonObject jsonObject = jsonDocument.as<JsonObject>();
-                _statefulService->update(jsonObject, _stateUpdater, clientId(request->client()));
-                return ESP_OK;
-            }
-        }
-        return ESP_OK;
-    }
-
-    String clientId(PsychicWebSocketClient *client)
-    {
-        return WEB_SOCKET_ORIGIN_CLIENT_ID_PREFIX + String(client->socket());
     }
 
 private:
     JsonStateReader<T> _stateReader;
     JsonStateUpdater<T> _stateUpdater;
     StatefulService<T> *_statefulService;
-    AuthenticationPredicate _authenticationPredicate;
-    SecurityManager *_securityManager;
-    PsychicHttpServer *_server;
-    PsychicWebSocketHandler _webSocket;
-    String _webSocketPath;
+    Socket *_socket;
+    const char * _event;
     size_t _bufferSize;
 
-    void transmitId(PsychicWebSocketClient *client)
+    void updateState(JsonObject &root)
     {
-        DynamicJsonDocument jsonDocument = DynamicJsonDocument(WEB_SOCKET_CLIENT_ID_MSG_SIZE);
-        JsonObject root = jsonDocument.to<JsonObject>();
-        root["type"] = "id";
-        root["id"] = clientId(client);
+        StateUpdateResult outcome = _statefulService->updateWithoutPropagation(root, _stateUpdater);
+        String originId = "0";
 
-        // serialize the json to a string
-        String buffer;
-        serializeJson(jsonDocument, buffer);
-        client->sendMessage(buffer.c_str());
+        if (outcome == StateUpdateResult::CHANGED)
+        {
+            _statefulService->callUpdateHandlers(originId);
+        }
     }
 
-    /**
-     * Broadcasts the payload to the destination, if provided. Otherwise broadcasts to all clients except the origin, if
-     * specified.
-     *
-     * Original implementation sent clients their own IDs so they could ignore updates they initiated. This approach
-     * simplifies the client and the server implementation but may not be sufficient for all use-cases.
-     */
-    void transmitData(PsychicWebSocketClient *client, const String &originId)
+    void syncState(const String &originId)
     {
         DynamicJsonDocument jsonDocument = DynamicJsonDocument(_bufferSize);
         JsonObject root = jsonDocument.to<JsonObject>();
-        String buffer;
 
         _statefulService->read(root, _stateReader);
 
-        // serialize the json to a string
-        serializeJson(jsonDocument, buffer);
-        if (client)
-        {
-            client->sendMessage(buffer.c_str());
-        }
-        else
-        {
-            _webSocket.sendAll(buffer.c_str());
-        }
+        _socket->emit(root, _event, _bufferSize);
     }
 };
 
