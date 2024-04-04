@@ -25,6 +25,7 @@
 	import Stopwatch from '~icons/tabler/24-hours';
 	import SDK from '~icons/tabler/sdk';
 	import type { SystemInformation } from '$lib/types/models';
+	import { socket } from '$lib/stores/socket';
 
 	let systemInformation: SystemInformation;
 
@@ -44,13 +45,11 @@
 		return systemInformation;
 	}
 
-	const interval = setInterval(async () => {
-		getSystemStatus();
-	}, 5000);
+	onMount(() => socket.on("analytics", handleSystemData));
 
-	onMount(() => getSystemStatus());
+	onDestroy(() => socket.off("analytics", handleSystemData));
 
-	onDestroy(() => clearInterval(interval));
+	const handleSystemData = (data: Analytics) => systemInformation = { ...systemInformation, ...data };
 
 	async function postRestart() {
 		const response = await fetch('/rest/restart', {

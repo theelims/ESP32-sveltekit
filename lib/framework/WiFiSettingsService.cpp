@@ -14,7 +14,7 @@
 
 #include <WiFiSettingsService.h>
 
-WiFiSettingsService::WiFiSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, NotificationEvents *notificationEvents) : _server(server),
+WiFiSettingsService::WiFiSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, Socket *socket) : _server(server),
                                                                                                                                                         _securityManager(securityManager),
                                                                                                                                                         _httpEndpoint(WiFiSettings::read,
                                                                                                                                                                       WiFiSettings::update,
@@ -30,7 +30,7 @@ WiFiSettingsService::WiFiSettingsService(PsychicHttpServer *server, FS *fs, Secu
                                                                                                                                                                        fs,
                                                                                                                                                                        WIFI_SETTINGS_FILE),
                                                                                                                                                         _lastConnectionAttempt(0),
-                                                                                                                                                        _notificationEvents(notificationEvents)
+                                                                                                                                                        _socket(socket)
 {
     addUpdateHandler([&](const String &originId)
                      { reconfigureWiFiConnection(); },
@@ -224,11 +224,11 @@ void WiFiSettingsService::updateRSSI()
     if (WiFi.isConnected())
     {
         String rssi = String(WiFi.RSSI());
-        _notificationEvents->send(rssi, "rssi", millis());
+        _socket->emit(rssi, "rssi");
     }
     else
     {
-        _notificationEvents->send("disconnected", "rssi", millis());
+        _socket->emit("disconnected", "rssi");
     }
 }
 

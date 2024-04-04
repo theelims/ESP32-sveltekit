@@ -22,7 +22,7 @@
 #include <FSPersistence.h>
 #include <HttpEndpoint.h>
 #include <JsonUtils.h>
-#include <NotificationEvents.h>
+#include <Socket.h>
 #include <SecurityManager.h>
 #include <PsychicHttp.h>
 #include <vector>
@@ -201,7 +201,7 @@ public:
 class WiFiSettingsService : public StatefulService<WiFiSettings>
 {
 public:
-    WiFiSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, NotificationEvents *notificationEvents);
+    WiFiSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, Socket *socket);
 
     void initWiFi();
     void begin();
@@ -213,7 +213,7 @@ private:
     SecurityManager *_securityManager;
     HttpEndpoint<WiFiSettings> _httpEndpoint;
     FSPersistence<WiFiSettings> _fsPersistence;
-    NotificationEvents *_notificationEvents;
+    Socket *_socket;
     unsigned long _lastConnectionAttempt;
     unsigned long _lastRssiUpdate;
 

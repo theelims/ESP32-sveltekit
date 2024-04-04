@@ -16,7 +16,7 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
 #include <ESPFS.h>
-#include <NotificationEvents.h>
+#include <Socket.h>
 
 #define MAX_ESP_ANALYTICS_SIZE 1024
 #define ANALYTICS_INTERVAL 2000
@@ -24,7 +24,7 @@
 class AnalyticsService
 {
 public:
-    AnalyticsService(NotificationEvents *notificationEvents) : _notificationEvents(notificationEvents){};
+    AnalyticsService(Socket *socket) : _socket(socket){};
 
     void begin()
     {
@@ -40,7 +40,7 @@ public:
     };
 
 protected:
-    NotificationEvents *_notificationEvents;
+    Socket *_socket;
 
     static void _loopImpl(void *_this) { static_cast<AnalyticsService *>(_this)->_loop(); }
     void _loop()
@@ -50,7 +50,6 @@ protected:
         while (1)
         {
             StaticJsonDocument<MAX_ESP_ANALYTICS_SIZE> doc;
-            String message;
             doc["uptime"] = millis() / 1000;
             doc["free_heap"] = ESP.getFreeHeap();
             doc["total_heap"] = ESP.getHeapSize();
@@ -60,8 +59,7 @@ protected:
             doc["fs_total"] = ESPFS.totalBytes();
             doc["core_temp"] = temperatureRead();
 
-            serializeJson(doc, message);
-            _notificationEvents->send(message, "analytics", millis());
+            _socket->emit(doc.as<JsonObject>(), "analytics", MAX_ESP_ANALYTICS_SIZE);
 
             vTaskDelayUntil(&xLastWakeTime, ANALYTICS_INTERVAL / portTICK_PERIOD_MS);
         }
