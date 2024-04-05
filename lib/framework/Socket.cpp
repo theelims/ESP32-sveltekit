@@ -13,11 +13,10 @@
 
 #include <Socket.h>
 
-Socket::Socket(PsychicHttpServer *server, SecurityManager *securityManager, AuthenticationPredicate authenticationPredicate) : 
-    _server(server), 
-    _securityManager(securityManager), 
-    _authenticationPredicate(authenticationPredicate), 
-    _bufferSize(1024)
+Socket::Socket(PsychicHttpServer *server, SecurityManager *securityManager,
+               AuthenticationPredicate authenticationPredicate)
+    : _server(server), _securityManager(securityManager), _authenticationPredicate(authenticationPredicate),
+      _bufferSize(1024)
 {
 }
 
@@ -40,7 +39,8 @@ void Socket::onWSOpen(PsychicWebSocketClient *client)
 
 void Socket::onWSClose(PsychicWebSocketClient *client)
 {
-    for (auto &event_subscriptions : client_subscriptions) {
+    for (auto &event_subscriptions : client_subscriptions)
+    {
         event_subscriptions.second.remove(client->socket());
     }
     ESP_LOGI("WebSocketServer", "ws[%s][%u] disconnect", client->remoteIP().toString(), client->socket());
@@ -48,11 +48,13 @@ void Socket::onWSClose(PsychicWebSocketClient *client)
 
 esp_err_t Socket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame *frame)
 {
-    ESP_LOGV("WebSocketServer", "ws[%s][%u] opcode[%d]", request->client()->remoteIP().toString(), request->client()->socket(), frame->type);
+    ESP_LOGV("WebSocketServer", "ws[%s][%u] opcode[%d]", request->client()->remoteIP().toString(),
+             request->client()->socket(), frame->type);
 
     if (frame->type == HTTPD_WS_TYPE_TEXT)
     {
-        ESP_LOGV("WebSocketServer", "ws[%s][%u] request: %s", request->client()->remoteIP().toString(), request->client()->socket(), (char *)frame->payload);
+        ESP_LOGV("WebSocketServer", "ws[%s][%u] request: %s", request->client()->remoteIP().toString(),
+                 request->client()->socket(), (char *)frame->payload);
 
         DynamicJsonDocument doc = DynamicJsonDocument(_bufferSize);
         DeserializationError error = deserializeJson(doc, (char *)frame->payload, frame->len);
@@ -60,11 +62,16 @@ esp_err_t Socket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame *fram
         if (!error && doc.is<JsonObject>())
         {
             String event = doc["event"];
-            if (event == "subscribe") {
+            if (event == "subscribe")
+            {
                 client_subscriptions[doc["data"]].push_back(request->client()->socket());
-            } else if (event == "unsubscribe") {
+            }
+            else if (event == "unsubscribe")
+            {
                 client_subscriptions[doc["data"]].remove(request->client()->socket());
-            } else {
+            }
+            else
+            {
                 JsonObject jsonObject = doc["data"].as<JsonObject>();
                 handleCallbacks(event, jsonObject);
             }
@@ -76,35 +83,41 @@ esp_err_t Socket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame *fram
 
 void Socket::emit(JsonObject root, String event, size_t dataSize)
 {
-    if (client_subscriptions[event].size() == 0) return;
+    if (client_subscriptions[event].size() == 0)
+        return;
     DynamicJsonDocument doc(dataSize + 100);
     doc["event"] = event;
     doc["data"] = root;
     char buffer[dataSize + 100];
-    if (_eventSource.count() > 0) {
+    if (_eventSource.count() > 0)
+    {
         serializeJson(root, buffer, sizeof(buffer));
         _eventSource.send(buffer, event.c_str(), millis());
     }
     serializeJson(doc, buffer, sizeof(buffer));
-    
+
     for (int subscription : client_subscriptions[event])
     {
         PsychicWebSocketClient *client = _socket.getClient(subscription);
-        if (client == NULL) {
+        if (client == NULL)
+        {
             client_subscriptions[event].remove(subscription);
             continue;
         }
-        ESP_LOGV("WebSocketServer", "Emitting event: %s to %s, Message: %s", event.c_str(), client->remoteIP().toString(), buffer);
+        ESP_LOGV("WebSocketServer", "Emitting event: %s to %s, Message: %s", event.c_str(),
+                 client->remoteIP().toString(), buffer);
         client->sendMessage(buffer);
     }
 }
 
 void Socket::emit(String message, String event)
 {
-    if (_eventSource.count() > 0) {
+    if (_eventSource.count() > 0)
+    {
         _eventSource.send(message.c_str(), event.c_str(), millis());
     }
-    if (client_subscriptions[event].size() == 0) return;
+    if (client_subscriptions[event].size() == 0)
+        return;
     size_t dataSize = message.length() + 1;
     DynamicJsonDocument doc(dataSize + 100);
     doc["event"] = event;
@@ -114,11 +127,13 @@ void Socket::emit(String message, String event)
     for (int subscription : client_subscriptions[event])
     {
         PsychicWebSocketClient *client = _socket.getClient(subscription);
-        if (client == NULL) {
+        if (client == NULL)
+        {
             client_subscriptions[event].remove(subscription);
             continue;
         }
-        ESP_LOGV("WebSocketServer", "Emitting event: %s to %s, Message: %s", event.c_str(), client->remoteIP().toString(), buffer);
+        ESP_LOGV("WebSocketServer", "Emitting event: %s to %s, Message: %s", event.c_str(),
+                 client->remoteIP().toString(), buffer);
         client->sendMessage(buffer);
     }
 }
@@ -146,7 +161,8 @@ void Socket::pushNotification(String message, pushEvent event)
     emit(message, eventType);
 }
 
-void Socket::handleCallbacks(String event, JsonObject &jsonObject){
+void Socket::handleCallbacks(String event, JsonObject &jsonObject)
+{
     for (auto &callback : event_callbacks[event])
     {
         callback(jsonObject);

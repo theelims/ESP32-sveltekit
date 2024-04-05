@@ -14,9 +14,9 @@
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
  **/
 
-#include <StatefulService.h>
 #include <PsychicHttp.h>
 #include <SecurityManager.h>
+#include <StatefulService.h>
 #include <list>
 
 #define WEB_SOCKET_SERVICE_PATH "/ws"
@@ -34,16 +34,14 @@ enum pushEvent
 
 class Socket
 {
-public:
-    Socket(
-        PsychicHttpServer *server, 
-        SecurityManager *_securityManager, 
-        AuthenticationPredicate authenticationPredicate = AuthenticationPredicates::IS_AUTHENTICATED);
+  public:
+    Socket(PsychicHttpServer *server, SecurityManager *_securityManager,
+           AuthenticationPredicate authenticationPredicate = AuthenticationPredicates::IS_AUTHENTICATED);
 
     void begin();
 
     void on(String event, EventCallback callback);
-    
+
     void emit(JsonObject root, String event, size_t dataSize);
 
     void emit(String message, String event);
@@ -52,7 +50,7 @@ public:
 
     void broadcast(String message);
 
-private:
+  private:
     PsychicHttpServer *_server;
     PsychicWebSocketHandler _socket;
     SecurityManager *_securityManager;
@@ -66,6 +64,6 @@ private:
     void onWSOpen(PsychicWebSocketClient *client);
     void onWSClose(PsychicWebSocketClient *client);
     esp_err_t onFrame(PsychicWebSocketRequest *request, httpd_ws_frame *frame);
-};;
+};
 
 #endif
