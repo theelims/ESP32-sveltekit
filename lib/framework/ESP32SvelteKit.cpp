@@ -173,9 +173,6 @@ void ESP32SvelteKit::begin()
 #if FT_ENABLED(FT_SLEEP)
     _sleepService.begin();
 #endif
-#if FT_ENABLED(FT_ANALYTICS)
-    _analyticsService.begin();
-#endif
 
     // Start the loop task
     ESP_LOGV("ESP32SvelteKit", "Starting loop task");
