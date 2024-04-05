@@ -14,12 +14,15 @@ All notable changes to this project will be documented in this file.
 
 - more generic board definition in platformio.ini (#20)
 - refactored MqttPubSub.h into a single class to improve readability
-- Moves appName and copyright to `layout.ts` to keep customization in one place.
+- Moves appName and copyright to `layout.ts` to keep customization in one place (#31)
+- Make eventSource use timeout for reconnect (#34)
+- Make each toasts disappear after timeout (#35)
 
 ### Fixed
 
 - Duplicate method in FeatureService (#18)
 - Fixed compile error with FLAG `-D SERVE_CONFIG_FILES`
+- Removes duplicate begin (#36)
 
 ### Removed
 
