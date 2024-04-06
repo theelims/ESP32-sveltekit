@@ -13,25 +13,7 @@
 	import MAC from '~icons/tabler/dna-2';
 	import Home from '~icons/tabler/home';
 	import Devices from '~icons/tabler/devices';
-
-	type ApStatus = {
-		status: number;
-		ip_address: string;
-		mac_address: string;
-		station_num: number;
-	};
-
-	type ApSettings = {
-		provision_mode: number;
-		ssid: string;
-		password: string;
-		channel: number;
-		ssid_hidden: boolean;
-		max_clients: number;
-		local_ip: string;
-		gateway_ip: string;
-		subnet_mask: string;
-	};
+	import type { ApSettings, ApStatus } from '$lib/types/models';
 
 	let apSettings: ApSettings;
 	let apStatus: ApStatus;

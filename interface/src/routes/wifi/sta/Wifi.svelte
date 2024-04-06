@@ -32,39 +32,9 @@
 	import Cancel from '~icons/tabler/x';
 	import Check from '~icons/tabler/check';
 	import InfoDialog from '$lib/components/InfoDialog.svelte';
+	import type { KnownNetworkItem, WifiSettings, WifiStatus } from '$lib/types/models';
 
-	type WifiStatus = {
-		status: number;
-		local_ip: string;
-		mac_address: string;
-		rssi: number;
-		ssid: string;
-		bssid: string;
-		channel: number;
-		subnet_mask: string;
-		gateway_ip: string;
-		dns_ip_1: string;
-		dns_ip_2?: string;
-	};
-
-	type WifiSettings = {
-		hostname: string;
-		priority_RSSI: boolean;
-		wifi_networks: networkItem[];
-	};
-
-	type networkItem = {
-		ssid: string;
-		password: string;
-		static_ip_config: boolean;
-		local_ip?: string;
-		subnet_mask?: string;
-		gateway_ip?: string;
-		dns_ip_1?: string;
-		dns_ip_2?: string;
-	};
-
-	let networkEditable: networkItem = {
+	let networkEditable: KnownNetworkItem = {
 		ssid: '',
 		password: '',
 		static_ip_config: false,
@@ -81,7 +51,7 @@
 	let wifiStatus: WifiStatus;
 	let wifiSettings: WifiSettings;
 
-	let dndNetworkList: networkItem[] = [];
+	let dndNetworkList: KnownNetworkItem[] = [];
 
 	let showWifiDetails = false;
 

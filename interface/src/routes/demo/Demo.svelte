@@ -8,10 +8,7 @@
 	import Info from '~icons/tabler/info-circle';
 	import Save from '~icons/tabler/device-floppy';
 	import Reload from '~icons/tabler/reload';
-
-	type LightState = {
-		led_on: boolean;
-	};
+	import type { LightState } from '$lib/types/models';
 
 	let lightState: LightState = { led_on: false };
 
