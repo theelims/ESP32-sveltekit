@@ -10,6 +10,7 @@
 	import Reload from '~icons/tabler/reload';
 	import { onMount, onDestroy } from 'svelte';
 	import RssiIndicator from '$lib/components/RSSIIndicator.svelte';
+	import type { NetworkItem } from '$lib/types/models';
 
 	// provided by <Modals />
 	export let isOpen: boolean;
@@ -27,15 +28,7 @@
 		'WAPI PSK'
 	];
 
-	type networkItem = {
-		rssi: number;
-		ssid: string;
-		bssid: string;
-		channel: number;
-		encryption_type: number;
-	};
-
-	let listOfNetworks: networkItem[] = [];
+	let listOfNetworks: NetworkItem[] = [];
 
 	let scanActive = false;
 
