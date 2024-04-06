@@ -122,20 +122,10 @@ The ESP32 Arduino Core and many other libraries use the ESP Logging tools. To en
 ```ini
 build_flags =
 ...
-	-DCORE_DEBUG_LEVEL=5
+	-D CORE_DEBUG_LEVEL=5
 ```
 
 It accepts values from 5 (Verbose) to 1 (Errors) for different information depths to be logged on the serial terminal. If commented out there won't be debug messages from the core libraries. For a production build you should comment this out.
-
-### Serve Config Files
-
-By enabling this build flag the ESP32 will serve all config files stored on the LittleFS flash partition under `http:\\[IP]\config\[filename].json`. This can be helpful to troubleshoot problems. However, it is strongly advised to disable this for production builds.
-
-```ini
-build_flags =
-...
-  -D SERVE_CONFIG_FILES
-```
 
 ### Serve Config Files
 
@@ -162,7 +152,7 @@ The script will download a public certificate store from Mozilla (`board_ssl_cer
 
 !!! info
 
-        To enable SSL the feature `FT_NTP=1` must be enabled as well.
+     To enable SSL the feature `FT_NTP=1` must be enabled as well.
 
 ## Vite and LittleFS 32 Character Limit
 

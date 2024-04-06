@@ -94,5 +94,5 @@ plugins:
       separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
 
 copyright: |
-  Copyright &copy; 2023 by <a href="https://github.com/theelims"  target="_blank" rel="noopener">elims</a> -
+  Copyright &copy; 2024 by <a href="https://github.com/theelims"  target="_blank" rel="noopener">elims</a> -
   <a href="#__consent">Change cookie settings</a>

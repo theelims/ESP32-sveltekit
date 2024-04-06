@@ -108,7 +108,7 @@ and call one of the 4 toast methods:
 | `notification.info(msg:string, timeout:number)`    | :octicons-info-16: Shows an info message            |
 | `notification.success(msg:string, timeout:number)` | :octicons-check-circle-16: Shows as success message |
 
-Each method takes an `msg`-string as an argument, which will be shown as the message body. It accepts HTML yo enrich your toasts, if you should desire to do so. The `timeout` argument specifies how many milliseconds the toast notification shall be shown to the user.
+Each method takes an `msg`-string as an argument, which will be shown as the message body. It accepts HTML to enrich your toasts, if you should desire to do so. The `timeout` argument specifies how many milliseconds the toast notification shall be shown to the user.
 
 ## Github Update Dialog
 
@@ -116,7 +116,7 @@ This is a modal showing the update progress, possible error messages and makes a
 
 ## Update Indicator
 
-The update indicator is a small widget shown in the upper right corner of the status bar. It indicates the availability of a newer stable firmware release then the current one. Upon pressing the icon it will automatically update the firmware to the latest stable release. By default this works through the Github Latest Release API. This must be customized should you use a different update server. Have a look at the [source file](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/components/GithubUpdateDialog.svelte) to see what portions to update.
+The update indicator is a small widget shown in the upper right corner of the status bar. It indicates the availability of a newer firmware release then the current one. Upon pressing the icon it will automatically update the firmware to the latest release. By default this works through the Github Latest Release API. This must be customized should you use a different update server. Have a look at the [source file](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/components/GithubUpdateDialog.svelte) to see what portions to update.
 
 ## Info Dialog
 
@@ -138,7 +138,7 @@ This modal is based on [svelte-modals](https://svelte-modals.mattjennings.io/) w
 
 ## Confirm Dialog
 
-Shows a confirm modal on the UI which must be confirmed to proceed, or can be canceled. It features a `title` and a `message` property. The `confirm` and `cancel` buttons can be customized via the `labels` property with a label and an icon. `onConfirm` call back must close the modal and can be used to do proceed.
+Shows a confirm modal on the UI which must be confirmed to proceed, or can be canceled. It features a `title` and a `message` property. The `confirm` and `cancel` buttons can be customized via the `labels` property with a label and an icon. `onConfirm` call back must close the modal and can be used to trigger further actions.
 
 ```ts
 import ConfirmDialog from "$lib/components/ConfirmDialog.svelte";

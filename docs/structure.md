@@ -33,18 +33,9 @@ The main menu is located in [routes/menu.svelte](https://github.com/theelims/ESP
 
 ### Menu Footer
 
-The main menu comes with a small footer to add your copyright notice plus links to github and your discord server where users can find help. The `active`-flag is used to disable an element in the UI.
+The main menu comes with a small footer to add your copyright notice plus links to github and your discord server where users can find help. The `active`-flag is used to disable an element in the UI. Most of these global parameters are set in the [routes/+layout.ts](https://github.com/theelims/ESP32-sveltekit/tree/main/interface/src/routes/+layout.ts).
 
 ```ts
-const appName = "ESP32 SvelteKit";
-
-const copyright = "2023 theelims";
-
-const github = {
-  href: "https://github.com/" + $page.data.github,
-  active: true,
-};
-
 const discord = { href: ".", active: false };
 ```
 
@@ -93,7 +84,7 @@ On the root level there are two more files which you can customize to your needs
 
 ## Github Firmware Update
 
-If the feature `FT_DOWNLOAD_FIRMWARE` is enabled, ESP32 SvelteKit pulls the Github Release section through the Github API for firmware updates (stable only) once per hour. Also the firmware update menu shows all available firmware releases allowing the user to up- and downgrade has they please. If you're using the Github releases section you must first tell the frontend your correct path to your github repository as described [here](sveltekit.md#changing-the-app-name).
+If the feature `FT_DOWNLOAD_FIRMWARE` is enabled, ESP32 SvelteKit pulls the Github Release section through the Github API for firmware updates once per hour. Also the firmware update menu shows all available firmware releases allowing the user to up- and downgrade has they please. If you're using the Github releases section you must first tell the frontend your correct path to your github repository as described [here](sveltekit.md#changing-the-app-name).
 
 Also you must make use of couple build flags in [platformio.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/platformio.ini):
 
@@ -103,7 +94,7 @@ Also you must make use of couple build flags in [platformio.ini](https://github.
     -D APP_VERSION=\"0.3.0\" ; semver compatible version string
 ```
 
-Out of these flags the [rename_fw.py](https://github.com/theelims/ESP32-sveltekit/blob/main/scripts/rename_fw.py) script will copy and rename the firmware binary to `/build/firmware/{APP_NAME}_{$PIOENV}_{APP_VERSION}.bin`. In addition it will also create a corresponding MD5 checksum file. These files are ready to be uploaded to the Github release page without any further changes. The frontend searches for the a firmware binary which matches the build environment and uses this as the update link. This allows you to serve different build targets from the same release page.
+Out of these flags the [rename_fw.py](https://github.com/theelims/ESP32-sveltekit/blob/main/scripts/rename_fw.py) script will copy and rename the firmware binary to `/build/firmware/{APP_NAME}_{$PIOENV}_{APP_VERSION}.bin`. In addition it will also create a corresponding MD5 checksum file. These files are ready to be uploaded to the Github release page without any further changes. The frontend searches for the firmware binary which matches the build environment and uses this as the update link. This allows you to serve different build targets (e.g. different boards) from the same release page.
 
 ### Custom Update Server
 

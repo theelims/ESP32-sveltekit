@@ -211,7 +211,7 @@ class LightStateService : public StatefulService<LightState> {
 
 ### WebSockets
 
-[WebSocketTxRx.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/WebSocketTxRx.h) allows you to read and update state over a WebSocket connection. WebSocketTxRx automatically pushes changes to all connected clients when state is updated.
+[WebSocketServer.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/WebSocketServer.h) allows you to read and update state over a WebSocket connection. WebSocketServer automatically pushes changes to all connected clients when state is updated.
 
 The code below demonstrates how to extend the LightStateService class to provide an WebSocket:
 
@@ -334,7 +334,7 @@ The framework supplies access to various features via getter functions:
 | getSleepService()            | Send the ESP32 into deep sleep                     |
 | getBatteryService()          | Update battery information on the client           |
 
-The core features use the [StatefulService.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/StatefulService.h) class and can therefore you can change settings or observe changes to settings through the read/update API.
+The core features use the [StatefulService.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/StatefulService.h) class and therefore you can change settings or observe changes to settings through the read/update API.
 
 Inspect the current WiFi settings:
 

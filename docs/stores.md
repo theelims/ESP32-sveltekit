@@ -16,7 +16,7 @@ You can subscribe to it like to any other store with `$user` and it has the foll
 | `$user.username`     | `String`  | Username of the current user                      |
 | `$user.admin`        | `Boolean` | `true` if the current user has admin privileges   |
 
-In addition to the properties it provides two methods for initializing the user credentials and to invalidate them. `data.init()` takes a valid JWT toke as an argument and extracts the user privileges and username from it. `data.invalidate()` invalidates the user credentials and redirects to the login pages
+In addition to the properties it provides two methods for initializing the user credentials and to invalidate them. `user.init()` takes a valid JWT toke as an argument and extracts the user privileges and username from it. `user.invalidate()` invalidates the user credentials and redirects to the login pages
 
 !!! warning "User credentials are stored in the browsers local storage"
 
@@ -63,4 +63,3 @@ It exposes an array of the following properties you can subscribe to:
 | `$analytics.core_temp`      | `Number` | Core temperature (on some chips)               |
 
 By default there is one data point every 2 seconds.
-
