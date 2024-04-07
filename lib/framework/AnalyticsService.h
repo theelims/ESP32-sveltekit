@@ -47,9 +47,9 @@ protected:
     {
         TickType_t xLastWakeTime;
         xLastWakeTime = xTaskGetTickCount();
+        StaticJsonDocument<MAX_ESP_ANALYTICS_SIZE> doc;
         while (1)
         {
-            StaticJsonDocument<MAX_ESP_ANALYTICS_SIZE> doc;
             doc["uptime"] = millis() / 1000;
             doc["free_heap"] = ESP.getFreeHeap();
             doc["total_heap"] = ESP.getHeapSize();
