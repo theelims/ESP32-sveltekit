@@ -69,6 +69,8 @@ def flag_exists(flag):
 def get_package_manager():
     if exists(os.path.join(interface_dir, "pnpm-lock.yaml")):
         return "pnpm"
+    if exists(os.path.join(interface_dir, "yarn.lock")):
+        return "yarn"
     return "npm"
 
 
