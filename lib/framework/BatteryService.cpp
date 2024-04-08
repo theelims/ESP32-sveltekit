@@ -13,7 +13,7 @@
 
 #include <BatteryService.h>
 
-BatteryService::BatteryService(Socket *socket) : _socket(socket)
+BatteryService::BatteryService(EventSocket *socket) : _socket(socket)
 {
 }
 

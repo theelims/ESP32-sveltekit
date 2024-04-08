@@ -13,13 +13,13 @@
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
  **/
 
+#include <EventSocket.h>
 #include <JsonUtils.h>
-#include <Socket.h>
 
 class BatteryService
 {
 public:
-    BatteryService(Socket *socket);
+    BatteryService(EventSocket *socket);
 
     void updateSOC(float stateOfCharge)
     {
@@ -35,7 +35,7 @@ public:
 
 private:
     void batteryEvent();
-    Socket *_socket;
+    EventSocket *_socket;
     int _lastSOC = 100;
     boolean _isCharging = false;
 };

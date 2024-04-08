@@ -15,7 +15,7 @@
 
 extern const uint8_t rootca_crt_bundle_start[] asm("_binary_src_certs_x509_crt_bundle_bin_start");
 
-static Socket *_socket = nullptr;
+static EventSocket *_socket = nullptr;
 static int previousProgress = 0;
 StaticJsonDocument<128> doc;
 
@@ -98,13 +98,9 @@ void updateTask(void *param)
     vTaskDelete(NULL);
 }
 
-DownloadFirmwareService::DownloadFirmwareService(
-    PsychicHttpServer *server, 
-    SecurityManager *securityManager, 
-    Socket *socket) : 
-    _server(server),
-    _securityManager(securityManager),
-    _socket(socket)
+DownloadFirmwareService::DownloadFirmwareService(PsychicHttpServer *server, SecurityManager *securityManager,
+                                                 EventSocket *socket)
+    : _server(server), _securityManager(securityManager), _socket(socket)
 {
 }
 

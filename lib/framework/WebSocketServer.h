@@ -15,42 +15,29 @@
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
  **/
 
-#include <StatefulService.h>
+#include <EventSocket.h>
 #include <PsychicHttp.h>
 #include <SecurityManager.h>
-#include <Socket.h>
+#include <StatefulService.h>
 
 template <class T>
 class WebSocketServer
 {
 public:
-    WebSocketServer(
-        JsonStateReader<T> stateReader,
-        JsonStateUpdater<T> stateUpdater,
-        StatefulService<T> *statefulService,
-        Socket *socket,
-        const char *event,
-        size_t bufferSize = DEFAULT_BUFFER_SIZE
-    ) : 
-        _stateReader(stateReader),
-        _stateUpdater(stateUpdater),
-        _statefulService(statefulService),
-        _socket(socket),
-        _bufferSize(bufferSize),
-        _event(event)
-    {
-        _socket->on(event, std::bind(&WebSocketServer::updateState, this, std::placeholders::_1));
-        _statefulService->addUpdateHandler(
-            [&](const String &originId)
-            { syncState(originId); },
-            false);
-    }
+  WebSocketServer(JsonStateReader<T> stateReader, JsonStateUpdater<T> stateUpdater, StatefulService<T> *statefulService,
+                  EventSocket *socket, const char *event, size_t bufferSize = DEFAULT_BUFFER_SIZE)
+      : _stateReader(stateReader), _stateUpdater(stateUpdater), _statefulService(statefulService), _socket(socket),
+        _bufferSize(bufferSize), _event(event)
+  {
+      _socket->on(event, std::bind(&WebSocketServer::updateState, this, std::placeholders::_1));
+      _statefulService->addUpdateHandler([&](const String &originId) { syncState(originId); }, false);
+  }
 
 private:
     JsonStateReader<T> _stateReader;
     JsonStateUpdater<T> _stateUpdater;
     StatefulService<T> *_statefulService;
-    Socket *_socket;
+    EventSocket *_socket;
     const char * _event;
     size_t _bufferSize;
 

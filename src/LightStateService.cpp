@@ -14,33 +14,14 @@
 
 #include <LightStateService.h>
 
-LightStateService::LightStateService(
-    PsychicHttpServer *server,
-    Socket *socket,
-    SecurityManager *securityManager,
-    PsychicMqttClient *mqttClient,
-    LightMqttSettingsService *lightMqttSettingsService) : 
-    _httpEndpoint(
-        LightState::read,
-        LightState::update,
-        this,
-        server,
-        LIGHT_SETTINGS_ENDPOINT_PATH,
-        securityManager,
-        AuthenticationPredicates::IS_AUTHENTICATED
-    ),
-    _webSocketServer(
-        LightState::read,
-        LightState::update,
-        this,
-        socket,
-        LIGHT_SETTINGS_EVENT,
-        LIGHT_SETTINGS_MAX_BUFFER_SIZE
-    ),
-    _mqttPubSub(LightState::homeAssistRead, LightState::homeAssistUpdate, this, mqttClient),
-    _mqttClient(mqttClient),
-    _lightMqttSettingsService(lightMqttSettingsService),
-    _socket(socket)
+LightStateService::LightStateService(PsychicHttpServer *server, EventSocket *socket, SecurityManager *securityManager,
+                                     PsychicMqttClient *mqttClient, LightMqttSettingsService *lightMqttSettingsService)
+    : _httpEndpoint(LightState::read, LightState::update, this, server, LIGHT_SETTINGS_ENDPOINT_PATH, securityManager,
+                    AuthenticationPredicates::IS_AUTHENTICATED),
+      _webSocketServer(LightState::read, LightState::update, this, socket, LIGHT_SETTINGS_EVENT,
+                       LIGHT_SETTINGS_MAX_BUFFER_SIZE),
+      _mqttPubSub(LightState::homeAssistRead, LightState::homeAssistUpdate, this, mqttClient), _mqttClient(mqttClient),
+      _lightMqttSettingsService(lightMqttSettingsService), _socket(socket)
 {
     // configure led to be output
     pinMode(LED_BUILTIN, OUTPUT);

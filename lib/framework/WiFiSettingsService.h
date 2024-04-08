@@ -19,10 +19,10 @@
 #include <WiFiMulti.h>
 #include <SettingValue.h>
 #include <StatefulService.h>
+#include <EventSocket.h>
 #include <FSPersistence.h>
 #include <HttpEndpoint.h>
 #include <JsonUtils.h>
-#include <Socket.h>
 #include <SecurityManager.h>
 #include <PsychicHttp.h>
 #include <vector>
@@ -201,7 +201,7 @@ public:
 class WiFiSettingsService : public StatefulService<WiFiSettings>
 {
 public:
-    WiFiSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, Socket *socket);
+    WiFiSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, EventSocket *socket);
 
     void initWiFi();
     void begin();
@@ -213,7 +213,7 @@ private:
     SecurityManager *_securityManager;
     HttpEndpoint<WiFiSettings> _httpEndpoint;
     FSPersistence<WiFiSettings> _fsPersistence;
-    Socket *_socket;
+    EventSocket *_socket;
     unsigned long _lastConnectionAttempt;
     unsigned long _lastRssiUpdate;
 

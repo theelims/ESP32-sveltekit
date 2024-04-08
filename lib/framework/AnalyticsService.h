@@ -16,7 +16,7 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
 #include <ESPFS.h>
-#include <Socket.h>
+#include <EventSocket.h>
 
 #define MAX_ESP_ANALYTICS_SIZE 1024
 #define ANALYTICS_INTERVAL 2000
@@ -24,7 +24,7 @@
 class AnalyticsService
 {
 public:
-    AnalyticsService(Socket *socket) : _socket(socket){};
+    AnalyticsService(EventSocket *socket) : _socket(socket){};
 
     void begin()
     {
@@ -40,7 +40,7 @@ public:
     };
 
 protected:
-    Socket *_socket;
+    EventSocket *_socket;
 
     static void _loopImpl(void *_this) { static_cast<AnalyticsService *>(_this)->_loop(); }
     void _loop()

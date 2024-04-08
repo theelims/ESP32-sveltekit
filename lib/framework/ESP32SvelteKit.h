@@ -27,9 +27,9 @@
 #include <BatteryService.h>
 #include <FactoryResetService.h>
 #include <DownloadFirmwareService.h>
+#include <EventSocket.h>
 #include <MqttSettingsService.h>
 #include <MqttStatus.h>
-#include <Socket.h>
 #include <NTPSettingsService.h>
 #include <NTPStatus.h>
 #include <UploadFirmwareService.h>
@@ -85,7 +85,7 @@ public:
         return &_securitySettingsService;
     }
 
-    Socket *getSocket()
+    EventSocket *getSocket()
     {
         return &_socket;
     }
@@ -170,7 +170,7 @@ private:
     WiFiStatus _wifiStatus;
     APSettingsService _apSettingsService;
     APStatus _apStatus;
-    Socket _socket;
+    EventSocket _socket;
 #if FT_ENABLED(FT_NTP)
     NTPSettingsService _ntpSettingsService;
     NTPStatus _ntpStatus;

@@ -17,10 +17,10 @@
 
 #include <LightMqttSettingsService.h>
 
+#include <EventSocket.h>
 #include <HttpEndpoint.h>
 #include <MqttPubSub.h>
 #include <WebSocketServer.h>
-#include <Socket.h>
 
 #define DEFAULT_LED_STATE false
 #define OFF_STATE "OFF"
@@ -82,12 +82,9 @@ public:
 class LightStateService : public StatefulService<LightState>
 {
 public:
-    LightStateService(PsychicHttpServer *server,
-                      Socket *socket,
-                      SecurityManager *securityManager,
-                      PsychicMqttClient *mqttClient,
-                      LightMqttSettingsService *lightMqttSettingsService);
-    void begin();
+  LightStateService(PsychicHttpServer *server, EventSocket *socket, SecurityManager *securityManager,
+                    PsychicMqttClient *mqttClient, LightMqttSettingsService *lightMqttSettingsService);
+  void begin();
 
 private:
     HttpEndpoint<LightState> _httpEndpoint;
@@ -95,7 +92,7 @@ private:
     MqttPubSub<LightState> _mqttPubSub;
     PsychicMqttClient *_mqttClient;
     LightMqttSettingsService *_lightMqttSettingsService;
-    Socket *_socket;
+    EventSocket *_socket;
 
     void registerConfig();
     void onConfigUpdated();

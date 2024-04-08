@@ -19,8 +19,8 @@
 #include <StatefulService.h>
 #include <list>
 
-#define WEB_SOCKET_SERVICE_PATH "/ws"
-#define EVENT_NOTIFICATION_SERVICE_PATH "/events"
+#define EVENT_SERVICE_PATH "/events"
+#define WS_EVENT_SERVICE_PATH "/ws"
 
 typedef std::function<void(JsonObject &root)> EventCallback;
 
@@ -32,11 +32,11 @@ enum pushEvent
     PUSHSUCCESS
 };
 
-class Socket
+class EventSocket
 {
   public:
-    Socket(PsychicHttpServer *server, SecurityManager *_securityManager,
-           AuthenticationPredicate authenticationPredicate = AuthenticationPredicates::IS_AUTHENTICATED);
+    EventSocket(PsychicHttpServer *server, SecurityManager *_securityManager,
+                AuthenticationPredicate authenticationPredicate = AuthenticationPredicates::IS_AUTHENTICATED);
 
     void begin();
 

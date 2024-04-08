@@ -11,33 +11,33 @@
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
  **/
 
-#include <Socket.h>
+#include <EventSocket.h>
 
-Socket::Socket(PsychicHttpServer *server, SecurityManager *securityManager,
-               AuthenticationPredicate authenticationPredicate)
+EventSocket::EventSocket(PsychicHttpServer *server, SecurityManager *securityManager,
+                         AuthenticationPredicate authenticationPredicate)
     : _server(server), _securityManager(securityManager), _authenticationPredicate(authenticationPredicate),
       _bufferSize(1024)
 {
 }
 
-void Socket::begin()
+void EventSocket::begin()
 {
     _socket.setFilter(_securityManager->filterRequest(_authenticationPredicate));
-    _socket.onOpen(std::bind(&Socket::onWSOpen, this, std::placeholders::_1));
-    _socket.onClose(std::bind(&Socket::onWSClose, this, std::placeholders::_1));
-    _socket.onFrame(std::bind(&Socket::onFrame, this, std::placeholders::_1, std::placeholders::_2));
-    _server->on(EVENT_NOTIFICATION_SERVICE_PATH, &_eventSource);
-    _server->on(WEB_SOCKET_SERVICE_PATH, &_socket);
+    _socket.onOpen((std::bind(&EventSocket::onWSOpen, this, std::placeholders::_1)));
+    _socket.onClose(std::bind(&EventSocket::onWSClose, this, std::placeholders::_1));
+    _socket.onFrame(std::bind(&EventSocket::onFrame, this, std::placeholders::_1, std::placeholders::_2));
+    _server->on(EVENT_SERVICE_PATH, &_eventSource);
+    _server->on(WS_EVENT_SERVICE_PATH, &_socket);
 
-    ESP_LOGV("Socket", "Registered socket Source endpoint: %s", WEB_SOCKET_SERVICE_PATH);
+    ESP_LOGV("Socket", "Registered socket Source endpoint: %s", EVENT_SERVICE_PATH);
 }
 
-void Socket::onWSOpen(PsychicWebSocketClient *client)
+void EventSocket::onWSOpen(PsychicWebSocketClient *client)
 {
     ESP_LOGI("WebSocketServer", "ws[%s][%u] connect", client->remoteIP().toString(), client->socket());
 }
 
-void Socket::onWSClose(PsychicWebSocketClient *client)
+void EventSocket::onWSClose(PsychicWebSocketClient *client)
 {
     for (auto &event_subscriptions : client_subscriptions)
     {
@@ -46,7 +46,7 @@ void Socket::onWSClose(PsychicWebSocketClient *client)
     ESP_LOGI("WebSocketServer", "ws[%s][%u] disconnect", client->remoteIP().toString(), client->socket());
 }
 
-esp_err_t Socket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame *frame)
+esp_err_t EventSocket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame *frame)
 {
     ESP_LOGV("WebSocketServer", "ws[%s][%u] opcode[%d]", request->client()->remoteIP().toString(),
              request->client()->socket(), frame->type);
@@ -81,7 +81,7 @@ esp_err_t Socket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame *fram
     return ESP_OK;
 }
 
-void Socket::emit(JsonObject root, String event, size_t dataSize)
+void EventSocket::emit(JsonObject root, String event, size_t dataSize)
 {
     if (client_subscriptions[event].size() == 0)
         return;
@@ -98,8 +98,8 @@ void Socket::emit(JsonObject root, String event, size_t dataSize)
 
     for (int subscription : client_subscriptions[event])
     {
-        PsychicWebSocketClient *client = _socket.getClient(subscription);
-        if (client == NULL)
+        auto *client = _socket.getClient(subscription);
+        if (!client)
         {
             client_subscriptions[event].remove(subscription);
             continue;
@@ -110,7 +110,7 @@ void Socket::emit(JsonObject root, String event, size_t dataSize)
     }
 }
 
-void Socket::emit(String message, String event)
+void EventSocket::emit(String message, String event)
 {
     if (_eventSource.count() > 0)
     {
@@ -126,8 +126,8 @@ void Socket::emit(String message, String event)
     serializeJson(doc, buffer, sizeof(buffer));
     for (int subscription : client_subscriptions[event])
     {
-        PsychicWebSocketClient *client = _socket.getClient(subscription);
-        if (client == NULL)
+        auto *client = _socket.getClient(subscription);
+        if (!client)
         {
             client_subscriptions[event].remove(subscription);
             continue;
@@ -138,7 +138,7 @@ void Socket::emit(String message, String event)
     }
 }
 
-void Socket::pushNotification(String message, pushEvent event)
+void EventSocket::pushNotification(String message, pushEvent event)
 {
     String eventType;
     switch (event)
@@ -161,7 +161,7 @@ void Socket::pushNotification(String message, pushEvent event)
     emit(message, eventType);
 }
 
-void Socket::handleCallbacks(String event, JsonObject &jsonObject)
+void EventSocket::handleCallbacks(String event, JsonObject &jsonObject)
 {
     for (auto &callback : event_callbacks[event])
     {
@@ -169,13 +169,13 @@ void Socket::handleCallbacks(String event, JsonObject &jsonObject)
     }
 }
 
-void Socket::on(String event, EventCallback callback)
+void EventSocket::on(String event, EventCallback callback)
 {
     event_callbacks[event].push_back(callback);
     log_d("Socket::on");
 }
 
-void Socket::broadcast(String message)
+void EventSocket::broadcast(String message)
 {
     _socket.sendAll(message.c_str());
 }
