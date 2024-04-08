@@ -40,6 +40,7 @@
 		socket.on("analytics", handleAnalytics)
 		socket.on("open", handleOpen)
 		socket.on("close", handleClose)
+		socket.on("error", handleError)
 		socket.on("rssi", handleNetworkStatus)
 		socket.on("infoToast", handleInfoToast)
 		socket.on("successToast", handleSuccessToast)
@@ -85,6 +86,8 @@
 	}
 
 	const handleClose = () => notifications.error('Connection to device established', 5000);
+
+	const handleError = (data: any) => console.error(data)
 
 	const handleInfoToast = (data: string) => notifications.info(data, 5000)
 	const handleWarningToast = (data: string) => notifications.warning(data, 5000)

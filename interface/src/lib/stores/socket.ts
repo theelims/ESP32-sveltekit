@@ -38,14 +38,20 @@ function createWebSocket() {
 		ws.onmessage = (message) => {
 			resetUnresponsiveCheck();
 			let data = message.data;
+
+			if (data instanceof ArrayBuffer) {
+				listeners.get('binary')?.forEach((listener) => listener(data));
+				return;
+			}
+			listeners.get('message')?.forEach((listener) => listener(data));
 			try {
 				data = JSON.parse(message.data);
 			} catch (error) {
-				console.error('Invalid JSON received', message.data);
+				listeners.get('error')?.forEach((listener) => listener(error));
 				return;
 			}
+			listeners.get('json')?.forEach((listener) => listener(data));
 			if (data.event) listeners.get(data.event)?.forEach((listener) => listener(data.data));
-			listeners.get('message')?.forEach((listener) => listener(data));
 		};
 		ws.onerror = (ev) => disconnect('error', ev);
 		ws.onclose = (ev) => disconnect('close', ev);
