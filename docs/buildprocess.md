@@ -2,6 +2,10 @@
 
 The build process is controlled by [platformio.ini](https://github.com/theelims/ESP32-sveltekit/platformio.ini) and automates the build of the front end website with Vite as well as the binary compilation for the ESP32 firmware. Whenever PlatformIO is building a new binary it will call the python script [build_interface.py](https://github.com/theelims/ESP32-sveltekit/scripts/build_interface.py) to action. It will check the frontend files for changes. If necessary it will start the Vite build and gzip the resulting files either to the `data/` directory or embed them into a header file. In case the WWW files go into a LITTLEFS partition a file system image for the flash is created for the default build environment and upload to the ESP32.
 
+## Changing the JS package manager
+
+This project uses NPM as the default package manager. However, many users might have different preferences and like to use YARN or PNPM instead. Just switch the interface to one of the other package managers. The build script identify the package manager by the presence of its lock-file and start the vite build process accordingly.
+
 ## Serving from Flash or Embedding into the Binary
 
 The front end website can be served either from the LITTLEFS partition of the flash, or embedded into the firmware binary (default). Later has the advantage that only one binary needs to be distributed easing the OTA process. Further more this is desirable if you like to preserve the settings stored in the LITTLEFS partition, or have other files there that need to survive a firmware update. To serve from the LITTLEFS partition instead please comment the following build flag out:
