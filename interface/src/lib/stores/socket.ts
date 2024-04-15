@@ -45,13 +45,14 @@ function createWebSocket() {
 			}
 			listeners.get('message')?.forEach((listener) => listener(data));
 			try {
-				data = JSON.parse(message.data);
+				data = JSON.parse(message.data.substring(2));
 			} catch (error) {
 				listeners.get('error')?.forEach((listener) => listener(error));
 				return;
 			}
 			listeners.get('json')?.forEach((listener) => listener(data));
-			if (data.event) listeners.get(data.event)?.forEach((listener) => listener(data.data));
+			const [event, payload] = data;
+			if (event) listeners.get(event)?.forEach((listener) => listener(payload));
 		};
 		ws.onerror = (ev) => disconnect('error', ev);
 		ws.onclose = (ev) => disconnect('close', ev);

@@ -20,7 +20,9 @@ BatteryService::BatteryService(EventSocket *socket) : _socket(socket)
 void BatteryService::batteryEvent()
 {
     StaticJsonDocument<32> doc;
+    char message[32];
     doc["soc"] = _lastSOC;
     doc["charging"] = _isCharging;
-    _socket->emit(doc.as<JsonObject>(), "battery", 32);
+    serializeJson(doc, message);
+    _socket->emit("battery", message);
 }

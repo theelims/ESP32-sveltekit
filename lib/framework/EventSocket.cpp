@@ -1,17 +1,6 @@
-/**
- *   ESP32 SvelteKit
- *
- *   A simple, secure and extensible framework for IoT projects for ESP32 platforms
- *   with responsive Sveltekit front-end built with TailwindCSS and DaisyUI.
- *   https://github.com/theelims/ESP32-sveltekit
- *
- *   Copyright (C) 2024 theelims
- *
- *   All Rights Reserved. This software may be modified and distributed under
- *   the terms of the LGPL v3 license. See the LICENSE file for details.
- **/
-
 #include <EventSocket.h>
+
+SemaphoreHandle_t clientSubscriptionsMutex = xSemaphoreCreateMutex();
 
 EventSocket::EventSocket(PsychicHttpServer *server, SecurityManager *securityManager,
                          AuthenticationPredicate authenticationPredicate)
@@ -81,61 +70,39 @@ esp_err_t EventSocket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame 
     return ESP_OK;
 }
 
-void EventSocket::emit(JsonObject root, String event, size_t dataSize)
+void EventSocket::emit(String event, String payload)
 {
-    if (client_subscriptions[event].size() == 0)
-        return;
-    DynamicJsonDocument doc(dataSize + 100);
-    doc["event"] = event;
-    doc["data"] = root;
-    char buffer[dataSize + 100];
-    if (_eventSource.count() > 0)
-    {
-        serializeJson(root, buffer, sizeof(buffer));
-        _eventSource.send(buffer, event.c_str(), millis());
-    }
-    serializeJson(doc, buffer, sizeof(buffer));
-
-    for (int subscription : client_subscriptions[event])
-    {
-        auto *client = _socket.getClient(subscription);
-        if (!client)
-        {
-            client_subscriptions[event].remove(subscription);
-            continue;
-        }
-        ESP_LOGV("WebSocketServer", "Emitting event: %s to %s, Message: %s", event.c_str(),
-                 client->remoteIP().toString(), buffer);
-        client->sendMessage(buffer);
-    }
+    emit(event.c_str(), payload.c_str());
 }
 
-void EventSocket::emit(String message, String event)
+void EventSocket::emit(const char *event, const char *payload)
 {
     if (_eventSource.count() > 0)
     {
-        _eventSource.send(message.c_str(), event.c_str(), millis());
+        _eventSource.send(payload, event, millis());
     }
-    if (client_subscriptions[event].size() == 0)
+    xSemaphoreTake(clientSubscriptionsMutex, portMAX_DELAY);
+    auto &subscriptions = client_subscriptions[event];
+    if (subscriptions.empty())
+    {
+        xSemaphoreGive(clientSubscriptionsMutex);
         return;
-    size_t dataSize = message.length() + 1;
-    DynamicJsonDocument doc(dataSize + 100);
-    doc["event"] = event;
-    doc["data"] = message;
-    char buffer[dataSize + 100];
-    serializeJson(doc, buffer, sizeof(buffer));
+    }
+    String msg = "42[\"" + String(event) + "\"," + String(payload) + "]";
+
     for (int subscription : client_subscriptions[event])
     {
         auto *client = _socket.getClient(subscription);
         if (!client)
         {
-            client_subscriptions[event].remove(subscription);
+            subscriptions.remove(subscription);
             continue;
         }
-        ESP_LOGV("WebSocketServer", "Emitting event: %s to %s, Message: %s", event.c_str(),
-                 client->remoteIP().toString(), buffer);
-        client->sendMessage(buffer);
+        ESP_LOGV("WebSocketServer", "Emitting event: %s to %s, Message: %s", event, client->remoteIP().toString(),
+                 msg.c_str());
+        client->sendMessage(msg.c_str());
     }
+    xSemaphoreGive(clientSubscriptionsMutex);
 }
 
 void EventSocket::pushNotification(String message, pushEvent event)
@@ -158,7 +125,7 @@ void EventSocket::pushNotification(String message, pushEvent event)
     default:
         return;
     }
-    emit(message, eventType);
+    emit(eventType.c_str(), message.c_str());
 }
 
 void EventSocket::handleCallbacks(String event, JsonObject &jsonObject)

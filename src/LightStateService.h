@@ -96,7 +96,6 @@ private:
 
     void registerConfig();
     void onConfigUpdated();
-    void handleUpdateLightState(JsonObject &root);
 };
 
 #endif

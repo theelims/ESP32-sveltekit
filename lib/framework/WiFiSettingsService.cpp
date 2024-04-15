@@ -210,7 +210,9 @@ void WiFiSettingsService::configureNetwork(wifi_settings_t &network)
 
 void WiFiSettingsService::updateRSSI()
 {
-    _socket->emit(WiFi.isConnected() ? String(WiFi.RSSI()) : "disconnected", "rssi");
+    char buffer[16];
+    snprintf(buffer, sizeof(buffer), WiFi.isConnected() ? "%d" : "disconnected", WiFi.RSSI());
+    _socket->emit("rssi", buffer);
 }
 
 void WiFiSettingsService::onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info)

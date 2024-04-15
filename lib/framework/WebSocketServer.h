@@ -43,23 +43,20 @@ private:
 
     void updateState(JsonObject &root)
     {
-        StateUpdateResult outcome = _statefulService->updateWithoutPropagation(root, _stateUpdater);
-        String originId = "0";
-
-        if (outcome == StateUpdateResult::CHANGED)
+        if (_statefulService->updateWithoutPropagation(root, _stateUpdater) == StateUpdateResult::CHANGED)
         {
-            _statefulService->callUpdateHandlers(originId);
+            _statefulService->callUpdateHandlers("0");
         }
     }
 
     void syncState(const String &originId)
     {
-        DynamicJsonDocument jsonDocument = DynamicJsonDocument(_bufferSize);
+        DynamicJsonDocument jsonDocument{_bufferSize};
         JsonObject root = jsonDocument.to<JsonObject>();
-
+        String output;
         _statefulService->read(root, _stateReader);
-
-        _socket->emit(root, _event, _bufferSize);
+        serializeJson(root, output);
+        _socket->emit(_event, output.c_str());
     }
 };
 

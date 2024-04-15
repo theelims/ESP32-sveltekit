@@ -45,11 +45,12 @@ protected:
     static void _loopImpl(void *_this) { static_cast<AnalyticsService *>(_this)->_loop(); }
     void _loop()
     {
-        TickType_t xLastWakeTime;
-        xLastWakeTime = xTaskGetTickCount();
+        TickType_t xLastWakeTime = xTaskGetTickCount();
         StaticJsonDocument<MAX_ESP_ANALYTICS_SIZE> doc;
+        char message[MAX_ESP_ANALYTICS_SIZE];
         while (1)
         {
+            doc.clear();
             doc["uptime"] = millis() / 1000;
             doc["free_heap"] = ESP.getFreeHeap();
             doc["total_heap"] = ESP.getHeapSize();
@@ -59,7 +60,8 @@ protected:
             doc["fs_total"] = ESPFS.totalBytes();
             doc["core_temp"] = temperatureRead();
 
-            _socket->emit(doc.as<JsonObject>(), "analytics", MAX_ESP_ANALYTICS_SIZE);
+            serializeJson(doc, message);
+            _socket->emit("analytics", message);
 
             vTaskDelayUntil(&xLastWakeTime, ANALYTICS_INTERVAL / portTICK_PERIOD_MS);
         }
