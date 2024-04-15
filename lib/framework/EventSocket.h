@@ -9,7 +9,7 @@
 #define EVENT_SERVICE_PATH "/events"
 #define WS_EVENT_SERVICE_PATH "/ws"
 
-typedef std::function<void(JsonObject &root)> EventCallback;
+typedef std::function<void(JsonObject &root, int originId)> EventCallback;
 
 enum pushEvent
 {
@@ -33,6 +33,8 @@ class EventSocket
 
     void emit(const char *event, const char *payload);
 
+    void emit(const char *event, const char *payload, const char *originId);
+
     void pushNotification(String message, pushEvent event);
 
     void broadcast(String message);
@@ -46,7 +48,7 @@ class EventSocket
 
     std::map<String, std::list<int>> client_subscriptions;
     std::map<String, std::list<EventCallback>> event_callbacks;
-    void handleCallbacks(String event, JsonObject &jsonObject);
+    void handleCallbacks(String event, JsonObject &jsonObject, int originId);
 
     size_t _bufferSize;
     void onWSOpen(PsychicWebSocketClient *client);

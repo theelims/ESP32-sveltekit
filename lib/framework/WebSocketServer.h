@@ -29,7 +29,7 @@ public:
       : _stateReader(stateReader), _stateUpdater(stateUpdater), _statefulService(statefulService), _socket(socket),
         _bufferSize(bufferSize), _event(event)
   {
-      _socket->on(event, std::bind(&WebSocketServer::updateState, this, std::placeholders::_1));
+      _socket->on(event, std::bind(&WebSocketServer::updateState, this, std::placeholders::_1, std::placeholders::_2));
       _statefulService->addUpdateHandler([&](const String &originId) { syncState(originId); }, false);
   }
 
@@ -41,11 +41,11 @@ private:
     const char * _event;
     size_t _bufferSize;
 
-    void updateState(JsonObject &root)
+    void updateState(JsonObject &root, int originId)
     {
         if (_statefulService->updateWithoutPropagation(root, _stateUpdater) == StateUpdateResult::CHANGED)
         {
-            _statefulService->callUpdateHandlers("0");
+            _statefulService->callUpdateHandlers(String(originId));
         }
     }
 
@@ -56,7 +56,7 @@ private:
         String output;
         _statefulService->read(root, _stateReader);
         serializeJson(root, output);
-        _socket->emit(_event, output.c_str());
+        _socket->emit(_event, output.c_str(), originId.c_str());
     }
 };
 

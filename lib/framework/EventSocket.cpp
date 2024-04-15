@@ -62,7 +62,7 @@ esp_err_t EventSocket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame 
             else
             {
                 JsonObject jsonObject = doc["data"].as<JsonObject>();
-                handleCallbacks(event, jsonObject);
+                handleCallbacks(event, jsonObject, request->client()->socket());
             }
             return ESP_OK;
         }
@@ -72,11 +72,17 @@ esp_err_t EventSocket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame 
 
 void EventSocket::emit(String event, String payload)
 {
-    emit(event.c_str(), payload.c_str());
+    emit(event.c_str(), payload.c_str(), "");
 }
 
 void EventSocket::emit(const char *event, const char *payload)
 {
+    emit(event, payload, "");
+}
+
+void EventSocket::emit(const char *event, const char *payload, const char *originId)
+{
+    int originSubscriptionId = originId[0] ? atoi(originId) : -1;
     if (_eventSource.count() > 0)
     {
         _eventSource.send(payload, event, millis());
@@ -92,6 +98,8 @@ void EventSocket::emit(const char *event, const char *payload)
 
     for (int subscription : client_subscriptions[event])
     {
+        if (subscription == originSubscriptionId)
+            continue;
         auto *client = _socket.getClient(subscription);
         if (!client)
         {
@@ -128,18 +136,17 @@ void EventSocket::pushNotification(String message, pushEvent event)
     emit(eventType.c_str(), message.c_str());
 }
 
-void EventSocket::handleCallbacks(String event, JsonObject &jsonObject)
+void EventSocket::handleCallbacks(String event, JsonObject &jsonObject, int originId)
 {
     for (auto &callback : event_callbacks[event])
     {
-        callback(jsonObject);
+        callback(jsonObject, originId);
     }
 }
 
 void EventSocket::on(String event, EventCallback callback)
 {
     event_callbacks[event].push_back(callback);
-    log_d("Socket::on");
 }
 
 void EventSocket::broadcast(String message)
