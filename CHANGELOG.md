@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Added build flag `-D SERIAL_INFO` to platformio.ini to enable / disable all `Serial.print()` statements. On some boards with native USB those Serial prints have been reported to block and make the server unresponsive.
 - Added a hook handler to StatefulService. Unlike an UPDATE a hook is called every time a state receives and updated, even if the result is UNCHANGED or ERROR.
 - Added missing include for S2 in SystemStatus.cpp (#23)
+- Added awareness of front end build script for all 3 major JS package managers. The script will auto-identify the package manager by the lock-file. (#40)
 
 ### Changed
 
@@ -17,16 +18,19 @@ All notable changes to this project will be documented in this file.
 - Moves appName and copyright to `layout.ts` to keep customization in one place (#31)
 - Make eventSource use timeout for reconnect (#34)
 - Make each toasts disappear after timeout (#35)
+- Fixed version `platform = espressif32 @ 6.6.0` in platformio.ini
 
 ### Fixed
 
 - Duplicate method in FeatureService (#18)
 - Fixed compile error with FLAG `-D SERVE_CONFIG_FILES`
-- Removes duplicate begin (#36)
+- Fixed typo in telemetry.ts (#38)
+- Fixed the development warning: `Loading /rest/features using `window.fetch`. For best results, use the `fetch`that is passed to your`load` function:`
 
 ### Removed
 
 - Duplicate lines in Systems Settings view.
+- Removes duplicate begin (#36)
 
 ## [0.3.0] - 2023-02-05
 
