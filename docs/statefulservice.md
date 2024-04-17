@@ -74,7 +74,7 @@ An "originId" is passed to the update handler which may be used to identify the 
 | Origin                     | Description                                     |
 | -------------------------- | ----------------------------------------------- |
 | http                       | An update sent over REST (HttpEndpoint)         |
-| mqtt                       | An update sent over MQTT (MqttPubSub)           |
+| mqtt                       | An update sent over MQTT (MqttEndpoint)         |
 | websocketserver:{clientId} | An update sent over WebSocket (WebSocketServer) |
 
 Sometimes if can be desired to hook into every update of an state, even if the StateUpdateResult is `StateUpdateResult::UNCHANGED` and the update handler isn't called. In such cases you can use the hook handler. Similarly it can be removed later.
@@ -239,7 +239,7 @@ To register the WS endpoint with the web server the function `_webSocketServer.b
 
 The framework includes an MQTT client which can be configured via the UI. MQTT requirements will differ from project to project so the framework exposes the client for you to use as you see fit. The framework does however provide a utility to interface StatefulService to a pair of pub/sub (state/set) topics. This utility can be used to synchronize state with software such as Home Assistant.
 
-[MqttPubSub.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/MqttPubSub.h) allows you to publish and subscribe to synchronize state over a pair of MQTT topics. MqttPubSub automatically pushes changes to the "pub" topic and reads updates from the "sub" topic.
+[MqttEndpoint.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/MqttEndpoint.h) allows you to publish and subscribe to synchronize state over a pair of MQTT topics. MqttEndpoint automatically pushes changes to the "pub" topic and reads updates from the "sub" topic.
 
 The code below demonstrates how to extend the LightStateService class to interface with MQTT:
 
@@ -248,7 +248,7 @@ The code below demonstrates how to extend the LightStateService class to interfa
 class LightStateService : public StatefulService<LightState> {
  public:
   LightStateService(AsyncMqttClient* mqttClient) :
-      _mqttPubSub(LightState::read,
+      _mqttEndpoint(LightState::read,
                   LightState::update,
                   this,
                   mqttClient,
@@ -257,14 +257,14 @@ class LightStateService : public StatefulService<LightState> {
   }
 
  private:
-  MqttPubSub<LightState> _mqttPubSub;
+  MqttEndpoint<LightState> _mqttEndpoint;
 };
 ```
 
 You can re-configure the pub/sub topics at runtime as required:
 
 ```cpp
-_mqttPubSub.configureBroker("homeassistant/light/desk_lamp/set", "homeassistant/light/desk_lamp/state");
+_mqttEndpoint.configureBroker("homeassistant/light/desk_lamp/set", "homeassistant/light/desk_lamp/state");
 ```
 
 The demo project allows the user to modify the MQTT topics via the UI so they can be changed without re-flashing the firmware.

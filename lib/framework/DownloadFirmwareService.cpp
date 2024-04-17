@@ -105,9 +105,9 @@ void updateTask(void *param)
     vTaskDelete(NULL);
 }
 
-DownloadFirmwareService::DownloadFirmwareService(PsychicHttpServer *server, SecurityManager *securityManager,
-                                                 EventSocket *socket)
-    : _server(server), _securityManager(securityManager), _socket(socket)
+DownloadFirmwareService::DownloadFirmwareService(PsychicHttpServer *server, SecurityManager *securityManager, EventSocket *socket) : _server(server),
+                                                                                                                                     _securityManager(securityManager),
+                                                                                                                                     _socket(socket)
 {
 }
 

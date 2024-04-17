@@ -31,7 +31,7 @@ public:
         xTaskCreatePinnedToCore(
             this->_loopImpl,            // Function that should be called
             "Analytics Service",        // Name of the task (for debugging)
-            4096,                       // Stack size (bytes)
+            5120,                       // Stack size (bytes)
             this,                       // Pass reference to this class instance
             (tskIDLE_PRIORITY),         // task priority
             NULL,                       // Task handle

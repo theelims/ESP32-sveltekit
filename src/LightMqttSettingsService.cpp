@@ -21,7 +21,11 @@ LightMqttSettingsService::LightMqttSettingsService(PsychicHttpServer *server, FS
                                                                                                                                         LIGHT_BROKER_SETTINGS_PATH,
                                                                                                                                         securityManager,
                                                                                                                                         AuthenticationPredicates::IS_AUTHENTICATED),
-                                                                                                                          _fsPersistence(LightMqttSettings::read, LightMqttSettings::update, this, fs, LIGHT_BROKER_SETTINGS_FILE)
+                                                                                                                          _fsPersistence(LightMqttSettings::read,
+                                                                                                                                         LightMqttSettings::update,
+                                                                                                                                         this,
+                                                                                                                                         fs,
+                                                                                                                                         LIGHT_BROKER_SETTINGS_FILE)
 {
 }
 

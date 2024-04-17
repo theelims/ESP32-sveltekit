@@ -19,7 +19,8 @@
 
 #include <EventSocket.h>
 #include <HttpEndpoint.h>
-#include <MqttPubSub.h>
+#include <MqttEndpoint.h>
+#include <EventEndpoint.h>
 #include <WebSocketServer.h>
 
 #define DEFAULT_LED_STATE false
@@ -27,6 +28,7 @@
 #define ON_STATE "ON"
 
 #define LIGHT_SETTINGS_ENDPOINT_PATH "/rest/lightState"
+#define LIGHT_SETTINGS_SOCKET_PATH "/ws/lightState"
 #define LIGHT_SETTINGS_EVENT "led"
 #define LIGHT_SETTINGS_MAX_BUFFER_SIZE 256
 
@@ -82,17 +84,17 @@ public:
 class LightStateService : public StatefulService<LightState>
 {
 public:
-  LightStateService(PsychicHttpServer *server, EventSocket *socket, SecurityManager *securityManager,
-                    PsychicMqttClient *mqttClient, LightMqttSettingsService *lightMqttSettingsService);
-  void begin();
+    LightStateService(PsychicHttpServer *server, EventSocket *socket, SecurityManager *securityManager,
+                      PsychicMqttClient *mqttClient, LightMqttSettingsService *lightMqttSettingsService);
+    void begin();
 
 private:
     HttpEndpoint<LightState> _httpEndpoint;
+    EventEndpoint<LightState> _eventEndpoint;
+    MqttEndpoint<LightState> _mqttEndpoint;
     WebSocketServer<LightState> _webSocketServer;
-    MqttPubSub<LightState> _mqttPubSub;
     PsychicMqttClient *_mqttClient;
     LightMqttSettingsService *_lightMqttSettingsService;
-    EventSocket *_socket;
 
     void registerConfig();
     void onConfigUpdated();

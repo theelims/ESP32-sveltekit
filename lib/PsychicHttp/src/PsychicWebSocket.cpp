@@ -179,7 +179,7 @@ esp_err_t PsychicWebSocketHandler::handleRequest(PsychicRequest *request)
   }
 
   // okay, now try to load the packet
-  ESP_LOGI(PH_TAG, "frame len is %d", ws_pkt.len);
+  ESP_LOGV(PH_TAG, "frame len is %d", ws_pkt.len);
   if (ws_pkt.len)
   {
     /* ws_pkt.len + 1 is for NULL termination as we are expecting a string */
@@ -198,7 +198,7 @@ esp_err_t PsychicWebSocketHandler::handleRequest(PsychicRequest *request)
       free(buf);
       return ret;
     }
-    ESP_LOGI(PH_TAG, "Got packet with message: %s", ws_pkt.payload);
+    ESP_LOGV(PH_TAG, "Got packet with message: %s", ws_pkt.payload);
   }
 
   // Text messages are our payload.

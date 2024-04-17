@@ -24,7 +24,7 @@
 	import Health from '~icons/tabler/stethoscope';
 	import Stopwatch from '~icons/tabler/24-hours';
 	import SDK from '~icons/tabler/sdk';
-	import type { SystemInformation } from '$lib/types/models';
+	import type { SystemInformation, Analytics } from '$lib/types/models';
 	import { socket } from '$lib/stores/socket';
 
 	let systemInformation: SystemInformation;
@@ -45,11 +45,12 @@
 		return systemInformation;
 	}
 
-	onMount(() => socket.on("analytics", handleSystemData));
+	onMount(() => socket.on('analytics', handleSystemData));
 
-	onDestroy(() => socket.off("analytics", handleSystemData));
+	onDestroy(() => socket.off('analytics', handleSystemData));
 
-	const handleSystemData = (data: Analytics) => systemInformation = { ...systemInformation, ...data };
+	const handleSystemData = (data: Analytics) =>
+		(systemInformation = { ...systemInformation, ...data });
 
 	async function postRestart() {
 		const response = await fetch('/rest/restart', {
@@ -249,7 +250,10 @@
 						<div class="font-bold">Sketch (Used / Free)</div>
 						<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
 							<span>
-								{((systemInformation.sketch_size / systemInformation.free_sketch_space) * 100).toFixed(1)} % of
+								{(
+									(systemInformation.sketch_size / systemInformation.free_sketch_space) *
+									100
+								).toFixed(1)} % of
 								{(systemInformation.free_sketch_space / 1000000).toLocaleString('en-US')} MB used
 							</span>
 
@@ -291,9 +295,10 @@
 							>
 
 							<span
-								>({((systemInformation.fs_total - systemInformation.fs_used) / 1000000).toLocaleString(
-									'en-US'
-								)}
+								>({(
+									(systemInformation.fs_total - systemInformation.fs_used) /
+									1000000
+								).toLocaleString('en-US')}
 								MB free)</span
 							>
 						</div>
@@ -307,7 +312,9 @@
 					<div>
 						<div class="font-bold">Core Temperature</div>
 						<div class="text-sm opacity-75">
-							{systemInformation.core_temp == 53.33 ? 'NaN' : systemInformation.core_temp.toFixed(2) + ' °C'}
+							{systemInformation.core_temp == 53.33
+								? 'NaN'
+								: systemInformation.core_temp.toFixed(2) + ' °C'}
 						</div>
 					</div>
 				</div>
