@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [WIP] - Work in Progress
+## [0.3.1] - Work in Progress
 
 ### Added
 
@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Added a hook handler to StatefulService. Unlike an UPDATE a hook is called every time a state receives and updated, even if the result is UNCHANGED or ERROR.
 - Added missing include for S2 in SystemStatus.cpp (#23)
 - Added awareness of front end build script for all 3 major JS package managers. The script will auto-identify the package manager by the lock-file. (#40)
+- Introduced a new event source to bundle the websocket server and the notifications events. This saves open sockets and allows up to 2 concurrent visitors of the internal website. The normal websocket server endpoint remains as an option, should a pure websocket connection be desired. (#29 and #43)
 
 ### Changed
 
@@ -22,13 +23,13 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- Duplicate method in FeatureService (#18)
 - Fixed compile error with FLAG `-D SERVE_CONFIG_FILES`
 - Fixed typo in telemetry.ts (#38)
 - Fixed the development warning: `Loading /rest/features using `window.fetch`. For best results, use the `fetch`that is passed to your`load` function:`
 
 ### Removed
 
+- Duplicate method in FeatureService (#18)
 - Duplicate lines in Systems Settings view.
 - Removes duplicate begin (#36)
 
