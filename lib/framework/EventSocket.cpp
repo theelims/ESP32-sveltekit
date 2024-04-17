@@ -2,10 +2,12 @@
 
 SemaphoreHandle_t clientSubscriptionsMutex = xSemaphoreCreateMutex();
 
-EventSocket::EventSocket(PsychicHttpServer *server, SecurityManager *securityManager, AuthenticationPredicate authenticationPredicate) : _server(server),
-                                                                                                                                         _securityManager(securityManager),
-                                                                                                                                         _authenticationPredicate(authenticationPredicate),
-                                                                                                                                         _bufferSize(1024)
+EventSocket::EventSocket(PsychicHttpServer *server,
+                         SecurityManager *securityManager,
+                         AuthenticationPredicate authenticationPredicate) : _server(server),
+                                                                            _securityManager(securityManager),
+                                                                            _authenticationPredicate(authenticationPredicate),
+                                                                            _bufferSize(1024)
 {
 }
 

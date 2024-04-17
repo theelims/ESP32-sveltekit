@@ -14,9 +14,11 @@
 
 #include <APStatus.h>
 
-APStatus::APStatus(PsychicHttpServer *server, SecurityManager *securityManager, APSettingsService *apSettingsService) : _server(server),
-                                                                                                                        _securityManager(securityManager),
-                                                                                                                        _apSettingsService(apSettingsService)
+APStatus::APStatus(PsychicHttpServer *server,
+                   SecurityManager *securityManager,
+                   APSettingsService *apSettingsService) : _server(server),
+                                                           _securityManager(securityManager),
+                                                           _apSettingsService(apSettingsService)
 {
 }
 void APStatus::begin()

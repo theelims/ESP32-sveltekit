@@ -14,9 +14,11 @@
 
 #include <MqttStatus.h>
 
-MqttStatus::MqttStatus(PsychicHttpServer *server, MqttSettingsService *mqttSettingsService, SecurityManager *securityManager) : _server(server),
-                                                                                                                                _securityManager(securityManager),
-                                                                                                                                _mqttSettingsService(mqttSettingsService)
+MqttStatus::MqttStatus(PsychicHttpServer *server,
+                       MqttSettingsService *mqttSettingsService,
+                       SecurityManager *securityManager) : _server(server),
+                                                           _securityManager(securityManager),
+                                                           _mqttSettingsService(mqttSettingsService)
 {
 }
 

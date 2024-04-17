@@ -22,8 +22,9 @@ static char md5[33] = "\0";
 
 static FileType fileType = ft_none;
 
-UploadFirmwareService::UploadFirmwareService(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
-                                                                                                            _securityManager(securityManager)
+UploadFirmwareService::UploadFirmwareService(PsychicHttpServer *server,
+                                             SecurityManager *securityManager) : _server(server),
+                                                                                 _securityManager(securityManager)
 {
 }
 

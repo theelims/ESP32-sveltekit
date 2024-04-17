@@ -14,13 +14,15 @@
 
 #include <APSettingsService.h>
 
-APSettingsService::APSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager) : _server(server),
-                                                                                                            _securityManager(securityManager),
-                                                                                                            _httpEndpoint(APSettings::read, APSettings::update, this, server, AP_SETTINGS_SERVICE_PATH, securityManager),
-                                                                                                            _fsPersistence(APSettings::read, APSettings::update, this, fs, AP_SETTINGS_FILE),
-                                                                                                            _dnsServer(nullptr),
-                                                                                                            _lastManaged(0),
-                                                                                                            _reconfigureAp(false)
+APSettingsService::APSettingsService(PsychicHttpServer *server,
+                                     FS *fs,
+                                     SecurityManager *securityManager) : _server(server),
+                                                                         _securityManager(securityManager),
+                                                                         _httpEndpoint(APSettings::read, APSettings::update, this, server, AP_SETTINGS_SERVICE_PATH, securityManager),
+                                                                         _fsPersistence(APSettings::read, APSettings::update, this, fs, AP_SETTINGS_FILE),
+                                                                         _dnsServer(nullptr),
+                                                                         _lastManaged(0),
+                                                                         _reconfigureAp(false)
 {
     addUpdateHandler([&](const String &originId)
                      { reconfigureAP(); },
