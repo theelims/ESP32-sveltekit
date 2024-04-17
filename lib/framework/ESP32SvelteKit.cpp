@@ -6,7 +6,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -18,12 +18,12 @@ ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEnd
                                                                                           _numberEndpoints(numberEndpoints),
                                                                                           _featureService(server),
                                                                                           _securitySettingsService(server, &ESPFS),
-                                                                                          _wifiSettingsService(server, &ESPFS, &_securitySettingsService, &_notificationEvents),
+                                                                                          _wifiSettingsService(server, &ESPFS, &_securitySettingsService, &_socket),
                                                                                           _wifiScanner(server, &_securitySettingsService),
                                                                                           _wifiStatus(server, &_securitySettingsService),
                                                                                           _apSettingsService(server, &ESPFS, &_securitySettingsService),
                                                                                           _apStatus(server, &_securitySettingsService, &_apSettingsService),
-                                                                                          _notificationEvents(server),
+                                                                                          _socket(server, &_securitySettingsService),
 #if FT_ENABLED(FT_NTP)
                                                                                           _ntpSettingsService(server, &ESPFS, &_securitySettingsService),
                                                                                           _ntpStatus(server, &_securitySettingsService),
@@ -32,7 +32,7 @@ ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEnd
                                                                                           _uploadFirmwareService(server, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_DOWNLOAD_FIRMWARE)
-                                                                                          _downloadFirmwareService(server, &_securitySettingsService, &_notificationEvents),
+                                                                                          _downloadFirmwareService(server, &_securitySettingsService, &_socket),
 #endif
 #if FT_ENABLED(FT_MQTT)
                                                                                           _mqttSettingsService(server, &ESPFS, &_securitySettingsService),
@@ -45,10 +45,10 @@ ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEnd
                                                                                           _sleepService(server, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_BATTERY)
-                                                                                          _batteryService(&_notificationEvents),
+                                                                                          _batteryService(&_socket),
 #endif
 #if FT_ENABLED(FT_ANALYTICS)
-                                                                                          _analyticsService(&_notificationEvents),
+                                                                                          _analyticsService(&_socket),
 #endif
                                                                                           _restartService(server, &_securitySettingsService),
                                                                                           _factoryResetService(server, &ESPFS, &_securitySettingsService),
@@ -139,7 +139,7 @@ void ESP32SvelteKit::begin()
 
     // Start the services
     _apStatus.begin();
-    _notificationEvents.begin();
+    _socket.begin();
     _apSettingsService.begin();
     _factoryResetService.begin();
     _featureService.begin();

@@ -8,6 +8,7 @@
 	import Info from '~icons/tabler/info-circle';
 	import Save from '~icons/tabler/device-floppy';
 	import Reload from '~icons/tabler/reload';
+	import { socket } from '$lib/stores/socket';
 	import type { LightState } from '$lib/types/models';
 
 	let lightState: LightState = { led_on: false };
@@ -31,34 +32,14 @@
 		return;
 	}
 
-	const ws_token = $page.data.features.security ? '?access_token=' + $user.bearer_token : '';
-
-	const lightStateSocket = new WebSocket('ws://' + $page.url.host + '/ws/lightState' + ws_token);
-
-	lightStateSocket.onopen = (event) => {
-		lightStateSocket.send('Hello');
-	};
-
-	lightStateSocket.addEventListener('close', (event) => {
-		const closeCode = event.code;
-		const closeReason = event.reason;
-		console.log('WebSocket closed with code:', closeCode);
-		console.log('Close reason:', closeReason);
-		notifications.error('Websocket disconnected', 5000);
-	});
-
-	lightStateSocket.onmessage = (event) => {
-		const message = JSON.parse(event.data);
-		if (message.type != 'id') {
-			lightState = message;
-		}
-	};
-
-	onDestroy(() => lightStateSocket.close());
-
 	onMount(() => {
+		socket.on<LightState>("led", (data) => {
+			lightState = data;
+		})
 		getLightstate();
 	});
+	
+	onDestroy(() => socket.off("led"));
 
 	async function postLightstate() {
 		try {
@@ -125,7 +106,7 @@
 					class="toggle toggle-primary"
 					bind:checked={lightState.led_on}
 					on:change={() => {
-						lightStateSocket.send(JSON.stringify(lightState));
+						socket.sendEvent("led", lightState);
 					}}
 				/>
 			</label>
