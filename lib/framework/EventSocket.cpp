@@ -17,10 +17,9 @@ void EventSocket::begin()
     _socket.onOpen((std::bind(&EventSocket::onWSOpen, this, std::placeholders::_1)));
     _socket.onClose(std::bind(&EventSocket::onWSClose, this, std::placeholders::_1));
     _socket.onFrame(std::bind(&EventSocket::onFrame, this, std::placeholders::_1, std::placeholders::_2));
-    _server->on(EVENT_SERVICE_PATH, &_eventSource);
-    _server->on(WS_EVENT_SERVICE_PATH, &_socket);
+    _server->on(EVENT_SERVICE_PATH, &_socket);
 
-    ESP_LOGV("Socket", "Registered socket Source endpoint: %s", EVENT_SERVICE_PATH);
+    ESP_LOGV("EventSocket", "Registered event socket endpoint: %s", EVENT_SERVICE_PATH);
 }
 
 void EventSocket::onWSOpen(PsychicWebSocketClient *client)
@@ -56,6 +55,7 @@ esp_err_t EventSocket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame 
             if (event == "subscribe")
             {
                 client_subscriptions[doc["data"]].push_back(request->client()->socket());
+                handleSubscribeCallbacks(doc["data"], String(request->client()->socket()));
             }
             else if (event == "unsubscribe")
             {
@@ -64,7 +64,7 @@ esp_err_t EventSocket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame 
             else
             {
                 JsonObject jsonObject = doc["data"].as<JsonObject>();
-                handleCallbacks(event, jsonObject, request->client()->socket());
+                handleEventCallbacks(event, jsonObject, request->client()->socket());
             }
             return ESP_OK;
         }
@@ -85,10 +85,6 @@ void EventSocket::emit(const char *event, const char *payload)
 void EventSocket::emit(const char *event, const char *payload, const char *originId)
 {
     int originSubscriptionId = originId[0] ? atoi(originId) : -1;
-    if (_eventSource.count() > 0)
-    {
-        _eventSource.send(payload, event, millis());
-    }
     xSemaphoreTake(clientSubscriptionsMutex, portMAX_DELAY);
     auto &subscriptions = client_subscriptions[event];
     if (subscriptions.empty())
@@ -96,7 +92,7 @@ void EventSocket::emit(const char *event, const char *payload, const char *origi
         xSemaphoreGive(clientSubscriptionsMutex);
         return;
     }
-    String msg = "42[\"" + String(event) + "\"," + String(payload) + "]"; // TODO: What is this?
+    String msg = "42[\"" + String(event) + "\"," + String(payload) + "]";
 
     for (int subscription : client_subscriptions[event])
     {
@@ -138,7 +134,7 @@ void EventSocket::pushNotification(String message, pushEvent event)
     emit(eventType.c_str(), message.c_str());
 }
 
-void EventSocket::handleCallbacks(String event, JsonObject &jsonObject, int originId)
+void EventSocket::handleEventCallbacks(String event, JsonObject &jsonObject, int originId)
 {
     for (auto &callback : event_callbacks[event])
     {
@@ -146,9 +142,23 @@ void EventSocket::handleCallbacks(String event, JsonObject &jsonObject, int orig
     }
 }
 
-void EventSocket::on(String event, EventCallback callback)
+void EventSocket::handleSubscribeCallbacks(String event, const String &originId)
+{
+    for (auto &callback : subscribe_callbacks[event])
+    {
+        callback(originId);
+    }
+}
+
+void EventSocket::onEvent(String event, EventCallback callback)
 {
     event_callbacks[event].push_back(callback);
+}
+
+void EventSocket::onSubscribe(String event, SubscribeCallback callback)
+{
+    subscribe_callbacks[event].push_back(callback);
+    ESP_LOGI("EventSocket", "onSubscribe for event: %s", event.c_str());
 }
 
 void EventSocket::broadcast(String message)

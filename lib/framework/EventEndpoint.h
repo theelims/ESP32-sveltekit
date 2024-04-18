@@ -24,14 +24,19 @@ template <class T>
 class EventEndpoint
 {
 public:
-    EventEndpoint(JsonStateReader<T> stateReader, JsonStateUpdater<T> stateUpdater, StatefulService<T> *statefulService, EventSocket *socket, const char *event, size_t bufferSize = DEFAULT_BUFFER_SIZE) : _stateReader(stateReader),
-                                                                                                                                                                                                            _stateUpdater(stateUpdater),
-                                                                                                                                                                                                            _statefulService(statefulService),
-                                                                                                                                                                                                            _socket(socket),
-                                                                                                                                                                                                            _bufferSize(bufferSize),
-                                                                                                                                                                                                            _event(event)
+    EventEndpoint(JsonStateReader<T> stateReader,
+                  JsonStateUpdater<T> stateUpdater,
+                  StatefulService<T> *statefulService,
+                  EventSocket *socket, const char *event,
+                  size_t bufferSize = DEFAULT_BUFFER_SIZE) : _stateReader(stateReader),
+                                                             _stateUpdater(stateUpdater),
+                                                             _statefulService(statefulService),
+                                                             _socket(socket),
+                                                             _bufferSize(bufferSize),
+                                                             _event(event)
     {
-        _socket->on(event, std::bind(&EventEndpoint::updateState, this, std::placeholders::_1, std::placeholders::_2));
+        _socket->onEvent(event, std::bind(&EventEndpoint::updateState, this, std::placeholders::_1, std::placeholders::_2));
+        _socket->onSubscribe(event, std::bind(&EventEndpoint::syncState, this, std::placeholders::_1));
         _statefulService->addUpdateHandler([&](const String &originId)
                                            { syncState(originId); },
                                            false);
@@ -45,16 +50,11 @@ private:
     const char *_event;
     size_t _bufferSize;
 
-    // TODO Why?
     void updateState(JsonObject &root, int originId)
     {
-        if (_statefulService->updateWithoutPropagation(root, _stateUpdater) == StateUpdateResult::CHANGED)
-        {
-            _statefulService->callUpdateHandlers(String(originId));
-        }
+        _statefulService->update(root, _stateUpdater, String(originId));
     }
 
-    // TODO Does not synchronize state with the client on first connect
     void syncState(const String &originId)
     {
         DynamicJsonDocument jsonDocument{_bufferSize};
@@ -62,6 +62,7 @@ private:
         String output;
         _statefulService->read(root, _stateReader);
         serializeJson(root, output);
+        ESP_LOGV("EventEndpoint", "Syncing state: %s", output.c_str());
         _socket->emit(_event, output.c_str(), originId.c_str());
     }
 };

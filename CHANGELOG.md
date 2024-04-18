@@ -7,28 +7,28 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Added build flag `-D SERIAL_INFO` to platformio.ini to enable / disable all `Serial.print()` statements. On some boards with native USB those Serial prints have been reported to block and make the server unresponsive.
-- Added a hook handler to StatefulService. Unlike an UPDATE a hook is called every time a state receives and updated, even if the result is UNCHANGED or ERROR.
+- Added a hook handler to StatefulService. Unlike an UPDATE a hook is called every time a state receives an updated, even if the result is UNCHANGED or ERROR.
 - Added missing include for S2 in SystemStatus.cpp (#23)
 - Added awareness of front end build script for all 3 major JS package managers. The script will auto-identify the package manager by the lock-file. (#40)
-- Added a new event source to bundle the websocket server and the notifications events. This saves open sockets and allows up to 2 concurrent visitors of the internal website. The normal websocket server endpoint remains as an option, should a pure websocket connection be desired. An EventEndpoint was added to use this in Stateful Services. (#29 and #43)
+- Added a new event source to bundle the websocket server and the notifications events. This saves open sockets and allows up to 2 concurrent visitors of the internal website. The normal websocket server endpoint remains as an option, should a pure websocket connection be desired. An EventEndpoint was added to use this with Stateful Services. (#29 and #43)
 - TS Types definition in one central place for the frontend.
 
 ### Changed
 
 - more generic board definition in platformio.ini (#20)
+- Renamed `MqttPubSub.h` and class to `MqttEndpoint.h` and class.
 - refactored MqttEndpoint.h into a single class to improve readability
 - Moves appName and copyright to `layout.ts` to keep customization in one place (#31)
-- Make eventSource use timeout for reconnect (#34)
+- Make event source use timeout for reconnect (#34)
 - Make each toasts disappear after timeout (#35)
 - Fixed version `platform = espressif32 @ 6.6.0` in platformio.ini
-- Renamed `MqttPubSub.h` and class to `MqttEndpoint.h` and class.
 - Analytics data limited to 1000 data points (roughly 33 minutes).
 
 ### Fixed
 
 - Fixed compile error with FLAG `-D SERVE_CONFIG_FILES`
 - Fixed typo in telemetry.ts (#38)
-- Fixed the development warning: `Loading /rest/features using `window.fetch`. For best results, use the `fetch`that is passed to your`load` function:`
+- Fixed the development warning: `Loading /rest/features using 'window.fetch'. For best results, use the 'fetch' that is passed to your 'load' function:`
 
 ### Removed
 

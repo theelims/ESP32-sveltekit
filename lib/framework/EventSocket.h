@@ -6,10 +6,10 @@
 #include <StatefulService.h>
 #include <list>
 
-#define EVENT_SERVICE_PATH "/events"
-#define WS_EVENT_SERVICE_PATH "/ws"
+#define EVENT_SERVICE_PATH "/ws/events"
 
 typedef std::function<void(JsonObject &root, int originId)> EventCallback;
+typedef std::function<void(const String &originId)> SubscribeCallback;
 
 enum pushEvent
 {
@@ -26,7 +26,9 @@ public:
 
   void begin();
 
-  void on(String event, EventCallback callback);
+  void onEvent(String event, EventCallback callback);
+
+  void onSubscribe(String event, SubscribeCallback callback);
 
   void emit(String event, String payload);
 
@@ -43,11 +45,12 @@ private:
   PsychicWebSocketHandler _socket;
   SecurityManager *_securityManager;
   AuthenticationPredicate _authenticationPredicate;
-  PsychicEventSource _eventSource;
 
   std::map<String, std::list<int>> client_subscriptions;
   std::map<String, std::list<EventCallback>> event_callbacks;
-  void handleCallbacks(String event, JsonObject &jsonObject, int originId);
+  std::map<String, std::list<SubscribeCallback>> subscribe_callbacks;
+  void handleEventCallbacks(String event, JsonObject &jsonObject, int originId);
+  void handleSubscribeCallbacks(String event, const String &originId);
 
   size_t _bufferSize;
   void onWSOpen(PsychicWebSocketClient *client);

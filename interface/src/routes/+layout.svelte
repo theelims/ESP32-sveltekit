@@ -23,12 +23,9 @@
 		if ($user.bearer_token !== '') {
 			await validateUser($user);
 		}
-		user.subscribe((value) => {
-			if (value.bearer_token !== '') {
-				const ws_token = $page.data.features.security ? '?access_token=' + $user.bearer_token : '';
-				socket.init(`ws://${window.location.host}/ws${ws_token}`);
-			}
-		});
+		const ws_token = $page.data.features.security ? '?access_token=' + $user.bearer_token : '';
+		socket.init(`ws://${window.location.host}/ws/events${ws_token}`);
+
 		addEventListeners();
 	});
 
