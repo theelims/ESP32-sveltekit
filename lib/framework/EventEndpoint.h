@@ -36,7 +36,7 @@ public:
                                                              _event(event)
     {
         _socket->onEvent(event, std::bind(&EventEndpoint::updateState, this, std::placeholders::_1, std::placeholders::_2));
-        _socket->onSubscribe(event, std::bind(&EventEndpoint::syncState, this, std::placeholders::_1));
+        _socket->onSubscribe(event, std::bind(&EventEndpoint::syncState, this, std::placeholders::_1, std::placeholders::_2));
         _statefulService->addUpdateHandler([&](const String &originId)
                                            { syncState(originId); },
                                            false);
@@ -55,7 +55,7 @@ private:
         _statefulService->update(root, _stateUpdater, String(originId));
     }
 
-    void syncState(const String &originId)
+    void syncState(const String &originId, bool sync = false)
     {
         DynamicJsonDocument jsonDocument{_bufferSize};
         JsonObject root = jsonDocument.to<JsonObject>();
@@ -63,7 +63,7 @@ private:
         _statefulService->read(root, _stateReader);
         serializeJson(root, output);
         ESP_LOGV("EventEndpoint", "Syncing state: %s", output.c_str());
-        _socket->emit(_event, output.c_str(), originId.c_str());
+        _socket->emit(_event, output.c_str(), originId.c_str(), sync);
     }
 };
 

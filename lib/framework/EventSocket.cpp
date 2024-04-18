@@ -82,7 +82,7 @@ void EventSocket::emit(const char *event, const char *payload)
     emit(event, payload, "");
 }
 
-void EventSocket::emit(const char *event, const char *payload, const char *originId)
+void EventSocket::emit(const char *event, const char *payload, const char *originId, bool bounce)
 {
     int originSubscriptionId = originId[0] ? atoi(originId) : -1;
     xSemaphoreTake(clientSubscriptionsMutex, portMAX_DELAY);
@@ -94,19 +94,34 @@ void EventSocket::emit(const char *event, const char *payload, const char *origi
     }
     String msg = "42[\"" + String(event) + "\"," + String(payload) + "]";
 
-    for (int subscription : client_subscriptions[event])
+    // if bounce == true, send the message back to the origin
+    if (bounce && originSubscriptionId > 0)
     {
-        if (subscription == originSubscriptionId)
-            continue;
-        auto *client = _socket.getClient(subscription);
-        if (!client)
+        auto *client = _socket.getClient(originSubscriptionId);
+        if (client)
         {
-            subscriptions.remove(subscription);
-            continue;
+            ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message: %s", event, client->remoteIP().toString(),
+                     msg.c_str());
+            client->sendMessage(msg.c_str());
         }
-        ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message: %s", event, client->remoteIP().toString(),
-                 msg.c_str());
-        client->sendMessage(msg.c_str());
+    }
+    else
+    { // else send the message to all other clients
+
+        for (int subscription : client_subscriptions[event])
+        {
+            if (subscription == originSubscriptionId)
+                continue;
+            auto *client = _socket.getClient(subscription);
+            if (!client)
+            {
+                subscriptions.remove(subscription);
+                continue;
+            }
+            ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message: %s", event, client->remoteIP().toString(),
+                     msg.c_str());
+            client->sendMessage(msg.c_str());
+        }
     }
     xSemaphoreGive(clientSubscriptionsMutex);
 }
@@ -146,7 +161,7 @@ void EventSocket::handleSubscribeCallbacks(String event, const String &originId)
 {
     for (auto &callback : subscribe_callbacks[event])
     {
-        callback(originId);
+        callback(originId, true);
     }
 }
 
