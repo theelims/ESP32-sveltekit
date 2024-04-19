@@ -45,7 +45,7 @@ function createWebSocket() {
 			}
 			listeners.get('message')?.forEach((listener) => listener(data));
 			try {
-				data = JSON.parse(message.data.substring(2));
+				data = JSON.parse(message.data);
 			} catch (error) {
 				listeners.get('error')?.forEach((listener) => listener(error));
 				return;

@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 - Added a hook handler to StatefulService. Unlike an UPDATE a hook is called every time a state receives an updated, even if the result is UNCHANGED or ERROR.
 - Added missing include for S2 in SystemStatus.cpp (#23)
 - Added awareness of front end build script for all 3 major JS package managers. The script will auto-identify the package manager by the lock-file. (#40)
-- Added a new event source to bundle the websocket server and the notifications events. This saves open sockets and allows up to 2 concurrent visitors of the internal website. The normal websocket server endpoint remains as an option, should a pure websocket connection be desired. An EventEndpoint was added to use this with Stateful Services. (#29 and #43)
+- Added a new event socket to bundle the websocket server and the notifications events. This saves on open sockets and allows for concurrent visitors of the internal website. The normal websocket server endpoint remains as an option, should a pure websocket connection be desired. An EventEndpoint was added to use this with Stateful Services. (#29 and #43)
 - TS Types definition in one central place for the frontend.
 
 ### Changed

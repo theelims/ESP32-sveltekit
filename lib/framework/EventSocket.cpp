@@ -92,7 +92,7 @@ void EventSocket::emit(const char *event, const char *payload, const char *origi
         xSemaphoreGive(clientSubscriptionsMutex);
         return;
     }
-    String msg = "42[\"" + String(event) + "\"," + String(payload) + "]";
+    String msg = "[\"" + String(event) + "\"," + String(payload) + "]";
 
     // if bounce == true, send the message back to the origin
     if (bounce && originSubscriptionId > 0)
