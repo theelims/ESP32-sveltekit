@@ -467,12 +467,14 @@ void StrokeEngine::_stroking()
       {
         // Ask pattern for update on motion parameters
         currentMotion = patternTable[_patternIndex]->nextTarget(_index);
+        ESP_LOGD("StrokeEngine", "Raw Pattern Values (UPDATE): %d @ %05.1f mm %05.1f mm/s and %05.1f mm/s^2 %s", _index, currentMotion.stroke, currentMotion.speed, currentMotion.acceleration, (currentMotion.skip ? "SKIP" : ""));
 
         // Run safety system on new motion parameters
         safeMotion = _safeGuard.makeSafe(currentMotion);
+        ESP_LOGD("StrokeEngine", "Safe Pattern Values (UPDATE): %d @ to %05.1f mm with %05.1f mm %05.1f mm/s and %05.1f mm/s^2", _index, safeMotion.absoluteTargetPosition, safeMotion.strokeLength, safeMotion.speed, safeMotion.acceleration);
 
         // Apply the ease-in modifier to the motion parameters
-        // _easeIn.applyModification(safeMotion);
+        _easeIn.applyModification(safeMotion);
 
         // Apply new trapezoidal motion profile to servo
         ESP_LOGI("StrokeEngine", "Stroking Index (UPDATE): %d @ %05.1f mm %05.1f mm/s and %05.1f mm/s^2", _index, safeMotion.absoluteTargetPosition, safeMotion.speed, safeMotion.acceleration);
@@ -490,12 +492,14 @@ void StrokeEngine::_stroking()
 
         // Query new set of pattern parameters
         currentMotion = patternTable[_patternIndex]->nextTarget(_index);
+        ESP_LOGD("StrokeEngine", "Raw Pattern Values (AT_TARGET): %d @ %05.1f mm %05.1f mm/s and %05.1f mm/s^2 %s", _index, currentMotion.stroke, currentMotion.speed, currentMotion.acceleration, (currentMotion.skip ? "SKIP" : ""));
 
         // Pattern may introduce pauses between strokes
         if (currentMotion.skip == false)
         {
           // Run safety system on new motion parameters
           safeMotion = _safeGuard.makeSafe(currentMotion);
+          ESP_LOGD("StrokeEngine", "Safe Pattern Values (AT_TARGET): %d @ to %05.1f mm with %05.1f mm %05.1f mm/s and %05.1f mm/s^2", _index, safeMotion.absoluteTargetPosition, safeMotion.strokeLength, safeMotion.speed, safeMotion.acceleration);
 
           // Apply the ease-in modifier to the motion parameters
           _easeIn.applyModification(safeMotion);

@@ -160,7 +160,6 @@ public:
 
   /**
    * @brief Logs the performance of the profile generation.
-   *
    */
   void logProfilePerformance();
 

@@ -9,7 +9,7 @@ export const load = (async () => {
 	const item = await result.json();
 	return {
 		features: item,
-		title: 'FuckIO',
+		title: 'LUST-motion',
 		github: 'openlust/LUST-motion'
 	};
 }) satisfies LayoutLoad;

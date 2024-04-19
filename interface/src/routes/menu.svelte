@@ -24,7 +24,7 @@
 	import { user } from '$lib/stores/user';
 	import { createEventDispatcher } from 'svelte';
 
-	const appName = 'FuckIO';
+	const appName = $page.data.title;
 
 	const copyright = '2024 elims';
 

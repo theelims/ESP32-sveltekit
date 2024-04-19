@@ -44,7 +44,7 @@ void TrapezoidalMotion::generateTrapezoidalProfile(float position, float speed, 
     float topSpeed = 0.0;
     float timeDelta = 0.0;
 
-    ESP_LOGV("TrapezoidalMotion", "Calculate trapezoidal profile to %05.1f mm @ %05.1f mm/s, %05.1f mm/s^2", position, speed, acceleration);
+    ESP_LOGD("TrapezoidalMotion", "Calculate trapezoidal profile to %05.1f mm @ %05.1f mm/s, %05.1f mm/s^2", position, speed, acceleration);
 
     // Retrieve current speed and position
     unsigned int now = millis();
@@ -56,7 +56,7 @@ void TrapezoidalMotion::generateTrapezoidalProfile(float position, float speed, 
         // Reset profile debug messages index
         _profilePhaseDebugMessages = 0;
 
-        ESP_LOGV("TrapezoidalMotion", "Current position is %05.1f mm @ %05.1f mm/s, %05.1f mm/s^2", currentSpeedAndPosition.position, currentSpeedAndPosition.speed, currentSpeedAndPosition.acceleration);
+        ESP_LOGD("TrapezoidalMotion", "Current position is %05.1f mm @ %05.1f mm/s, %05.1f mm/s^2", currentSpeedAndPosition.position, currentSpeedAndPosition.speed, currentSpeedAndPosition.acceleration);
 
         // Save time as basis for later calculations
         _startOfProfileInMs = now;
@@ -244,18 +244,16 @@ void TrapezoidalMotion::generateTrapezoidalProfile(float position, float speed, 
 
 void TrapezoidalMotion::logProfilePerformance()
 {
-    if (_profileGenerationCount == 0)
+    if (_profileGenerationCount > 0)
     {
-        ESP_LOGW("TrapezoidalMotion", "No profile generated");
-        return;
-    }
-    ESP_LOGI("TrapezoidalMotion", "Avrg. Profile Generation Time: %d us", _profileGenerationTime / _profileGenerationCount);
-    ESP_LOGI("TrapezoidalMotion", "Avrg. Sqrt Calculation Time: %d us", _sqrtCalculationTime / _profileGenerationCount);
+        ESP_LOGI("TrapezoidalMotion", "Avrg. Profile Generation Time: %d us", _profileGenerationTime / _profileGenerationCount);
+        ESP_LOGI("TrapezoidalMotion", "Avrg. Sqrt Calculation Time: %d us", _sqrtCalculationTime / _profileGenerationCount);
 
-    // Reset performance counters
-    _profileGenerationTime = 0;
-    _sqrtCalculationTime = 0;
-    _profileGenerationCount = 0;
+        // Reset performance counters
+        _profileGenerationTime = 0;
+        _sqrtCalculationTime = 0;
+        _profileGenerationCount = 0;
+    }
 }
 
 speedAndPosition TrapezoidalMotion::getSpeedAndPositionAbsolute(unsigned int absoluteTimeInMs)
