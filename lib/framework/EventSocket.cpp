@@ -24,7 +24,7 @@ void EventSocket::begin()
 
 void EventSocket::onWSOpen(PsychicWebSocketClient *client)
 {
-    ESP_LOGI("EventSocket", "ws[%s][%u] connect", client->remoteIP().toString(), client->socket());
+    ESP_LOGI("EventSocket", "ws[%s][%u] connect", client->remoteIP().toString().c_str(), client->socket());
 }
 
 void EventSocket::onWSClose(PsychicWebSocketClient *client)
@@ -33,17 +33,17 @@ void EventSocket::onWSClose(PsychicWebSocketClient *client)
     {
         event_subscriptions.second.remove(client->socket());
     }
-    ESP_LOGI("EventSocket", "ws[%s][%u] disconnect", client->remoteIP().toString(), client->socket());
+    ESP_LOGI("EventSocket", "ws[%s][%u] disconnect", client->remoteIP().toString().c_str(), client->socket());
 }
 
 esp_err_t EventSocket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame *frame)
 {
-    ESP_LOGV("EventSocket", "ws[%s][%u] opcode[%d]", request->client()->remoteIP().toString(),
+    ESP_LOGV("EventSocket", "ws[%s][%u] opcode[%d]", request->client()->remoteIP().toString().c_str(),
              request->client()->socket(), frame->type);
 
     if (frame->type == HTTPD_WS_TYPE_TEXT)
     {
-        ESP_LOGV("EventSocket", "ws[%s][%u] request: %s", request->client()->remoteIP().toString(),
+        ESP_LOGV("EventSocket", "ws[%s][%u] request: %s", request->client()->remoteIP().toString().c_str(),
                  request->client()->socket(), (char *)frame->payload);
 
         DynamicJsonDocument doc = DynamicJsonDocument(_bufferSize);
@@ -100,7 +100,7 @@ void EventSocket::emit(const char *event, const char *payload, const char *origi
         auto *client = _socket.getClient(originSubscriptionId);
         if (client)
         {
-            ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message: %s", event, client->remoteIP().toString(),
+            ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message: %s", event, client->remoteIP().toString().c_str(),
                      msg.c_str());
             client->sendMessage(msg.c_str());
         }
@@ -118,7 +118,7 @@ void EventSocket::emit(const char *event, const char *payload, const char *origi
                 subscriptions.remove(subscription);
                 continue;
             }
-            ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message: %s", event, client->remoteIP().toString(),
+            ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message: %s", event, client->remoteIP().toString().c_str(),
                      msg.c_str());
             client->sendMessage(msg.c_str());
         }
