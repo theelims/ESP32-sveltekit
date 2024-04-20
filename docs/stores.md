@@ -22,9 +22,25 @@ In addition to the properties it provides two methods for initializing the user 
 
     The user credentials including the JWT token are stored in the browsers local storage. Any javascript executed on the browser can access this making it extremely vulnerable to XSS attacks. Also the HTTP connection between ESP32 and front end is not encrypted making it possible for everyone to read the JWT token in the same network. Fixing these severe security issues is on the todo list for upcoming releases.
 
+## Event Socket
+
+```ts
+import { socket } from "$lib/stores/socket";
+
+onMount(() => {
+  socket.on<LightState>("led", (data) => {
+    lightState = data;
+  });
+});
+
+onDestroy(() => socket.off("led"));
+
+socket.sendEvent("led", lightState);
+```
+
 ## Telemetry
 
-The telemetry store can be used to update telemetry data like RSSI via Server-Sent Events. The corresponding `eventListener` functions are located in `+layout.svelte`.
+The telemetry store can be used to update telemetry data like RSSI via the [Event Socket](statefulservice.md#event-socket) system.
 
 ```ts
 import { telemetry } from "$lib/stores/telemetry";
@@ -44,7 +60,7 @@ It exposes the following properties you can subscribe to:
 
 ## Analytics
 
-The analytics store holds a log of heap and other debug information via Server-Sent Events. The corresponding `eventListener` functions are located in `+layout.svelte`.
+The analytics store holds a log of heap and other debug information via the [Event Socket](statefulservice.md#event-socket) system.
 
 ```ts
 import { analytics } from "$lib/stores/analytics";

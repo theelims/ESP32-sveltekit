@@ -54,6 +54,8 @@ class LightStateService : public StatefulService<LightState> {
 };
 ```
 
+### Update Handler
+
 You may listen for changes to state by registering an update handler callback. It is possible to remove an update handler later if required.
 
 ```cpp
@@ -76,6 +78,8 @@ An "originId" is passed to the update handler which may be used to identify the 
 | http                       | An update sent over REST (HttpEndpoint)         |
 | mqtt                       | An update sent over MQTT (MqttEndpoint)         |
 | websocketserver:{clientId} | An update sent over WebSocket (WebSocketServer) |
+
+### Hook Handler
 
 Sometimes if can be desired to hook into every update of an state, even if the StateUpdateResult is `StateUpdateResult::UNCHANGED` and the update handler isn't called. In such cases you can use the hook handler. Similarly it can be removed later.
 
@@ -119,7 +123,7 @@ There are three possible return values for an update function which are as follo
 | StateUpdateResult::UNCHANGED | The state was unchanged, propagation should not take place               |
 | StateUpdateResult::ERROR     | There was an error updating the state, propagation should not take place |
 
-### Serialization
+### JSON Serialization
 
 When reading or updating state from an external source (HTTP, WebSockets, or MQTT for example) the state must be marshalled into a serializable form (JSON). SettingsService provides two callback patterns which facilitate this internally:
 
@@ -165,7 +169,7 @@ JsonObject jsonObject = jsonDocument.as<JsonObject>();
 lightStateService->update(jsonObject, LightState::update, "timer");
 ```
 
-### Endpoints
+### HTTP RESTful Endpoint
 
 The framework provides an [HttpEndpoint.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/HttpEndpoint.h) class which may be used to register GET and POST handlers to read and update the state over HTTP. You may construct an HttpEndpoint as a part of the StatefulService or separately if you prefer.
 
@@ -191,7 +195,7 @@ Endpoint security is provided by authentication predicates which are [documented
 
 To register the HTTP endpoints with the web server the function `_httpEndpoint.begin()` must be called in the custom StatefulService Class' own `void begin()` function.
 
-### Persistence
+### File System Persistence
 
 [FSPersistence.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/FSPersistence.h) allows you to save state to the filesystem. FSPersistence automatically writes changes to the file system when state is updated. This feature can be disabled by calling `disableUpdateHandler()` if manual control of persistence is required.
 
@@ -209,7 +213,26 @@ class LightStateService : public StatefulService<LightState> {
 };
 ```
 
-### WebSockets
+### Event Socket Endpoint
+
+[EventEndpoint.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/EventEndpoint.h) wraps the [Event Socket](#event-socket) into an endpoint compatible with a stateful service. The client may subscribe and unsubscribe to this event to receive updates or push updates to the ESP32. The current state is synchronized upon subscription.
+
+The code below demonstrates how to extend the LightStateService class to provide an WebSocket:
+
+```cpp
+class LightStateService : public StatefulService<LightState> {
+ public:
+  LightStateService(EventSocket *socket) :
+      _eventEndpoint(LightState::read, LightState::update, this, socket, "led") {}
+
+ private:
+  EventEndpoint<LightState> _eventEndpoint;
+};
+```
+
+Since all events run through one websocket connection it is not possible to use the [securityManager](#security-features) to limit access to individual events. The security defaults to `AuthenticationPredicates::IS_AUTHENTICATED`.
+
+### WebSocket Server
 
 [WebSocketServer.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/WebSocketServer.h) allows you to read and update state over a WebSocket connection. WebSocketServer automatically pushes changes to all connected clients when state is updated.
 
@@ -235,7 +258,7 @@ WebSocket security is provided by authentication predicates which are [documente
 
 To register the WS endpoint with the web server the function `_webSocketServer.begin()` must be called in the custom StatefulService Class' own `void begin()` function.
 
-### MQTT
+### MQTT Client
 
 The framework includes an MQTT client which can be configured via the UI. MQTT requirements will differ from project to project so the framework exposes the client for you to use as you see fit. The framework does however provide a utility to interface StatefulService to a pair of pub/sub (state/set) topics. This utility can be used to synchronize state with software such as Home Assistant.
 
@@ -268,6 +291,56 @@ _mqttEndpoint.configureBroker("homeassistant/light/desk_lamp/set", "homeassistan
 ```
 
 The demo project allows the user to modify the MQTT topics via the UI so they can be changed without re-flashing the firmware.
+
+## Event Socket
+
+Beside RESTful HTTP Endpoints the Event Socket System provides a convenient communication path between the client and the ESP32. It uses a single WebSocket connection to synchronize state and to push realtime data to the client. The client needs to subscribe to the topics he is interested. Only clients who have an active subscription will receive data. Every authenticated client may make use of this system as the security settings are set to `AuthenticationPredicates::IS_AUTHENTICATED`.
+
+### Emit an Event
+
+The Event Socket provides an overloaded `emit()` function to push data to all subscribed clients. This is used by various esp32sveltekit classes to push real time data to the client. First an event must be registered with the Event Socket by calling `_socket.registerEvent("CustomEvent");`. Only then clients may subscribe to this custom event and you're entitled to emit event data:
+
+```cpp
+void emit(String event, String payload);
+void emit(const char *event, const char *payload);
+void emit(const char *event, const char *payload, const char *originId, bool onlyToSameOrigin = false);
+```
+
+The latter function allowing a selection of the recipient. If `onlyToSameOrigin = false` the payload is distributed to all subscribed clients, except the `originId`. If `onlyToSameOrigin = true` only the client with `originId` will receive the payload. This is used by the [EventEndpoint](#event-socket-endpoint) to sync the initial state when a new client subscribes.
+
+### Receive an Event
+
+A callback or lambda function can be registered to receive an ArduinoJSON object and the originId of the client sending the data:
+
+```cpp
+_socket.onEvent("CostumEvent",[&](JsonObject &root, int originId)
+{
+  bool ledState = root["led_on"];
+});
+```
+
+### Synchronize State on Subscription
+
+Similarly a callback or lambda function may be registered to get notified when a client subscribes to an event:
+
+```cpp
+_socket.onEvent("CostumEvent",[&](const String &originId, bool sync)
+{
+  Serial.println("New Client subscribed: " + originId);
+});
+```
+
+The boolean parameter provided will always be `true`.
+
+### Push Notifications to All Clients
+
+It is possibly to send push notifications to all clients by using the Event Socket. These will be displayed as toasts an the client side. Either directly call
+
+```cpp
+esp32sveltekit.getSocket()->pushNotification("Pushed a message!", PUSHINFO);
+```
+
+or keep a local pointer to the `EventSocket` instance. It is possible to send `PUSHINFO`, `PUSHWARNING`, `PUSHERROR` and `PUSHSUCCESS` events to all clients.
 
 ## Security features
 
@@ -397,24 +470,6 @@ esp32sveltekit.recoveryMode();
 
 will force a start of the AP regardless of the AP settings. It will not change the the AP settings. To exit the recovery mode restart the device or change the AP settings in the UI.
 
-### Push Notifications to All Clients
-
-It is possibly to send push notifications to all clients by using Server Side Events. These will be displayed as toasts an the client side. Either directly call
-
-```cpp
-esp32sveltekit.getNotificationEvents()->pushNotification("Pushed a message!", PUSHINFO, millis());
-```
-
-or keep a local pointer to the `NotificationEvents` instance. It is possible to send `PUSHINFO`, `PUSHWARNING`, `PUSHERROR` and `PUSHSUCCESS` events to all clients. The HTTP endpoint for this service is at `/events/notifications`.
-
-In addition the raw `send()` function is mapped out as well:
-
-```cpp
-esp32sveltekit.getNotificationEvents()->send("Pushed a message!", "event", millis());
-```
-
-This allows you to send your own Server-Sent Events without opening a new HTTP connection.
-
 ### Power Down with Deep Sleep
 
 This API service can place the ESP32 in the lowest power deep sleep mode consuming only a few µA. It uses the EXT1 wakeup source, so the ESP32 can be woken up with a button or from a peripherals interrupt. Consult the [ESP-IDF Api Reference](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/sleep_modes.html#_CPPv428esp_sleep_enable_ext1_wakeup8uint64_t28esp_sleep_ext1_wakeup_mode_t) which GPIOs can be used for this. The RTC will also be powered down, so an external pull-up or pull-down resistor is required. It is not possible to persist variable state through the deep sleep. To optimize the deep sleep power consumption it is advisable to use the callback function to put pins with external pull-up's or pull-down's in a special isolated state to prevent current leakage. Please consult the [ESP-IDF Api Reference](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/sleep_modes.html#configuring-ios-deep-sleep-only) for this.
@@ -441,7 +496,7 @@ esp32sveltekit.getSleepService()->sleepNow();
 
 ### Battery State of Charge
 
-A small helper class let's you update the battery icon in the status bar. This is useful if you have a battery operated IoT device. It must be enabled in [features.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/features.ini). It uses Server-sent events and exposes two functions that can be used to update the clients.
+A small helper class let's you update the battery icon in the status bar. This is useful if you have a battery operated IoT device. It must be enabled in [features.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/features.ini). It uses the [Event Socket](#event-socket) and exposes two functions that can be used to update the clients.
 
 ```cpp
 esp32sveltekit.getBatteryService()->updateSOC(float stateOfCharge); // update state of charge in percent (0 - 100%)
