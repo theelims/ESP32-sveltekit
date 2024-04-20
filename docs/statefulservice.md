@@ -319,7 +319,7 @@ _socket.onEvent("CostumEvent",[&](JsonObject &root, int originId)
 });
 ```
 
-### Synchronize State on Subscription
+### Get Notified on Subscriptions
 
 Similarly a callback or lambda function may be registered to get notified when a client subscribes to an event:
 

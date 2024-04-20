@@ -24,8 +24,12 @@ In addition to the properties it provides two methods for initializing the user 
 
 ## Event Socket
 
+The [Event Socket System](statefulservice.md#event-socket) is conveniently provided as a Svelte store. Import the store, subscribe to the data interested with `socket.on`. To unsubscribe simply call `socket.off`. Data can be sent to the ESP32 by calling `socket.sendEvent`
+
 ```ts
 import { socket } from "$lib/stores/socket";
+
+let lightState: LightState = { led_on: false };
 
 onMount(() => {
   socket.on<LightState>("led", (data) => {
@@ -37,6 +41,8 @@ onDestroy(() => socket.off("led"));
 
 socket.sendEvent("led", lightState);
 ```
+
+Subscribing to an invalid event will only create an warning in the ESP_LOG on the serial console of the ESP32.
 
 ## Telemetry
 
