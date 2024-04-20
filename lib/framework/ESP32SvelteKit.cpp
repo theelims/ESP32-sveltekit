@@ -23,7 +23,7 @@ ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEnd
                                                                                           _wifiStatus(server, &_securitySettingsService),
                                                                                           _apSettingsService(server, &ESPFS, &_securitySettingsService),
                                                                                           _apStatus(server, &_securitySettingsService, &_apSettingsService),
-                                                                                          _socket(server, &_securitySettingsService),
+                                                                                          _socket(server, &_securitySettingsService, AuthenticationPredicates::IS_AUTHENTICATED),
 #if FT_ENABLED(FT_NTP)
                                                                                           _ntpSettingsService(server, &ESPFS, &_securitySettingsService),
                                                                                           _ntpStatus(server, &_securitySettingsService),
@@ -172,6 +172,9 @@ void ESP32SvelteKit::begin()
 #endif
 #if FT_ENABLED(FT_SLEEP)
     _sleepService.begin();
+#endif
+#if FT_ENABLED(FT_BATTERY)
+    _batteryService.begin();
 #endif
 
     // Start the loop task

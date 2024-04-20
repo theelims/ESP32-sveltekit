@@ -21,6 +21,8 @@ class BatteryService
 public:
     BatteryService(EventSocket *socket);
 
+    void begin();
+
     void updateSOC(float stateOfCharge)
     {
         _lastSOC = (int)round(stateOfCharge);

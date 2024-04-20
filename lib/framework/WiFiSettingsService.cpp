@@ -49,6 +49,8 @@ void WiFiSettingsService::initWiFi()
 
 void WiFiSettingsService::begin()
 {
+    _socket->registerEvent("rssi");
+
     _httpEndpoint.begin();
 }
 

@@ -65,6 +65,7 @@ LightStateService::LightStateService(PsychicHttpServer *server,
 void LightStateService::begin()
 {
     _httpEndpoint.begin();
+    _eventEndpoint.begin();
     _state.ledOn = DEFAULT_LED_STATE;
     onConfigUpdated();
 }

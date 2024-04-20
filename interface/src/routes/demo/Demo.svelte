@@ -33,13 +33,13 @@
 	}
 
 	onMount(() => {
-		socket.on<LightState>("led", (data) => {
+		socket.on<LightState>('led', (data) => {
 			lightState = data;
-		})
+		});
 		getLightstate();
 	});
-	
-	onDestroy(() => socket.off("led"));
+
+	onDestroy(() => socket.off('led'));
 
 	async function postLightstate() {
 		try {
@@ -90,12 +90,12 @@
 			>
 		</div>
 		<div class="divider" />
-		<h1 class="text-xl font-semibold">Websocket Example</h1>
+		<h1 class="text-xl font-semibold">Event Socket Example</h1>
 		<div class="alert alert-info my-2 shadow-lg">
 			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
 			<span
-				>The switch below controls the LED via the WebSocket. It will automatically update whenever
-				the LED state changes.</span
+				>The switch below controls the LED via the event system which uses WebSocket under the hood.
+				It will automatically update whenever the LED state changes.</span
 			>
 		</div>
 		<div class="form-control w-52">
@@ -106,7 +106,7 @@
 					class="toggle toggle-primary"
 					bind:checked={lightState.led_on}
 					on:change={() => {
-						socket.sendEvent("led", lightState);
+						socket.sendEvent('led', lightState);
 					}}
 				/>
 			</label>

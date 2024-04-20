@@ -115,6 +115,8 @@ DownloadFirmwareService::DownloadFirmwareService(PsychicHttpServer *server,
 
 void DownloadFirmwareService::begin()
 {
+    _socket->registerEvent("download_ota");
+
     _server->on(GITHUB_FIRMWARE_PATH,
                 HTTP_POST,
                 _securityManager->wrapCallback(

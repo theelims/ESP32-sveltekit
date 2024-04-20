@@ -17,6 +17,11 @@ BatteryService::BatteryService(EventSocket *socket) : _socket(socket)
 {
 }
 
+void BatteryService::begin()
+{
+    _socket->registerEvent("battery");
+}
+
 void BatteryService::batteryEvent()
 {
     StaticJsonDocument<32> doc;

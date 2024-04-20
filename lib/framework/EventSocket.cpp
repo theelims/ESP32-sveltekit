@@ -19,7 +19,25 @@ void EventSocket::begin()
     _socket.onFrame(std::bind(&EventSocket::onFrame, this, std::placeholders::_1, std::placeholders::_2));
     _server->on(EVENT_SERVICE_PATH, &_socket);
 
+    registerEvent("errorToast");
+    registerEvent("warningToast");
+    registerEvent("infoToast");
+    registerEvent("successToast");
+
     ESP_LOGV("EventSocket", "Registered event socket endpoint: %s", EVENT_SERVICE_PATH);
+}
+
+void EventSocket::registerEvent(String event)
+{
+    if (!isEventValid(event))
+    {
+        ESP_LOGV("EventSocket", "Registering event: %s", event.c_str());
+        events.push_back(event);
+    }
+    else
+    {
+        ESP_LOGW("EventSocket", "Event already registered: %s", event.c_str());
+    }
 }
 
 void EventSocket::onWSOpen(PsychicWebSocketClient *client)
@@ -54,8 +72,16 @@ esp_err_t EventSocket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame 
             String event = doc["event"];
             if (event == "subscribe")
             {
-                client_subscriptions[doc["data"]].push_back(request->client()->socket());
-                handleSubscribeCallbacks(doc["data"], String(request->client()->socket()));
+                // only subscribe to events that are registered
+                if (isEventValid(doc["data"].as<String>()))
+                {
+                    client_subscriptions[doc["data"]].push_back(request->client()->socket());
+                    handleSubscribeCallbacks(doc["data"], String(request->client()->socket()));
+                }
+                else
+                {
+                    ESP_LOGW("EventSocket", "Client tried to subscribe to unregistered event: %s", doc["data"].as<String>().c_str());
+                }
             }
             else if (event == "unsubscribe")
             {
@@ -82,8 +108,15 @@ void EventSocket::emit(const char *event, const char *payload)
     emit(event, payload, "");
 }
 
-void EventSocket::emit(const char *event, const char *payload, const char *originId, bool bounce)
+void EventSocket::emit(const char *event, const char *payload, const char *originId, bool onlyToSameOrigin)
 {
+    // Only process valid events
+    if (!isEventValid(String(event)))
+    {
+        ESP_LOGW("EventSocket", "Method tried to emit unregistered event: %s", event);
+        return;
+    }
+
     int originSubscriptionId = originId[0] ? atoi(originId) : -1;
     xSemaphoreTake(clientSubscriptionsMutex, portMAX_DELAY);
     auto &subscriptions = client_subscriptions[event];
@@ -94,8 +127,8 @@ void EventSocket::emit(const char *event, const char *payload, const char *origi
     }
     String msg = "[\"" + String(event) + "\"," + String(payload) + "]";
 
-    // if bounce == true, send the message back to the origin
-    if (bounce && originSubscriptionId > 0)
+    // if onlyToSameOrigin == true, send the message back to the origin
+    if (onlyToSameOrigin && originSubscriptionId > 0)
     {
         auto *client = _socket.getClient(originSubscriptionId);
         if (client)
@@ -144,6 +177,7 @@ void EventSocket::pushNotification(String message, pushEvent event)
         eventType = "successToast";
         break;
     default:
+        ESP_LOGW("EventSocket", "Client tried invalid push notification: %s", event);
         return;
     }
     emit(eventType.c_str(), message.c_str());
@@ -167,16 +201,26 @@ void EventSocket::handleSubscribeCallbacks(String event, const String &originId)
 
 void EventSocket::onEvent(String event, EventCallback callback)
 {
+    if (!isEventValid(event))
+    {
+        ESP_LOGW("EventSocket", "Method tried to register unregistered event: %s", event.c_str());
+        return;
+    }
     event_callbacks[event].push_back(callback);
 }
 
 void EventSocket::onSubscribe(String event, SubscribeCallback callback)
 {
+    if (!isEventValid(event))
+    {
+        ESP_LOGW("EventSocket", "Method tried to subscribe to unregistered event: %s", event.c_str());
+        return;
+    }
     subscribe_callbacks[event].push_back(callback);
     ESP_LOGI("EventSocket", "onSubscribe for event: %s", event.c_str());
 }
 
-void EventSocket::broadcast(String message)
+bool EventSocket::isEventValid(String event)
 {
-    _socket.sendAll(message.c_str());
+    return std::find(events.begin(), events.end(), event) != events.end();
 }
