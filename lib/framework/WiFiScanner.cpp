@@ -14,8 +14,9 @@
 
 #include <WiFiScanner.h>
 
-WiFiScanner::WiFiScanner(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
-                                                                                        _securityManager(securityManager)
+WiFiScanner::WiFiScanner(PsychicHttpServer *server,
+                         SecurityManager *securityManager) : _server(server),
+                                                             _securityManager(securityManager)
 {
 }
 

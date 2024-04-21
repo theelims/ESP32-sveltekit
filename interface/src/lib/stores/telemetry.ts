@@ -1,7 +1,6 @@
 import { writable } from 'svelte/store';
 
 let telemetry_data = {
-	serverAvailable: true,
 	rssi: {
 		rssi: 0,
 		disconnected: true

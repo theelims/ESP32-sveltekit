@@ -75,3 +75,18 @@ The overall theme of the front end is defined by [DaisyUI](https://daisyui.com/d
 #### Opinionated use of Shadows
 
 The front end makes some use of colored shadows with the `shadow-primary` and `shadow-secondary` DaisyUI classes. Just use the search and replace function to change this to a more neutral look, if you find the color too much.
+
+#### Color Scheme Helper
+
+Some JS modules do not accept DaisyUI/TailwindCSS color class names. A small helper function can be imported and used to convert any CSS variable name for a DaisyUI color into HSLA. That way modules like e.g. Charts.js can be styled in the current color scheme in a responsive manner.
+
+```js
+import { daisyColor } from "$lib/DaisyUiHelper";
+
+borderColor: daisyColor('--p'),
+backgroundColor: daisyColor('--p', 50),
+```
+
+## TS Types Definition
+
+All types used throughout the front end are exported from [models.ts](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/lib/types/models.ts). It is a convenient location to add your custom types once you expand the front end.

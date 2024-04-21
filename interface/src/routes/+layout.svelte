@@ -4,6 +4,7 @@
 	import { user } from '$lib/stores/user';
 	import { telemetry } from '$lib/stores/telemetry';
 	import { analytics } from '$lib/stores/analytics';
+	import { socket } from '$lib/stores/socket';
 	import type { userProfile } from '$lib/stores/user';
 	import { page } from '$app/stores';
 	import { Modals, closeModal } from 'svelte-modals';
@@ -22,10 +23,42 @@
 		if ($user.bearer_token !== '') {
 			await validateUser($user);
 		}
-		connectToEventSource();
+		const ws_token = $page.data.features.security ? '?access_token=' + $user.bearer_token : '';
+		socket.init(`ws://${window.location.host}/ws/events${ws_token}`);
+
+		addEventListeners();
 	});
 
-	onDestroy(() => disconnectEventSource());
+	onDestroy(() => {
+		removeEventListeners();
+	});
+
+	const addEventListeners = () => {
+		socket.on('open', handleOpen);
+		socket.on('close', handleClose);
+		socket.on('error', handleError);
+		socket.on('rssi', handleNetworkStatus);
+		socket.on('infoToast', handleInfoToast);
+		socket.on('successToast', handleSuccessToast);
+		socket.on('warningToast', handleWarningToast);
+		socket.on('errorToast', handleErrorToast);
+		if ($page.data.features.analytics) socket.on('analytics', handleAnalytics);
+		if ($page.data.features.battery) socket.on('battery', handleBattery);
+		if ($page.data.features.download_firmware) socket.on('otastatus', handleOAT);
+	};
+
+	const removeEventListeners = () => {
+		socket.off('analytics', handleAnalytics);
+		socket.off('open', handleOpen);
+		socket.off('close', handleClose);
+		socket.off('rssi', handleNetworkStatus);
+		socket.off('infoToast', handleInfoToast);
+		socket.off('successToast', handleSuccessToast);
+		socket.off('warningToast', handleWarningToast);
+		socket.off('errorToast', handleErrorToast);
+		socket.off('battery', handleBattery);
+		socket.off('otastatus', handleOAT);
+	};
 
 	async function validateUser(userdata: userProfile) {
 		try {
@@ -44,73 +77,31 @@
 		}
 	}
 
-	let menuOpen = false;
+	const handleOpen = () => {
+		notifications.success('Connection to device established', 5000);
+	};
 
-	let eventSourceUrl = '/events';
-	let eventSource: EventSource;
-	let unresponsiveTimeoutId: number;
-
-	function connectToEventSource() {
-		eventSource = new EventSource(eventSourceUrl);
-
-		eventSource.addEventListener('open', () => {
-			notifications.success('Connection to device established', 5000);
-			telemetry.setRSSI('found'); // Update store and flag as server being available again
-		});
-
-		eventSource.addEventListener('rssi', (event) => {
-			telemetry.setRSSI(event.data);
-			resetUnresponsiveCheck();
-		});
-
-		eventSource.addEventListener('error', (event) => {
-			reconnectEventSource();
-		});
-
-		eventSource.addEventListener('infoToast', (event) => {
-			notifications.info(event.data, 5000);
-		});
-
-		eventSource.addEventListener('successToast', (event) => {
-			notifications.success(event.data, 5000);
-		});
-
-		eventSource.addEventListener('warningToast', (event) => {
-			notifications.warning(event.data, 5000);
-		});
-
-		eventSource.addEventListener('errorToast', (event) => {
-			notifications.error(event.data, 5000);
-		});
-
-		eventSource.addEventListener('battery', (event) => {
-			telemetry.setBattery(event.data);
-		});
-
-		eventSource.addEventListener('download_ota', (event) => {
-			telemetry.setDownloadOTA(event.data);
-		});
-		eventSource.addEventListener('analytics', (event) => {
-			const data = JSON.parse(event.data) as Analytics;
-			analytics.addData(data);
-		});
-	}
-
-	function disconnectEventSource() {
-		clearTimeout(unresponsiveTimeoutId);
-		eventSource?.close();
-	}
-
-	function reconnectEventSource() {
+	const handleClose = () => {
 		notifications.error('Connection to device lost', 5000);
-		disconnectEventSource();
-		connectToEventSource();
-	}
+		telemetry.setRSSI('lost');
+	};
 
-	function resetUnresponsiveCheck() {
-		clearTimeout(unresponsiveTimeoutId);
-		unresponsiveTimeoutId = setTimeout(() => reconnectEventSource(), 2000);
-	}
+	const handleError = (data: any) => console.error(data);
+
+	const handleInfoToast = (data: string) => notifications.info(data, 5000);
+	const handleWarningToast = (data: string) => notifications.warning(data, 5000);
+	const handleErrorToast = (data: string) => notifications.error(data, 5000);
+	const handleSuccessToast = (data: string) => notifications.success(data, 5000);
+
+	const handleAnalytics = (data: Analytics) => analytics.addData(data);
+
+	const handleNetworkStatus = (data: string) => telemetry.setRSSI(data);
+
+	const handleBattery = (data: string) => telemetry.setBattery(data);
+
+	const handleOAT = (data: string) => telemetry.setDownloadOTA(data);
+
+	let menuOpen = false;
 </script>
 
 <svelte:head>

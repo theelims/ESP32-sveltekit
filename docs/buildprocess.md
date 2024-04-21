@@ -141,6 +141,16 @@ build_flags =
   -D SERVE_CONFIG_FILES
 ```
 
+### Serial Info
+
+In some circumstances it might be beneficial to not print any information on the serial consol (Serial1 or USB CDC). By commenting out the following build flag ESP32-Sveltekit will not print any information on the serial console.
+
+```ini
+build_flags =
+...
+  -D SERIAL_INFO
+```
+
 ## SSL Root Certificate Store
 
 Some features like firmware download or the MQTT client require a SSL connection. For that the SSL Root CA certificate must be known to the ESP32. The build system contains a python script derived from Espressif ESP-IDF building a certificate store containing one or more certificates. In order to create the store you must uncomment the three lines below in `platformio.ini`.

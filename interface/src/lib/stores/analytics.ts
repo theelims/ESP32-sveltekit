@@ -12,7 +12,7 @@ let analytics_data = {
 	core_temp: <number[]>[]
 };
 
-const maxAnalyticsData = 100;
+const maxAnalyticsData = 1000; // roughly 33 Minutes of data at 1 update per 2 seconds
 
 function createAnalytics() {
 	const { subscribe, update } = writable(analytics_data);

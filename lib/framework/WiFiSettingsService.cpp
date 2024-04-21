@@ -14,23 +14,15 @@
 
 #include <WiFiSettingsService.h>
 
-WiFiSettingsService::WiFiSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, NotificationEvents *notificationEvents) : _server(server),
-                                                                                                                                                        _securityManager(securityManager),
-                                                                                                                                                        _httpEndpoint(WiFiSettings::read,
-                                                                                                                                                                      WiFiSettings::update,
-                                                                                                                                                                      this,
-                                                                                                                                                                      server,
-                                                                                                                                                                      WIFI_SETTINGS_SERVICE_PATH,
-                                                                                                                                                                      securityManager,
-                                                                                                                                                                      AuthenticationPredicates::IS_ADMIN,
-                                                                                                                                                                      WIFI_SETTINGS_BUFFER_SIZE),
-                                                                                                                                                        _fsPersistence(WiFiSettings::read,
-                                                                                                                                                                       WiFiSettings::update,
-                                                                                                                                                                       this,
-                                                                                                                                                                       fs,
-                                                                                                                                                                       WIFI_SETTINGS_FILE),
-                                                                                                                                                        _lastConnectionAttempt(0),
-                                                                                                                                                        _notificationEvents(notificationEvents)
+WiFiSettingsService::WiFiSettingsService(PsychicHttpServer *server,
+                                         FS *fs,
+                                         SecurityManager *securityManager,
+                                         EventSocket *socket) : _server(server),
+                                                                _securityManager(securityManager),
+                                                                _httpEndpoint(WiFiSettings::read, WiFiSettings::update, this, server, WIFI_SETTINGS_SERVICE_PATH, securityManager,
+                                                                              AuthenticationPredicates::IS_ADMIN, WIFI_SETTINGS_BUFFER_SIZE),
+                                                                _fsPersistence(WiFiSettings::read, WiFiSettings::update, this, fs, WIFI_SETTINGS_FILE), _lastConnectionAttempt(0),
+                                                                _socket(socket)
 {
     addUpdateHandler([&](const String &originId)
                      { reconfigureWiFiConnection(); },
@@ -57,6 +49,8 @@ void WiFiSettingsService::initWiFi()
 
 void WiFiSettingsService::begin()
 {
+    _socket->registerEvent(EVENT_RSSI);
+
     _httpEndpoint.begin();
 }
 
@@ -220,16 +214,9 @@ void WiFiSettingsService::configureNetwork(wifi_settings_t &network)
 
 void WiFiSettingsService::updateRSSI()
 {
-    // if WiFi is disconnected send disconnect
-    if (WiFi.isConnected())
-    {
-        String rssi = String(WiFi.RSSI());
-        _notificationEvents->send(rssi, "rssi", millis());
-    }
-    else
-    {
-        _notificationEvents->send("disconnected", "rssi", millis());
-    }
+    char buffer[16];
+    snprintf(buffer, sizeof(buffer), WiFi.isConnected() ? "%d" : "disconnected", WiFi.RSSI());
+    _socket->emit(EVENT_RSSI, buffer);
 }
 
 void WiFiSettingsService::onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info)

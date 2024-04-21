@@ -15,6 +15,7 @@
 #include <LightStateService.h>
 
 LightStateService::LightStateService(PsychicHttpServer *server,
+                                     EventSocket *socket,
                                      SecurityManager *securityManager,
                                      PsychicMqttClient *mqttClient,
                                      LightMqttSettingsService *lightMqttSettingsService) : _httpEndpoint(LightState::read,
@@ -24,7 +25,16 @@ LightStateService::LightStateService(PsychicHttpServer *server,
                                                                                                          LIGHT_SETTINGS_ENDPOINT_PATH,
                                                                                                          securityManager,
                                                                                                          AuthenticationPredicates::IS_AUTHENTICATED),
-                                                                                           _mqttPubSub(LightState::homeAssistRead, LightState::homeAssistUpdate, this, mqttClient),
+                                                                                           _eventEndpoint(LightState::read,
+                                                                                                          LightState::update,
+                                                                                                          this,
+                                                                                                          socket,
+                                                                                                          LIGHT_SETTINGS_EVENT,
+                                                                                                          LIGHT_SETTINGS_MAX_BUFFER_SIZE),
+                                                                                           _mqttEndpoint(LightState::homeAssistRead,
+                                                                                                         LightState::homeAssistUpdate,
+                                                                                                         this,
+                                                                                                         mqttClient),
                                                                                            _webSocketServer(LightState::read,
                                                                                                             LightState::update,
                                                                                                             this,
@@ -34,10 +44,6 @@ LightStateService::LightStateService(PsychicHttpServer *server,
                                                                                                             AuthenticationPredicates::IS_AUTHENTICATED),
                                                                                            _mqttClient(mqttClient),
                                                                                            _lightMqttSettingsService(lightMqttSettingsService)
-/*  _webSocketClient(LightState::read,
-                   LightState::update,
-                   this,
-                   LIGHT_SETTINGS_SOCKET_PATH)*/
 {
     // configure led to be output
     pinMode(LED_BUILTIN, OUTPUT);
@@ -59,7 +65,7 @@ LightStateService::LightStateService(PsychicHttpServer *server,
 void LightStateService::begin()
 {
     _httpEndpoint.begin();
-    _webSocketServer.begin();
+    _eventEndpoint.begin();
     _state.ledOn = DEFAULT_LED_STATE;
     onConfigUpdated();
 }
@@ -97,5 +103,5 @@ void LightStateService::registerConfig()
     serializeJson(doc, payload);
     _mqttClient->publish(configTopic.c_str(), 0, false, payload.c_str());
 
-    _mqttPubSub.configureTopics(pubTopic, subTopic);
+    _mqttEndpoint.configureTopics(pubTopic, subTopic);
 }

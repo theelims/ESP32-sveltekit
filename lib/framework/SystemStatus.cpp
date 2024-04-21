@@ -93,8 +93,9 @@ String verbosePrintResetReason(int reason)
     }
 }
 
-SystemStatus::SystemStatus(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
-                                                                                          _securityManager(securityManager)
+SystemStatus::SystemStatus(PsychicHttpServer *server,
+                           SecurityManager *securityManager) : _server(server),
+                                                               _securityManager(securityManager)
 {
 }
 

@@ -8,6 +8,7 @@
 	import Info from '~icons/tabler/info-circle';
 	import Save from '~icons/tabler/device-floppy';
 	import Reload from '~icons/tabler/reload';
+	import { socket } from '$lib/stores/socket';
 	import type { LightState } from '$lib/types/models';
 
 	let lightState: LightState = { led_on: false };
@@ -31,34 +32,14 @@
 		return;
 	}
 
-	const ws_token = $page.data.features.security ? '?access_token=' + $user.bearer_token : '';
-
-	const lightStateSocket = new WebSocket('ws://' + $page.url.host + '/ws/lightState' + ws_token);
-
-	lightStateSocket.onopen = (event) => {
-		lightStateSocket.send('Hello');
-	};
-
-	lightStateSocket.addEventListener('close', (event) => {
-		const closeCode = event.code;
-		const closeReason = event.reason;
-		console.log('WebSocket closed with code:', closeCode);
-		console.log('Close reason:', closeReason);
-		notifications.error('Websocket disconnected', 5000);
-	});
-
-	lightStateSocket.onmessage = (event) => {
-		const message = JSON.parse(event.data);
-		if (message.type != 'id') {
-			lightState = message;
-		}
-	};
-
-	onDestroy(() => lightStateSocket.close());
-
 	onMount(() => {
+		socket.on<LightState>('led', (data) => {
+			lightState = data;
+		});
 		getLightstate();
 	});
+
+	onDestroy(() => socket.off('led'));
 
 	async function postLightstate() {
 		try {
@@ -109,12 +90,12 @@
 			>
 		</div>
 		<div class="divider" />
-		<h1 class="text-xl font-semibold">Websocket Example</h1>
+		<h1 class="text-xl font-semibold">Event Socket Example</h1>
 		<div class="alert alert-info my-2 shadow-lg">
 			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
 			<span
-				>The switch below controls the LED via the WebSocket. It will automatically update whenever
-				the LED state changes.</span
+				>The switch below controls the LED via the event system which uses WebSocket under the hood.
+				It will automatically update whenever the LED state changes.</span
 			>
 		</div>
 		<div class="form-control w-52">
@@ -125,7 +106,7 @@
 					class="toggle toggle-primary"
 					bind:checked={lightState.led_on}
 					on:change={() => {
-						lightStateSocket.send(JSON.stringify(lightState));
+						socket.sendEvent('led', lightState);
 					}}
 				/>
 			</label>

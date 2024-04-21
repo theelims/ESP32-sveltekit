@@ -1,5 +1,5 @@
-#ifndef MqttPubSub_h
-#define MqttPubSub_h
+#ifndef MqttEndpoint_h
+#define MqttEndpoint_h
 
 /**
  *   ESP32 SvelteKit
@@ -21,33 +21,33 @@
 #define MQTT_ORIGIN_ID "mqtt"
 
 template <class T>
-class MqttPubSub
+class MqttEndpoint
 {
 public:
-    MqttPubSub(JsonStateReader<T> stateReader,
-               JsonStateUpdater<T> stateUpdater,
-               StatefulService<T> *statefulService,
-               PsychicMqttClient *mqttClient,
-               const String &pubTopic = "",
-               const String &subTopic = "",
-               bool retain = false,
-               size_t bufferSize = DEFAULT_BUFFER_SIZE) : _stateReader(stateReader),
-                                                          _stateUpdater(stateUpdater),
-                                                          _statefulService(statefulService),
-                                                          _mqttClient(mqttClient),
-                                                          _pubTopic(pubTopic),
-                                                          _subTopic(subTopic),
-                                                          _retain(retain),
-                                                          _bufferSize(bufferSize)
+    MqttEndpoint(JsonStateReader<T> stateReader,
+                 JsonStateUpdater<T> stateUpdater,
+                 StatefulService<T> *statefulService,
+                 PsychicMqttClient *mqttClient,
+                 const String &pubTopic = "",
+                 const String &subTopic = "",
+                 bool retain = false,
+                 size_t bufferSize = DEFAULT_BUFFER_SIZE) : _stateReader(stateReader),
+                                                            _stateUpdater(stateUpdater),
+                                                            _statefulService(statefulService),
+                                                            _mqttClient(mqttClient),
+                                                            _pubTopic(pubTopic),
+                                                            _subTopic(subTopic),
+                                                            _retain(retain),
+                                                            _bufferSize(bufferSize)
 
     {
         _statefulService->addUpdateHandler([&](const String &originId)
                                            { publish(); },
                                            false);
 
-        _mqttClient->onConnect(std::bind(&MqttPubSub::onConnect, this));
+        _mqttClient->onConnect(std::bind(&MqttEndpoint::onConnect, this));
 
-        _mqttClient->onMessage(std::bind(&MqttPubSub::onMqttMessage,
+        _mqttClient->onMessage(std::bind(&MqttEndpoint::onMqttMessage,
                                          this,
                                          std::placeholders::_1,
                                          std::placeholders::_2,
@@ -160,4 +160,4 @@ protected:
     }
 };
 
-#endif // end MqttPubSub
+#endif // end MqttEndpoint
