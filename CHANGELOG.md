@@ -2,11 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.4.0] - Work in Progress
+## [0.4.0] - 2024-04-21
 
-This minor upgrade might require one minor change as `MqttPubSub.h` and its class had been renamed to `MqttEndpoint.h`. However, it is strongly advised, that you change all existing WebSocketServer endpoints to the new event socket system.
+This upgrade might require one minor change as `MqttPubSub.h` and its class had been renamed to `MqttEndpoint.h` and `MqttEndoint` respectively. However, it is strongly advised, that you change all existing WebSocketServer endpoints to the new event socket system.
 
-The new Event Socket system is likely to change with coming updates.
+> [!INFORMATION]
+> The new Event Socket system is likely to change with coming updates.
 
 ### Added
 
@@ -42,7 +43,11 @@ The new Event Socket system is likely to change with coming updates.
 - Removes duplicate begin [#36](https://github.com/theelims/ESP32-sveltekit/pull/36)
 - Temporary disabled OTA progress update due to crash with PsychicHttp [#32](https://github.com/theelims/ESP32-sveltekit/issues/32) until a fix is found.
 
-## [0.3.0] - 2023-02-05
+### Known Issues
+
+- On ESP32-C3 the security features should be disabled in features.ini: `-D FT_SECURITY=0`. If enabled the ESP32-C3 becomes extremely sluggish with frequent connection drops.
+
+## [0.3.0] - 2024-02-05
 
 > [!CAUTION]
 > This update has breaking changes!
