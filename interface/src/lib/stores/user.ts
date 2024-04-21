@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { goto } from '$app/navigation';
-import jwt_decode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 export type userProfile = {
 	username: string;
@@ -31,7 +31,7 @@ function createStore() {
 	return {
 		subscribe,
 		init: (access_token: string) => {
-			const decoded: decodedJWT = jwt_decode(access_token);
+			const decoded: decodedJWT = jwtDecode(access_token);
 			const userdata = {
 				bearer_token: access_token,
 				username: decoded.username,
