@@ -44,7 +44,7 @@
 		socket.on('errorToast', handleErrorToast);
 		if ($page.data.features.analytics) socket.on('analytics', handleAnalytics);
 		if ($page.data.features.battery) socket.on('battery', handleBattery);
-		if ($page.data.features.download_firmware) socket.on('download_ota', handleOAT);
+		if ($page.data.features.download_firmware) socket.on('otastatus', handleOAT);
 	};
 
 	const removeEventListeners = () => {
@@ -57,7 +57,7 @@
 		socket.off('warningToast', handleWarningToast);
 		socket.off('errorToast', handleErrorToast);
 		socket.off('battery', handleBattery);
-		socket.off('download_ota', handleOAT);
+		socket.off('otastatus', handleOAT);
 	};
 
 	async function validateUser(userdata: userProfile) {

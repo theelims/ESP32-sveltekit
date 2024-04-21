@@ -51,6 +51,8 @@
 
 #define WIFI_SETTINGS_BUFFER_SIZE 2048
 
+#define EVENT_RSSI "rssi"
+
 // Struct defining the wifi settings
 typedef struct
 {

@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.3.1] - Work in Progress
+## [0.4.0] - Work in Progress
 
 This minor upgrade might require one minor change as `MqttPubSub.h` and its class had been renamed to `MqttEndpoint.h`. However, it is strongly advised, that you change all existing WebSocketServer endpoints to the new event socket system.
 
@@ -40,6 +40,7 @@ The new Event Socket system is likely to change with coming updates.
 - Duplicate method in FeatureService [#18](https://github.com/theelims/ESP32-sveltekit/pull/18)
 - Duplicate lines in Systems Settings view.
 - Removes duplicate begin [#36](https://github.com/theelims/ESP32-sveltekit/pull/36)
+- Temporary disabled OTA progress update due to crash with PsychicHttp [#32](https://github.com/theelims/ESP32-sveltekit/issues/32) until a fix is found.
 
 ## [0.3.0] - 2023-02-05
 

@@ -27,6 +27,7 @@
 // #include <SSLCertBundle.h>
 
 #define GITHUB_FIRMWARE_PATH "/rest/downloadUpdate"
+#define EVENT_DOWNLOAD_OTA "otastatus"
 #define OTA_TASK_STACK_SIZE 9216
 
 class DownloadFirmwareService

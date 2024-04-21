@@ -19,7 +19,7 @@ BatteryService::BatteryService(EventSocket *socket) : _socket(socket)
 
 void BatteryService::begin()
 {
-    _socket->registerEvent("battery");
+    _socket->registerEvent(EVENT_BATTERY);
 }
 
 void BatteryService::batteryEvent()
@@ -29,5 +29,5 @@ void BatteryService::batteryEvent()
     doc["soc"] = _lastSOC;
     doc["charging"] = _isCharging;
     serializeJson(doc, message);
-    _socket->emit("battery", message);
+    _socket->emit(EVENT_BATTERY, message);
 }
