@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 This upgrade might require one minor change as `MqttPubSub.h` and its class had been renamed to `MqttEndpoint.h` and `MqttEndoint` respectively. However, it is strongly advised, that you change all existing WebSocketServer endpoints to the new event socket system.
 
-> [!INFORMATION]
+> [!NOTE]
 > The new Event Socket system is likely to change with coming updates.
 
 ### Added
