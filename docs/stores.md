@@ -42,7 +42,7 @@ onDestroy(() => socket.off("led"));
 socket.sendEvent("led", lightState);
 ```
 
-Subscribing to an invalid event will only create an warning in the ESP_LOG on the serial console of the ESP32.
+Subscribing to an invalid event will only create a warning in the ESP_LOG on the serial console of the ESP32.
 
 ## Telemetry
 
@@ -54,15 +54,15 @@ import { telemetry } from "$lib/stores/telemetry";
 
 It exposes the following properties you can subscribe to:
 
-| Property                           | Type      | Description                                |
-| ---------------------------------- | --------- | ------------------------------------------ |
-| `$telemetry.rssi.rssi`             | `Number`  | The RSSI signal strengt of the WiFi in dBm |
-| `$telemetry.rssi.connected`        | `Boolean` | Connection status of the WiFi              |
-| `$telemetry.battery.soc`           | `Number`  | Battery state of charge                    |
-| `$telemetry.battery.charging`      | `Boolean` | Is battery connected to charger            |
-| `$telemetry.download_ota.status`   | `String`  | Status of OTA                              |
-| `$telemetry.download_ota.progress` | `Number`  | Progress of OTA                            |
-| `$telemetry.download_ota.error`    | `String`  | Error Message of OTA                       |
+| Property                           | Type      | Description                                 |
+| ---------------------------------- | --------- | ------------------------------------------- |
+| `$telemetry.rssi.rssi`             | `Number`  | The RSSI signal strength of the WiFi in dBm |
+| `$telemetry.rssi.connected`        | `Boolean` | Connection status of the WiFi               |
+| `$telemetry.battery.soc`           | `Number`  | Battery state of charge                     |
+| `$telemetry.battery.charging`      | `Boolean` | Is battery connected to charger             |
+| `$telemetry.download_ota.status`   | `String`  | Status of OTA                               |
+| `$telemetry.download_ota.progress` | `Number`  | Progress of OTA                             |
+| `$telemetry.download_ota.error`    | `String`  | Error Message of OTA                        |
 
 ## Analytics
 
@@ -84,4 +84,4 @@ It exposes an array of the following properties you can subscribe to:
 | `$analytics.fs_total`       | `Number` | Total bytes of the file system                 |
 | `$analytics.core_temp`      | `Number` | Core temperature (on some chips)               |
 
-By default there is one data point every 2 seconds.
+By default there is one data point every 2 seconds. It holds 1000 data points worth roughly 33 Minutes of data.

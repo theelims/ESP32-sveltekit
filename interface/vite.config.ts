@@ -19,11 +19,6 @@ const config: UserConfig = {
 				target: 'http://192.168.1.89',
 				changeOrigin: true
 			},
-			// Proxying REST: http://localhost:5173/rest/bar -> http://192.168.1.83/rest/bar
-			'/events': {
-				target: 'http://192.168.1.89',
-				changeOrigin: true
-			},
 			// Proxying websockets ws://localhost:5173/ws -> ws://192.168.1.83/ws
 			'/ws': {
 				target: 'ws://192.168.1.89',

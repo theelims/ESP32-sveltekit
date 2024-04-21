@@ -225,10 +225,17 @@ class LightStateService : public StatefulService<LightState> {
   LightStateService(EventSocket *socket) :
       _eventEndpoint(LightState::read, LightState::update, this, socket, "led") {}
 
+  void begin()
+  {
+    _eventEndpoint.begin();
+  }
+
  private:
   EventEndpoint<LightState> _eventEndpoint;
 };
 ```
+
+To register the event endpoint with the event socket the function `_eventEndpoint.begin()` must be called in the custom StatefulService Class' own `void begin()` function.
 
 Since all events run through one websocket connection it is not possible to use the [securityManager](#security-features) to limit access to individual events. The security defaults to `AuthenticationPredicates::IS_AUTHENTICATED`.
 
