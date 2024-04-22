@@ -473,9 +473,6 @@ void StrokeEngine::_stroking()
         safeMotion = _safeGuard.makeSafe(currentMotion);
         ESP_LOGD("StrokeEngine", "Safe Pattern Values (UPDATE): %d @ to %05.1f mm with %05.1f mm %05.1f mm/s and %05.1f mm/s^2", _index, safeMotion.absoluteTargetPosition, safeMotion.strokeLength, safeMotion.speed, safeMotion.acceleration);
 
-        // Apply the ease-in modifier to the motion parameters
-        _easeIn.applyModification(safeMotion);
-
         // Apply new trapezoidal motion profile to servo
         ESP_LOGI("StrokeEngine", "Stroking Index (UPDATE): %d @ %05.1f mm %05.1f mm/s and %05.1f mm/s^2", _index, safeMotion.absoluteTargetPosition, safeMotion.speed, safeMotion.acceleration);
         _motor->goToPosition(

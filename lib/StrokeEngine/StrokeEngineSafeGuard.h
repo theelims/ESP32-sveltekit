@@ -65,6 +65,8 @@ public:
     float setEaseInSpeed(float easeInSpeed);
     float getEaseInSpeed();
 
+    bool needsEaseIn(); // Check if the current motion needs to be eased in and update _currentDepth and _currentStroke
+
     SafeStrokeParameters_t makeSafe(float stroke, float speed, float acceleration);
     SafeStrokeParameters_t makeSafe(motionParameters_t motionParameters);
     SafeStrokeParameters_t makeSafeRelative(float relativeTargetPosition, float speed, float acceleration);
@@ -72,7 +74,9 @@ public:
 protected:
     MotorInterface *_motor = nullptr;
     float _depth;
+    float _currentDepth;
     float _stroke;
+    float _currentStroke;
     float _rate;
     float _timeOfStroke;
 
