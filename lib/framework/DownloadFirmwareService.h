@@ -18,27 +18,28 @@
 
 #include <WiFi.h>
 #include <ArduinoJson.h>
+#include <EventSocket.h>
 #include <PsychicHttp.h>
 #include <SecurityManager.h>
-#include <NotificationEvents.h>
 
 #include <HTTPClient.h>
 #include <HTTPUpdate.h>
 // #include <SSLCertBundle.h>
 
 #define GITHUB_FIRMWARE_PATH "/rest/downloadUpdate"
+#define EVENT_DOWNLOAD_OTA "otastatus"
 #define OTA_TASK_STACK_SIZE 9216
 
 class DownloadFirmwareService
 {
 public:
-    DownloadFirmwareService(PsychicHttpServer *server, SecurityManager *securityManager, NotificationEvents *notificationEvents);
+    DownloadFirmwareService(PsychicHttpServer *server, SecurityManager *securityManager, EventSocket *socket);
 
     void begin();
 
 private:
     SecurityManager *_securityManager;
     PsychicHttpServer *_server;
-    NotificationEvents *_notificationEvents;
+    EventSocket *_socket;
     esp_err_t downloadUpdate(PsychicRequest *request, JsonVariant &json);
 };

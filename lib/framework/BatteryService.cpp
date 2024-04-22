@@ -13,16 +13,21 @@
 
 #include <BatteryService.h>
 
-BatteryService::BatteryService(NotificationEvents *notificationEvents) : _notificationEvents(notificationEvents)
+BatteryService::BatteryService(EventSocket *socket) : _socket(socket)
 {
+}
+
+void BatteryService::begin()
+{
+    _socket->registerEvent(EVENT_BATTERY);
 }
 
 void BatteryService::batteryEvent()
 {
     StaticJsonDocument<32> doc;
-    String message;
+    char message[32];
     doc["soc"] = _lastSOC;
     doc["charging"] = _isCharging;
     serializeJson(doc, message);
-    _notificationEvents->send(message, "battery", millis());
+    _socket->emit(EVENT_BATTERY, message);
 }

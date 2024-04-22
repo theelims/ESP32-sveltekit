@@ -16,9 +16,11 @@
 
 using namespace std::placeholders;
 
-FactoryResetService::FactoryResetService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager) : _server(server),
-                                                                                                                fs(fs),
-                                                                                                                _securityManager(securityManager)
+FactoryResetService::FactoryResetService(PsychicHttpServer *server,
+                                         FS *fs,
+                                         SecurityManager *securityManager) : _server(server),
+                                                                             fs(fs),
+                                                                             _securityManager(securityManager)
 {
 }
 

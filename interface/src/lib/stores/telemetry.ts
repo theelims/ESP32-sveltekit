@@ -1,7 +1,6 @@
 import { writable } from 'svelte/store';
 
 let telemetry_data = {
-	serverAvailable: true,
 	rssi: {
 		rssi: 0,
 		disconnected: true
@@ -26,25 +25,25 @@ function createTelemetry() {
 		subscribe,
 		setRSSI: (data: string) => {
 			if (!isNaN(Number(data))) {
-				update((telemerty_data) => ({
-					...telemerty_data,
+				update((telemetry_data) => ({
+					...telemetry_data,
 					rssi: { rssi: Number(data), disconnected: false }
 				}));
 			} else {
-				update((telemerty_data) => ({ ...telemerty_data, rssi: { rssi: 0, disconnected: true } }));
+				update((telemetry_data) => ({ ...telemetry_data, rssi: { rssi: 0, disconnected: true } }));
 			}
 		},
 		setBattery: (data: string) => {
 			const content = JSON.parse(data);
-			update((telemerty_data) => ({
-				...telemerty_data,
+			update((telemetry_data) => ({
+				...telemetry_data,
 				battery: { soc: content.soc, charging: content.charging }
 			}));
 		},
 		setDownloadOTA: (data: string) => {
 			const content = JSON.parse(data);
-			update((telemerty_data) => ({
-				...telemerty_data,
+			update((telemetry_data) => ({
+				...telemetry_data,
 				download_ota: { status: content.status, progress: content.progress, error: content.error }
 			}));
 		},

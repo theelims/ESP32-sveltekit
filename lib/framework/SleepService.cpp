@@ -16,8 +16,9 @@
 // Definition of static member variable
 void (*SleepService::_callbackSleep)() = nullptr;
 
-SleepService::SleepService(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
-                                                                                          _securityManager(securityManager)
+SleepService::SleepService(PsychicHttpServer *server,
+                           SecurityManager *securityManager) : _server(server),
+                                                               _securityManager(securityManager)
 {
 }
 

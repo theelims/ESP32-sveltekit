@@ -16,22 +16,25 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
 #include <ESPFS.h>
-#include <NotificationEvents.h>
+#include <EventSocket.h>
 
 #define MAX_ESP_ANALYTICS_SIZE 1024
+#define EVENT_ANALYTICS "analytics"
 #define ANALYTICS_INTERVAL 2000
 
 class AnalyticsService
 {
 public:
-    AnalyticsService(NotificationEvents *notificationEvents) : _notificationEvents(notificationEvents){};
+    AnalyticsService(EventSocket *socket) : _socket(socket){};
 
     void begin()
     {
+        _socket->registerEvent(EVENT_ANALYTICS);
+
         xTaskCreatePinnedToCore(
             this->_loopImpl,            // Function that should be called
             "Analytics Service",        // Name of the task (for debugging)
-            4096,                       // Stack size (bytes)
+            5120,                       // Stack size (bytes)
             this,                       // Pass reference to this class instance
             (tskIDLE_PRIORITY),         // task priority
             NULL,                       // Task handle
@@ -40,17 +43,17 @@ public:
     };
 
 protected:
-    NotificationEvents *_notificationEvents;
+    EventSocket *_socket;
 
     static void _loopImpl(void *_this) { static_cast<AnalyticsService *>(_this)->_loop(); }
     void _loop()
     {
-        TickType_t xLastWakeTime;
-        xLastWakeTime = xTaskGetTickCount();
+        TickType_t xLastWakeTime = xTaskGetTickCount();
+        StaticJsonDocument<MAX_ESP_ANALYTICS_SIZE> doc;
+        char message[MAX_ESP_ANALYTICS_SIZE];
         while (1)
         {
-            StaticJsonDocument<MAX_ESP_ANALYTICS_SIZE> doc;
-            String message;
+            doc.clear();
             doc["uptime"] = millis() / 1000;
             doc["free_heap"] = ESP.getFreeHeap();
             doc["total_heap"] = ESP.getHeapSize();
@@ -61,7 +64,7 @@ protected:
             doc["core_temp"] = temperatureRead();
 
             serializeJson(doc, message);
-            _notificationEvents->send(message, "analytics", millis());
+            _socket->emit(EVENT_ANALYTICS, message);
 
             vTaskDelayUntil(&xLastWakeTime, ANALYTICS_INTERVAL / portTICK_PERIOD_MS);
         }

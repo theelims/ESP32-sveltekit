@@ -24,10 +24,6 @@
 	import { user } from '$lib/stores/user';
 	import { createEventDispatcher } from 'svelte';
 
-	const appName = $page.data.title;
-
-	const copyright = '2024 elims';
-
 	const github = { href: 'https://github.com/' + $page.data.github, active: true };
 
 	const discord = { href: 'https://discord.gg/MmpT9xE', active: true };
@@ -188,7 +184,7 @@
 		on:click={() => setActiveMenuItem(menuItems, '')}
 	>
 		<img src={logo} alt="Logo" class="h-12 w-12" />
-		<h1 class="px-4 text-2xl font-bold">{appName}</h1>
+		<h1 class="px-4 text-2xl font-bold">{$page.data.appName}</h1>
 	</a>
 	<ul class="menu rounded-box menu-vertical flex-nowrap overflow-y-auto">
 		{#each menuItems as menuItem, i (menuItem.title)}
@@ -269,7 +265,7 @@
 			>
 		{/if}
 		<div class="inline-flex flex-grow items-center justify-end text-sm">
-			<Copyright class="h-4 w-4" /><span class="px-2">{copyright}</span>
+			<Copyright class="h-4 w-4" /><span class="px-2">{$page.data.copyright}</span>
 		</div>
 	</div>
 </div>

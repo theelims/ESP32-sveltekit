@@ -19,6 +19,7 @@
 #include "esp32/rom/rtc.h"
 #define ESP_PLATFORM "ESP32";
 #elif CONFIG_IDF_TARGET_ESP32S2
+#include "esp32/rom/rtc.h"
 #define ESP_PLATFORM "ESP32-S2";
 #elif CONFIG_IDF_TARGET_ESP32C3
 #include "esp32c3/rom/rtc.h"
@@ -92,8 +93,9 @@ String verbosePrintResetReason(int reason)
     }
 }
 
-SystemStatus::SystemStatus(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
-                                                                                          _securityManager(securityManager)
+SystemStatus::SystemStatus(PsychicHttpServer *server,
+                           SecurityManager *securityManager) : _server(server),
+                                                               _securityManager(securityManager)
 {
 }
 

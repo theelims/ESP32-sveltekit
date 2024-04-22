@@ -14,10 +14,12 @@
 
 #include <NTPSettingsService.h>
 
-NTPSettingsService::NTPSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager) : _server(server),
-                                                                                                              _securityManager(securityManager),
-                                                                                                              _httpEndpoint(NTPSettings::read, NTPSettings::update, this, server, NTP_SETTINGS_SERVICE_PATH, securityManager),
-                                                                                                              _fsPersistence(NTPSettings::read, NTPSettings::update, this, fs, NTP_SETTINGS_FILE)
+NTPSettingsService::NTPSettingsService(PsychicHttpServer *server,
+                                       FS *fs,
+                                       SecurityManager *securityManager) : _server(server),
+                                                                           _securityManager(securityManager),
+                                                                           _httpEndpoint(NTPSettings::read, NTPSettings::update, this, server, NTP_SETTINGS_SERVICE_PATH, securityManager),
+                                                                           _fsPersistence(NTPSettings::read, NTPSettings::update, this, fs, NTP_SETTINGS_FILE)
 {
     addUpdateHandler([&](const String &originId)
                      { configureNTP(); },

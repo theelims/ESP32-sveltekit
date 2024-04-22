@@ -38,17 +38,19 @@ static char *retainCstr(const char *cstr, char **ptr)
     return *ptr;
 }
 
-MqttSettingsService::MqttSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager) : _server(server),
-                                                                                                                _securityManager(securityManager),
-                                                                                                                _httpEndpoint(MqttSettings::read, MqttSettings::update, this, server, MQTT_SETTINGS_SERVICE_PATH, securityManager),
-                                                                                                                _fsPersistence(MqttSettings::read, MqttSettings::update, this, fs, MQTT_SETTINGS_FILE),
-                                                                                                                _retainedHost(nullptr),
-                                                                                                                _retainedClientId(nullptr),
-                                                                                                                _retainedUsername(nullptr),
-                                                                                                                _retainedPassword(nullptr),
-                                                                                                                _reconfigureMqtt(false),
-                                                                                                                _mqttClient(),
-                                                                                                                _lastError("None")
+MqttSettingsService::MqttSettingsService(PsychicHttpServer *server,
+                                         FS *fs,
+                                         SecurityManager *securityManager) : _server(server),
+                                                                             _securityManager(securityManager),
+                                                                             _httpEndpoint(MqttSettings::read, MqttSettings::update, this, server, MQTT_SETTINGS_SERVICE_PATH, securityManager),
+                                                                             _fsPersistence(MqttSettings::read, MqttSettings::update, this, fs, MQTT_SETTINGS_FILE),
+                                                                             _retainedHost(nullptr),
+                                                                             _retainedClientId(nullptr),
+                                                                             _retainedUsername(nullptr),
+                                                                             _retainedPassword(nullptr),
+                                                                             _reconfigureMqtt(false),
+                                                                             _mqttClient(),
+                                                                             _lastError("None")
 {
     addUpdateHandler([&](const String &originId)
                      { onConfigUpdated(); },

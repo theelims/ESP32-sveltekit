@@ -14,8 +14,9 @@
 
 #include <WiFiStatus.h>
 
-WiFiStatus::WiFiStatus(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
-                                                                                      _securityManager(securityManager)
+WiFiStatus::WiFiStatus(PsychicHttpServer *server,
+                       SecurityManager *securityManager) : _server(server),
+                                                           _securityManager(securityManager)
 {
 }
 

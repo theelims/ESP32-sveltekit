@@ -96,7 +96,7 @@
 				body: JSON.stringify(data)
 			});
 			if (response.status == 200) {
-				notifications.success('Security settings updated.', 3000);
+				notifications.success('MQTT settings updated.', 3000);
 				mqttSettings = await response.json();
 			} else {
 				notifications.error('User not authorized.', 3000);

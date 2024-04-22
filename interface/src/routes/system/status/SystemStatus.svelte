@@ -24,33 +24,10 @@
 	import Health from '~icons/tabler/stethoscope';
 	import Stopwatch from '~icons/tabler/24-hours';
 	import SDK from '~icons/tabler/sdk';
+	import type { SystemInformation, Analytics } from '$lib/types/models';
+	import { socket } from '$lib/stores/socket';
 
-	type SystemStatus = {
-		esp_platform: string;
-		firmware_version: string;
-		max_alloc_heap: number;
-		psram_size: number;
-		free_psram: number;
-		cpu_freq_mhz: number;
-		cpu_type: string;
-		cpu_rev: number;
-		cpu_cores: number;
-		free_heap: number;
-		min_free_heap: number;
-		sketch_size: number;
-		free_sketch_space: number;
-		sdk_version: string;
-		arduino_version: string;
-		flash_chip_size: number;
-		flash_chip_speed: number;
-		fs_total: number;
-		fs_used: number;
-		core_temp: number;
-		cpu_reset_reason: string;
-		uptime: number;
-	};
-
-	let systemStatus: SystemStatus;
+	let systemInformation: SystemInformation;
 
 	async function getSystemStatus() {
 		try {
@@ -61,20 +38,19 @@
 					'Content-Type': 'application/json'
 				}
 			});
-			systemStatus = await response.json();
+			systemInformation = await response.json();
 		} catch (error) {
 			console.log('Error:', error);
 		}
-		return systemStatus;
+		return systemInformation;
 	}
 
-	const interval = setInterval(async () => {
-		getSystemStatus();
-	}, 5000);
+	onMount(() => socket.on('analytics', handleSystemData));
 
-	onMount(() => getSystemStatus());
+	onDestroy(() => socket.off('analytics', handleSystemData));
 
-	onDestroy(() => clearInterval(interval));
+	const handleSystemData = (data: Analytics) =>
+		(systemInformation = { ...systemInformation, ...data });
 
 	async function postRestart() {
 		const response = await fetch('/rest/restart', {
@@ -195,7 +171,7 @@
 					<div>
 						<div class="font-bold">Chip</div>
 						<div class="text-sm opacity-75">
-							{systemStatus.cpu_type} Rev {systemStatus.cpu_rev}
+							{systemInformation.cpu_type} Rev {systemInformation.cpu_rev}
 						</div>
 					</div>
 				</div>
@@ -207,7 +183,7 @@
 					<div>
 						<div class="font-bold">SDK Version</div>
 						<div class="text-sm opacity-75">
-							ESP-IDF {systemStatus.sdk_version} / Arduino {systemStatus.arduino_version}
+							ESP-IDF {systemInformation.sdk_version} / Arduino {systemInformation.arduino_version}
 						</div>
 					</div>
 				</div>
@@ -219,7 +195,7 @@
 					<div>
 						<div class="font-bold">Firmware Version</div>
 						<div class="text-sm opacity-75">
-							{systemStatus.firmware_version}
+							{systemInformation.firmware_version}
 						</div>
 					</div>
 				</div>
@@ -231,7 +207,7 @@
 					<div>
 						<div class="font-bold">CPU Frequency</div>
 						<div class="text-sm opacity-75">
-							{systemStatus.cpu_freq_mhz} MHz {systemStatus.cpu_cores == 2
+							{systemInformation.cpu_freq_mhz} MHz {systemInformation.cpu_cores == 2
 								? 'Dual Core'
 								: 'Single Core'}
 						</div>
@@ -245,7 +221,7 @@
 					<div>
 						<div class="font-bold">Heap (Free / Max Alloc)</div>
 						<div class="text-sm opacity-75">
-							{systemStatus.free_heap.toLocaleString('en-US')} / {systemStatus.max_alloc_heap.toLocaleString(
+							{systemInformation.free_heap.toLocaleString('en-US')} / {systemInformation.max_alloc_heap.toLocaleString(
 								'en-US'
 							)} bytes
 						</div>
@@ -259,7 +235,7 @@
 					<div>
 						<div class="font-bold">PSRAM (Size / Free)</div>
 						<div class="text-sm opacity-75">
-							{systemStatus.psram_size.toLocaleString('en-US')} / {systemStatus.psram_size.toLocaleString(
+							{systemInformation.psram_size.toLocaleString('en-US')} / {systemInformation.psram_size.toLocaleString(
 								'en-US'
 							)} bytes
 						</div>
@@ -274,13 +250,16 @@
 						<div class="font-bold">Sketch (Used / Free)</div>
 						<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
 							<span>
-								{((systemStatus.sketch_size / systemStatus.free_sketch_space) * 100).toFixed(1)} % of
-								{(systemStatus.free_sketch_space / 1000000).toLocaleString('en-US')} MB used
+								{(
+									(systemInformation.sketch_size / systemInformation.free_sketch_space) *
+									100
+								).toFixed(1)} % of
+								{(systemInformation.free_sketch_space / 1000000).toLocaleString('en-US')} MB used
 							</span>
 
 							<span>
 								({(
-									(systemStatus.free_sketch_space - systemStatus.sketch_size) /
+									(systemInformation.free_sketch_space - systemInformation.sketch_size) /
 									1000000
 								).toLocaleString('en-US')} MB free)
 							</span>
@@ -295,8 +274,8 @@
 					<div>
 						<div class="font-bold">Flash Chip (Size / Speed)</div>
 						<div class="text-sm opacity-75">
-							{(systemStatus.flash_chip_size / 1000000).toLocaleString('en-US')} MB / {(
-								systemStatus.flash_chip_speed / 1000000
+							{(systemInformation.flash_chip_size / 1000000).toLocaleString('en-US')} MB / {(
+								systemInformation.flash_chip_speed / 1000000
 							).toLocaleString('en-US')} MHz
 						</div>
 					</div>
@@ -310,15 +289,16 @@
 						<div class="font-bold">File System (Used / Total)</div>
 						<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
 							<span
-								>{((systemStatus.fs_used / systemStatus.fs_total) * 100).toFixed(1)} % of {(
-									systemStatus.fs_total / 1000000
+								>{((systemInformation.fs_used / systemInformation.fs_total) * 100).toFixed(1)} % of {(
+									systemInformation.fs_total / 1000000
 								).toLocaleString('en-US')} MB used</span
 							>
 
 							<span
-								>({((systemStatus.fs_total - systemStatus.fs_used) / 1000000).toLocaleString(
-									'en-US'
-								)}
+								>({(
+									(systemInformation.fs_total - systemInformation.fs_used) /
+									1000000
+								).toLocaleString('en-US')}
 								MB free)</span
 							>
 						</div>
@@ -332,7 +312,9 @@
 					<div>
 						<div class="font-bold">Core Temperature</div>
 						<div class="text-sm opacity-75">
-							{systemStatus.core_temp == 53.33 ? 'NaN' : systemStatus.core_temp.toFixed(2) + ' °C'}
+							{systemInformation.core_temp == 53.33
+								? 'NaN'
+								: systemInformation.core_temp.toFixed(2) + ' °C'}
 						</div>
 					</div>
 				</div>
@@ -344,7 +326,7 @@
 					<div>
 						<div class="font-bold">Uptime</div>
 						<div class="text-sm opacity-75">
-							{convertSeconds(systemStatus.uptime)}
+							{convertSeconds(systemInformation.uptime)}
 						</div>
 					</div>
 				</div>
@@ -356,7 +338,7 @@
 					<div>
 						<div class="font-bold">Reset Reason</div>
 						<div class="text-sm opacity-75">
-							{systemStatus.cpu_reset_reason}
+							{systemInformation.cpu_reset_reason}
 						</div>
 					</div>
 				</div>

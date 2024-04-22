@@ -1,39 +1,29 @@
-import { writable, derived } from 'svelte/store';
+import { writable, derived, type Writable } from 'svelte/store';
+
+type StateType = 'info' | 'success' | 'warning' | 'error';
 
 type State = {
 	id: string;
-	type: string;
+	type: StateType;
 	message: string;
-	timeout: number;
 };
 
 function createNotificationStore() {
 	const state: State[] = [];
-	const _notifications = writable(state);
+	const notifications = writable(state);
+	const { subscribe } = notifications;
 
-	function send(message: string, type = 'info', timeout: number) {
-		_notifications.update((state) => {
-			return [...state, { id: id(), type, message, timeout }];
+	function send(message: string, type: StateType = 'info', timeout: number) {
+		const id = generateId();
+		setTimeout(() => {
+			notifications.update((state) => {
+				return state.filter((n) => n.id !== id);
+			});
+		}, timeout);
+		notifications.update((state) => {
+			return [...state, { id, type, message }];
 		});
 	}
-
-	let timers = [];
-
-	const notifications = derived(_notifications, ($_notifications, set) => {
-		set($_notifications);
-		if ($_notifications.length > 0) {
-			const timer = setTimeout(() => {
-				_notifications.update((state) => {
-					state.shift();
-					return state;
-				});
-			}, $_notifications[0].timeout);
-			return () => {
-				clearTimeout(timer);
-			};
-		}
-	});
-	const { subscribe } = notifications;
 
 	return {
 		subscribe,
@@ -45,7 +35,7 @@ function createNotificationStore() {
 	};
 }
 
-function id() {
+function generateId() {
 	return '_' + Math.random().toString(36).substr(2, 9);
 }
 

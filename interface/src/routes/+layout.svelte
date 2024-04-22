@@ -4,6 +4,7 @@
 	import { user } from '$lib/stores/user';
 	import { telemetry } from '$lib/stores/telemetry';
 	import { analytics } from '$lib/stores/analytics';
+	import { socket } from '$lib/stores/socket';
 	import { environment } from '$lib/stores/environment';
 	import type { userProfile } from '$lib/stores/user';
 	import { page } from '$app/stores';
@@ -15,23 +16,52 @@
 	import Menu from './menu.svelte';
 	import Statusbar from './statusbar.svelte';
 	import Login from './login.svelte';
+	import type { Analytics } from '$lib/types/models';
 
 	export let data: LayoutData;
 
-	//$: console.log($analytics);
-
-	onMount(() => {
+	onMount(async () => {
 		if ($user.bearer_token !== '') {
-			validateUser($user);
+			await validateUser($user);
 		}
-		menuOpen = false;
-		connectToEventSource();
+		const ws_token = $page.data.features.security ? '?access_token=' + $user.bearer_token : '';
+		socket.init(`ws://${window.location.host}/ws/events${ws_token}`);
+
+		addEventListeners();
+
 		fetchEnvironment();
 	});
 
 	onDestroy(() => {
-		NotificationSource?.close();
+		removeEventListeners();
 	});
+
+	const addEventListeners = () => {
+		socket.on('open', handleOpen);
+		socket.on('close', handleClose);
+		socket.on('error', handleError);
+		socket.on('rssi', handleNetworkStatus);
+		socket.on('infoToast', handleInfoToast);
+		socket.on('successToast', handleSuccessToast);
+		socket.on('warningToast', handleWarningToast);
+		socket.on('errorToast', handleErrorToast);
+		if ($page.data.features.analytics) socket.on('analytics', handleAnalytics);
+		if ($page.data.features.battery) socket.on('battery', handleBattery);
+		if ($page.data.features.download_firmware) socket.on('otastatus', handleOAT);
+	};
+
+	const removeEventListeners = () => {
+		socket.off('analytics', handleAnalytics);
+		socket.off('open', handleOpen);
+		socket.off('close', handleClose);
+		socket.off('rssi', handleNetworkStatus);
+		socket.off('infoToast', handleInfoToast);
+		socket.off('successToast', handleSuccessToast);
+		socket.off('warningToast', handleWarningToast);
+		socket.off('errorToast', handleErrorToast);
+		socket.off('battery', handleBattery);
+		socket.off('otastatus', handleOAT);
+	};
 
 	async function validateUser(userdata: userProfile) {
 		try {
@@ -48,8 +78,31 @@
 		} catch (error) {
 			console.error('Error:', error);
 		}
-		return;
 	}
+
+	const handleOpen = () => {
+		notifications.success('Connection to device established', 5000);
+	};
+
+	const handleClose = () => {
+		notifications.error('Connection to device lost', 5000);
+		telemetry.setRSSI('lost');
+	};
+
+	const handleError = (data: any) => console.error(data);
+
+	const handleInfoToast = (data: string) => notifications.info(data, 5000);
+	const handleWarningToast = (data: string) => notifications.warning(data, 5000);
+	const handleErrorToast = (data: string) => notifications.error(data, 5000);
+	const handleSuccessToast = (data: string) => notifications.success(data, 5000);
+
+	const handleAnalytics = (data: Analytics) => analytics.addData(data);
+
+	const handleNetworkStatus = (data: string) => telemetry.setRSSI(data);
+
+	const handleBattery = (data: string) => telemetry.setBattery(data);
+
+	const handleOAT = (data: string) => telemetry.setDownloadOTA(data);
 
 	async function fetchEnvironment() {
 		try {
@@ -71,137 +124,6 @@
 	}
 
 	let menuOpen = false;
-
-	let NotificationSource: EventSource;
-	let reconnectIntervalId: number = 0;
-	let connectionLost = false;
-	let unresponsiveTimeout: number;
-
-	function connectToEventSource() {
-		NotificationSource = new EventSource('/events');
-		console.log('Attempting SSE connection.');
-
-		NotificationSource.addEventListener('open', () => {
-			clearInterval(reconnectIntervalId);
-			reconnectIntervalId = 0;
-			connectionLost = false;
-			console.log('SSE connection established');
-			notifications.success('Connection to device established', 5000);
-			telemetry.setRSSI('found'); // Update store and flag as server being available again
-		});
-
-		NotificationSource.addEventListener(
-			'rssi',
-			(event) => {
-				telemetry.setRSSI(event.data);
-				// Reset a timer to detect unresponsiveness
-				clearTimeout(unresponsiveTimeout);
-
-				unresponsiveTimeout = setTimeout(() => {
-					console.log('Server is unresponsive');
-					reconnectEventSource();
-				}, 2000); // Detect unresponsiveness after 2 seconds
-			},
-			false
-		);
-
-		NotificationSource.addEventListener(
-			'error',
-			(event) => {
-				reconnectEventSource();
-			},
-			false
-		);
-
-		NotificationSource.addEventListener(
-			'close',
-			(event) => {
-				reconnectEventSource();
-			},
-			false
-		);
-
-		NotificationSource.addEventListener(
-			'infoToast',
-			(event) => {
-				notifications.info(event.data, 5000);
-			},
-			false
-		);
-
-		NotificationSource.addEventListener(
-			'successToast',
-			(event) => {
-				notifications.success(event.data, 5000);
-			},
-			false
-		);
-
-		NotificationSource.addEventListener(
-			'warningToast',
-			(event) => {
-				notifications.warning(event.data, 5000);
-			},
-			false
-		);
-
-		NotificationSource.addEventListener(
-			'errorToast',
-			(event) => {
-				notifications.error(event.data, 5000);
-			},
-			false
-		);
-
-		NotificationSource.addEventListener(
-			'battery',
-			(event) => {
-				telemetry.setBattery(event.data);
-			},
-			false
-		);
-
-		NotificationSource.addEventListener(
-			'download_ota',
-			(event) => {
-				telemetry.setDownloadOTA(event.data);
-			},
-			false
-		);
-		NotificationSource.addEventListener(
-			'motor_error',
-			(event) => {
-				telemetry.setMotorError(event.data);
-			},
-			false
-		);
-		NotificationSource.addEventListener(
-			'motor_homed',
-			(event) => {
-				telemetry.setMotorHomed(event.data);
-			},
-			false
-		);
-		NotificationSource.addEventListener(
-			'analytics',
-			(event) => {
-				analytics.addData(event.data);
-			},
-			false
-		);
-	}
-
-	function reconnectEventSource() {
-		if (connectionLost === false) {
-			NotificationSource.close;
-			notifications.error('Connection to device lost', 5000);
-			if (reconnectIntervalId === 0) {
-				reconnectIntervalId = setInterval(connectToEventSource, 2000);
-				console.log('SSE reconnect Timer ID: ' + reconnectIntervalId);
-			}
-		}
-		connectionLost = true;
-	}
 </script>
 
 <svelte:head>

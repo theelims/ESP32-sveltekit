@@ -17,9 +17,10 @@
 	let firmwareDownloadLink: string;
 
 	async function getGithubAPI() {
+		const githubUrl = `https://api.github.com/repos/${$page.data.github}/releases/latest`;
 		try {
 			const response = await fetch(
-				'https://api.github.com/repos/' + $page.data.github + '/releases/latest',
+				githubUrl,
 				{
 					method: 'GET',
 					headers: {
@@ -28,6 +29,9 @@
 					}
 				}
 			);
+			if (response.status !== 200) {
+				throw new Error(`Failed to fetch latest release from ${githubUrl}`);
+			}
 			const results = await response.json();
 
 			update = false;
