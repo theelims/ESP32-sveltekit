@@ -12,7 +12,7 @@
 #include <HttpEndpoint.h>
 #include <FSPersistence.h>
 #include <StrokeEngine.h>
-#include <NotificationEvents.h>
+#include <EventSocket.h>
 
 #include <StrokeEngineMotor.h>
 #include <virtualMotor.h>
@@ -197,7 +197,7 @@ public:
 class MotorConfigurationService : public StatefulService<MotorConfiguration>
 {
 public:
-    MotorConfigurationService(StrokeEngine *strokeEngine, PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, NotificationEvents *notificationEvent);
+    MotorConfigurationService(StrokeEngine *strokeEngine, PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, EventSocket *socket);
     void begin();
 
     String getDriverName();
@@ -205,7 +205,7 @@ public:
 private:
     HttpEndpoint<MotorConfiguration> _httpEndpoint;
     FSPersistence<MotorConfiguration> _fsPersistence;
-    NotificationEvents *_notificationEvent;
+    EventSocket *_socket;
     StrokeEngine *_strokeEngine;
     MotorInterface *_motor;
     MotorDriver _loadedDriver = VIRTUAL;

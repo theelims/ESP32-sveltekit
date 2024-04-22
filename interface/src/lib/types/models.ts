@@ -15,7 +15,7 @@ export type WifiStatus = {
 export type WifiSettings = {
 	hostname: string;
 	priority_RSSI: boolean;
-	wifi_networks: networkItem[];
+	wifi_networks: NetworkItem[];
 };
 
 export type KnownNetworkItem = {
@@ -61,9 +61,9 @@ export type LightState = {
 };
 
 export type BrokerSettings = {
-	mqtt_path: string;
-	name: string;
-	unique_id: string;
+	control_topic: string;
+	environment_topic: string;
+	streaming_topic: string;
 };
 
 export type NTPStatus = {

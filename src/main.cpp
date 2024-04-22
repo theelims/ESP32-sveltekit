@@ -54,7 +54,7 @@ MotorConfigurationService motorConfigurationService = MotorConfigurationService(
                                                                                 &server,
                                                                                 esp32sveltekit.getFS(),
                                                                                 esp32sveltekit.getSecurityManager(),
-                                                                                esp32sveltekit.getNotificationEvents());
+                                                                                esp32sveltekit.getSocket());
 
 StrokeEngineSafetyService strokeEngineSafetyService = StrokeEngineSafetyService(&Stroker,
                                                                                 &server,
@@ -88,8 +88,8 @@ void streamMotorData(unsigned int time, float position, float speed, float value
     // Send motor state notification events every 500ms
     if (millis() - lastMillis > 500)
     {
-        esp32sveltekit.getNotificationEvents()->send(Stroker.getMotor()->isHomed() ? "{\"homed\":true}" : "{\"homed\":false}", "motor_homed", millis());
-        esp32sveltekit.getNotificationEvents()->send(Stroker.getMotor()->hasError() ? "{\"error\":true}" : "{\"error\":false}", "motor_error", millis());
+        esp32sveltekit.getSocket()->emit("motor_homed", Stroker.getMotor()->isHomed() ? "{\"homed\":true}" : "{\"homed\":false}");
+        esp32sveltekit.getSocket()->emit("motor_error", Stroker.getMotor()->hasError() ? "{\"error\":true}" : "{\"error\":false}");
         lastMillis = millis();
     }
 }
@@ -131,6 +131,10 @@ void setup()
 
     // start ESP32-SvelteKit
     esp32sveltekit.begin();
+
+    esp32sveltekit.getSocket()->registerEvent("motor_homed"); // TODO Tug away in a dedicated service
+    esp32sveltekit.getSocket()->registerEvent("motor_error");
+
     MDNS.addService("LUST-Service", "tcp", 80);
     MDNS.addServiceTxt("LUST-Service", "tcp", "FirmwareVersion", APP_VERSION);
     MDNS.addServiceTxt("LUST-Service", "tcp", "DeviceID", SettingValue::format("LUST-motion-#{unique_id}"));

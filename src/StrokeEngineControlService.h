@@ -11,7 +11,7 @@
 
 #include <PsychicHttp.h>
 #include <PsychicMqttClient.h>
-#include <MqttPubSub.h>
+#include <MqttEndpoint.h>
 #include <WebSocketServer.h>
 #include <HttpEndpoint.h>
 #include <FSPersistence.h>
@@ -142,7 +142,7 @@ public:
 
 private:
     HttpEndpoint<StrokeEngineControl> _httpEndpoint;
-    MqttPubSub<StrokeEngineControl> _mqttPubSub;
+    MqttEndpoint<StrokeEngineControl> _mqttEndpoint;
     WebSocketServer<StrokeEngineControl> _webSocketServer;
     // WebSocketClient<StrokeEngineControl> _webSocketClient;
     PsychicMqttClient *_mqttClient;

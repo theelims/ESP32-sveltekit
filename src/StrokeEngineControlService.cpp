@@ -26,7 +26,7 @@ StrokeEngineControlService::StrokeEngineControlService(StrokeEngine *strokeEngin
                                                                                                                              SE_CONTROL_SETTINGS_ENDPOINT_PATH,
                                                                                                                              securityManager,
                                                                                                                              AuthenticationPredicates::IS_AUTHENTICATED),
-                                                                                                               _mqttPubSub(StrokeEngineControl::read, StrokeEngineControl::update, this, mqttClient),
+                                                                                                               _mqttEndpoint(StrokeEngineControl::read, StrokeEngineControl::update, this, mqttClient),
                                                                                                                _webSocketServer(StrokeEngineControl::read,
                                                                                                                                 StrokeEngineControl::update,
                                                                                                                                 this,
@@ -56,7 +56,7 @@ void StrokeEngineControlService::begin()
     String controlTopic;
     _mqttBrokerSettingsService->read([&](MqttBrokerSettings &settings)
                                      { controlTopic = settings.controlTopic; });
-    _mqttPubSub.configureTopics(controlTopic.c_str(), controlTopic.c_str());
+    _mqttEndpoint.configureTopics(controlTopic.c_str(), controlTopic.c_str());
 
     _state.command = "STOP";
     _state.depth = _strokeEngine->getParameter(StrokeParameter::DEPTH);
@@ -180,8 +180,7 @@ void StrokeEngineControlService::onStrokeEngineChanged(String reason)
                    state = newSettings;
                    return StateUpdateResult::CHANGED;
                }
-               return StateUpdateResult::ERROR;
-           },
+               return StateUpdateResult::ERROR; },
            "StrokeEngine");
 }
 
