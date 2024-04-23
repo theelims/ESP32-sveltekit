@@ -107,12 +107,6 @@
 
 	onDestroy(() => clearInterval(interval));
 
-	onMount(() => {
-		if (!$page.data.features.security || $user.admin) {
-			getWifiSettings();
-		}
-	});
-
 	async function postWiFiSettings(data: WifiSettings) {
 		try {
 			const response = await fetch('/rest/wifiSettings', {
