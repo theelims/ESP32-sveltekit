@@ -16,7 +16,6 @@
 #include <StrokeEngineMotor.h>
 #include <StrokeEngineSafeGuard.h>
 #include <StrokeEngineTrapezoidalMotion.h>
-#include <StrokeEngineEaseIn.h>
 #include <functional>
 #include <vector>
 
@@ -299,8 +298,6 @@ protected:
   MotorInterface *_motor;
   StrokeEngineSafeGuard _safeGuard; // all setting & makeSafe calls must be made within the scope of a taken _parameterMutex
   StrokeCommand _command = StrokeCommand::STOP;
-  TrapezoidalMotion _trapezoidalProfile;
-  EaseInModifier _easeIn = EaseInModifier(&_trapezoidalProfile, &_safeGuard);
 
   int _patternIndex = 0;
   int _index = 0;

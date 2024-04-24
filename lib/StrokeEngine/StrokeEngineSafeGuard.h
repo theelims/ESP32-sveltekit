@@ -24,6 +24,10 @@
 #define RATE_UPPER_LIMIT 600.0
 #endif
 
+#ifndef EASE_IN_UPDATE_INTERVAL
+#define EASE_IN_UPDATE_INTERVAL 50
+#endif
+
 typedef struct
 {
     float absoluteTargetPosition;
@@ -40,10 +44,12 @@ public:
     void begin(MotorInterface *motor, float depth, float stroke, float rate, float depthLimit, float strokeLimit, float rateLimit, float velocityLimit, float easeInSpeed);
 
     float setDepth(float depth);
-    float getDepth();
+    float getCurrentDepth();
+    float getTargetDepth();
 
     float setStroke(float stroke);
-    float getStroke();
+    float getCurrentStroke();
+    float getTargetStroke();
 
     float setRate(float rate);
     float getRate();
@@ -65,7 +71,7 @@ public:
     float setEaseInSpeed(float easeInSpeed);
     float getEaseInSpeed();
 
-    bool needsEaseIn(); // Check if the current motion needs to be eased in and update _currentDepth and _currentStroke
+    bool calculateEaseIn(); // Check if the current motion needs to be eased in and update _currentDepth and _currentStroke
 
     SafeStrokeParameters_t makeSafe(float stroke, float speed, float acceleration);
     SafeStrokeParameters_t makeSafe(motionParameters_t motionParameters);
@@ -73,9 +79,9 @@ public:
 
 protected:
     MotorInterface *_motor = nullptr;
-    float _depth;
+    float _targetDepth;
     float _currentDepth;
-    float _stroke;
+    float _targetStroke;
     float _currentStroke;
     float _rate;
     float _timeOfStroke;
@@ -88,8 +94,7 @@ protected:
 
     float _easeInSpeed;
 
-    unsigned int _easeInDepthReachedTime;
-    unsigned int _easeInStrokeReachedTime;
+    unsigned int _lastEaseInCalculation = 0;
 };
 
 #endif // STROKE_ENGINE_SAFE_GUARD_H

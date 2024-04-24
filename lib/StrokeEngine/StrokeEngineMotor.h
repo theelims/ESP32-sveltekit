@@ -307,10 +307,9 @@ public:
     @brief  It also attaches a callback function where the speed and position
     are reported on a regular interval specified with timeInMs.
     @param cbMotionPoint Callback with the signature
-    `cbMotionPoint(unsigned int timestamp, float position, float speed, float valueA,
-    float valueB)`. time is reported milliseconds since the controller has started
-    (`millis()`), speed in [m/s] and position in [mm]. valueA & valueB can be
-    arbitrary data like current, voltage, real position, torque, etc.
+    `cbMotionPoint(unsigned int timestamp, float position, float speed, float current,
+    float voltage)`. time is reported milliseconds since the controller has started
+    (`millis()`), speed in [m/s] and position in [mm].
     @param timeInMs time interval at which speed and position should be
     reported in [ms]
   */
@@ -349,20 +348,6 @@ public:
     _cbMotionPoint = NULL;
     vTaskDelete(_taskPositionFeedbackHandle);
     _taskPositionFeedbackHandle = NULL;
-  }
-
-  /**************************************************************************/
-  /*!
-    @brief  Returns the data labels for valueA and valueB of a motion point.
-    @return MotionPointLabel struct with the labels for valueA and valueB
-  */
-  /**************************************************************************/
-  MotionPointLabel getMotionPointLabel()
-  {
-    MotionPointLabel label;
-    label.labelValueA = "None";
-    label.labelValueB = "None";
-    return label;
   }
 
   /**************************************************************************/
