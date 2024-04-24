@@ -11,23 +11,7 @@
 	import Collapsible from '$lib/components/Collapsible.svelte';
 	import MQTT from '~icons/tabler/topology-star-3';
 	import Client from '~icons/tabler/robot';
-
-	type MQTTStatus = {
-		enabled: boolean;
-		connected: boolean;
-		client_id: string;
-		last_error: string;
-	};
-
-	type MQTTSettings = {
-		enabled: boolean;
-		uri: string;
-		username: string;
-		password: string;
-		client_id: string;
-		keep_alive: number;
-		clean_session: boolean;
-	};
+	import type { MQTTSettings, MQTTStatus } from '$lib/types/models';
 
 	let mqttSettings: MQTTSettings;
 	let mqttStatus: MQTTStatus;
