@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [WIP] - Current WIP
+
+### Added
+
+### Changed
+
+- Moved MQTT types to models.ts as well. [#49](https://github.com/theelims/ESP32-sveltekit/pull/49)
+- Fixed spelling error in models.tsnpm audit
+
+### Fixed
+
+### Removed
+
+- Removed duplicate in ESP32SvelteKit.cpp [#47](https://github.com/theelims/ESP32-sveltekit/pull/47) and WiFi.svelte [#50](https://github.com/theelims/ESP32-sveltekit/pull/50)
+
 ## [0.4.0] - 2024-04-21
 
 This upgrade might require one minor change as `MqttPubSub.h` and its class had been renamed to `MqttEndpoint.h` and `MqttEndoint` respectively. However, it is strongly advised, that you change all existing WebSocketServer endpoints to the new event socket system.

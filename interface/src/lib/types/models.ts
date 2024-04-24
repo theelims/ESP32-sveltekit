@@ -15,7 +15,7 @@ export type WifiStatus = {
 export type WifiSettings = {
 	hostname: string;
 	priority_RSSI: boolean;
-	wifi_networks: networkItem[];
+	wifi_networks: NetworkItem[];
 };
 
 export type KnownNetworkItem = {
