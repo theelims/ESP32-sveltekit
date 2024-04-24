@@ -21,12 +21,13 @@ The main control API to control LUST-motion. Starts and stops the motion, change
 
 > Defined in `StrokeEngineControlService.h`
 
-| Method | URL           | Authentication  |
-| ------ | ------------- | --------------- |
-| GET    | /rest/control | `NONE_REQUIRED` |
-| POST   | /rest/control | `NONE_REQUIRED` |
-| WS     | /ws/control   | `NONE_REQUIRED` |
-| MQTT   | -             | N/A             |
+| Method | URL           | Authentication     |
+| ------ | ------------- | ------------------ |
+| GET    | /rest/control | `NONE_REQUIRED`    |
+| POST   | /rest/control | `NONE_REQUIRED`    |
+| WS     | /ws/control   | `NONE_REQUIRED`    |
+| EVENT  | `control`     | `IS_AUTHENTICATED` |
+| MQTT   | -             | N/A                |
 
 | Parameter           | Type    | Range            | Info                                                                                                                   | Failure Mode         |
 | ------------------- | ------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------- |
@@ -126,9 +127,7 @@ This API will provide the information about the environment like maximum travel 
 | max_velocity   | number           | maximum velocity in mm/s. Given by the maximum RPM and the gearing ratio.                              |
 | heartbeat_mode | number           | heartbeat mode. If > 0 the control message must be sent every second, regardless wether it has changed |
 | patterns       | array of strings | array of all available pattern names                                                                   |
-| valueA         | string           | Label of the valueA data stream                                                                        |
-| valueB         | string           | Label of the valueB data stream                                                                        |
-| motor          | string           | Which motor driver is loaded: `VIRTUAL`, `GENERIC_STEPPER`, `OSSM_REF_BOARD_V2` or `IHSV_SERVO_V6`     |
+| motor          | string           | Which motor driver is loaded: `VIRTUAL`, `GENERIC_STEPPER`, `OSSM_REF_BOARD_V2`                        |
 
 #### JSON
 
@@ -138,9 +137,7 @@ This API will provide the information about the environment like maximum travel 
     "max_rate": 30.0,
     "heartbeat_mode": 1,
     "pattern": ["Depth Adjustment", "Streaming", "Pounding or Teasing", "Robo Stroke"],
-    "valueA" : "Real Position",
-    "valueB" : "Torque",
-    "motor" : "IHSV_SERVO_V6"
+    "motor" : "OSSM_REF_BOARD_V2"
 }
 ```
 
@@ -158,7 +155,7 @@ Instead of pattern the motion commands can be provided via this streaming interf
 | ------ | --------------- | --------------- |
 | POST   | /rest/streaming | `NONE_REQUIRED` |
 | WS     | /ws/streaming   | `NONE_REQUIRED` |
-| MQTT   | -               | /N/A            |
+| MQTT   | -               | N/A             |
 
 | Parameter           | Type   | Range       | Info                                                                                       | Failure Mode                |
 | ------------------- | ------ | ----------- | ------------------------------------------------------------------------------------------ | --------------------------- |
@@ -227,25 +224,26 @@ This REST endpoint configures the motor driver and important parameters during r
 
 > Defined in `WebSocketRawDataStreaming.h`
 
-A constant stream of position, velocity and other parameters are available on a websocket connection. These values are send in a binary CBOR format and contain an array of several data points for a given time slot. The binary format is chosen to save bandwidth and typically 5 data points are aggregated into one message to reduce the message rate. This can be used as a direct user feedback of what is happening with the machine.
+A constant stream of position, velocity and other parameters are available through the event socket. These contain an array of several data points for a given time slot. Typically 5 data points are aggregated into one message to reduce the message rate. This can be used as a direct user feedback of what is happening with the machine.
 
-| Method | URL             | Authentication  |
-| ------ | --------------- | --------------- |
-| GET    | /ws/rawPosition | `NONE_REQUIRED` |
+| Method | URL    | Authentication     |
+| ------ | ------ | ------------------ |
+| EVENT  | `data` | `IS_AUTHENTICATED` |
 
-| Parameter | Type         | Info                                                                     |
-| --------- | ------------ | ------------------------------------------------------------------------ |
-| time      | unsigned int | time in milliseconds since device started                                |
-| position  | float        | the real-time position in [mm]                                           |
-| speed     | float        | the real-time velocity in [mm/s]                                         |
-| valueA    | float        | An analog value the motor driver can send. e.g. current, force or torque |
-| valueB    | float        | An analog value the motor driver can send. e.g. current, force or torque |
+| Parameter | Type         | Info                                      |
+| --------- | ------------ | ----------------------------------------- |
+| time      | unsigned int | time in milliseconds since device started |
+| position  | float        | the real-time position in [mm]            |
+| speed     | float        | the real-time velocity in [mm/s]          |
+| current   | float        | the real-time current in [A]              |
+| voltage   | float        | the real-time voltage in [V]              |
 
-## Server Sent Events
+## Event Socket Events
 
-The current motor state is updated every 500ms via SSE events. The following events are available:
+The following events are available for subscription:
 
-| Event       | Message          | Info                                                |
-| ----------- | ---------------- | --------------------------------------------------- |
-| motor_homed | "true" / "false" | Wether the motor is currently homed or not          |
-| motor_error | "true" / "false" | Wether the motor is currently in error state or not |
+| Event         | Message          | Update | Info                                                                                                   |
+| ------------- | ---------------- | ------ | ------------------------------------------------------------------------------------------------------ |
+| `motor_homed` | "true" / "false" | 500 ms | Wether the motor is currently homed or not                                                             |
+| `motor_error` | "true" / "false" | 500 ms | Wether the motor is currently in error state or not                                                    |
+| `heartbeat`   | number           | change | heartbeat mode. If > 0 the control message must be sent every second, regardless wether it has changed |
