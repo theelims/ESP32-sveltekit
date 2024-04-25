@@ -9,7 +9,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2023 - 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -30,6 +30,7 @@
 #include <EventSocket.h>
 #include <MqttSettingsService.h>
 #include <MqttStatus.h>
+#include <NotificationService.h>
 #include <NTPSettingsService.h>
 #include <NTPStatus.h>
 #include <UploadFirmwareService.h>
@@ -107,6 +108,11 @@ public:
         return &_apSettingsService;
     }
 
+    NotificationService *getNotificationService()
+    {
+        return &_notificationService;
+    }
+
 #if FT_ENABLED(FT_NTP)
     StatefulService<NTPSettings> *getNTPSettingsService()
     {
@@ -171,6 +177,7 @@ private:
     APSettingsService _apSettingsService;
     APStatus _apStatus;
     EventSocket _socket;
+    NotificationService _notificationService;
 #if FT_ENABLED(FT_NTP)
     NTPSettingsService _ntpSettingsService;
     NTPStatus _ntpStatus;

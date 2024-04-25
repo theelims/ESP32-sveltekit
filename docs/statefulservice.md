@@ -344,7 +344,7 @@ The boolean parameter provided will always be `true`.
 It is possibly to send push notifications to all clients by using the Event Socket. These will be displayed as toasts an the client side. Either directly call
 
 ```cpp
-esp32sveltekit.getSocket()->pushNotification("Pushed a message!", PUSHINFO);
+esp32sveltekit.getNotificationService()->pushNotification("Pushed a message!", PUSHINFO);
 ```
 
 or keep a local pointer to the `EventSocket` instance. It is possible to send `PUSHINFO`, `PUSHWARNING`, `PUSHERROR` and `PUSHSUCCESS` events to all clients.

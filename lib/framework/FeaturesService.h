@@ -9,7 +9,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2023 - 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -22,7 +22,6 @@
 #include <PsychicHttp.h>
 #include <vector>
 
-#define MAX_FEATURES_SIZE 256
 #define FEATURES_SERVICE_PATH "/rest/features"
 
 typedef struct

@@ -5,7 +5,7 @@
 #   https://github.com/theelims/ESP32-sveltekit
 #
 #   Copyright (C) 2018 - 2023 rjwats
-#   Copyright (C) 2023 theelims
+#   Copyright (C) 2023 - 2024 theelims
 #   Copyright (C) 2023 Maxtrium B.V. [ code available under dual license ]
 #   Copyright (C) 2024 runeharlyk
 #

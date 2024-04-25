@@ -9,7 +9,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2023 - 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -49,8 +49,6 @@
 #define WIFI_RECONNECTION_DELAY 1000 * 30
 #define RSSI_EVENT_DELAY 200
 
-#define WIFI_SETTINGS_BUFFER_SIZE 2048
-
 #define EVENT_RSSI "rssi"
 
 // Struct defining the wifi settings
@@ -81,13 +79,13 @@ public:
         root["priority_RSSI"] = settings.priorityBySignalStrength;
 
         // create JSON array from root
-        JsonArray wifiNetworks = root.createNestedArray("wifi_networks");
+        JsonArray wifiNetworks = root["wifi_networks"].add<JsonArray>();
 
         // iterate over the wifiSettings
         for (auto &wifi : settings.wifiSettings)
         {
             // create JSON object for each wifi network
-            JsonObject wifiNetwork = wifiNetworks.createNestedObject();
+            JsonObject wifiNetwork = wifiNetworks.add<JsonObject>();
 
             // add the ssid and password to the JSON object
             wifiNetwork["ssid"] = wifi.ssid;

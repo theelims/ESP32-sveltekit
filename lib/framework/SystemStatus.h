@@ -9,7 +9,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2023 - 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -22,7 +22,6 @@
 #include <SecurityManager.h>
 #include <ESPFS.h>
 
-#define MAX_ESP_STATUS_SIZE 1024
 #define SYSTEM_STATUS_SERVICE_PATH "/rest/systemStatus"
 
 class SystemStatus

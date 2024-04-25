@@ -9,7 +9,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2023 - 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -44,7 +44,6 @@
 #define SECURITY_SETTINGS_FILE "/config/securitySettings.json"
 #define SECURITY_SETTINGS_PATH "/rest/securitySettings"
 
-#define GENERATE_TOKEN_SIZE 512
 #define GENERATE_TOKEN_PATH "/rest/generateToken"
 
 #if FT_ENABLED(FT_SECURITY)
@@ -61,10 +60,10 @@ public:
         root["jwt_secret"] = settings.jwtSecret;
 
         // users
-        JsonArray users = root.createNestedArray("users");
+        JsonArray users = root["users"].add<JsonArray>();
         for (User user : settings.users)
         {
-            JsonObject userRoot = users.createNestedObject();
+            JsonObject userRoot = users.add<JsonObject>();
             userRoot["username"] = user.username;
             userRoot["password"] = user.password;
             userRoot["admin"] = user.admin;

@@ -7,7 +7,7 @@
  *   with responsive Sveltekit front-end built with TailwindCSS and DaisyUI.
  *   https://github.com/theelims/ESP32-sveltekit
  *
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2023 - 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -49,7 +49,7 @@ protected:
     void _loop()
     {
         TickType_t xLastWakeTime = xTaskGetTickCount();
-        StaticJsonDocument<MAX_ESP_ANALYTICS_SIZE> doc;
+        JsonDocument doc;
         char message[MAX_ESP_ANALYTICS_SIZE];
         while (1)
         {

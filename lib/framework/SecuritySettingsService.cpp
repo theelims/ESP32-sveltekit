@@ -6,7 +6,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2023 - 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -69,7 +69,7 @@ void SecuritySettingsService::configureJWTHandler()
 
 Authentication SecuritySettingsService::authenticateJWT(String &jwt)
 {
-    DynamicJsonDocument payloadDocument(MAX_JWT_SIZE);
+    JsonDocument payloadDocument;
     _jwtHandler.parseJWT(jwt, payloadDocument);
     if (payloadDocument.is<JsonObject>())
     {
@@ -106,7 +106,7 @@ inline void populateJWTPayload(JsonObject &payload, User *user)
 
 boolean SecuritySettingsService::validatePayload(JsonObject &parsedPayload, User *user)
 {
-    DynamicJsonDocument jsonDocument(MAX_JWT_SIZE);
+    JsonDocument jsonDocument;
     JsonObject payload = jsonDocument.to<JsonObject>();
     populateJWTPayload(payload, user);
     return payload == parsedPayload;
@@ -114,7 +114,7 @@ boolean SecuritySettingsService::validatePayload(JsonObject &parsedPayload, User
 
 String SecuritySettingsService::generateJWT(User *user)
 {
-    DynamicJsonDocument jsonDocument(MAX_JWT_SIZE);
+    JsonDocument jsonDocument;
     JsonObject payload = jsonDocument.to<JsonObject>();
     populateJWTPayload(payload, user);
     return _jwtHandler.buildJWT(payload);
@@ -179,7 +179,7 @@ esp_err_t SecuritySettingsService::generateToken(PsychicRequest *request)
     {
         if (_user.username == usernameParam)
         {
-            PsychicJsonResponse response = PsychicJsonResponse(request, false, GENERATE_TOKEN_SIZE);
+            PsychicJsonResponse response = PsychicJsonResponse(request, false);
             JsonObject root = response.getRoot();
             root["token"] = generateJWT(&_user);
             return response.send();

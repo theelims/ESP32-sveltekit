@@ -6,7 +6,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2023 - 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -20,7 +20,7 @@ WiFiSettingsService::WiFiSettingsService(PsychicHttpServer *server,
                                          EventSocket *socket) : _server(server),
                                                                 _securityManager(securityManager),
                                                                 _httpEndpoint(WiFiSettings::read, WiFiSettings::update, this, server, WIFI_SETTINGS_SERVICE_PATH, securityManager,
-                                                                              AuthenticationPredicates::IS_ADMIN, WIFI_SETTINGS_BUFFER_SIZE),
+                                                                              AuthenticationPredicates::IS_ADMIN),
                                                                 _fsPersistence(WiFiSettings::read, WiFiSettings::update, this, fs, WIFI_SETTINGS_FILE), _lastConnectionAttempt(0),
                                                                 _socket(socket)
 {

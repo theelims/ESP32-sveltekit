@@ -9,7 +9,9 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Moved MQTT types to models.ts as well. [#49](https://github.com/theelims/ESP32-sveltekit/pull/49)
-- Fixed spelling error in models.tsnpm audit
+- Fixed spelling error in models.ts
+- Changed ArduinoJson from v6 to v7
+- Split NotificationService out of EventSocket into own class
 
 ### Fixed
 

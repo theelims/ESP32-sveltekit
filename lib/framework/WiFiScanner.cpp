@@ -6,7 +6,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2023 - 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -52,12 +52,12 @@ esp_err_t WiFiScanner::listNetworks(PsychicRequest *request)
     int numNetworks = WiFi.scanComplete();
     if (numNetworks > -1)
     {
-        PsychicJsonResponse response = PsychicJsonResponse(request, false, MAX_WIFI_SCANNER_SIZE);
+        PsychicJsonResponse response = PsychicJsonResponse(request, false);
         JsonObject root = response.getRoot();
-        JsonArray networks = root.createNestedArray("networks");
+        JsonArray networks = root["networks"].add<JsonArray>();
         for (int i = 0; i < numNetworks; i++)
         {
-            JsonObject network = networks.createNestedObject();
+            JsonObject network = networks.add<JsonObject>();
             network["rssi"] = WiFi.RSSI(i);
             network["ssid"] = WiFi.SSID(i);
             network["bssid"] = WiFi.BSSIDstr(i);

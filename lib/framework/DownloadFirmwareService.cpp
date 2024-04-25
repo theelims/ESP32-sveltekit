@@ -5,7 +5,7 @@
  *   with responsive Sveltekit front-end built with TailwindCSS and DaisyUI.
  *   https://github.com/theelims/ESP32-sveltekit
  *
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2023 - 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -17,7 +17,7 @@ extern const uint8_t rootca_crt_bundle_start[] asm("_binary_src_certs_x509_crt_b
 
 static EventSocket *_socket = nullptr;
 static int previousProgress = 0;
-StaticJsonDocument<128> doc;
+JsonDocument doc;
 
 void update_started()
 {
