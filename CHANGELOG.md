@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [WIP] - Current WIP
+## [WIP] - Current Main
 
 ### Added
 
