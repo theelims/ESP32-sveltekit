@@ -153,6 +153,64 @@ void EventSocket::emit(const char *event, const char *payload, const char *origi
     xSemaphoreGive(clientSubscriptionsMutex);
 }
 
+void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *originId, bool onlyToSameOrigin)
+{
+    // Only process valid events
+    if (!isEventValid(String(event)))
+    {
+        ESP_LOGW("EventSocket", "Method tried to emit unregistered event: %s", event);
+        return;
+    }
+
+    int originSubscriptionId = originId[0] ? atoi(originId) : -1;
+    xSemaphoreTake(clientSubscriptionsMutex, portMAX_DELAY);
+    auto &subscriptions = client_subscriptions[event];
+    if (subscriptions.empty())
+    {
+        xSemaphoreGive(clientSubscriptionsMutex);
+        return;
+    }
+
+    JsonDocument doc;
+    doc["event"] = event;
+    doc["payload"] = jsonObject;
+
+    size_t len = measureJson(doc) + 1;
+    char *output = new char[len];
+    serializeJson(doc, output, len);
+
+    // if onlyToSameOrigin == true, send the message back to the origin
+    if (onlyToSameOrigin && originSubscriptionId > 0)
+    {
+        auto *client = _socket.getClient(originSubscriptionId);
+        if (client)
+        {
+            ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message[%d]: %s", event, client->remoteIP().toString().c_str(), len, output);
+            client->sendMessage(HTTPD_WS_TYPE_TEXT, output, len);
+        }
+    }
+    else
+    { // else send the message to all other clients
+
+        for (int subscription : client_subscriptions[event])
+        {
+            if (subscription == originSubscriptionId)
+                continue;
+            auto *client = _socket.getClient(subscription);
+            if (!client)
+            {
+                subscriptions.remove(subscription);
+                continue;
+            }
+            ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message[%d]: %s", event, client->remoteIP().toString().c_str(), len, output);
+            client->sendMessage(HTTPD_WS_TYPE_TEXT, output, len);
+        }
+    }
+
+    delete[] output;
+    xSemaphoreGive(clientSubscriptionsMutex);
+}
+
 void EventSocket::handleEventCallbacks(String event, JsonObject &jsonObject, int originId)
 {
     for (auto &callback : event_callbacks[event])
