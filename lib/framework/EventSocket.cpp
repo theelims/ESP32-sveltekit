@@ -18,11 +18,6 @@ void EventSocket::begin()
     _socket.onFrame(std::bind(&EventSocket::onFrame, this, std::placeholders::_1, std::placeholders::_2));
     _server->on(EVENT_SERVICE_PATH, &_socket);
 
-    registerEvent("errorToast");
-    registerEvent("warningToast");
-    registerEvent("infoToast");
-    registerEvent("successToast");
-
     ESP_LOGV("EventSocket", "Registered event socket endpoint: %s", EVENT_SERVICE_PATH);
 }
 
