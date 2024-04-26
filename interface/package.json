@@ -39,7 +39,7 @@
 	"dependencies": {
 		"chart.js": "^4.4.0",
 		"compare-versions": "^6.0.0",
-		"daisyui": "^3.5.1",
+		"daisyui": "^4.10.2",
 		"jwt-decode": "^4.0.0",
 		"postcss-remove-classes": "^2.0.0",
 		"svelte-dnd-list": "^0.1.8",
