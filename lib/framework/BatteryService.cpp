@@ -25,9 +25,8 @@ void BatteryService::begin()
 void BatteryService::batteryEvent()
 {
     JsonDocument doc;
-    char message[32];
     doc["soc"] = _lastSOC;
     doc["charging"] = _isCharging;
-    serializeJson(doc, message);
-    _socket->emit(EVENT_BATTERY, message);
+    JsonObject jsonObject = doc.as<JsonObject>();
+    _socket->emitEvent(EVENT_BATTERY, jsonObject);
 }

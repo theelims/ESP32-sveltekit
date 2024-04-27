@@ -47,7 +47,7 @@
 #define WIFI_SETTINGS_SERVICE_PATH "/rest/wifiSettings"
 
 #define WIFI_RECONNECTION_DELAY 1000 * 30
-#define RSSI_EVENT_DELAY 200
+#define RSSI_EVENT_DELAY 500
 
 #define EVENT_RSSI "rssi"
 

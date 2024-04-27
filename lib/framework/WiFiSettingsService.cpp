@@ -214,9 +214,11 @@ void WiFiSettingsService::configureNetwork(wifi_settings_t &network)
 
 void WiFiSettingsService::updateRSSI()
 {
-    char buffer[16];
-    snprintf(buffer, sizeof(buffer), WiFi.isConnected() ? "%d" : "disconnected", WiFi.RSSI());
-    _socket->emit(EVENT_RSSI, buffer);
+    JsonDocument doc;
+    doc["rssi"] = WiFi.RSSI();
+    doc["ssid"] = WiFi.isConnected() ? WiFi.SSID() : "disconnected";
+    JsonObject jsonObject = doc.as<JsonObject>();
+    _socket->emitEvent(EVENT_RSSI, jsonObject);
 }
 
 void WiFiSettingsService::onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info)

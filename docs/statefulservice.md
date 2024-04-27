@@ -303,14 +303,36 @@ The demo project allows the user to modify the MQTT topics via the UI so they ca
 
 Beside RESTful HTTP Endpoints the Event Socket System provides a convenient communication path between the client and the ESP32. It uses a single WebSocket connection to synchronize state and to push realtime data to the client. The client needs to subscribe to the topics he is interested. Only clients who have an active subscription will receive data. Every authenticated client may make use of this system as the security settings are set to `AuthenticationPredicates::IS_AUTHENTICATED`.
 
+### Message Format
+
+The event messages exchanged between the ESP32 and its clients consists of an "event" head and the "data" payload. For the LightState example a message looks like this in JSON representation:
+
+```JSON
+{
+  "event": "led",
+  "data": {
+    "led_on": true
+  }
+}
+```
+
+To save on bandwidth the event message is encoded as binary [MessagePack](https://msgpack.org/) instead of a JSON.
+
+To subscribe the client has to send the following message (as MessagePack):
+
+```JSON
+{
+  "event": "subscribe",
+  "data": "analytics"
+}
+```
+
 ### Emit an Event
 
-The Event Socket provides an overloaded `emit()` function to push data to all subscribed clients. This is used by various esp32sveltekit classes to push real time data to the client. First an event must be registered with the Event Socket by calling `_socket.registerEvent("CustomEvent");`. Only then clients may subscribe to this custom event and you're entitled to emit event data:
+The Event Socket provides an `emitEvent()` function to push data to all subscribed clients. This is used by various esp32sveltekit classes to push real time data to the client. First an event must be registered with the Event Socket by calling `_socket.registerEvent("CustomEvent");`. Only then clients may subscribe to this custom event and you're entitled to emit event data:
 
 ```cpp
-void emit(String event, String payload);
-void emit(const char *event, const char *payload);
-void emit(const char *event, const char *payload, const char *originId, bool onlyToSameOrigin = false);
+void emitEvent(String event, JsonObject &jsonObject, const char *originId = "", bool onlyToSameOrigin = false);
 ```
 
 The latter function allowing a selection of the recipient. If `onlyToSameOrigin = false` the payload is distributed to all subscribed clients, except the `originId`. If `onlyToSameOrigin = true` only the client with `originId` will receive the payload. This is used by the [EventEndpoint](#event-socket-endpoint) to sync the initial state when a new client subscribes.
@@ -331,7 +353,7 @@ _socket.onEvent("CostumEvent",[&](JsonObject &root, int originId)
 Similarly a callback or lambda function may be registered to get notified when a client subscribes to an event:
 
 ```cpp
-_socket.onEvent("CostumEvent",[&](const String &originId, bool sync)
+_socket.onSubscribe("CostumEvent",[&](const String &originId)
 {
   Serial.println("New Client subscribed: " + originId);
 });

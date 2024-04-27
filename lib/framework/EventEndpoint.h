@@ -42,7 +42,8 @@ public:
     {
         _socket->registerEvent(_event);
         _socket->onEvent(_event, std::bind(&EventEndpoint::updateState, this, std::placeholders::_1, std::placeholders::_2));
-        _socket->onSubscribe(_event, std::bind(&EventEndpoint::syncState, this, std::placeholders::_1, std::placeholders::_2));
+        _socket->onSubscribe(_event, [&](const String &originId)
+                             { syncState(originId, true); });
     }
 
 private:
@@ -61,11 +62,9 @@ private:
     {
         JsonDocument jsonDocument;
         JsonObject root = jsonDocument.to<JsonObject>();
-        String output;
         _statefulService->read(root, _stateReader);
-        serializeJson(root, output);
-        ESP_LOGV("EventEndpoint", "Syncing state: %s", output.c_str());
-        _socket->emit(_event, output.c_str(), originId.c_str(), sync);
+        JsonObject jsonObject = jsonDocument.as<JsonObject>();
+        _socket->emitEvent(_event, jsonObject, originId.c_str(), sync);
     }
 };
 

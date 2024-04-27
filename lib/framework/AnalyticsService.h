@@ -50,7 +50,6 @@ protected:
     {
         TickType_t xLastWakeTime = xTaskGetTickCount();
         JsonDocument doc;
-        // String message;
         while (1)
         {
             doc["uptime"] = millis() / 1000;
@@ -62,10 +61,8 @@ protected:
             doc["fs_total"] = ESPFS.totalBytes();
             doc["core_temp"] = temperatureRead();
 
-            JsonObject object = doc.as<JsonObject>();
-            _socket->emitEvent(EVENT_ANALYTICS, object);
-            // serializeJson(object, message);
-            // ESP_LOGV("AnalyticsService", "Emitting analytics: %s", message.c_str());
+            JsonObject jsonObject = doc.as<JsonObject>();
+            _socket->emitEvent(EVENT_ANALYTICS, jsonObject);
 
             vTaskDelayUntil(&xLastWakeTime, ANALYTICS_INTERVAL / portTICK_PERIOD_MS);
         }

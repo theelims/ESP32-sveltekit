@@ -23,19 +23,19 @@ void update_started()
 {
     String output;
     doc["status"] = "preparing";
-    serializeJson(doc, output);
-    _socket->emit(EVENT_DOWNLOAD_OTA, output.c_str());
+    JsonObject jsonObject = doc.as<JsonObject>();
+    _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
 }
 
 void update_progress(int currentBytes, int totalBytes)
 {
-    String output;
     doc["status"] = "progress";
     int progress = ((currentBytes * 100) / totalBytes);
     if (progress > previousProgress)
     {
         doc["progress"] = progress;
-        _socket->emit(EVENT_DOWNLOAD_OTA, output.c_str());
+        JsonObject jsonObject = doc.as<JsonObject>();
+        _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
         ESP_LOGV("Download OTA", "HTTP update process at %d of %d bytes... (%d %%)", currentBytes, totalBytes, progress);
     }
     previousProgress = progress;
@@ -43,10 +43,9 @@ void update_progress(int currentBytes, int totalBytes)
 
 void update_finished()
 {
-    String output;
     doc["status"] = "finished";
-    serializeJson(doc, output);
-    _socket->emit(EVENT_DOWNLOAD_OTA, output.c_str());
+    JsonObject jsonObject = doc.as<JsonObject>();
+    _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
 
     // delay to allow the event to be sent out
     vTaskDelay(100 / portTICK_PERIOD_MS);
@@ -68,6 +67,7 @@ void updateTask(void *param)
     // httpUpdate.onEnd(update_finished);
 
     t_httpUpdate_return ret = httpUpdate.update(client, url.c_str());
+    JsonObject jsonObject;
 
     switch (ret)
     {
@@ -75,8 +75,8 @@ void updateTask(void *param)
 
         doc["status"] = "error";
         doc["error"] = httpUpdate.getLastErrorString().c_str();
-        serializeJson(doc, output);
-        _socket->emit(EVENT_DOWNLOAD_OTA, output.c_str());
+        jsonObject = doc.as<JsonObject>();
+        _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
 
         ESP_LOGE("Download OTA", "HTTP Update failed with error (%d): %s", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
 #ifdef SERIAL_INFO
@@ -87,8 +87,8 @@ void updateTask(void *param)
 
         doc["status"] = "error";
         doc["error"] = "Update failed, has same firmware version";
-        serializeJson(doc, output);
-        _socket->emit(EVENT_DOWNLOAD_OTA, output.c_str());
+        jsonObject = doc.as<JsonObject>();
+        _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
 
         ESP_LOGE("Download OTA", "HTTP Update failed, has same firmware version");
 #ifdef SERIAL_INFO
@@ -143,10 +143,8 @@ esp_err_t DownloadFirmwareService::downloadUpdate(PsychicRequest *request, JsonV
     doc["progress"] = 0;
     doc["error"] = "";
 
-    String output;
-    serializeJson(doc, output);
-
-    _socket->emit(EVENT_DOWNLOAD_OTA, output.c_str());
+    JsonObject jsonObject = doc.as<JsonObject>();
+    _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
 
     if (xTaskCreatePinnedToCore(
             &updateTask,                // Function that should be called

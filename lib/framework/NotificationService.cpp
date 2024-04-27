@@ -17,9 +17,6 @@ void NotificationService::pushNotification(String message, pushType event)
     JsonDocument doc;
     doc["type"] = pushTypeStrings[event];
     doc["message"] = message;
-    // convert into JsonVariant
-
-    String output;
-    serializeJson(doc, output);
-    _eventSocket->emit(NOTIFICATION_EVENT, output.c_str());
+    JsonObject jsonObject = doc.as<JsonObject>();
+    _eventSocket->emitEvent(NOTIFICATION_EVENT, jsonObject);
 }

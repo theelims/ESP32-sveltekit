@@ -2,16 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [WIP] - Current Main
+## [0.5.0] - WIP
+
+Introduces a
 
 ### Added
 
 ### Changed
 
 - Moved MQTT types to models.ts as well. [#49](https://github.com/theelims/ESP32-sveltekit/pull/49)
+- Updated daisyUI to 4.10.2 [#48](https://github.com/theelims/ESP32-sveltekit/pull/48)
 - Fixed spelling error in models.ts
 - Changed ArduinoJson from v6 to v7
 - Split NotificationService out of EventSocket into own class
+- Changed API of EventSocket.h. Now uses `void emitEvent(String event, JsonObject &jsonObject, const char *originId = "", bool onlyToSameOrigin = false);`.
+- Changed event socket message format to MessagePack
 
 ### Fixed
 

@@ -92,67 +92,6 @@ esp_err_t EventSocket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame 
     return ESP_OK;
 }
 
-void EventSocket::emit(String event, String payload)
-{
-    emit(event.c_str(), payload.c_str(), "");
-}
-
-void EventSocket::emit(const char *event, const char *payload)
-{
-    emit(event, payload, "");
-}
-
-void EventSocket::emit(const char *event, const char *payload, const char *originId, bool onlyToSameOrigin)
-{
-    // Only process valid events
-    if (!isEventValid(String(event)))
-    {
-        ESP_LOGW("EventSocket", "Method tried to emit unregistered event: %s", event);
-        return;
-    }
-
-    int originSubscriptionId = originId[0] ? atoi(originId) : -1;
-    xSemaphoreTake(clientSubscriptionsMutex, portMAX_DELAY);
-    auto &subscriptions = client_subscriptions[event];
-    if (subscriptions.empty())
-    {
-        xSemaphoreGive(clientSubscriptionsMutex);
-        return;
-    }
-    String msg = "[\"" + String(event) + "\"," + String(payload) + "]";
-
-    // if onlyToSameOrigin == true, send the message back to the origin
-    if (onlyToSameOrigin && originSubscriptionId > 0)
-    {
-        auto *client = _socket.getClient(originSubscriptionId);
-        if (client)
-        {
-            ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message: %s", event, client->remoteIP().toString().c_str(),
-                     msg.c_str());
-            client->sendMessage(msg.c_str());
-        }
-    }
-    else
-    { // else send the message to all other clients
-
-        for (int subscription : client_subscriptions[event])
-        {
-            if (subscription == originSubscriptionId)
-                continue;
-            auto *client = _socket.getClient(subscription);
-            if (!client)
-            {
-                subscriptions.remove(subscription);
-                continue;
-            }
-            ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message: %s", event, client->remoteIP().toString().c_str(),
-                     msg.c_str());
-            client->sendMessage(msg.c_str());
-        }
-    }
-    xSemaphoreGive(clientSubscriptionsMutex);
-}
-
 void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *originId, bool onlyToSameOrigin)
 {
     // Only process valid events
@@ -173,7 +112,7 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
 
     JsonDocument doc;
     doc["event"] = event;
-    doc["payload"] = jsonObject;
+    doc["data"] = jsonObject;
 
     size_t len = measureJson(doc) + 1;
     char *output = new char[len];
@@ -223,7 +162,7 @@ void EventSocket::handleSubscribeCallbacks(String event, const String &originId)
 {
     for (auto &callback : subscribe_callbacks[event])
     {
-        callback(originId, true);
+        callback(originId);
     }
 }
 
