@@ -114,9 +114,19 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
     doc["event"] = event;
     doc["data"] = jsonObject;
 
+#ifdef EVENT_JSON
     size_t len = measureJson(doc) + 1;
+#else
+    size_t len = measureMsgPack(doc) + 1;
+#endif
+
     char *output = new char[len];
+
+#ifdef EVENT_JSON
     serializeJson(doc, output, len);
+#else
+    serializeMsgPack(doc, output, len);
+#endif
 
     // if onlyToSameOrigin == true, send the message back to the origin
     if (onlyToSameOrigin && originSubscriptionId > 0)
@@ -125,7 +135,11 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
         if (client)
         {
             ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message[%d]: %s", event, client->remoteIP().toString().c_str(), len, output);
+#ifdef EVENT_JSON
             client->sendMessage(HTTPD_WS_TYPE_TEXT, output, len);
+#else
+            client->sendMessage(HTTPD_WS_TYPE_BINARY, output, len);
+#endif
         }
     }
     else
@@ -142,7 +156,11 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
                 continue;
             }
             ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message[%d]: %s", event, client->remoteIP().toString().c_str(), len, output);
+#ifdef EVENT_JSON
             client->sendMessage(HTTPD_WS_TYPE_TEXT, output, len);
+#else
+            client->sendMessage(HTTPD_WS_TYPE_BINARY, output, len);
+#endif
         }
     }
 
