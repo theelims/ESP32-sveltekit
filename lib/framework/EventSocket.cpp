@@ -114,7 +114,7 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
     doc["event"] = event;
     doc["data"] = jsonObject;
 
-#ifdef EVENT_JSON
+#ifdef EVENT_USE_JSON
     size_t len = measureJson(doc) + 1;
 #else
     size_t len = measureMsgPack(doc) + 1;
@@ -122,7 +122,7 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
 
     char *output = new char[len];
 
-#ifdef EVENT_JSON
+#ifdef EVENT_USE_JSON
     serializeJson(doc, output, len);
 #else
     serializeMsgPack(doc, output, len);
@@ -135,7 +135,7 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
         if (client)
         {
             ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message[%d]: %s", event, client->remoteIP().toString().c_str(), len, output);
-#ifdef EVENT_JSON
+#ifdef EVENT_USE_JSON
             client->sendMessage(HTTPD_WS_TYPE_TEXT, output, len);
 #else
             client->sendMessage(HTTPD_WS_TYPE_BINARY, output, len);
@@ -156,7 +156,7 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
                 continue;
             }
             ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message[%d]: %s", event, client->remoteIP().toString().c_str(), len, output);
-#ifdef EVENT_JSON
+#ifdef EVENT_USE_JSON
             client->sendMessage(HTTPD_WS_TYPE_TEXT, output, len);
 #else
             client->sendMessage(HTTPD_WS_TYPE_BINARY, output, len);
