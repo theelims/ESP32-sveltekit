@@ -6,9 +6,9 @@ All notable changes to this project will be documented in this file.
 
 Changes the Event Socket System to use a clearer message structure and MessagePack. Brings breaking changes to the `EventSocket.h` API.
 
-Updated daisyUI to v4. This has changes in the colors and switches to OKLCH. Also button groups and input groups have been depreciated in favor of join. This might require changes to custom parts of the code.
+Updated daisyUI to v4. This has changes in the colors and switches to OKLCH. Also button groups and input groups have been depreciated in favor of join. This might require changes to custom parts of the code. Please double check all websites if the still have the desired looks.
 
-Updates ArduinoJSON from v6 to v7. If you make use of ArduinoJSON changes might be required.
+Updates ArduinoJSON from v6 to v7 to increase the available free heap. If you make use of ArduinoJSON, changes might be required.
 
 ### Added
 

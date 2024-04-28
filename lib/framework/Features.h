@@ -61,3 +61,5 @@
 #ifndef EVENT_USE_JSON
 #define EVENT_USE_JSON 0
 #endif
+
+#endif

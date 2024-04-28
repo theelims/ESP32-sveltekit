@@ -79,7 +79,7 @@ public:
         root["priority_RSSI"] = settings.priorityBySignalStrength;
 
         // create JSON array from root
-        JsonArray wifiNetworks = root["wifi_networks"].add<JsonArray>();
+        JsonArray wifiNetworks = root["wifi_networks"].to<JsonArray>();
 
         // iterate over the wifiSettings
         for (auto &wifi : settings.wifiSettings)

@@ -54,7 +54,7 @@ esp_err_t WiFiScanner::listNetworks(PsychicRequest *request)
     {
         PsychicJsonResponse response = PsychicJsonResponse(request, false);
         JsonObject root = response.getRoot();
-        JsonArray networks = root["networks"].add<JsonArray>();
+        JsonArray networks = root["networks"].to<JsonArray>();
         for (int i = 0; i < numNetworks; i++)
         {
             JsonObject network = networks.add<JsonObject>();

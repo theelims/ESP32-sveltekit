@@ -60,7 +60,7 @@ public:
         root["jwt_secret"] = settings.jwtSecret;
 
         // users
-        JsonArray users = root["users"].add<JsonArray>();
+        JsonArray users = root["users"].to<JsonArray>();
         for (User user : settings.users)
         {
             JsonObject userRoot = users.add<JsonObject>();
