@@ -115,12 +115,12 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
     doc["data"] = jsonObject;
 
 #ifdef EVENT_USE_JSON
-    size_t len = measureJson(doc) + 1;
+    size_t len = measureJson(doc);
 #else
-    size_t len = measureMsgPack(doc) + 1;
+    size_t len = measureMsgPack(doc);
 #endif
 
-    char *output = new char[len];
+    char *output = new char[len + 1];
 
 #ifdef EVENT_USE_JSON
     serializeJson(doc, output, len);
