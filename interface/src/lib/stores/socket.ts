@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import { page } from '$app/stores';
 import msgpack from 'msgpack-lite';
 
 function createWebSocket() {
@@ -78,7 +79,11 @@ function createWebSocket() {
 
 	function send(msg: unknown) {
 		if (!ws || ws.readyState !== WebSocket.OPEN) return;
+		// if ($page.data.features.event_use_json) {
 		ws.send(JSON.stringify(msg));
+		// } else {
+		// 	ws.send(msgpack.encode(msg));
+		// }
 	}
 
 	function sendEvent(event: string, data: unknown) {

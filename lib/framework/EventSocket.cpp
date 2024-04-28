@@ -59,7 +59,11 @@ esp_err_t EventSocket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame 
                  request->client()->socket(), (char *)frame->payload);
 
         JsonDocument doc;
+#ifdef EVENT_USE_JSON
         DeserializationError error = deserializeJson(doc, (char *)frame->payload, frame->len);
+#else
+        DeserializationError error = deserializeMsgPack(doc, (char *)frame->payload, frame->len);
+#endif
 
         if (!error && doc.is<JsonObject>())
         {
@@ -88,6 +92,7 @@ esp_err_t EventSocket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame 
             }
             return ESP_OK;
         }
+        ESP_LOGW("EventSocket", "Error[%d] parsing JSON: %s", error, (char *)frame->payload);
     }
     return ESP_OK;
 }
@@ -123,10 +128,13 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
     char *output = new char[len + 1];
 
 #ifdef EVENT_USE_JSON
-    serializeJson(doc, output, len);
+    serializeJson(doc, output, len + 1);
 #else
     serializeMsgPack(doc, output, len);
 #endif
+
+    // null terminate the string
+    output[len] = '\0';
 
     // if onlyToSameOrigin == true, send the message back to the origin
     if (onlyToSameOrigin && originSubscriptionId > 0)

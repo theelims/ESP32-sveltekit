@@ -154,6 +154,8 @@
 			formErrors.ssid = false;
 		}
 
+		networkEditable.static_ip_config = static_ip_config;
+
 		if (static_ip_config) {
 			// RegEx for IPv4
 			const regexExp =
@@ -452,9 +454,7 @@
 
 	{#if !$page.data.features.security || $user.admin}
 		<div class="bg-base-200 shadow-lg relative grid w-full max-w-2xl self-center overflow-hidden">
-			<div
-				class="min-h-16 flex w-full items-center justify-between space-x-3 p-0 text-xl font-medium"
-			>
+			<div class="h-16 flex w-full items-center justify-between space-x-3 p-0 text-xl font-medium">
 				Saved Networks
 			</div>
 			{#await getWifiSettings()}
@@ -740,7 +740,7 @@
 						{/if}
 
 						<div class="divider mb-2 mt-0" />
-						<div class="mx-4 flex flex-wrap justify-end gap-2">
+						<div class="mx-4 mb-4 flex flex-wrap justify-end gap-2">
 							<button class="btn btn-primary" type="submit" disabled={!showNetworkEditor}
 								>{newNetwork ? 'Add Network' : 'Update Network'}</button
 							>

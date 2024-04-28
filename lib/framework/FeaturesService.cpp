@@ -65,6 +65,13 @@ void FeaturesService::begin()
 #else
                     root["analytics"] = false;
 #endif
+
+#if FT_ENABLED(EVENT_USE_JSON)
+                    root["event_use_json"] = true;
+#else
+                    root["event_use_json"] = false;
+#endif
+
                     root["firmware_version"] = APP_VERSION;
                     root["firmware_name"] = APP_NAME;
                     root["firmware_built_target"] = BUILD_TARGET;

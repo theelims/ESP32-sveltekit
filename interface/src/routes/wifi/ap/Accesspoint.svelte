@@ -258,7 +258,7 @@
 					transition:slide|local={{ duration: 300, easing: cubicOut }}
 				>
 					<form
-						class="grid w-full grid-cols-1 content-center gap-x-4 p-0s sm:grid-cols-2"
+						class="grid w-full grid-cols-1 content-center gap-x-4 p-0 mb-4 sm:grid-cols-2"
 						on:submit|preventDefault={handleSubmitAP}
 						novalidate
 						bind:this={formField}
