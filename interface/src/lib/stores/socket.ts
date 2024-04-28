@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import msgpack from 'msgpack-lite';
 
 function createWebSocket() {
 	let listeners = new Map<string, Set<(data?: unknown) => void>>();
@@ -26,6 +27,7 @@ function createWebSocket() {
 
 	function connect() {
 		ws = new WebSocket(socketUrl);
+		ws.binaryType = 'arraybuffer';
 		ws.onopen = (ev) => {
 			set(true);
 			clearTimeout(reconnectTimeoutId);
@@ -37,22 +39,19 @@ function createWebSocket() {
 		};
 		ws.onmessage = (message) => {
 			resetUnresponsiveCheck();
-			let data = message.data;
+			let payload = message.data;
 
-			if (data instanceof ArrayBuffer) {
-				listeners.get('binary')?.forEach((listener) => listener(data));
-				return;
-			}
-			listeners.get('message')?.forEach((listener) => listener(data));
+			const binary = payload instanceof ArrayBuffer;
+			listeners.get(binary ? 'binary' : 'message')?.forEach((listener) => listener(payload));
 			try {
-				data = JSON.parse(message.data);
+				payload = binary ? msgpack.decode(new Uint8Array(payload)) : JSON.parse(payload);
 			} catch (error) {
 				listeners.get('error')?.forEach((listener) => listener(error));
 				return;
 			}
-			listeners.get('json')?.forEach((listener) => listener(data));
-			const [event, payload] = data;
-			if (event) listeners.get(event)?.forEach((listener) => listener(payload));
+			listeners.get('json')?.forEach((listener) => listener(payload));
+			const { event, data } = payload;
+			if (event) listeners.get(event)?.forEach((listener) => listener(data));
 		};
 		ws.onerror = (ev) => disconnect('error', ev);
 		ws.onclose = (ev) => disconnect('close', ev);
