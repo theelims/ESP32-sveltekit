@@ -34,6 +34,8 @@
 	import InfoDialog from '$lib/components/InfoDialog.svelte';
 	import type { KnownNetworkItem, WifiSettings, WifiStatus } from '$lib/types/models';
 
+	let static_ip_config = false;
+
 	let networkEditable: KnownNetworkItem = {
 		ssid: '',
 		password: '',
@@ -152,7 +154,7 @@
 			formErrors.ssid = false;
 		}
 
-		if (networkEditable.static_ip_config) {
+		if (static_ip_config) {
 			// RegEx for IPv4
 			const regexExp =
 				/\b(?:(?:2(?:[0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9])\.){3}(?:(?:2([0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9]))\b/;
@@ -609,13 +611,13 @@
 								>
 									<input
 										type="checkbox"
-										bind:checked={networkEditable.static_ip_config}
+										bind:checked={static_ip_config}
 										class="checkbox checkbox-primary sm:-mb-5"
 									/>
 									<span class="sm:-mb-5">Static IP Config?</span>
 								</label>
 							</div>
-							{#if networkEditable.static_ip_config}
+							{#if static_ip_config}
 								<div
 									class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2"
 									transition:slide|local={{ duration: 300, easing: cubicOut }}
