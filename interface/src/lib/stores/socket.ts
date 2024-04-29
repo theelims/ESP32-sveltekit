@@ -1,5 +1,4 @@
 import { writable } from 'svelte/store';
-import { page } from '$app/stores';
 import msgpack from 'msgpack-lite';
 
 function createWebSocket() {
@@ -11,9 +10,11 @@ function createWebSocket() {
 	let reconnectTimeoutId: number;
 	let ws: WebSocket;
 	let socketUrl: string | URL;
+	let event_use_json = false;
 
-	function init(url: string | URL) {
+	function init(url: string | URL, use_json: boolean = false) {
 		socketUrl = url;
+		event_use_json = use_json;
 		connect();
 	}
 
@@ -79,11 +80,11 @@ function createWebSocket() {
 
 	function send(msg: unknown) {
 		if (!ws || ws.readyState !== WebSocket.OPEN) return;
-		// if ($page.data.features.event_use_json) {
-		ws.send(JSON.stringify(msg));
-		// } else {
-		// 	ws.send(msgpack.encode(msg));
-		// }
+		if (event_use_json) {
+			ws.send(JSON.stringify(msg));
+		} else {
+			ws.send(msgpack.encode(msg));
+		}
 	}
 
 	function sendEvent(event: string, data: unknown) {
