@@ -34,6 +34,10 @@ Updates ArduinoJSON from v6 to v7 to increase the available free heap. If you ma
 
 - Removed duplicate in ESP32SvelteKit.cpp [#47](https://github.com/theelims/ESP32-sveltekit/pull/47) and WiFi.svelte [#50](https://github.com/theelims/ESP32-sveltekit/pull/50)
 
+### Acknowledgment
+
+Many thanks to @runeharlyk who contributed significantly to the new event socket system and fixed many smaller issues with the front-end.
+
 ## [0.4.0] - 2024-04-21
 
 This upgrade might require one minor change as `MqttPubSub.h` and its class had been renamed to `MqttEndpoint.h` and `MqttEndoint` respectively. However, it is strongly advised, that you change all existing WebSocketServer endpoints to the new event socket system.
