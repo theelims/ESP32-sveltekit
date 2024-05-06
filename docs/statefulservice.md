@@ -399,7 +399,7 @@ In case of a websocket connection the JWT token is supplied as a search paramete
 
 ## Placeholder substitution
 
-Various settings support placeholder substitution, indicated by comments in [factory_settings.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini). This can be particularly useful where settings need to be unique, such as the Access Point SSID or MQTT client id. The following placeholders are supported:
+Various settings support placeholder substitution, indicated by comments in [factory_settings.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini). This can be particularly useful where settings need to be unique, such as the Access Point SSID or MQTT client id. Strings must be properly escaped in the ini-file. The following placeholders are supported:
 
 | Placeholder  | Substituted value                                                     |
 | ------------ | --------------------------------------------------------------------- |

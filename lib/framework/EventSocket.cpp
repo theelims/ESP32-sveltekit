@@ -53,15 +53,20 @@ esp_err_t EventSocket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame 
     ESP_LOGV("EventSocket", "ws[%s][%u] opcode[%d]", request->client()->remoteIP().toString().c_str(),
              request->client()->socket(), frame->type);
 
+    JsonDocument doc;
+#if FT_ENABLED(EVENT_USE_JSON)
     if (frame->type == HTTPD_WS_TYPE_TEXT)
     {
         ESP_LOGV("EventSocket", "ws[%s][%u] request: %s", request->client()->remoteIP().toString().c_str(),
                  request->client()->socket(), (char *)frame->payload);
 
-        JsonDocument doc;
-#ifdef EVENT_USE_JSON
         DeserializationError error = deserializeJson(doc, (char *)frame->payload, frame->len);
 #else
+    if (frame->type == HTTPD_WS_TYPE_BINARY)
+    {
+        ESP_LOGV("EventSocket", "ws[%s][%u] request: %s", request->client()->remoteIP().toString().c_str(),
+                 request->client()->socket(), (char *)frame->payload);
+
         DeserializationError error = deserializeMsgPack(doc, (char *)frame->payload, frame->len);
 #endif
 
@@ -119,7 +124,7 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
     doc["event"] = event;
     doc["data"] = jsonObject;
 
-#ifdef EVENT_USE_JSON
+#if FT_ENABLED(EVENT_USE_JSON)
     size_t len = measureJson(doc);
 #else
     size_t len = measureMsgPack(doc);
@@ -127,7 +132,7 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
 
     char *output = new char[len + 1];
 
-#ifdef EVENT_USE_JSON
+#if FT_ENABLED(EVENT_USE_JSON)
     serializeJson(doc, output, len + 1);
 #else
     serializeMsgPack(doc, output, len);
@@ -143,7 +148,7 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
         if (client)
         {
             ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message[%d]: %s", event, client->remoteIP().toString().c_str(), len, output);
-#ifdef EVENT_USE_JSON
+#if FT_ENABLED(EVENT_USE_JSON)
             client->sendMessage(HTTPD_WS_TYPE_TEXT, output, len);
 #else
             client->sendMessage(HTTPD_WS_TYPE_BINARY, output, len);
@@ -164,7 +169,7 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
                 continue;
             }
             ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message[%d]: %s", event, client->remoteIP().toString().c_str(), len, output);
-#ifdef EVENT_USE_JSON
+#if FT_ENABLED(EVENT_USE_JSON)
             client->sendMessage(HTTPD_WS_TYPE_TEXT, output, len);
 #else
             client->sendMessage(HTTPD_WS_TYPE_BINARY, output, len);
