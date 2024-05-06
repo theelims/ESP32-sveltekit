@@ -140,7 +140,7 @@ void WiFiSettingsService::connectToWiFi()
             int32_t chan_scan;
 
             WiFi.getNetworkInfo(i, ssid_scan, sec_scan, rssi_scan, BSSID_scan, chan_scan);
-            ESP_LOGV("WiFiSettingsService", "SSID: %s, RSSI: %d dbm", ssid_scan.c_str(), rssi_scan);
+            ESP_LOGV("WiFiSettingsService", "SSID: %s, BSSID: " MACSTR ", RSSI: %d dbm, Channel: %d", ssid_scan.c_str(), MAC2STR(BSSID_scan), rssi_scan, chan_scan);
 
             for (auto &network : _state.wifiSettings)
             {
@@ -149,12 +149,17 @@ void WiFiSettingsService::connectToWiFi()
                     if (rssi_scan > bestNetworkDb)
                     { // best network
                         bestNetworkDb = rssi_scan;
-                        bestNetwork = &network;
+                        ESP_LOGV("WiFiSettingsService", "--> New best network SSID: %s, BSSID: " MACSTR "", ssid_scan.c_str(), MAC2STR(BSSID_scan));
                         network.available = true;
+                        network.channel = chan_scan;
+                        memcpy(network.bssid, BSSID_scan, 6);
+                        bestNetwork = &network;
                     }
-                    else if (rssi_scan >= FACTORY_WIFI_RSSI_THRESHOLD)
+                    else if (rssi_scan >= FACTORY_WIFI_RSSI_THRESHOLD && network.available == false)
                     { // available network
                         network.available = true;
+                        network.channel = chan_scan;
+                        memcpy(network.bssid, BSSID_scan, 6);
                     }
                 }
                 break;
@@ -176,9 +181,8 @@ void WiFiSettingsService::connectToWiFi()
         }
         else if (_state.priorityBySignalStrength == true && bestNetwork)
         {
-            ESP_LOGI("WiFiSettingsService", "Connecting to strongest network: %s", bestNetwork->ssid.c_str());
+            ESP_LOGI("WiFiSettingsService", "Connecting to strongest network: %s, BSSID: " MACSTR " ", bestNetwork->ssid.c_str(), MAC2STR(bestNetwork->bssid));
             configureNetwork(*bestNetwork);
-            WiFi.begin(bestNetwork->ssid.c_str(), bestNetwork->password.c_str());
         }
         else // no suitable network to connect
         {
@@ -205,7 +209,8 @@ void WiFiSettingsService::configureNetwork(wifi_settings_t &network)
     WiFi.setHostname(_state.hostname.c_str());
 
     // attempt to connect to the network
-    WiFi.begin(network.ssid.c_str(), network.password.c_str());
+    WiFi.begin(network.ssid.c_str(), network.password.c_str(), network.channel, network.bssid);
+    // WiFi.begin(network.ssid.c_str(), network.password.c_str());
 
 #if CONFIG_IDF_TARGET_ESP32C3
     WiFi.setTxPower(WIFI_POWER_8_5dBm); // https://www.wemos.cc/en/latest/c3/c3_mini_1_0_0.html#about-wifi

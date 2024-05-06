@@ -29,6 +29,7 @@ Updates ArduinoJSON from v6 to v7 to increase the available free heap. If you ma
 
 - Fixes to WiFi.svelte and models.ts to fix type errors and visibility rights.
 - Fixes bug in highlighting the menu when navigating with the browser (back/forward)
+- Made WiFi connection routine more robust by using BSSID. Ensures that the STA truly connects to the strongest hotspot, even if several hotspots are in reach.
 
 ### Removed
 

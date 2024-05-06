@@ -55,6 +55,8 @@
 typedef struct
 {
     String ssid;
+    uint8_t bssid[6];
+    int32_t channel;
     String password;
     bool staticIPConfig;
     IPAddress localIP;
