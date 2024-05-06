@@ -6,7 +6,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2023 - 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -29,8 +29,7 @@ LightStateService::LightStateService(PsychicHttpServer *server,
                                                                                                           LightState::update,
                                                                                                           this,
                                                                                                           socket,
-                                                                                                          LIGHT_SETTINGS_EVENT,
-                                                                                                          LIGHT_SETTINGS_MAX_BUFFER_SIZE),
+                                                                                                          LIGHT_SETTINGS_EVENT),
                                                                                            _mqttEndpoint(LightState::homeAssistRead,
                                                                                                          LightState::homeAssistUpdate,
                                                                                                          this,
@@ -85,7 +84,7 @@ void LightStateService::registerConfig()
     String subTopic;
     String pubTopic;
 
-    DynamicJsonDocument doc(256);
+    JsonDocument doc;
     _lightMqttSettingsService->read([&](LightMqttSettings &settings)
                                     {
     configTopic = settings.mqttPath + "/config";

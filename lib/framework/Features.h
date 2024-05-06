@@ -9,7 +9,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2023 - 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -55,6 +55,11 @@
 // ESP32 analytics on by default
 #ifndef FT_ANALYTICS
 #define FT_ANALYTICS 1
+#endif
+
+// Use JSON for events. Default, use MessagePack for events
+#ifndef EVENT_USE_JSON
+#define EVENT_USE_JSON 0
 #endif
 
 #endif

@@ -56,12 +56,12 @@ In addition custom features might be added or removed at runtime. See [Custom Fe
 
 ## Factory Settings
 
-The framework has built-in factory settings which act as default values for the various configurable services where settings are not saved on the file system. These settings can be overridden using the build flags defined in [factory_settings.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini).
+The framework has built-in factory settings which act as default values for the various configurable services where settings are not saved on the file system. These settings can be overridden using the build flags defined in [factory_settings.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini). All strings entered here must be escaped, especially special characters.
 
 Customize the settings as you see fit, for example you might configure your home WiFi network as the factory default:
 
 ```ini
-  -D FACTORY_WIFI_SSID=\"My Awesome WiFi Network\"
+  -D FACTORY_WIFI_SSID=\"My\ Awesome\ WiFi\ Network\"
   -D FACTORY_WIFI_PASSWORD=\"secret\"
   -D FACTORY_WIFI_HOSTNAME=\"awesome_light_controller\"
 ```

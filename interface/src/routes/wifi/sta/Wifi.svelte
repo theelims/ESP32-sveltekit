@@ -34,6 +34,8 @@
 	import InfoDialog from '$lib/components/InfoDialog.svelte';
 	import type { KnownNetworkItem, WifiSettings, WifiStatus } from '$lib/types/models';
 
+	let static_ip_config = false;
+
 	let networkEditable: KnownNetworkItem = {
 		ssid: '',
 		password: '',
@@ -152,7 +154,9 @@
 			formErrors.ssid = false;
 		}
 
-		if (networkEditable.static_ip_config) {
+		networkEditable.static_ip_config = static_ip_config;
+
+		if (static_ip_config) {
 			// RegEx for IPv4
 			const regexExp =
 				/\b(?:(?:2(?:[0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9])\.){3}(?:(?:2([0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9]))\b/;
@@ -450,9 +454,7 @@
 
 	{#if !$page.data.features.security || $user.admin}
 		<div class="bg-base-200 shadow-lg relative grid w-full max-w-2xl self-center overflow-hidden">
-			<div
-				class="min-h-16 flex w-full items-center justify-between space-x-3 p-0 text-xl font-medium"
-			>
+			<div class="h-16 flex w-full items-center justify-between space-x-3 p-0 text-xl font-medium">
 				Saved Networks
 			</div>
 			{#await getWifiSettings()}
@@ -609,13 +611,13 @@
 								>
 									<input
 										type="checkbox"
-										bind:checked={networkEditable.static_ip_config}
+										bind:checked={static_ip_config}
 										class="checkbox checkbox-primary sm:-mb-5"
 									/>
 									<span class="sm:-mb-5">Static IP Config?</span>
 								</label>
 							</div>
-							{#if networkEditable.static_ip_config}
+							{#if static_ip_config}
 								<div
 									class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2"
 									transition:slide|local={{ duration: 300, easing: cubicOut }}
@@ -738,7 +740,7 @@
 						{/if}
 
 						<div class="divider mb-2 mt-0" />
-						<div class="mx-4 flex flex-wrap justify-end gap-2">
+						<div class="mx-4 mb-4 flex flex-wrap justify-end gap-2">
 							<button class="btn btn-primary" type="submit" disabled={!showNetworkEditor}
 								>{newNetwork ? 'Add Network' : 'Update Network'}</button
 							>

@@ -94,6 +94,22 @@ export type Analytics = {
 	uptime: number;
 };
 
+export type RSSI = {
+	rssi: number;
+	ssid: string;
+};
+
+export type Battery = {
+	soc: number;
+	charging: boolean;
+};
+
+export type DownloadOTA = {
+	status: string;
+	progress: number;
+	error: string;
+};
+
 export type StaticSystemInformation = {
 	esp_platform: string;
 	firmware_version: string;

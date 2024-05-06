@@ -20,7 +20,6 @@ protected:
     JsonStateReader<T> _stateReader;
     JsonStateUpdater<T> _stateUpdater;
     StatefulService<T> *_statefulService;
-    size_t _bufferSize;
     SecurityManager *_securityManager;
     AuthenticationPredicate _authenticationPredicate;
     PsychicHttpServer *_server;
@@ -33,9 +32,13 @@ public:
                  PsychicHttpServer *server,
                  const char *servicePath,
                  SecurityManager *securityManager,
-                 AuthenticationPredicate authenticationPredicate = AuthenticationPredicates::IS_ADMIN,
-                 size_t bufferSize = DEFAULT_BUFFER_SIZE)
-        : _stateReader(stateReader), _stateUpdater(stateUpdater), _statefulService(statefulService), _server(server), _servicePath(servicePath), _securityManager(securityManager), _authenticationPredicate(authenticationPredicate), _bufferSize(bufferSize)
+                 AuthenticationPredicate authenticationPredicate = AuthenticationPredicates::IS_ADMIN) : _stateReader(stateReader),
+                                                                                                         _stateUpdater(stateUpdater),
+                                                                                                         _statefulService(statefulService),
+                                                                                                         _server(server),
+                                                                                                         _servicePath(servicePath),
+                                                                                                         _securityManager(securityManager),
+                                                                                                         _authenticationPredicate(authenticationPredicate)
     {
     }
 
@@ -61,7 +64,7 @@ public:
                     _securityManager->wrapRequest(
                         [this](PsychicRequest *request)
                         {
-                            PsychicJsonResponse response = PsychicJsonResponse(request, false, _bufferSize);
+                            PsychicJsonResponse response = PsychicJsonResponse(request, false);
                             JsonObject jsonObject = response.getRoot();
                             _statefulService->read(jsonObject, _stateReader);
                             return response.send();
@@ -93,7 +96,7 @@ public:
                                 _statefulService->callUpdateHandlers(HTTP_ENDPOINT_ORIGIN_ID);
                             }
 
-                            PsychicJsonResponse response = PsychicJsonResponse(request, false, _bufferSize);
+                            PsychicJsonResponse response = PsychicJsonResponse(request, false);
                             jsonObject = response.getRoot();
 
                             _statefulService->read(jsonObject, _stateReader);

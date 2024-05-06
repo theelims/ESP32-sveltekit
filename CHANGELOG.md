@@ -2,22 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
-## [WIP] - Current Main
+## [0.5.0] - 2024-05-06
+
+Changes the Event Socket System to use a clearer message structure and MessagePack. Brings breaking changes to the `EventSocket.h` API.
+
+Updated daisyUI to v4. This has changes in the colors and switches to OKLCH. Also button groups and input groups have been depreciated in favor of join. This might require changes to custom parts of the code. Please double check all websites if the still have the desired looks.
+
+Updates ArduinoJSON from v6 to v7 to increase the available free heap. If you make use of ArduinoJSON, changes might be required.
 
 ### Added
+
+- Debug buildflag to switch between MessagePack and JSON for event messages.
+- Show SSID of the current WiFi Station as tooltip of the RSSI icon.
 
 ### Changed
 
 - Moved MQTT types to models.ts as well. [#49](https://github.com/theelims/ESP32-sveltekit/pull/49)
-- Fixed spelling error in models.tsnpm audit
+- Updated daisyUI to 4.10.2 [#48](https://github.com/theelims/ESP32-sveltekit/pull/48)
+- Fixed spelling error in models.ts
+- Changed ArduinoJson from v6 to v7 increasing the free heap by ~40kb
+- Split NotificationService out of EventSocket into own class
+- Changed API of EventSocket.h. Now uses `void emitEvent(String event, JsonObject &jsonObject, const char *originId = "", bool onlyToSameOrigin = false);`.
+- Changed event socket message format to MessagePack
 
 ### Fixed
 
 - Fixes to WiFi.svelte and models.ts to fix type errors and visibility rights.
+- Fixes bug in highlighting the menu when navigating with the browser (back/forward)
+- Made WiFi connection routine more robust by using BSSID. Ensures that the STA truly connects to the strongest hotspot, even if several hotspots are in reach.
 
 ### Removed
 
 - Removed duplicate in ESP32SvelteKit.cpp [#47](https://github.com/theelims/ESP32-sveltekit/pull/47) and WiFi.svelte [#50](https://github.com/theelims/ESP32-sveltekit/pull/50)
+
+### Acknowledgment
+
+Many thanks to @runeharlyk who contributed significantly to the new event socket system and fixed many smaller issues with the front-end.
 
 ## [0.4.0] - 2024-04-21
 
