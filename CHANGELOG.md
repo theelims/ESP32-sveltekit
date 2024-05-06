@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.5.0] - WIP
+## [0.5.0] - 2024-05-06
 
 Changes the Event Socket System to use a clearer message structure and MessagePack. Brings breaking changes to the `EventSocket.h` API.
 
