@@ -88,8 +88,8 @@ void StrokeEngineEnvironmentService::createEnvironmentJson(JsonObject root)
     {
         patterns.add(_strokeEngine->getPatternName(i));
     }
-    root["valueA"] = _strokeEngine->getMotor()->getMotionPointLabel().labelValueA;
-    root["valueB"] = _strokeEngine->getMotor()->getMotionPointLabel().labelValueB;
+    root["max_current"] = MAX_AMPERE;
+    root["max_voltage"] = MAX_VOLTAGE;
     root["motor"] = _motorConfigurationService->getDriverName();
 }
 

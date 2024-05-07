@@ -17,6 +17,14 @@
 #include <StrokeEngineSafetyService.h>
 #include <MqttBrokerSettingsService.h>
 
+#ifndef MAX_AMPERE
+#define MAX_AMPERE 5.0
+#endif
+
+#ifndef MAX_VOLTAGE
+#define MAX_VOLTAGE 40.0
+#endif
+
 #define MAX_ENVIRONMENT_SIZE 512
 #define ENVIRONMENT_SERVICE_PATH "/rest/environment"
 

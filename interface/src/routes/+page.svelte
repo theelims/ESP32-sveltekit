@@ -5,6 +5,7 @@
 	import { page } from '$app/stores';
 	import { analytics } from '$lib/stores/analytics';
 	import { environment } from '$lib/stores/environment';
+	import { socket } from '$lib/stores/socket';
 	import { Chart, registerables } from 'chart.js';
 	import * as LuxonAdapter from 'chartjs-adapter-luxon';
 	import ChartStreaming from '@robloche/chartjs-plugin-streaming';
@@ -19,6 +20,7 @@
 	import StrokeStart from '~icons/tabler/arrow-move-left';
 	import { decode } from 'cbor-x/decode';
 	import { daisyColor } from '$lib/DaisyUiHelper';
+	import type { ControlState } from '$lib/types/models';
 
 	export let data: PageData;
 
@@ -27,18 +29,6 @@
 	Chart.register(...registerables);
 	Chart.register(LuxonAdapter);
 	Chart.register(ChartStreaming);
-
-	type ControlState = {
-		command: string;
-		depth: number;
-		stroke: number;
-		rate: number;
-		sensation: number;
-		pattern: string;
-		vibration_override: boolean;
-		vibration_amplitude: number;
-		vibration_frequency: number;
-	};
 
 	let controlState: ControlState = {
 		command: 'STOP',
@@ -79,13 +69,6 @@
 		};
 
 		dataSocket.onmessage = (event) => {
-			// Reset a timer to detect unresponsiveness
-			clearTimeout(unresponsiveTimeoutData);
-			unresponsiveTimeoutData = setTimeout(() => {
-				console.log('Server is unresponsive');
-				dataSocket.close();
-			}, 5000); // Detect unresponsiveness after 1 seconds
-
 			const data = decode(new Uint8Array(event.data));
 
 			if (timeSync == 0) {
@@ -194,6 +177,24 @@
 	});
 
 	onMount(() => {
+		socket.on('data', (data) => {
+			if (data.type === 'rawPosition') {
+				if (timeSync == 0) {
+					timeSync = Date.now() - data.data[0][0];
+				}
+
+				for (let i = 0; i < data.data.length; i++) {
+					positionChart.data.datasets[0].data.push({
+						x: timeSync + data.data[i][0],
+						y: data.data[i][1]
+					});
+					positionChart.data.datasets[1].data.push({
+						x: timeSync + data.data[i][0],
+						y: data.data[i][2]
+					});
+				}
+			}
+		});
 		openControlSocket();
 		if ($page.data.features.data_streaming === true) {
 			openDataSocket();

@@ -15,7 +15,7 @@ export type WifiStatus = {
 export type WifiSettings = {
 	hostname: string;
 	priority_RSSI: boolean;
-	wifi_networks: NetworkItem[];
+	wifi_networks: KnownNetworkItem[];
 };
 
 export type KnownNetworkItem = {
@@ -111,3 +111,15 @@ export type StaticSystemInformation = {
 };
 
 export type SystemInformation = Analytics & StaticSystemInformation;
+
+export type ControlState = {
+	command: string;
+	depth: number;
+	stroke: number;
+	rate: number;
+	sensation: number;
+	pattern: string;
+	vibration_override: boolean;
+	vibration_amplitude: number;
+	vibration_frequency: number;
+};

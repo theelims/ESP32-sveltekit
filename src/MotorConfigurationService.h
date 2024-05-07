@@ -18,7 +18,6 @@
 #include <virtualMotor.h>
 #include <genericStepper.h>
 #include <OSSMRefBoardV2.h>
-#include <ihsvServoV6.h>
 
 #ifdef OSSM_REF
 #include <boards/OSSMReferenceBoard.h>
@@ -68,17 +67,6 @@ static OSSMRefBoardV2Properties OSSMMotorProperties{
     .VoltPermV = VOLT_PER_MILLIVOLT,
 };
 
-static iHSVServoV6Properties iHSVV6MotorProperties{
-    .enableActiveLow = ENABLE_ACTIVE_LOW,
-    .stepPin = STEP_PIN,
-    .directionPin = DIRECTION_PIN,
-    .enablePin = ENABLE_PIN,
-    .alarmPin = ALARM_PIN,
-    .inPositionPin = IN_POSITION_PIN,
-    .modbusRxPin = MODBUS_RX_PIN,
-    .modbusTxPin = MODBUS_TX_PIN,
-};
-
 class MotorConfiguration
 {
 public:
@@ -108,9 +96,6 @@ public:
         case OSSM_REF_BOARD_V2:
             root["driver"] = "OSSM_REF_BOARD_V2";
             break;
-        case IHSV_SERVO_V6:
-            root["driver"] = "IHSV_SERVO_V6";
-            break;
         default:
             root["driver"] = "VIRTUAL";
             break;
@@ -125,9 +110,6 @@ public:
 #endif
 #ifdef DRIVER_OSSM_REF_BOARD_V2
         drivers.add("OSSM_REF_BOARD_V2");
-#endif
-#ifdef DRIVER_IHSV_SERVO_V6
-        drivers.add("IHSV_SERVO_V6");
 #endif
 
         root["steps_per_rev"] = settings.stepPerRev;
@@ -178,12 +160,6 @@ public:
         else if (driver == "OSSM_REF_BOARD_V2")
         {
             settings.driver = OSSM_REF_BOARD_V2;
-        }
-#endif
-#ifdef DRIVER_IHSV_SERVO_V6
-        else if (driver == "IHSV_SERVO_V6")
-        {
-            settings.driver = IHSV_SERVO_V6;
         }
 #endif
         else

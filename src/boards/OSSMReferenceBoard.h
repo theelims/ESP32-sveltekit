@@ -65,6 +65,7 @@
 #define AMPERE_OFFSET_IN_MILLIVOLT 1666 // ADC offset in mV for 0A
 #define VOLT_PER_MILLIVOLT 4.0e-2       // ADC conversion factor voltage reading: 40mV per V
 #define MAX_AMPERE 5.0                  // maximum range current sensor in Ampere
+#define MAX_VOLTAGE 40.0                // maximum range voltage sensor in Volt
 
 // Neopixel properties
 #define NEOPIXEL_COUNT 1                           // number of neopixel LEDs
@@ -74,6 +75,3 @@
 // Available motor drivers - VIRTUAL driver is enabled by default
 #define DRIVER_GENERIC_STEPPER   // Generic stepper driver with endstop switch
 #define DRIVER_OSSM_REF_BOARD_V2 // OSSM Reference Board V2 with sensorless homing via current sensor
-
-// disabled for now, due to bug on emodbus library
-// #define DRIVER_IHSV_SERVO_V6     // iHSV servo driver with firmware V6 and sensorless homing via servo torque feedback

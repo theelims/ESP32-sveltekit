@@ -6,8 +6,8 @@ let environment_data = {
 	max_velocity: 2000,
 	heartbeat_mode: 0,
 	patterns: <string[]>[],
-	valueA: 'None',
-	valueB: 'None',
+	max_current: 5,
+	max_voltage: 40,
 	motor: 'VIRTUAL'
 };
 
