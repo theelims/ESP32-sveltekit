@@ -94,6 +94,22 @@ export type Analytics = {
 	uptime: number;
 };
 
+export type RSSI = {
+	rssi: number;
+	ssid: string;
+};
+
+export type Battery = {
+	soc: number;
+	charging: boolean;
+};
+
+export type DownloadOTA = {
+	status: string;
+	progress: number;
+	error: string;
+};
+
 export type StaticSystemInformation = {
 	esp_platform: string;
 	firmware_version: string;
@@ -111,6 +127,23 @@ export type StaticSystemInformation = {
 };
 
 export type SystemInformation = Analytics & StaticSystemInformation;
+
+export type MQTTStatus = {
+	enabled: boolean;
+	connected: boolean;
+	client_id: string;
+	last_error: string;
+};
+
+export type MQTTSettings = {
+	enabled: boolean;
+	uri: string;
+	username: string;
+	password: string;
+	client_id: string;
+	keep_alive: number;
+	clean_session: boolean;
+};
 
 export type ControlState = {
 	command: string;

@@ -1,3 +1,6 @@
+#ifndef NotificationService_h
+#define NotificationService_h
+
 /**
  *   ESP32 SvelteKit
  *
@@ -12,7 +15,29 @@
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
  **/
 
-#include <StatefulService.h>
+#include <EventSocket.h>
 
-update_handler_id_t StateUpdateHandlerInfo::currentUpdatedHandlerId = 0;
-hook_handler_id_t StateHookHandlerInfo::currentHookHandlerId = 0;
+#define NOTIFICATION_EVENT "notification"
+
+enum pushType
+{
+    PUSHERROR,
+    PUSHWARNING,
+    PUSHINFO,
+    PUSHSUCCESS
+};
+
+class NotificationService
+{
+public:
+    NotificationService(EventSocket *eventSocket);
+
+    void begin();
+
+    void pushNotification(String message, pushType event);
+
+private:
+    EventSocket *_eventSocket;
+};
+
+#endif // NotificationService_h

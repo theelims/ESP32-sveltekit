@@ -9,7 +9,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2023 - 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -26,14 +26,12 @@ public:
                   JsonStateUpdater<T> stateUpdater,
                   StatefulService<T> *statefulService,
                   FS *fs,
-                  const char *filePath,
-                  size_t bufferSize = DEFAULT_BUFFER_SIZE) : _stateReader(stateReader),
-                                                             _stateUpdater(stateUpdater),
-                                                             _statefulService(statefulService),
-                                                             _fs(fs),
-                                                             _filePath(filePath),
-                                                             _bufferSize(bufferSize),
-                                                             _updateHandlerId(0)
+                  const char *filePath) : _stateReader(stateReader),
+                                          _stateUpdater(stateUpdater),
+                                          _statefulService(statefulService),
+                                          _fs(fs),
+                                          _filePath(filePath),
+                                          _updateHandlerId(0)
     {
         enableUpdateHandler();
     }
@@ -44,7 +42,7 @@ public:
 
         if (settingsFile)
         {
-            DynamicJsonDocument jsonDocument = DynamicJsonDocument(_bufferSize);
+            JsonDocument jsonDocument;
             DeserializationError error = deserializeJson(jsonDocument, settingsFile);
             if (error == DeserializationError::Ok && jsonDocument.is<JsonObject>())
             {
@@ -66,7 +64,7 @@ public:
     bool writeToFS()
     {
         // create and populate a new json object
-        DynamicJsonDocument jsonDocument = DynamicJsonDocument(_bufferSize);
+        JsonDocument jsonDocument;
         JsonObject jsonObject = jsonDocument.to<JsonObject>();
         _statefulService->read(jsonObject, _stateReader);
 
@@ -112,7 +110,6 @@ private:
     StatefulService<T> *_statefulService;
     FS *_fs;
     const char *_filePath;
-    size_t _bufferSize;
     update_handler_id_t _updateHandlerId;
 
     // We assume we have a _filePath with format "/directory1/directory2/filename"
@@ -136,7 +133,7 @@ protected:
     // is supplied, this virtual function allows that to be changed.
     virtual void applyDefaults()
     {
-        DynamicJsonDocument jsonDocument = DynamicJsonDocument(_bufferSize);
+        JsonDocument jsonDocument;
         JsonObject jsonObject = jsonDocument.as<JsonObject>();
         _statefulService->updateWithoutPropagation(jsonObject, _stateUpdater);
     }

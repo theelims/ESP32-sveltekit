@@ -34,6 +34,8 @@
 	import InfoDialog from '$lib/components/InfoDialog.svelte';
 	import type { KnownNetworkItem, WifiSettings, WifiStatus } from '$lib/types/models';
 
+	let static_ip_config = false;
+
 	let networkEditable: KnownNetworkItem = {
 		ssid: '',
 		password: '',
@@ -107,12 +109,6 @@
 
 	onDestroy(() => clearInterval(interval));
 
-	onMount(() => {
-		if (!$page.data.features.security || $user.admin) {
-			getWifiSettings();
-		}
-	});
-
 	async function postWiFiSettings(data: WifiSettings) {
 		try {
 			const response = await fetch('/rest/wifiSettings', {
@@ -158,7 +154,9 @@
 			formErrors.ssid = false;
 		}
 
-		if (networkEditable.static_ip_config) {
+		networkEditable.static_ip_config = static_ip_config;
+
+		if (static_ip_config) {
 			// RegEx for IPv4
 			const regexExp =
 				/\b(?:(?:2(?:[0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9])\.){3}(?:(?:2([0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9]))\b/;
@@ -454,17 +452,15 @@
 		{/await}
 	</div>
 
-	<div class="bg-base-200 shadow-lg relative grid w-full max-w-2xl self-center overflow-hidden">
-		<div
-			class="min-h-16 flex w-full items-center justify-between space-x-3 p-0 text-xl font-medium"
-		>
-			Saved Networks
-		</div>
-		{#await getWifiSettings()}
-			<Spinner />
-		{:then nothing}
-			<div class="relative w-full overflow-visible">
-				{#if !$page.data.features.security || $user.admin}
+	{#if !$page.data.features.security || $user.admin}
+		<div class="bg-base-200 shadow-lg relative grid w-full max-w-2xl self-center overflow-hidden">
+			<div class="h-16 flex w-full items-center justify-between space-x-3 p-0 text-xl font-medium">
+				Saved Networks
+			</div>
+			{#await getWifiSettings()}
+				<Spinner />
+			{:then nothing}
+				<div class="relative w-full overflow-visible">
 					<button
 						class="btn btn-primary text-primary-content btn-md absolute -top-14 right-16"
 						on:click={() => {
@@ -487,55 +483,53 @@
 					>
 						<Scan class="h-6 w-6" /></button
 					>
-				{/if}
 
-				<div
-					class="overflow-x-auto space-y-1"
-					transition:slide|local={{ duration: 300, easing: cubicOut }}
-				>
-					<DragDropList
-						id="networks"
-						type={VerticalDropZone}
-						itemSize={60}
-						itemCount={dndNetworkList.length}
-						on:drop={onDrop}
-						let:index
+					<div
+						class="overflow-x-auto space-y-1"
+						transition:slide|local={{ duration: 300, easing: cubicOut }}
 					>
-						<!-- svelte-ignore a11y-click-events-have-key-events -->
-						<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-							<div class="mask mask-hexagon bg-primary h-auto w-10 shrink-0">
-								<Router class="text-primary-content h-auto w-full scale-75" />
-							</div>
-							<div>
-								<div class="font-bold">{dndNetworkList[index].ssid}</div>
-							</div>
-							{#if !$page.data.features.security || $user.admin}
-								<div class="flex-grow" />
-								<div class="space-x-0 px-0 mx-0">
-									<button
-										class="btn btn-ghost btn-sm"
-										on:click={() => {
-											handleEdit(index);
-										}}
-									>
-										<Edit class="h-6 w-6" /></button
-									>
-									<button
-										class="btn btn-ghost btn-sm"
-										on:click={() => {
-											confirmDelete(index);
-										}}
-									>
-										<Delete class="text-error h-6 w-6" />
-									</button>
+						<DragDropList
+							id="networks"
+							type={VerticalDropZone}
+							itemSize={60}
+							itemCount={dndNetworkList.length}
+							on:drop={onDrop}
+							let:index
+						>
+							<!-- svelte-ignore a11y-click-events-have-key-events -->
+							<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+								<div class="mask mask-hexagon bg-primary h-auto w-10 shrink-0">
+									<Router class="text-primary-content h-auto w-full scale-75" />
 								</div>
-							{/if}
-						</div>
-					</DragDropList>
+								<div>
+									<div class="font-bold">{dndNetworkList[index].ssid}</div>
+								</div>
+								{#if !$page.data.features.security || $user.admin}
+									<div class="flex-grow" />
+									<div class="space-x-0 px-0 mx-0">
+										<button
+											class="btn btn-ghost btn-sm"
+											on:click={() => {
+												handleEdit(index);
+											}}
+										>
+											<Edit class="h-6 w-6" /></button
+										>
+										<button
+											class="btn btn-ghost btn-sm"
+											on:click={() => {
+												confirmDelete(index);
+											}}
+										>
+											<Delete class="text-error h-6 w-6" />
+										</button>
+									</div>
+								{/if}
+							</div>
+						</DragDropList>
+					</div>
 				</div>
-			</div>
 
-			{#if !$page.data.features.security || $user.admin}
 				<div class="divider mb-0" />
 				<div
 					class="flex flex-col gap-2 p-0"
@@ -617,13 +611,13 @@
 								>
 									<input
 										type="checkbox"
-										bind:checked={networkEditable.static_ip_config}
+										bind:checked={static_ip_config}
 										class="checkbox checkbox-primary sm:-mb-5"
 									/>
 									<span class="sm:-mb-5">Static IP Config?</span>
 								</label>
 							</div>
-							{#if networkEditable.static_ip_config}
+							{#if static_ip_config}
 								<div
 									class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2"
 									transition:slide|local={{ duration: 300, easing: cubicOut }}
@@ -746,7 +740,7 @@
 						{/if}
 
 						<div class="divider mb-2 mt-0" />
-						<div class="mx-4 flex flex-wrap justify-end gap-2">
+						<div class="mx-4 mb-4 flex flex-wrap justify-end gap-2">
 							<button class="btn btn-primary" type="submit" disabled={!showNetworkEditor}
 								>{newNetwork ? 'Add Network' : 'Update Network'}</button
 							>
@@ -756,7 +750,7 @@
 						</div>
 					</form>
 				</div>
-			{/if}
-		{/await}
-	</div>
+			{/await}
+		</div>
+	{/if}
 </SettingsCard>

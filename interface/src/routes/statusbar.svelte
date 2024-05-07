@@ -68,7 +68,12 @@
 		{#if $telemetry.rssi.disconnected}
 			<WiFiOff class="h-7 w-7" />
 		{:else}
-			<RssiIndicator showDBm={false} rssi_dbm={$telemetry.rssi.rssi} class="h-7 w-7" />
+			<RssiIndicator
+				showDBm={false}
+				rssi_dbm={$telemetry.rssi.rssi}
+				ssid={$telemetry.rssi.ssid}
+				class="h-7 w-7"
+			/>
 		{/if}
 	</div>
 

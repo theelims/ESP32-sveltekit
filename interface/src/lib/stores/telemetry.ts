@@ -1,8 +1,12 @@
 import { writable } from 'svelte/store';
+import type { RSSI } from '../types/models';
+import type { Battery } from '../types/models';
+import type { DownloadOTA } from '../types/models';
 
 let telemetry_data = {
 	rssi: {
 		rssi: 0,
+		ssid: '',
 		disconnected: true
 	},
 	battery: {
@@ -23,28 +27,29 @@ function createTelemetry() {
 
 	return {
 		subscribe,
-		setRSSI: (data: string) => {
-			if (!isNaN(Number(data))) {
+		setRSSI: (data: RSSI) => {
+			if (!isNaN(Number(data.rssi))) {
 				update((telemetry_data) => ({
 					...telemetry_data,
-					rssi: { rssi: Number(data), disconnected: false }
+					rssi: { rssi: Number(data.rssi), ssid: data.ssid, disconnected: false }
 				}));
 			} else {
-				update((telemetry_data) => ({ ...telemetry_data, rssi: { rssi: 0, disconnected: true } }));
+				update((telemetry_data) => ({
+					...telemetry_data,
+					rssi: { rssi: 0, ssid: data.ssid, disconnected: true }
+				}));
 			}
 		},
-		setBattery: (data: string) => {
-			const content = JSON.parse(data);
+		setBattery: (data: Battery) => {
 			update((telemetry_data) => ({
 				...telemetry_data,
-				battery: { soc: content.soc, charging: content.charging }
+				battery: { soc: data.soc, charging: data.charging }
 			}));
 		},
-		setDownloadOTA: (data: string) => {
-			const content = JSON.parse(data);
+		setDownloadOTA: (data: DownloadOTA) => {
 			update((telemetry_data) => ({
 				...telemetry_data,
-				download_ota: { status: content.status, progress: content.progress, error: content.error }
+				download_ota: { status: data.status, progress: data.progress, error: data.error }
 			}));
 		},
 		setMotorHomed: (data: string) => {
