@@ -18,13 +18,9 @@
 #include <MotorConfigurationService.h>
 #include <StrokeEngineEnvironmentService.h>
 #include <StrokeEngineSafetyService.h>
-#include <WebSocketRawDataStreaming.h>
+#include <RawDataStreaming.h>
 
 #define SERIAL_BAUD_RATE 115200
-
-#ifndef DATA_STREAMING_INTERVAL
-#define DATA_STREAMING_INTERVAL 50
-#endif
 
 /*#################################################################################################
 ##
@@ -70,7 +66,7 @@ StrokeEngineEnvironmentService strokeEngineEnvironmentService = StrokeEngineEnvi
                                                                                                esp32sveltekit.getMqttClient(),
                                                                                                &mqttBrokerSettingsService);
 
-WebSocketRawDataStreamer positionStream(&server);
+DataStreamer dataStream = DataStreamer(esp32sveltekit.getSocket(), &Stroker);
 
 /*#################################################################################################
 ##
@@ -78,21 +74,7 @@ WebSocketRawDataStreamer positionStream(&server);
 ##
 ##################################################################################################*/
 
-void streamMotorData(unsigned int time, float position, float speed, float valueA, float valueB)
-{
-    // Send raw motor data to the websocket
-    positionStream.streamRawData(time, position, speed, valueA, valueB);
-
-    static int lastMillis = 0;
-
-    // Send motor state notification events every 500ms
-    if (millis() - lastMillis > 500)
-    {
-        esp32sveltekit.getSocket()->emit("motor_homed", Stroker.getMotor()->isHomed() ? "{\"homed\":true}" : "{\"homed\":false}");
-        esp32sveltekit.getSocket()->emit("motor_error", Stroker.getMotor()->hasError() ? "{\"error\":true}" : "{\"error\":false}");
-        lastMillis = millis();
-    }
-}
+// None
 
 /*#################################################################################################
 ##
@@ -126,26 +108,26 @@ void streamMotorData(unsigned int time, float position, float speed, float value
 
 void setup()
 {
-    // start serial and filesystem
+    // start serial communication
     Serial.begin(SERIAL_BAUD_RATE);
 
     // start ESP32-SvelteKit
     esp32sveltekit.begin();
 
-    esp32sveltekit.getSocket()->registerEvent("motor_homed"); // TODO Tug away in a dedicated service
-    esp32sveltekit.getSocket()->registerEvent("motor_error");
-
+    // start mDNS
     MDNS.addService("LUST-Service", "tcp", 80);
     MDNS.addServiceTxt("LUST-Service", "tcp", "FirmwareVersion", APP_VERSION);
     MDNS.addServiceTxt("LUST-Service", "tcp", "DeviceID", SettingValue::format("LUST-motion-#{unique_id}"));
     MDNS.addServiceTxt("LUST-Service", "tcp", "Service", "LUST-motion");
 
+    // Add features to ESP32-SvelteKit
     esp32sveltekit.getFeatureService()->addFeature("data_streaming", true);
-    positionStream.begin();
 
     // Start motor control service
     motorConfigurationService.begin();
-    Stroker.getMotor()->attachPositionFeedback(streamMotorData, DATA_STREAMING_INTERVAL);
+
+    // Start the raw data streaming service
+    dataStream.begin();
 
     // start the stroke engine control service
     strokeEngineControlService.begin();

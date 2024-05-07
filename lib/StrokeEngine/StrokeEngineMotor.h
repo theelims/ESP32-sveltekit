@@ -358,7 +358,7 @@ public:
     @return error state
   */
   /**************************************************************************/
-  virtual int hasError()
+  virtual bool hasError()
   {
     return _error;
   }

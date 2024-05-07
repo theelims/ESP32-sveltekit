@@ -126,7 +126,7 @@ This API will provide the information about the environment like maximum travel 
 | max_rate       | number           | maximum rate in FPM that the machine is capable                                                        |
 | max_velocity   | number           | maximum velocity in mm/s. Given by the maximum RPM and the gearing ratio.                              |
 | heartbeat_mode | number           | heartbeat mode. If > 0 the control message must be sent every second, regardless wether it has changed |
-| patterns       | array of strings | array of all available pattern names                                                                   |
+| pattern        | array of strings | array of all available pattern names                                                                   |
 | motor          | string           | Which motor driver is loaded: `VIRTUAL`, `GENERIC_STEPPER`, `OSSM_REF_BOARD_V2`                        |
 
 #### JSON
@@ -157,21 +157,17 @@ Instead of pattern the motion commands can be provided via this streaming interf
 | WS     | /ws/streaming   | `NONE_REQUIRED` |
 | MQTT   | -               | N/A             |
 
-| Parameter           | Type   | Range       | Info                                                                                       | Failure Mode                |
-| ------------------- | ------ | ----------- | ------------------------------------------------------------------------------------------ | --------------------------- |
-| stroke              | number | 0.0 - 1.0   | relative length of the stroke, mapped to the true stroke length set by the control message | truncated into range        |
-| duration            | number | 0.0 - 60.0  | duration of the stroke in seconds                                                          | truncated into range        |
-| vibration_amplitude | number | 0.0 - 5.0   | amplitude of a vibration overlay, 0.0 == off                                               | truncated into range or 0.0 |
-| vibration_frequency | number | 10.0 - 50.0 | frequency in HZ of the vibration overlay                                                   | truncated into range        |
+| Parameter | Type   | Range      | Info                                                                                       | Failure Mode         |
+| --------- | ------ | ---------- | ------------------------------------------------------------------------------------------ | -------------------- |
+| stroke    | number | 0.0 - 1.0  | relative length of the stroke, mapped to the true stroke length set by the control message | truncated into range |
+| duration  | number | 0.0 - 60.0 | duration of the stroke in seconds                                                          | truncated into range |
 
 #### JSON
 
 ```JSON
 {
     "stroke": 0.85,
-    "duration": 2.21,
-    "vibration_amplitude": 0.0,
-    "vibration_frequency": 25.0
+    "duration": 2.21
 }
 ```
 
@@ -242,8 +238,7 @@ A constant stream of position, velocity and other parameters are available throu
 
 The following events are available for subscription:
 
-| Event         | Message          | Update | Info                                                                                                   |
-| ------------- | ---------------- | ------ | ------------------------------------------------------------------------------------------------------ |
-| `motor_homed` | "true" / "false" | 500 ms | Wether the motor is currently homed or not                                                             |
-| `motor_error` | "true" / "false" | 500 ms | Wether the motor is currently in error state or not                                                    |
-| `heartbeat`   | number           | change | heartbeat mode. If > 0 the control message must be sent every second, regardless wether it has changed |
+| Event       | Message                        | Update | Info                                                                                                   |
+| ----------- | ------------------------------ | ------ | ------------------------------------------------------------------------------------------------------ |
+| `motor`     | `{"homed":true,"error":false}` | 500 ms | Wether the motor is currently homed or in an error state                                               |
+| `heartbeat` | number                         | change | heartbeat mode. If > 0 the control message must be sent every second, regardless wether it has changed |

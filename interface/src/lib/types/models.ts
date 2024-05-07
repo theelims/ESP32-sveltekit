@@ -156,3 +156,8 @@ export type ControlState = {
 	vibration_amplitude: number;
 	vibration_frequency: number;
 };
+
+export type MotorState = {
+	homed: boolean;
+	error: boolean;
+};

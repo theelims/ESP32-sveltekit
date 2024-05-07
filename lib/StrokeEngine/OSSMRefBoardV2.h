@@ -400,15 +400,15 @@ public:
     @return error state
   */
   /**************************************************************************/
-  int hasError()
+  bool hasError()
   {
     // Check if alarm is active
     if (digitalRead(_motor->alarmPin) == LOW)
     {
       ESP_LOGE("OSSMRefBoardV2", "Alarm signal is active!");
-      return 1;
+      return true;
     }
-    return 0;
+    return false;
   }
 
 private:
