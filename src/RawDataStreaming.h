@@ -101,7 +101,9 @@ private:
     void _sendPacket()
     {
         JsonObject jsonObject = dataDoc.as<JsonObject>();
-        serializeJson(jsonObject, Serial);
+        String json;
+        serializeJson(jsonObject, json);
+        ESP_LOGV(rdTAG, "Sending raw data: %s", json);
         _socket->emitEvent(RAW_POSITION_EVENT, jsonObject);
         _initData();
     }

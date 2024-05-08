@@ -12,7 +12,7 @@
 #include <HttpEndpoint.h>
 #include <FSPersistence.h>
 #include <StrokeEngine.h>
-#include <EventSocket.h>
+#include <NotificationService.h>
 
 #include <StrokeEngineMotor.h>
 #include <virtualMotor.h>
@@ -102,7 +102,7 @@ public:
         }
 
         // create a new array for patterns
-        JsonArray drivers = root.createNestedArray("driver_list");
+        JsonArray drivers = root["driver_list"].to<JsonArray>();
         // add drivers
         drivers.add("VIRTUAL");
 #ifdef DRIVER_GENERIC_STEPPER
@@ -173,7 +173,7 @@ public:
 class MotorConfigurationService : public StatefulService<MotorConfiguration>
 {
 public:
-    MotorConfigurationService(StrokeEngine *strokeEngine, PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, EventSocket *socket);
+    MotorConfigurationService(StrokeEngine *strokeEngine, PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, NotificationService *notification);
     void begin();
 
     String getDriverName();
@@ -181,7 +181,7 @@ public:
 private:
     HttpEndpoint<MotorConfiguration> _httpEndpoint;
     FSPersistence<MotorConfiguration> _fsPersistence;
-    EventSocket *_socket;
+    NotificationService *_notification;
     StrokeEngine *_strokeEngine;
     MotorInterface *_motor;
     MotorDriver _loadedDriver = VIRTUAL;

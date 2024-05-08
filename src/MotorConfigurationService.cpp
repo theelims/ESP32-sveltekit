@@ -9,16 +9,16 @@
 
 #include <MotorConfigurationService.h>
 
-MotorConfigurationService::MotorConfigurationService(StrokeEngine *strokeEngine, PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, EventSocket *socket) : _strokeEngine(strokeEngine),
-                                                                                                                                                                             _httpEndpoint(MotorConfiguration::read,
-                                                                                                                                                                                           MotorConfiguration::update,
-                                                                                                                                                                                           this,
-                                                                                                                                                                                           server,
-                                                                                                                                                                                           MOTOR_CONFIG_PATH,
-                                                                                                                                                                                           securityManager,
-                                                                                                                                                                                           AuthenticationPredicates::IS_ADMIN),
-                                                                                                                                                                             _fsPersistence(MotorConfiguration::read, MotorConfiguration::update, this, fs, MOTOR_CONFIG_FILE),
-                                                                                                                                                                             _socket(socket)
+MotorConfigurationService::MotorConfigurationService(StrokeEngine *strokeEngine, PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, NotificationService *notification) : _strokeEngine(strokeEngine),
+                                                                                                                                                                                           _httpEndpoint(MotorConfiguration::read,
+                                                                                                                                                                                                         MotorConfiguration::update,
+                                                                                                                                                                                                         this,
+                                                                                                                                                                                                         server,
+                                                                                                                                                                                                         MOTOR_CONFIG_PATH,
+                                                                                                                                                                                                         securityManager,
+                                                                                                                                                                                                         AuthenticationPredicates::IS_ADMIN),
+                                                                                                                                                                                           _fsPersistence(MotorConfiguration::read, MotorConfiguration::update, this, fs, MOTOR_CONFIG_FILE),
+                                                                                                                                                                                           _notification(notification)
 
 {
     // configure settings service update handler to update state
@@ -37,7 +37,6 @@ void MotorConfigurationService::begin()
     // Create instances before the switch statement
     GenericStepperMotor *genericMotorInstance = nullptr;
     OSSMRefBoardV2Motor *OSSMMotorInstance = nullptr;
-    iHSVServoV6Motor *IHSVMotorInstance = nullptr;
 
     // load correct motor driver
     switch (_state.driver)
@@ -62,16 +61,6 @@ void MotorConfigurationService::begin()
         _motor = static_cast<MotorInterface *>(OSSMMotorInstance);
         _loadedDriver = OSSM_REF_BOARD_V2;
         break;
-    case IHSV_SERVO_V6:
-        ESP_LOGI("MotorConfigurationService", "Using iHSVServoV6Motor");
-        IHSVMotorInstance = new iHSVServoV6Motor();
-        IHSVMotorInstance->begin(&iHSVV6MotorProperties);
-        IHSVMotorInstance->setSensorlessHoming((int)_state.sensorlessTrigger, MOTION_HOMING_SPEED);
-        IHSVMotorInstance->setStepsPerMillimeter(_state.stepPerRev / (_state.pulleyTeeth * BELT_PITCH));
-        IHSVMotorInstance->invertDirection(_state.invertDirection);
-        _motor = static_cast<MotorInterface *>(IHSVMotorInstance);
-        _loadedDriver = IHSV_SERVO_V6;
-        break;
     default: // is also case VIRTUAL
         ESP_LOGI("MotorConfigurationService", "Using VirtualMotor");
         _motor = new VirtualMotor();
@@ -93,11 +82,11 @@ void MotorConfigurationService::begin()
                  {
                      if (_motor->isHomed())
                      {
-                         _socket->pushNotification("Motor homed", pushEvent::PUSHSUCCESS);
+                         _notification->pushNotification("Motor homed", pushType::PUSHSUCCESS);
                      }
                      else
                      {
-                         _socket->pushNotification("Motor homing failed", pushEvent::PUSHERROR);
+                         _notification->pushNotification("Motor homing failed", pushType::PUSHERROR);
                      } });
 
     // attach motor to stroke engine
@@ -131,11 +120,11 @@ void MotorConfigurationService::onConfigUpdated(String originId)
                      {
                          if (_motor->isHomed())
                          {
-                             _socket->pushNotification("Motor homed", pushEvent::PUSHSUCCESS);
+                             _notification->pushNotification("Motor homed", pushType::PUSHSUCCESS);
                          }
                          else
                          {
-                             _socket->pushNotification("Motor homing failed", pushEvent::PUSHERROR);
+                             _notification->pushNotification("Motor homing failed", pushType::PUSHERROR);
                          } });
         return;
     }
@@ -153,29 +142,7 @@ void MotorConfigurationService::onConfigUpdated(String originId)
             // set motor to full speed
             OSSMMotor->measureRailLength([&]()
                                          {
-                                             _socket->pushNotification("Measured travel finished", pushEvent::PUSHSUCCESS);
-
-                                             // save travel to config
-                                             update([&](MotorConfiguration &state)
-                                                    {   state.travel = _motor->getTravel();
-                                                        state.keepout = _motor->getKeepout();
-                                                        state.measureTravel = false;
-                                                        return StateUpdateResult::CHANGED; },
-                                                    "measurement");
-                                             // done
-                                         },
-                                         _state.keepout);
-        }
-
-        // check if _motor is of type iHSVServoV6Motor
-        else if (_loadedDriver == IHSV_SERVO_V6)
-        {
-            // cast _motor to iHSVServoV6Motor
-            iHSVServoV6Motor *IHSVMotor = static_cast<iHSVServoV6Motor *>(_motor);
-            // set motor to full speed
-            IHSVMotor->measureRailLength([&]()
-                                         {
-                                             _socket->pushNotification("Measured travel finished", pushEvent::PUSHSUCCESS);
+                                             _notification->pushNotification("Measured travel finished", pushType::PUSHSUCCESS);
 
                                              // save travel to config
                                              update([&](MotorConfiguration &state)
@@ -190,7 +157,7 @@ void MotorConfigurationService::onConfigUpdated(String originId)
         }
         else
         {
-            _socket->pushNotification("Rail measurement not supported by this motor driver", pushEvent::PUSHERROR);
+            _notification->pushNotification("Rail measurement not supported by this motor driver", pushType::PUSHERROR);
             ESP_LOGW("MotorConfigurationService", "Rail measurement not supported by this motor driver");
             _state.measureTravel = false;
         }
@@ -217,8 +184,6 @@ String MotorConfigurationService::getDriverName()
         return "GENERIC_STEPPER";
     case OSSM_REF_BOARD_V2:
         return "OSSM_REF_BOARD_V2";
-    case IHSV_SERVO_V6:
-        return "IHSV_SERVO_V6";
     default:
         return "VIRTUAL";
     }

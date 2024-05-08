@@ -25,7 +25,6 @@
 #define MAX_VOLTAGE 40.0
 #endif
 
-#define MAX_ENVIRONMENT_SIZE 512
 #define ENVIRONMENT_SERVICE_PATH "/rest/environment"
 
 class StrokeEngineEnvironmentService

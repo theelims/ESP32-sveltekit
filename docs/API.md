@@ -41,15 +41,14 @@ The main control API to control LUST-motion. Starts and stops the motion, change
 | vibration_amplitude | number  | 0.0 - 5.0        | amplitude of a vibration overlay, 0.0 == off                                                                           | truncated into range |
 | vibration_frequency | number  | 10.0 - 50.0      | frequency in HZ of the vibration overlay                                                                               | truncated into range |
 
-|     Command     | Description                                                                                                                                                                                                                                          |
-| :-------------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|     "STOP"      | Stops the machine instantly                                                                                                                                                                                                                          |
-|    "retract"    | Moves the endeffector to the far end (home position) with a safe speed                                                                                                                                                                               |
-|     "depth"     | Retracts the motor to the home position with the ease-in speed. This is the default state after the motor is homed.                                                                                                                                  |
-|    "stroke"     | Moves the motor to the depth-stroke position a.k.a. the start of the stroke with the ease-in speed. Whenever the parameter stroke is changed, the motor will move to the new depth-stroke.                                                           |
-|  "playpattern"  | Starts the pattern generator and runs the pattern.                                                                                                                                                                                                   |
-| "strokestream"  | Starts the stream input and interprets them as trapezoidal moves with 1/3 acceleration, 1/3 constant speed and 1/3 deceleration. The stream input is interpreted as relative positions on the scale [0.0 - 1.0] and mapped to [depth, depth-stroke]. |
-| "positionstream | Starts the stream input and interprets them as relative positions on the scale [0.0 - 1.0] and maps them to [depth, depth-stroke].                                                                                                                   |
+|    Command    | Description                                                                                                                                                                                |
+| :-----------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|    "STOP"     | Stops the machine instantly                                                                                                                                                                |
+|   "retract"   | Moves the endeffector to the far end (home position) with a safe speed                                                                                                                     |
+|    "depth"    | Retracts the motor to the home position with the ease-in speed. This is the default state after the motor is homed.                                                                        |
+|   "stroke"    | Moves the motor to the depth-stroke position a.k.a. the start of the stroke with the ease-in speed. Whenever the parameter stroke is changed, the motor will move to the new depth-stroke. |
+| "playpattern" | Starts the pattern generator and runs the pattern.                                                                                                                                         |
+|   "stream"    | Starts the stream input and interprets as relative positions on the scale [0.0 - 1.0] which are mapped to [depth, depth-stroke].                                                           |
 
 #### JSON
 

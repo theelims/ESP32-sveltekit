@@ -13,6 +13,7 @@
 #include <StrokeEngine.h>
 #include <StrokeEngineControlService.h>
 #include <HeartbeatWatchdog.h>
+#include <EventSocket.h>
 
 #ifndef MOTION_FACTORY_EASE_IN_SPEED
 #define MOTION_FACTORY_EASE_IN_SPEED 20.0
@@ -65,13 +66,15 @@ public:
                               PsychicHttpServer *server,
                               FS *fs,
                               SecurityManager *securityManager,
-                              StrokeEngineControlService *strokeEngineControlService);
+                              StrokeEngineControlService *strokeEngineControlService,
+                              EventSocket *socket);
 
     void begin();
 
 private:
     HttpEndpoint<StrokeEngineSafety> _httpEndpoint;
     FSPersistence<StrokeEngineSafety> _fsPersistence;
+    EventSocket *_socket;
     StrokeEngineControlService *_strokeEngineControlService;
     StrokeEngine *_strokeEngine;
 

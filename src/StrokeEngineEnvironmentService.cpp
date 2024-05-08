@@ -55,7 +55,7 @@ void StrokeEngineEnvironmentService::mqttPingBack(const char *topic, const char 
 void StrokeEngineEnvironmentService::mqttPublishEnvironment(bool session)
 {
     // create JSON object
-    StaticJsonDocument<MAX_ENVIRONMENT_SIZE> doc;
+    JsonDocument doc;
     JsonObject root = doc.to<JsonObject>();
     createEnvironmentJson(root);
 
@@ -82,7 +82,7 @@ void StrokeEngineEnvironmentService::createEnvironmentJson(JsonObject root)
     root["heartbeat_mode"] = heartbeatMode;
 
     // create a new array for patterns
-    JsonArray patterns = root.createNestedArray("patterns");
+    JsonArray patterns = root["patterns"].to<JsonArray>();
     // add the patterns
     for (int i = 0; i < _strokeEngine->getNumberOfPattern(); i++)
     {
@@ -95,7 +95,7 @@ void StrokeEngineEnvironmentService::createEnvironmentJson(JsonObject root)
 
 esp_err_t StrokeEngineEnvironmentService::environment(PsychicRequest *request)
 {
-    PsychicJsonResponse response = PsychicJsonResponse(request, false, MAX_ENVIRONMENT_SIZE);
+    PsychicJsonResponse response = PsychicJsonResponse(request, false);
     JsonObject root = response.getRoot();
     createEnvironmentJson(root);
     return response.send();

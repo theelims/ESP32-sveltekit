@@ -50,7 +50,7 @@ MotorConfigurationService motorConfigurationService = MotorConfigurationService(
                                                                                 &server,
                                                                                 esp32sveltekit.getFS(),
                                                                                 esp32sveltekit.getSecurityManager(),
-                                                                                esp32sveltekit.getSocket());
+                                                                                esp32sveltekit.getNotificationService());
 
 StrokeEngineSafetyService strokeEngineSafetyService = StrokeEngineSafetyService(&Stroker,
                                                                                 &server,
