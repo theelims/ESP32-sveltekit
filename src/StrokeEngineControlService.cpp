@@ -16,6 +16,7 @@
 
 StrokeEngineControlService::StrokeEngineControlService(StrokeEngine *strokeEngine,
                                                        PsychicHttpServer *server,
+                                                       EventSocket *socket,
                                                        SecurityManager *securityManager,
                                                        PsychicMqttClient *mqttClient,
                                                        MqttBrokerSettingsService *mqttBrokerSettingsService) : _strokeEngine(strokeEngine),
@@ -34,6 +35,11 @@ StrokeEngineControlService::StrokeEngineControlService(StrokeEngine *strokeEngin
                                                                                                                                 SE_CONTROL_SETTINGS_SOCKET_PATH,
                                                                                                                                 securityManager,
                                                                                                                                 AuthenticationPredicates::IS_AUTHENTICATED),
+                                                                                                               _eventEndpoint(StrokeEngineControl::read,
+                                                                                                                              StrokeEngineControl::update,
+                                                                                                                              this,
+                                                                                                                              socket,
+                                                                                                                              SE_CONTROL_SETTINGS_EVENT),
                                                                                                                _mqttClient(mqttClient),
                                                                                                                _mqttBrokerSettingsService(mqttBrokerSettingsService),
                                                                                                                _heartbeatWatchdog(1200)
@@ -52,6 +58,7 @@ void StrokeEngineControlService::begin()
 {
     _httpEndpoint.begin();
     _webSocketServer.begin();
+    _eventEndpoint.begin();
 
     String controlTopic;
     _mqttBrokerSettingsService->read([&](MqttBrokerSettings &settings)

@@ -42,6 +42,7 @@ MqttBrokerSettingsService mqttBrokerSettingsService = MqttBrokerSettingsService(
 
 StrokeEngineControlService strokeEngineControlService = StrokeEngineControlService(&Stroker,
                                                                                    &server,
+                                                                                   esp32sveltekit.getSocket(),
                                                                                    esp32sveltekit.getSecurityManager(),
                                                                                    esp32sveltekit.getMqttClient(),
                                                                                    &mqttBrokerSettingsService);
@@ -56,7 +57,8 @@ StrokeEngineSafetyService strokeEngineSafetyService = StrokeEngineSafetyService(
                                                                                 &server,
                                                                                 esp32sveltekit.getFS(),
                                                                                 esp32sveltekit.getSecurityManager(),
-                                                                                &strokeEngineControlService);
+                                                                                &strokeEngineControlService,
+                                                                                esp32sveltekit.getSocket());
 
 StrokeEngineEnvironmentService strokeEngineEnvironmentService = StrokeEngineEnvironmentService(&Stroker,
                                                                                                &server,

@@ -14,6 +14,7 @@
 #include <MqttEndpoint.h>
 #include <WebSocketServer.h>
 #include <HttpEndpoint.h>
+#include <EventEndpoint.h>
 #include <FSPersistence.h>
 #include <JsonUtils.h>
 #include <StrokeEngine.h>
@@ -57,6 +58,7 @@
 
 #define SE_CONTROL_SETTINGS_ENDPOINT_PATH "/rest/control"
 #define SE_CONTROL_SETTINGS_SOCKET_PATH "/ws/control"
+#define SE_CONTROL_SETTINGS_EVENT "control"
 
 // Command Lookup Table
 const String strokeCommandTable[] = {
@@ -132,6 +134,7 @@ class StrokeEngineControlService : public StatefulService<StrokeEngineControl>
 public:
     StrokeEngineControlService(StrokeEngine *strokeEngine,
                                PsychicHttpServer *server,
+                               EventSocket *socket,
                                SecurityManager *securityManager,
                                PsychicMqttClient *mqttClient,
                                MqttBrokerSettingsService *mqttBrokerSettingsService);
@@ -144,6 +147,7 @@ private:
     HttpEndpoint<StrokeEngineControl> _httpEndpoint;
     MqttEndpoint<StrokeEngineControl> _mqttEndpoint;
     WebSocketServer<StrokeEngineControl> _webSocketServer;
+    EventEndpoint<StrokeEngineControl> _eventEndpoint;
     // WebSocketClient<StrokeEngineControl> _webSocketClient;
     PsychicMqttClient *_mqttClient;
     StrokeEngine *_strokeEngine;
