@@ -47,17 +47,18 @@ public:
                                                                std::placeholders::_1,
                                                                std::placeholders::_2,
                                                                std::placeholders::_3,
-                                                               std::placeholders::_4),
+                                                               std::placeholders::_4,
+                                                               std::placeholders::_5),
                                                      DATA_STREAMING_INTERVAL);
 
         _initData();
     }
 
-    void aggregateMotorData(float position, float speed, float current, float voltage)
+    void aggregateMotorData(unsigned int time, float position, float speed, float current, float voltage)
     {
         // JSON Array
         JsonArray dataPoint = data.add<JsonArray>();
-        dataPoint.add(millis());
+        dataPoint.add(time);
         dataPoint.add(position);
         dataPoint.add(speed);
         dataPoint.add(current);
@@ -78,9 +79,12 @@ private:
     EventSocket *_socket;
     StrokeEngine *_stroker;
 
-    JsonDocument motorDoc;
     JsonDocument dataDoc;
+    JsonObject root;
     JsonArray data;
+
+    JsonDocument motorDoc;
+    JsonObject motorRoot = motorDoc.to<JsonObject>();
 
     unsigned int lastMillis = 0;
 
@@ -90,27 +94,23 @@ private:
     {
         if (millis() - lastMillis > MOTOR_STATE_INTERVAL)
         {
-            motorDoc["homed"] = _stroker->getMotor()->isHomed();
-            motorDoc["error"] = _stroker->getMotor()->hasError();
-            JsonObject jsonObject = motorDoc.as<JsonObject>();
-            _socket->emitEvent(MOTOR_STATE_EVENT, jsonObject);
+            motorRoot["homed"] = _stroker->getMotor()->isHomed();
+            motorRoot["error"] = _stroker->getMotor()->hasError();
+            _socket->emitEvent(MOTOR_STATE_EVENT, motorRoot);
             lastMillis = millis();
         }
     }
 
     void _sendPacket()
     {
-        JsonObject jsonObject = dataDoc.as<JsonObject>();
-        String json;
-        serializeJson(jsonObject, json);
-        ESP_LOGV(rdTAG, "Sending raw data: %s", json);
-        _socket->emitEvent(RAW_POSITION_EVENT, jsonObject);
+        _socket->emitEvent(RAW_POSITION_EVENT, root);
         _initData();
     }
 
     void _initData()
     {
         dataDoc.clear();
-        data = dataDoc.add<JsonArray>();
+        root = dataDoc.to<JsonObject>();
+        data = root["rawdata"].to<JsonArray>();
     }
 };
