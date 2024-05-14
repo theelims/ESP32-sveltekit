@@ -95,6 +95,8 @@ hook_handler_id_t myHookHandler = lightStateService.addHookHandler(
 lightStateService.removeHookHandler(myHookHandler);
 ```
 
+### Read & Update State
+
 StatefulService exposes a read function which you may use to safely read the state. This function takes care of protecting against parallel access to the state in multi-core environments such as the ESP32.
 
 ```cpp
