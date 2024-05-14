@@ -1,6 +1,20 @@
 #ifndef Socket_h
 #define Socket_h
 
+/**
+ *   ESP32 SvelteKit
+ *
+ *   A simple, secure and extensible framework for IoT projects for ESP32 platforms
+ *   with responsive Sveltekit front-end built with TailwindCSS and DaisyUI.
+ *   https://github.com/theelims/ESP32-sveltekit
+ *
+ *   Copyright (C) 2018 - 2023 rjwats
+ *   Copyright (C) 2023 - 2024 theelims
+ *
+ *   All Rights Reserved. This software may be modified and distributed under
+ *   the terms of the LGPL v3 license. See the LICENSE file for details.
+ **/
+
 #include <PsychicHttp.h>
 #include <SecurityManager.h>
 #include <StatefulService.h>
@@ -11,15 +25,7 @@
 #define EVENT_SERVICE_PATH "/ws/events"
 
 typedef std::function<void(JsonObject &root, int originId)> EventCallback;
-typedef std::function<void(const String &originId, bool sync)> SubscribeCallback;
-
-enum pushEvent
-{
-  PUSHERROR,
-  PUSHWARNING,
-  PUSHINFO,
-  PUSHSUCCESS
-};
+typedef std::function<void(const String &originId)> SubscribeCallback;
 
 class EventSocket
 {
@@ -34,14 +40,8 @@ public:
 
   void onSubscribe(String event, SubscribeCallback callback);
 
-  void emit(String event, String payload);
-
-  void emit(const char *event, const char *payload);
-
-  void emit(const char *event, const char *payload, const char *originId, bool onlyToSameOrigin = false);
+  void emitEvent(String event, JsonObject &jsonObject, const char *originId = "", bool onlyToSameOrigin = false);
   // if onlyToSameOrigin == true, the message will be sent to the originId only, otherwise it will be broadcasted to all clients except the originId
-
-  void pushNotification(String message, pushEvent event);
 
 private:
   PsychicHttpServer *_server;
@@ -58,7 +58,6 @@ private:
 
   bool isEventValid(String event);
 
-  size_t _bufferSize;
   void onWSOpen(PsychicWebSocketClient *client);
   void onWSClose(PsychicWebSocketClient *client);
   esp_err_t onFrame(PsychicWebSocketRequest *request, httpd_ws_frame *frame);

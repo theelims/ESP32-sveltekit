@@ -6,7 +6,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 theelims
+ *   Copyright (C) 2023 - 2024 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -63,7 +63,7 @@ void WiFiStatus::onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
 
 esp_err_t WiFiStatus::wifiStatus(PsychicRequest *request)
 {
-    PsychicJsonResponse response = PsychicJsonResponse(request, false, MAX_WIFI_STATUS_SIZE);
+    PsychicJsonResponse response = PsychicJsonResponse(request, false);
     JsonObject root = response.getRoot();
     wl_status_t status = WiFi.status();
     root["status"] = (uint8_t)status;

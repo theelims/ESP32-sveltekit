@@ -49,7 +49,6 @@ The menu consists of an array of menu items. These are defined as follows:
     icon: Control,
     href: '/demo',
     feature: $page.data.features.project,
-    active: false
 },
 ```
 
@@ -68,7 +67,6 @@ export const load = (async ({ fetch }) => {
 - `icon` must be an icon component giving the menu items icon.
 - `href` is the link to the route the menu item refers to.
 - `feature` takes a bool and should be set to `true`. It is used by the [feature selector](#features) to hide a menu entry of it is not present on the back end.
-- `active` takes a bool as well and should be set to `false` by default. It is automatically set to `true` to highlight a menu entry as active.
 
 ## Advanced Customizations
 
