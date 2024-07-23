@@ -41,10 +41,12 @@ void EventSocket::onWSOpen(PsychicWebSocketClient *client)
 
 void EventSocket::onWSClose(PsychicWebSocketClient *client)
 {
+    xSemaphoreTake(clientSubscriptionsMutex, portMAX_DELAY);
     for (auto &event_subscriptions : client_subscriptions)
     {
         event_subscriptions.second.remove(client->socket());
     }
+    xSemaphoreGive(clientSubscriptionsMutex);
     ESP_LOGI("EventSocket", "ws[%s][%u] disconnect", client->remoteIP().toString().c_str(), client->socket());
 }
 
