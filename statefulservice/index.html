@@ -1,0 +1,1683 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A simple, secure and extensible framework for IoT projects on ESP32 platforms with responsive Sveltekit front-end built with TailwindCSS and DaisyUI.">
+      
+      
+        <meta name="author" content="elims">
+      
+      
+      
+        <link rel="prev" href="../components/">
+      
+      
+        <link rel="next" href="../restfulapi/">
+      
+      
+      <link rel="icon" href="../media/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.31">
+    
+    
+      
+        <title>Developing with the Framework - ESP32 SvelteKit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.3cba04c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#developing-with-the-framework" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ESP32 SvelteKit" class="md-header__button md-logo" aria-label="ESP32 SvelteKit" data-md-component="logo">
+      
+  <img src="../media/svelte-logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ESP32 SvelteKit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Developing with the Framework
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/theelims/ESP32-sveltekit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    theelims/ESP32-sveltekit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../gettingstarted/" class="md-tabs__link">
+          
+  
+  Build Tools
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../sveltekit/" class="md-tabs__link">
+          
+  
+  Front End
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  Back End
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ESP32 SvelteKit" class="md-nav__button md-logo" aria-label="ESP32 SvelteKit" data-md-component="logo">
+      
+  <img src="../media/svelte-logo.png" alt="logo">
+
+    </a>
+    ESP32 SvelteKit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/theelims/ESP32-sveltekit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    theelims/ESP32-sveltekit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Build Tools
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Build Tools
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gettingstarted/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../buildprocess/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Build Process
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Front End
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Front End
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sveltekit/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started with SvelteKit
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structure/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Customizing the Front End
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stores/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Stores
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../components/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Components
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Back End
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Back End
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Developing with the Framework
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Developing with the Framework
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#initializing-the-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      Initializing the framework
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stateful-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      Stateful Service
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Stateful Service">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#update-handler" class="md-nav__link">
+    <span class="md-ellipsis">
+      Update Handler
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hook-handler" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hook Handler
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read-update-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      Read &amp; Update State
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#json-serialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      JSON Serialization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#http-restful-endpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      HTTP RESTful Endpoint
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-system-persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      File System Persistence
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#event-socket-endpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      Event Socket Endpoint
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#websocket-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      WebSocket Server
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mqtt-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      MQTT Client
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#event-socket" class="md-nav__link">
+    <span class="md-ellipsis">
+      Event Socket
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Event Socket">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#message-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      Message Format
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#emit-an-event" class="md-nav__link">
+    <span class="md-ellipsis">
+      Emit an Event
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#receive-an-event" class="md-nav__link">
+    <span class="md-ellipsis">
+      Receive an Event
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-notified-on-subscriptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Get Notified on Subscriptions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#push-notifications-to-all-clients" class="md-nav__link">
+    <span class="md-ellipsis">
+      Push Notifications to All Clients
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Security features
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#placeholder-substitution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Placeholder substitution
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#accessing-settings-and-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      Accessing settings and services
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#other-functions-provided" class="md-nav__link">
+    <span class="md-ellipsis">
+      Other functions provided
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Other functions provided">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mdns-instance-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      MDNS Instance Name
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#factory-reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Factory Reset
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recovery-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recovery Mode
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#power-down-with-deep-sleep" class="md-nav__link">
+    <span class="md-ellipsis">
+      Power Down with Deep Sleep
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#battery-state-of-charge" class="md-nav__link">
+    <span class="md-ellipsis">
+      Battery State of Charge
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Features
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ota-firmware-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      OTA Firmware Updates
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OTA Firmware Updates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#firmware-upload" class="md-nav__link">
+    <span class="md-ellipsis">
+      Firmware Upload
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#firmware-download-from-update-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      Firmware Download from Update Server
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Firmware Download from Update Server">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom-update-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Update Server
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../restfulapi/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    RESTful API
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="developing-with-the-framework">Developing with the Framework</h1>
+<p>The back end is a set of REST endpoints hosted by a <a href="https://github.com/hoeken/PsychicHttp">PsychicHttp</a> instance. The <a href="https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework">'lib/framework'</a> directory contains the majority of the back end code. The framework contains a number of useful utility classes which you can use when extending it. The project also comes with a demo project to give you some help getting started.</p>
+<p>The framework's source is split up by feature, for example <a href="https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/WiFiScanner.h">WiFiScanner.h</a> implements the end points for scanning for available networks where as <a href="https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/WiFiSettingsService.h">WiFiSettingsService.h</a> handles configuring the WiFi settings and managing the WiFi connection.</p>
+<h2 id="initializing-the-framework">Initializing the framework</h2>
+<p>The <a href="https://github.com/theelims/ESP32-sveltekit/blob/main/src/main.cpp">'src/main.cpp'</a> file constructs the web server and initializes the framework. You can add endpoints to the server here to support your IoT project. The main loop is also accessible so you can run your own code easily.</p>
+<p>The following code creates the web server and esp32sveltekit framework:</p>
+<div class="highlight"><pre><span></span><code><span class="n">PsychicHttpServer</span><span class="w"> </span><span class="n">server</span><span class="p">;</span>
+<span class="n">ESP32SvelteKit</span><span class="w"> </span><span class="nf">esp32sveltekit</span><span class="p">(</span><span class="o">&amp;</span><span class="n">server</span><span class="p">,</span><span class="w"> </span><span class="mi">120</span><span class="p">);</span>
+</code></pre></div>
+<p>ESP32SvelteKit is instantiated with a reference to the server and a number of HTTP endpoints. The underlying ESP-IDF HTTP Server statically allocates memory for each endpoint and needs to know how many there are. Best is to inspect your WWWData.h file for the number of Endpoints from SvelteKit (currently 60), the framework itself has 37 endpoints, and Lighstate Demo has 7 endpoints. Each <code>_server.on()</code> counts as an endpoint. Don't forget to add a couple of spare, just in case. Each HttpEndpoint adds 2 endpoints, if CORS is enabled it adds an other endpoint for the CORS preflight request.</p>
+<p>Now in the <code>setup()</code> function the initialization is performed:</p>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="nf">setup</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// start serial and filesystem</span>
+<span class="w">  </span><span class="n">Serial</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="n">SERIAL_BAUD_RATE</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// start the framework and demo project</span>
+<span class="w">  </span><span class="n">esp32sveltekit</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><code>server.begin()</code> is called by ESP32-SvelteKit, as the start-up sequence is crucial.</p>
+<h2 id="stateful-service">Stateful Service</h2>
+<p>The framework promotes a modular design and exposes features you may re-use to speed up the development of your project. Where possible it is recommended that you use the features the frameworks supplies. These are documented in this section and a comprehensive example is provided by the demo project.</p>
+<p>The following diagram visualizes how the framework's modular components fit together, each feature is described in detail below.</p>
+<p><img alt="framework diagram" src="../media/framework.png" /></p>
+<p>The <a href="https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/StatefulService.h">StatefulService.h</a> class is responsible for managing state. It has an API which allows other code to update or respond to updates in the state it manages. You can define a data class to hold state, then build a StatefulService class to manage it. After that you may attach HTTP endpoints, WebSockets or MQTT topics to the StatefulService instance to provide commonly required features.</p>
+<p>Here is a simple example of a state class and a StatefulService to manage it:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LightState</span><span class="w"> </span><span class="p">{</span>
+<span class="w"> </span><span class="k">public</span><span class="o">:</span>
+<span class="w">  </span><span class="kt">bool</span><span class="w"> </span><span class="n">on</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">  </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">brightness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">255</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">LightStateService</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">StatefulService</span><span class="o">&lt;</span><span class="n">LightState</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="p">};</span>
+</code></pre></div>
+<h3 id="update-handler">Update Handler</h3>
+<p>You may listen for changes to state by registering an update handler callback. It is possible to remove an update handler later if required.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// register an update handler</span>
+<span class="n">update_handler_id_t</span><span class="w"> </span><span class="n">myUpdateHandler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lightStateService</span><span class="p">.</span><span class="n">addUpdateHandler</span><span class="p">(</span>
+<span class="w">  </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">String</span><span class="o">&amp;</span><span class="w"> </span><span class="n">originId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;The light&#39;s state has been updated by: &quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="n">originId</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">);</span>
+
+<span class="c1">// remove the update handler</span>
+<span class="n">lightStateService</span><span class="p">.</span><span class="n">removeUpdateHandler</span><span class="p">(</span><span class="n">myUpdateHandler</span><span class="p">);</span>
+</code></pre></div>
+<p>An "originId" is passed to the update handler which may be used to identify the origin of an update. The default origin values the framework provides are:</p>
+<table>
+<thead>
+<tr>
+<th>Origin</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>http</td>
+<td>An update sent over REST (HttpEndpoint)</td>
+</tr>
+<tr>
+<td>mqtt</td>
+<td>An update sent over MQTT (MqttEndpoint)</td>
+</tr>
+<tr>
+<td>websocketserver:{clientId}</td>
+<td>An update sent over WebSocket (WebSocketServer)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="hook-handler">Hook Handler</h3>
+<p>Sometimes if can be desired to hook into every update of an state, even if the StateUpdateResult is <code>StateUpdateResult::UNCHANGED</code> and the update handler isn't called. In such cases you can use the hook handler. Similarly it can be removed later.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// register an update handler</span>
+<span class="n">hook_handler_id_t</span><span class="w"> </span><span class="n">myHookHandler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lightStateService</span><span class="p">.</span><span class="n">addHookHandler</span><span class="p">(</span>
+<span class="w">  </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">String</span><span class="o">&amp;</span><span class="w"> </span><span class="n">originId</span><span class="p">,</span><span class="w"> </span><span class="n">StateUpdateResult</span><span class="w"> </span><span class="o">&amp;</span><span class="n">result</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Serial</span><span class="p">.</span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;The light&#39;s state has been updated by: %s with result %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">originId</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">);</span>
+
+<span class="c1">// remove the update handler</span>
+<span class="n">lightStateService</span><span class="p">.</span><span class="n">removeHookHandler</span><span class="p">(</span><span class="n">myHookHandler</span><span class="p">);</span>
+</code></pre></div>
+<h3 id="read-update-state">Read &amp; Update State</h3>
+<p>StatefulService exposes a read function which you may use to safely read the state. This function takes care of protecting against parallel access to the state in multi-core environments such as the ESP32.</p>
+<div class="highlight"><pre><span></span><code><span class="n">lightStateService</span><span class="p">.</span><span class="n">read</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="n">LightState</span><span class="o">&amp;</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">digitalWrite</span><span class="p">(</span><span class="n">LED_PIN</span><span class="p">,</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">on</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">HIGH</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">LOW</span><span class="p">);</span><span class="w"> </span><span class="c1">// apply the state update to the LED_PIN</span>
+<span class="p">});</span>
+</code></pre></div>
+<p>StatefulService also exposes an update function which allows the caller to update the state with a callback. This function automatically calls the registered update handlers if the state has been changed. The example below changes the state of the light (turns it on) using the arbitrary origin "timer" and returns the "CHANGED" state update result, indicating that a change was made:</p>
+<div class="highlight"><pre><span></span><code><span class="n">lightStateService</span><span class="p">.</span><span class="n">update</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="n">LightState</span><span class="o">&amp;</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">state</span><span class="p">.</span><span class="n">on</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">StateUpdateResult</span><span class="o">::</span><span class="n">UNCHANGED</span><span class="p">;</span><span class="w"> </span><span class="c1">// lights were already on, return UNCHANGED</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="n">state</span><span class="p">.</span><span class="n">on</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span><span class="w">  </span><span class="c1">// turn on the lights</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">StateUpdateResult</span><span class="o">::</span><span class="n">CHANGED</span><span class="p">;</span><span class="w"> </span><span class="c1">// notify StatefulService by returning CHANGED</span>
+<span class="p">},</span><span class="w"> </span><span class="s">&quot;timer&quot;</span><span class="p">);</span>
+</code></pre></div>
+<p>There are three possible return values for an update function which are as follows:</p>
+<table>
+<thead>
+<tr>
+<th>Origin</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>StateUpdateResult::CHANGED</td>
+<td>The update changed the state, propagation should take place if required</td>
+</tr>
+<tr>
+<td>StateUpdateResult::UNCHANGED</td>
+<td>The state was unchanged, propagation should not take place</td>
+</tr>
+<tr>
+<td>StateUpdateResult::ERROR</td>
+<td>There was an error updating the state, propagation should not take place</td>
+</tr>
+</tbody>
+</table>
+<h3 id="json-serialization">JSON Serialization</h3>
+<p>When reading or updating state from an external source (HTTP, WebSockets, or MQTT for example) the state must be marshalled into a serializable form (JSON). SettingsService provides two callback patterns which facilitate this internally:</p>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Signature</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>JsonStateReader</td>
+<td>void read(T&amp; settings, JsonObject&amp; root)</td>
+<td>Reading the state object into a JsonObject</td>
+</tr>
+<tr>
+<td>JsonStateUpdater</td>
+<td>StateUpdateResult update(JsonObject&amp; root, T&amp; settings)</td>
+<td>Updating the state from a JsonObject, returning the appropriate StateUpdateResult</td>
+</tr>
+</tbody>
+</table>
+<p>The static functions below can be used to facilitate the serialization/deserialization of the light state:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LightState</span><span class="w"> </span><span class="p">{</span>
+<span class="w"> </span><span class="k">public</span><span class="o">:</span>
+<span class="w">  </span><span class="kt">bool</span><span class="w"> </span><span class="n">on</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">  </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">brightness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">255</span><span class="p">;</span>
+
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="n">LightState</span><span class="o">&amp;</span><span class="w"> </span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="n">JsonObject</span><span class="o">&amp;</span><span class="w"> </span><span class="n">root</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">root</span><span class="p">[</span><span class="s">&quot;on&quot;</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">on</span><span class="p">;</span>
+<span class="w">    </span><span class="n">root</span><span class="p">[</span><span class="s">&quot;brightness&quot;</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="n">brightness</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="n">StateUpdateResult</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="n">JsonObject</span><span class="o">&amp;</span><span class="w"> </span><span class="n">root</span><span class="p">,</span><span class="w"> </span><span class="n">LightState</span><span class="o">&amp;</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">state</span><span class="p">.</span><span class="n">on</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">root</span><span class="p">[</span><span class="s">&quot;on&quot;</span><span class="p">]</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="n">state</span><span class="p">.</span><span class="n">brightness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">root</span><span class="p">[</span><span class="s">&quot;brightness&quot;</span><span class="p">]</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">255</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">StateUpdateResult</span><span class="o">::</span><span class="n">CHANGED</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div>
+<p>For convenience, the StatefulService class provides overloads of its <code>update</code> and <code>read</code> functions which utilize these functions.</p>
+<p>Read the state to a JsonObject using a serializer:</p>
+<div class="highlight"><pre><span></span><code><span class="n">JsonObject</span><span class="w"> </span><span class="n">jsonObject</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jsonDocument</span><span class="p">.</span><span class="n">to</span><span class="o">&lt;</span><span class="n">JsonObject</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="n">lightStateService</span><span class="o">-&gt;</span><span class="n">read</span><span class="p">(</span><span class="n">jsonObject</span><span class="p">,</span><span class="w"> </span><span class="n">LightState</span><span class="o">::</span><span class="n">read</span><span class="p">);</span>
+</code></pre></div>
+<p>Update the state from a JsonObject using a deserializer:</p>
+<div class="highlight"><pre><span></span><code><span class="n">JsonObject</span><span class="w"> </span><span class="n">jsonObject</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jsonDocument</span><span class="p">.</span><span class="n">as</span><span class="o">&lt;</span><span class="n">JsonObject</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="n">lightStateService</span><span class="o">-&gt;</span><span class="n">update</span><span class="p">(</span><span class="n">jsonObject</span><span class="p">,</span><span class="w"> </span><span class="n">LightState</span><span class="o">::</span><span class="n">update</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;timer&quot;</span><span class="p">);</span>
+</code></pre></div>
+<h3 id="http-restful-endpoint">HTTP RESTful Endpoint</h3>
+<p>The framework provides an <a href="https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/HttpEndpoint.h">HttpEndpoint.h</a> class which may be used to register GET and POST handlers to read and update the state over HTTP. You may construct an HttpEndpoint as a part of the StatefulService or separately if you prefer.</p>
+<p>The code below demonstrates how to extend the LightStateService class to provide an endpoint:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LightStateService</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">StatefulService</span><span class="o">&lt;</span><span class="n">LightState</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w"> </span><span class="k">public</span><span class="o">:</span>
+<span class="w">  </span><span class="n">LightStateService</span><span class="p">(</span><span class="n">PsychicHttpServer</span><span class="o">*</span><span class="w"> </span><span class="n">server</span><span class="p">,</span><span class="w"> </span><span class="n">SecurityManager</span><span class="w"> </span><span class="o">*</span><span class="n">securityManager</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">      </span><span class="n">_httpEndpoint</span><span class="p">(</span><span class="n">LightState</span><span class="o">::</span><span class="n">read</span><span class="p">,</span><span class="w"> </span><span class="n">LightState</span><span class="o">::</span><span class="n">update</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="n">server</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;/rest/lightState&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">securityManager</span><span class="p">,</span><span class="n">AuthenticationPredicates</span><span class="o">::</span><span class="n">IS_AUTHENTICATED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="n">begin</span><span class="p">();</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">_httpEndpoint</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w"> </span><span class="k">private</span><span class="o">:</span>
+<span class="w">  </span><span class="n">HttpEndpoint</span><span class="o">&lt;</span><span class="n">LightState</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_httpEndpoint</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div>
+<p>Endpoint security is provided by authentication predicates which are <a href="#security-features">documented below</a>. The SecurityManager and authentication predicate must be provided, even if no secure endpoint is required. The placeholder project shows how endpoints can be secured.</p>
+<p>To register the HTTP endpoints with the web server the function <code>_httpEndpoint.begin()</code> must be called in the custom StatefulService Class' own <code>void begin()</code> function.</p>
+<h3 id="file-system-persistence">File System Persistence</h3>
+<p><a href="https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/FSPersistence.h">FSPersistence.h</a> allows you to save state to the filesystem. FSPersistence automatically writes changes to the file system when state is updated. This feature can be disabled by calling <code>disableUpdateHandler()</code> if manual control of persistence is required.</p>
+<p>The code below demonstrates how to extend the LightStateService class to provide persistence:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LightStateService</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">StatefulService</span><span class="o">&lt;</span><span class="n">LightState</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w"> </span><span class="k">public</span><span class="o">:</span>
+<span class="w">  </span><span class="n">LightStateService</span><span class="p">(</span><span class="n">FS</span><span class="o">*</span><span class="w"> </span><span class="n">fs</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">      </span><span class="n">_fsPersistence</span><span class="p">(</span><span class="n">LightState</span><span class="o">::</span><span class="n">read</span><span class="p">,</span><span class="w"> </span><span class="n">LightState</span><span class="o">::</span><span class="n">update</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="n">fs</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;/config/lightState.json&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w"> </span><span class="k">private</span><span class="o">:</span>
+<span class="w">  </span><span class="n">FSPersistence</span><span class="o">&lt;</span><span class="n">LightState</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_fsPersistence</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div>
+<h3 id="event-socket-endpoint">Event Socket Endpoint</h3>
+<p><a href="https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/EventEndpoint.h">EventEndpoint.h</a> wraps the <a href="#event-socket">Event Socket</a> into an endpoint compatible with a stateful service. The client may subscribe and unsubscribe to this event to receive updates or push updates to the ESP32. The current state is synchronized upon subscription.</p>
+<p>The code below demonstrates how to extend the LightStateService class to provide an WebSocket:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LightStateService</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">StatefulService</span><span class="o">&lt;</span><span class="n">LightState</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w"> </span><span class="k">public</span><span class="o">:</span>
+<span class="w">  </span><span class="n">LightStateService</span><span class="p">(</span><span class="n">EventSocket</span><span class="w"> </span><span class="o">*</span><span class="n">socket</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">      </span><span class="n">_eventEndpoint</span><span class="p">(</span><span class="n">LightState</span><span class="o">::</span><span class="n">read</span><span class="p">,</span><span class="w"> </span><span class="n">LightState</span><span class="o">::</span><span class="n">update</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="n">socket</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;led&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
+
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="n">begin</span><span class="p">()</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="n">_eventEndpoint</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w"> </span><span class="k">private</span><span class="o">:</span>
+<span class="w">  </span><span class="n">EventEndpoint</span><span class="o">&lt;</span><span class="n">LightState</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_eventEndpoint</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div>
+<p>To register the event endpoint with the event socket the function <code>_eventEndpoint.begin()</code> must be called in the custom StatefulService Class' own <code>void begin()</code> function.</p>
+<p>Since all events run through one websocket connection it is not possible to use the <a href="#security-features">securityManager</a> to limit access to individual events. The security defaults to <code>AuthenticationPredicates::IS_AUTHENTICATED</code>.</p>
+<h3 id="websocket-server">WebSocket Server</h3>
+<p><a href="https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/WebSocketServer.h">WebSocketServer.h</a> allows you to read and update state over a WebSocket connection. WebSocketServer automatically pushes changes to all connected clients when state is updated.</p>
+<p>The code below demonstrates how to extend the LightStateService class to provide an WebSocket:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LightStateService</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">StatefulService</span><span class="o">&lt;</span><span class="n">LightState</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w"> </span><span class="k">public</span><span class="o">:</span>
+<span class="w">  </span><span class="n">LightStateService</span><span class="p">(</span><span class="n">PsychicHttpServer</span><span class="o">*</span><span class="w"> </span><span class="n">server</span><span class="p">,</span><span class="w"> </span><span class="n">SecurityManager</span><span class="w"> </span><span class="o">*</span><span class="n">securityManager</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">      </span><span class="n">_webSocket</span><span class="p">(</span><span class="n">LightState</span><span class="o">::</span><span class="n">read</span><span class="p">,</span><span class="w"> </span><span class="n">LightState</span><span class="o">::</span><span class="n">update</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="n">server</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;/ws/lightState&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">securityManager</span><span class="p">,</span><span class="w"> </span><span class="n">AuthenticationPredicates</span><span class="o">::</span><span class="n">IS_AUTHENTICATED</span><span class="p">),</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="n">begin</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">_webSocketServer</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w"> </span><span class="k">private</span><span class="o">:</span>
+<span class="w">  </span><span class="n">WebSocketServer</span><span class="o">&lt;</span><span class="n">LightState</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_webSocketServer</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div>
+<p>WebSocket security is provided by authentication predicates which are <a href="#security-features">documented below</a>. The SecurityManager and authentication predicate must be provided, even if no secure endpoint is required. The placeholder project shows how endpoints can be secured.</p>
+<p>To register the WS endpoint with the web server the function <code>_webSocketServer.begin()</code> must be called in the custom StatefulService Class' own <code>void begin()</code> function.</p>
+<h3 id="mqtt-client">MQTT Client</h3>
+<p>The framework includes an MQTT client which can be configured via the UI. MQTT requirements will differ from project to project so the framework exposes the client for you to use as you see fit. The framework does however provide a utility to interface StatefulService to a pair of pub/sub (state/set) topics. This utility can be used to synchronize state with software such as Home Assistant.</p>
+<p><a href="https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/MqttEndpoint.h">MqttEndpoint.h</a> allows you to publish and subscribe to synchronize state over a pair of MQTT topics. MqttEndpoint automatically pushes changes to the "pub" topic and reads updates from the "sub" topic.</p>
+<p>The code below demonstrates how to extend the LightStateService class to interface with MQTT:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LightStateService</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">StatefulService</span><span class="o">&lt;</span><span class="n">LightState</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w"> </span><span class="k">public</span><span class="o">:</span>
+<span class="w">  </span><span class="n">LightStateService</span><span class="p">(</span><span class="n">AsyncMqttClient</span><span class="o">*</span><span class="w"> </span><span class="n">mqttClient</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">      </span><span class="n">_mqttEndpoint</span><span class="p">(</span><span class="n">LightState</span><span class="o">::</span><span class="n">read</span><span class="p">,</span>
+<span class="w">                  </span><span class="n">LightState</span><span class="o">::</span><span class="n">update</span><span class="p">,</span>
+<span class="w">                  </span><span class="k">this</span><span class="p">,</span>
+<span class="w">                  </span><span class="n">mqttClient</span><span class="p">,</span>
+<span class="w">                  </span><span class="s">&quot;homeassistant/light/my_light/set&quot;</span><span class="p">,</span>
+<span class="w">                  </span><span class="s">&quot;homeassistant/light/my_light/state&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w"> </span><span class="k">private</span><span class="o">:</span>
+<span class="w">  </span><span class="n">MqttEndpoint</span><span class="o">&lt;</span><span class="n">LightState</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_mqttEndpoint</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div>
+<p>You can re-configure the pub/sub topics at runtime as required:</p>
+<div class="highlight"><pre><span></span><code><span class="n">_mqttEndpoint</span><span class="p">.</span><span class="n">configureBroker</span><span class="p">(</span><span class="s">&quot;homeassistant/light/desk_lamp/set&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;homeassistant/light/desk_lamp/state&quot;</span><span class="p">);</span>
+</code></pre></div>
+<p>The demo project allows the user to modify the MQTT topics via the UI so they can be changed without re-flashing the firmware.</p>
+<h2 id="event-socket">Event Socket</h2>
+<p>Beside RESTful HTTP Endpoints the Event Socket System provides a convenient communication path between the client and the ESP32. It uses a single WebSocket connection to synchronize state and to push realtime data to the client. The client needs to subscribe to the topics he is interested. Only clients who have an active subscription will receive data. Every authenticated client may make use of this system as the security settings are set to <code>AuthenticationPredicates::IS_AUTHENTICATED</code>.</p>
+<h3 id="message-format">Message Format</h3>
+<p>The event messages exchanged between the ESP32 and its clients consists of an "event" head and the "data" payload. For the LightState example a message looks like this in JSON representation:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;event&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;led&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;led_on&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>To save on bandwidth the event message is encoded as binary <a href="https://msgpack.org/">MessagePack</a> instead of a JSON.</p>
+<p>To subscribe the client has to send the following message (as MessagePack):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;event&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;analytics&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="emit-an-event">Emit an Event</h3>
+<p>The Event Socket provides an <code>emitEvent()</code> function to push data to all subscribed clients. This is used by various esp32sveltekit classes to push real time data to the client. First an event must be registered with the Event Socket by calling <code>_socket.registerEvent("CustomEvent");</code>. Only then clients may subscribe to this custom event and you're entitled to emit event data:</p>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="n">emitEvent</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">event</span><span class="p">,</span><span class="w"> </span><span class="n">JsonObject</span><span class="w"> </span><span class="o">&amp;</span><span class="n">jsonObject</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">originId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">onlyToSameOrigin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+</code></pre></div>
+<p>The latter function allowing a selection of the recipient. If <code>onlyToSameOrigin = false</code> the payload is distributed to all subscribed clients, except the <code>originId</code>. If <code>onlyToSameOrigin = true</code> only the client with <code>originId</code> will receive the payload. This is used by the <a href="#event-socket-endpoint">EventEndpoint</a> to sync the initial state when a new client subscribes.</p>
+<h3 id="receive-an-event">Receive an Event</h3>
+<p>A callback or lambda function can be registered to receive an ArduinoJSON object and the originId of the client sending the data:</p>
+<div class="highlight"><pre><span></span><code><span class="n">_socket</span><span class="p">.</span><span class="n">onEvent</span><span class="p">(</span><span class="s">&quot;CostumEvent&quot;</span><span class="p">,[</span><span class="o">&amp;</span><span class="p">](</span><span class="n">JsonObject</span><span class="w"> </span><span class="o">&amp;</span><span class="n">root</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">originId</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">  </span><span class="kt">bool</span><span class="w"> </span><span class="n">ledState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">root</span><span class="p">[</span><span class="s">&quot;led_on&quot;</span><span class="p">];</span>
+<span class="p">});</span>
+</code></pre></div>
+<h3 id="get-notified-on-subscriptions">Get Notified on Subscriptions</h3>
+<p>Similarly a callback or lambda function may be registered to get notified when a client subscribes to an event:</p>
+<div class="highlight"><pre><span></span><code><span class="n">_socket</span><span class="p">.</span><span class="n">onSubscribe</span><span class="p">(</span><span class="s">&quot;CostumEvent&quot;</span><span class="p">,[</span><span class="o">&amp;</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="o">&amp;</span><span class="n">originId</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">  </span><span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="s">&quot;New Client subscribed: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">originId</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div>
+<p>The boolean parameter provided will always be <code>true</code>.</p>
+<h3 id="push-notifications-to-all-clients">Push Notifications to All Clients</h3>
+<p>It is possibly to send push notifications to all clients by using the Event Socket. These will be displayed as toasts an the client side. Either directly call</p>
+<div class="highlight"><pre><span></span><code><span class="n">esp32sveltekit</span><span class="p">.</span><span class="n">getNotificationService</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">pushNotification</span><span class="p">(</span><span class="s">&quot;Pushed a message!&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">PUSHINFO</span><span class="p">);</span>
+</code></pre></div>
+<p>or keep a local pointer to the <code>EventSocket</code> instance. It is possible to send <code>PUSHINFO</code>, <code>PUSHWARNING</code>, <code>PUSHERROR</code> and <code>PUSHSUCCESS</code> events to all clients.</p>
+<h2 id="security-features">Security features</h2>
+<p>The framework has security features to prevent unauthorized use of the device. This is driven by <a href="https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/SecurityManager.h">SecurityManager.h</a>.</p>
+<p>On successful authentication, the /rest/signIn endpoint issues a <a href="https://jwt.io/">JSON Web Token (JWT)</a> which is then sent using Bearer Authentication. For this add an <code>Authorization</code>-Header to the request with the Content <code>Bearer {JWT-Secret}</code>. The framework come with built-in predicates for verifying a users access privileges. The built in AuthenticationPredicates can be found in <a href="https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/SecurityManager.h">SecurityManager.h</a> and are as follows:</p>
+<table>
+<thead>
+<tr>
+<th>Predicate</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NONE_REQUIRED</td>
+<td>No authentication is required.</td>
+</tr>
+<tr>
+<td>IS_AUTHENTICATED</td>
+<td>Any authenticated principal is permitted.</td>
+</tr>
+<tr>
+<td>IS_ADMIN</td>
+<td>The authenticated principal must be an admin.</td>
+</tr>
+</tbody>
+</table>
+<p>You can use the security manager to wrap any request handler function with an authentication predicate:</p>
+<div class="highlight"><pre><span></span><code><span class="n">server</span><span class="o">-&gt;</span><span class="n">on</span><span class="p">(</span><span class="s">&quot;/rest/someService&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">HTTP_GET</span><span class="p">,</span>
+<span class="w">  </span><span class="n">_securityManager</span><span class="o">-&gt;</span><span class="n">wrapRequest</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">bind</span><span class="p">(</span><span class="o">&amp;</span><span class="n">SomeService</span><span class="o">::</span><span class="n">someService</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">placeholders</span><span class="o">::</span><span class="n">_1</span><span class="p">),</span><span class="w"> </span><span class="n">AuthenticationPredicates</span><span class="o">::</span><span class="n">IS_AUTHENTICATED</span><span class="p">)</span>
+<span class="p">);</span>
+</code></pre></div>
+<p>In case of a websocket connection the JWT token is supplied as a search parameter in the URL when establishing the connection:</p>
+<div class="highlight"><pre><span></span><code>/ws/lightState?access_token={JWT Token}
+</code></pre></div>
+<h2 id="placeholder-substitution">Placeholder substitution</h2>
+<p>Various settings support placeholder substitution, indicated by comments in <a href="https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini">factory_settings.ini</a>. This can be particularly useful where settings need to be unique, such as the Access Point SSID or MQTT client id. Strings must be properly escaped in the ini-file. The following placeholders are supported:</p>
+<table>
+<thead>
+<tr>
+<th>Placeholder</th>
+<th>Substituted value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>#{platform}</td>
+<td>The microcontroller platform, e.g. "esp32" or "esp32c3"</td>
+</tr>
+<tr>
+<td>#{unique_id}</td>
+<td>A unique identifier derived from the MAC address, e.g. "0b0a859d6816"</td>
+</tr>
+<tr>
+<td>#{random}</td>
+<td>A random number encoded as a hex string, e.g. "55722f94"</td>
+</tr>
+</tbody>
+</table>
+<p>You may use SettingValue::format in your own code if you require the use of these placeholders. This is demonstrated in the demo project:</p>
+<div class="highlight"><pre><span></span><code><span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="n">StateUpdateResult</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="n">JsonObject</span><span class="o">&amp;</span><span class="w"> </span><span class="n">root</span><span class="p">,</span><span class="w"> </span><span class="n">LightMqttSettings</span><span class="o">&amp;</span><span class="w"> </span><span class="n">settings</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">settings</span><span class="p">.</span><span class="n">mqttPath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">root</span><span class="p">[</span><span class="s">&quot;mqtt_path&quot;</span><span class="p">]</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">SettingValue</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;homeassistant/light/#{unique_id}&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">settings</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">root</span><span class="p">[</span><span class="s">&quot;name&quot;</span><span class="p">]</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">SettingValue</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;light-#{unique_id}&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">settings</span><span class="p">.</span><span class="n">uniqueId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">root</span><span class="p">[</span><span class="s">&quot;unique_id&quot;</span><span class="p">]</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">SettingValue</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;light-#{unique_id}&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">StateUpdateResult</span><span class="o">::</span><span class="n">CHANGED</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+</code></pre></div>
+<h2 id="accessing-settings-and-services">Accessing settings and services</h2>
+<p>The framework supplies access to various features via getter functions:</p>
+<table>
+<thead>
+<tr>
+<th>SettingsService</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>getFS()</td>
+<td>The filesystem used by the framework</td>
+</tr>
+<tr>
+<td>getSecurityManager()</td>
+<td>The security manager - detailed above</td>
+</tr>
+<tr>
+<td>getSecuritySettingsService()</td>
+<td>Configures the users and other security settings</td>
+</tr>
+<tr>
+<td>getWiFiSettingsService()</td>
+<td>Configures and manages the WiFi network connection</td>
+</tr>
+<tr>
+<td>getAPSettingsService()</td>
+<td>Configures and manages the Access Point</td>
+</tr>
+<tr>
+<td>getNTPSettingsService()</td>
+<td>Configures and manages the network time</td>
+</tr>
+<tr>
+<td>getMqttSettingsService()</td>
+<td>Configures and manages the MQTT connection</td>
+</tr>
+<tr>
+<td>getMqttClient()</td>
+<td>Provides direct access to the MQTT client instance</td>
+</tr>
+<tr>
+<td>getNotificationEvents()</td>
+<td>Lets you send push notifications to all clients</td>
+</tr>
+<tr>
+<td>getSleepService()</td>
+<td>Send the ESP32 into deep sleep</td>
+</tr>
+<tr>
+<td>getBatteryService()</td>
+<td>Update battery information on the client</td>
+</tr>
+</tbody>
+</table>
+<p>The core features use the <a href="https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/StatefulService.h">StatefulService.h</a> class and therefore you can change settings or observe changes to settings through the read/update API.</p>
+<p>Inspect the current WiFi settings:</p>
+<div class="highlight"><pre><span></span><code><span class="n">esp32sveltekit</span><span class="p">.</span><span class="n">getWiFiSettingsService</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">read</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="n">WiFiSettings</span><span class="o">&amp;</span><span class="w"> </span><span class="n">wifiSettings</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;The ssid is:&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="n">wifiSettings</span><span class="p">.</span><span class="n">ssid</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div>
+<p>Configure the WiFi SSID and password manually:</p>
+<div class="highlight"><pre><span></span><code><span class="n">esp32sveltekit</span><span class="p">.</span><span class="n">getWiFiSettingsService</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">update</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="n">WiFiSettings</span><span class="o">&amp;</span><span class="w"> </span><span class="n">wifiSettings</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">wifiSettings</span><span class="p">.</span><span class="n">ssid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;MyNetworkSSID&quot;</span><span class="p">;</span>
+<span class="w">  </span><span class="n">wifiSettings</span><span class="p">.</span><span class="n">password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;MySuperSecretPassword&quot;</span><span class="p">;</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">StateUpdateResult</span><span class="o">::</span><span class="n">CHANGED</span><span class="p">;</span>
+<span class="p">},</span><span class="w"> </span><span class="s">&quot;myapp&quot;</span><span class="p">);</span>
+</code></pre></div>
+<p>Observe changes to the WiFiSettings:</p>
+<div class="highlight"><pre><span></span><code><span class="n">esp32sveltekit</span><span class="p">.</span><span class="n">getWiFiSettingsService</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">addUpdateHandler</span><span class="p">(</span>
+<span class="w">  </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">String</span><span class="o">&amp;</span><span class="w"> </span><span class="n">originId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="s">&quot;The WiFi Settings were updated!&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">);</span>
+</code></pre></div>
+<h2 id="other-functions-provided">Other functions provided</h2>
+<h3 id="mdns-instance-name">MDNS Instance Name</h3>
+<p>ESP32 SvelteKit uses mDNS / Bonjour to advertise its services into the local network. You can set the mDNS instance name property by calling</p>
+<div class="highlight"><pre><span></span><code><span class="n">esp32sveltekit</span><span class="p">.</span><span class="n">setMDNSAppName</span><span class="p">(</span><span class="s">&quot;ESP32 SvelteKit Demo App&quot;</span><span class="p">);</span>
+</code></pre></div>
+<p>making the entry a little bit more verbose. This must be called before <code>esp32sveltekit.begin();</code>. If you want to advertise further services just include <code>#include &lt;ESPmNDS.h&gt;</code> and use <code>MDNS.addService()</code> regularly.</p>
+<h3 id="factory-reset">Factory Reset</h3>
+<p>A factory reset can not only be evoked from the API, but also by calling</p>
+<div class="highlight"><pre><span></span><code><span class="n">esp32sveltekit</span><span class="p">.</span><span class="n">factoryReset</span><span class="p">();</span>
+</code></pre></div>
+<p>from your code. This will erase the complete settings folder, wiping out all settings. This can be a last fall back mode if somebody has forgotten his credentials.</p>
+<h3 id="recovery-mode">Recovery Mode</h3>
+<p>There is also a recovery mode present which will force the creation of an access point. By calling</p>
+<div class="highlight"><pre><span></span><code><span class="n">esp32sveltekit</span><span class="p">.</span><span class="n">recoveryMode</span><span class="p">();</span>
+</code></pre></div>
+<p>will force a start of the AP regardless of the AP settings. It will not change the the AP settings. To exit the recovery mode restart the device or change the AP settings in the UI.</p>
+<h3 id="power-down-with-deep-sleep">Power Down with Deep Sleep</h3>
+<p>This API service can place the ESP32 in the lowest power deep sleep mode consuming only a few µA. It uses the EXT1 wakeup source, so the ESP32 can be woken up with a button or from a peripherals interrupt. Consult the <a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/sleep_modes.html#_CPPv428esp_sleep_enable_ext1_wakeup8uint64_t28esp_sleep_ext1_wakeup_mode_t">ESP-IDF Api Reference</a> which GPIOs can be used for this. The RTC will also be powered down, so an external pull-up or pull-down resistor is required. It is not possible to persist variable state through the deep sleep. To optimize the deep sleep power consumption it is advisable to use the callback function to put pins with external pull-up's or pull-down's in a special isolated state to prevent current leakage. Please consult the <a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/sleep_modes.html#configuring-ios-deep-sleep-only">ESP-IDF Api Reference</a> for this.</p>
+<p>The settings wakeup pin definition and the signal polarity need to be defined in <a href="https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini">factory_settings.ini</a>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">; Deep Sleep Configuration</span>
+<span class="na">-D WAKEUP_PIN_NUMBER</span><span class="o">=</span><span class="s">38</span><span class="w"> </span><span class="c1">; pin number to wake up the ESP</span>
+<span class="na">-D WAKEUP_SIGNAL</span><span class="o">=</span><span class="s">0</span><span class="w"> </span><span class="c1">; 1 for wakeup on HIGH, 0 for wakeup on LOW</span>
+</code></pre></div>
+<p>A callback function can be attached and triggers when the ESP32 is requested to go into deep sleep. This allows you to safely deal with the power down event. Like persisting software state by writing to the flash, tiding up or notify a remote server about the immanent disappearance.</p>
+<div class="highlight"><pre><span></span><code><span class="n">esp32sveltekit</span><span class="p">.</span><span class="n">getSleepService</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">attachOnSleepCallback</span><span class="p">();</span>
+</code></pre></div>
+<p>Also the code can initiate the power down deep sleep sequence by calling:</p>
+<div class="highlight"><pre><span></span><code><span class="n">esp32sveltekit</span><span class="p">.</span><span class="n">getSleepService</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">sleepNow</span><span class="p">();</span>
+</code></pre></div>
+<h3 id="battery-state-of-charge">Battery State of Charge</h3>
+<p>A small helper class let's you update the battery icon in the status bar. This is useful if you have a battery operated IoT device. It must be enabled in <a href="https://github.com/theelims/ESP32-sveltekit/blob/main/features.ini">features.ini</a>. It uses the <a href="#event-socket">Event Socket</a> and exposes two functions that can be used to update the clients.</p>
+<div class="highlight"><pre><span></span><code><span class="n">esp32sveltekit</span><span class="p">.</span><span class="n">getBatteryService</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">updateSOC</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="n">stateOfCharge</span><span class="p">);</span><span class="w"> </span><span class="c1">// update state of charge in percent (0 - 100%)</span>
+<span class="n">esp32sveltekit</span><span class="p">.</span><span class="n">getBatteryService</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">setCharging</span><span class="p">(</span><span class="n">boolean</span><span class="w"> </span><span class="n">isCharging</span><span class="p">);</span><span class="w"> </span><span class="c1">// notify the client that the device is charging</span>
+</code></pre></div>
+<h3 id="custom-features">Custom Features</h3>
+<p>You may use the compile time feature service also to enable or disable custom features at runtime and thus control the frontend. A custom feature can only be added during initializing the ESP32 and ESP32-SvelteKit. A feature can't be updated on runtime once it is set.</p>
+<div class="highlight"><pre><span></span><code><span class="n">esp32sveltekit</span><span class="p">.</span><span class="n">getFeatureService</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">addFeature</span><span class="p">(</span><span class="s">&quot;custom_feature&quot;</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">);</span><span class="w"> </span><span class="c1">// or false to disable it</span>
+</code></pre></div>
+<h2 id="ota-firmware-updates">OTA Firmware Updates</h2>
+<p>ESP32-SvelteKit offers two different ways to roll out firmware updates to field devices. If the frontend should be updated as well it is necessary to embed it into the firmware binary by activating <code>-D EMBED_WWW</code>.</p>
+<h3 id="firmware-upload">Firmware Upload</h3>
+<p>Enabling <code>FT_UPLOAD_FIRMWARE=1</code> in <a href="https://github.com/theelims/ESP32-sveltekit/blob/main/features.ini">features.ini</a> creates a REST endpoint that one can post a firmware binary to. The frontend has a file drop zone to upload a new firmware binary from the browser.</p>
+<h3 id="firmware-download-from-update-server">Firmware Download from Update Server</h3>
+<p>By enabling <code>FT_DOWNLOAD_FIRMWARE=1</code> in <a href="https://github.com/theelims/ESP32-sveltekit/blob/main/features.ini">features.ini</a> one can POST a link to a firmware binary which is downloaded for the OTA process. This feature requires SSL and is thus dependent on <code>FT_NTP=1</code>. The Frontend contains an implementation which uses GitHub's Releases section as the update server. By specifying a firmware version in <a href="https://github.com/theelims/ESP32-sveltekit/blob/main/platformio.ini">platformio.ini</a> one can make use of semantic versioning to determine the correct firmware:</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="na">-D BUILD_TARGET</span><span class="o">=</span><span class="s">&quot;$PIOENV&quot;</span>
+<span class="w">    </span><span class="na">-D APP_NAME</span><span class="o">=</span><span class="s">\&quot;ESP32-Sveltekit\&quot;</span><span class="w"> </span><span class="c1">; Must only contain characters from [a-zA-Z0-9-_] as this is converted into a filename</span>
+<span class="w">    </span><span class="na">-D APP_VERSION</span><span class="o">=</span><span class="s">\&quot;0.3.0\&quot;</span><span class="w"> </span><span class="c1">; semver compatible version string</span>
+</code></pre></div>
+<p>A build script copies the firmware binary files for all build environment to <code>build/firmware</code>. It renames them into <code>{APP_NAME}_{$PIOENV}_{APP_VERSION}.bin</code>. It also creates a MD5 checksum file for verification during the OTA process. These files can be used as attachment on the GitHub release pages.</p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>This feature could be unstable on single-core members of the ESP32 family.</p>
+</div>
+<h4 id="custom-update-server">Custom Update Server</h4>
+<p>If Github is not desired as the update server this can be easily modified to any other custom server. The REST API will accept any valid HTTPS-Link. However, SSL is mandatory and may require a different Root CA Certificate then Github to validate correctly.
+Follow the instructions here how to change the <a href="../buildprocess/#ssl-root-certificate-for-download-ota">SSL CA Certificate</a>.</p>
+<p>If you use a custom update server you must also adapt the <a href="../structure/#custom-update-server">frontend</a> code to suit your needs.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2024 by <a href="https://github.com/theelims"  target="_blank" rel="noopener">elims</a> -
+<a href="#__consent">Change cookie settings</a>
+
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/theelims/" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+      <div class="md-consent" data-md-component="consent" id="__consent" hidden>
+        <div class="md-consent__overlay"></div>
+        <aside class="md-consent__inner">
+          <form class="md-consent__form md-grid md-typeset" name="consent">
+            
+
+
+  
+    
+  
+
+
+
+
+  
+
+<h4>Cookie consent</h4>
+<p>We use cookies to recognize your repeated visits and preferences, as well as to measure the effectiveness of our documentation and whether users find what they're searching for. With your consent, you're helping us to make our documentation better.</p>
+<input class="md-toggle" type="checkbox" id="__settings" checked>
+<div class="md-consent__settings">
+  <ul class="task-list">
+    
+      
+      
+        
+        
+      
+      <li class="task-list-item">
+        <label class="task-list-control">
+          <input type="checkbox" name="github" checked>
+          <span class="task-list-indicator"></span>
+          GitHub
+        </label>
+      </li>
+    
+  </ul>
+</div>
+<div class="md-consent__controls">
+  
+    
+      <button class="md-button md-button--primary">Accept</button>
+    
+    
+    
+  
+    
+    
+      <button type="reset" class="md-button md-button--primary">Reject</button>
+    
+    
+  
+</div>
+          </form>
+        </aside>
+      </div>
+      <script>var consent=__md_get("__consent");if(consent)for(var input of document.forms.consent.elements)input.name&&(input.checked=consent[input.name]||!1);else"file:"!==location.protocol&&setTimeout(function(){document.querySelector("[data-md-component=consent]").hidden=!1},250);var action,form=document.forms.consent;for(action of["submit","reset"])form.addEventListener(action,function(e){if(e.preventDefault(),"reset"===e.type)for(var n of document.forms.consent.elements)n.name&&(n.checked=!1);__md_set("__consent",Object.fromEntries(Array.from(new FormData(form).keys()).map(function(e){return[e,!0]}))),location.hash="",location.reload()})</script>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "toc.follow", "toc.integrate", "navigation.top", "content.code.copy"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.fe8b6f2b.min.js"></script>
+      
+    
+  </body>
+</html>
