@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## WIP
 
+### Changed
+
+- Updated platform espressif32 to 6.8.1
+
 ### Fixed
 
 - Ensure thread safety for client subscriptions [#58](https://github.com/theelims/ESP32-sveltekit/pull/58)
