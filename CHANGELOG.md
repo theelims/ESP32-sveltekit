@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## WIP
+
+### Fixed
+
+- Ensure thread safety for client subscriptions [#58](https://github.com/theelims/ESP32-sveltekit/pull/58)
+
 ## [0.5.0] - 2024-05-06
 
 Changes the Event Socket System to use a clearer message structure and MessagePack. Brings breaking changes to the `EventSocket.h` API.
