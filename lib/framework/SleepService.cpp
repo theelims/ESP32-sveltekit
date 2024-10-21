@@ -86,9 +86,10 @@ void SleepService::sleepNow()
     Serial.println("Good by!");
 #endif
 
-    // Just to be sure
-    delay(100);
-
-    // Hibernate
-    esp_deep_sleep_start();
+    xTaskCreate(
+        [](void *pvParams) {
+            delay(200);
+            esp_deep_sleep_start();
+        },
+        "Sleep task", 4096, nullptr, 10, nullptr);
 }
