@@ -1,6 +1,5 @@
 # ESP32 SvelteKit - Create Amazing IoT Projects
-
-![Firmware CI](../../workflows/firmware.yaml/badge.svg)
+![Firmware Build](../../actions/workflows/firmware.yaml/badge.svg)
 
 <div style="flex">
 <img src="/docs/media/Screenshot_light.png" style="height:320px"> 
