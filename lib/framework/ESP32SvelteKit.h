@@ -43,6 +43,7 @@
 #include <WiFiStatus.h>
 #include <ESPFS.h>
 #include <PsychicHttp.h>
+#include <vector>
 
 #ifdef EMBED_WWW
 #include <WWWData.h>
@@ -63,6 +64,9 @@
 #ifndef ESP32SVELTEKIT_RUNNING_CORE
 #define ESP32SVELTEKIT_RUNNING_CORE -1
 #endif
+
+// define callback function to include into the main loop
+typedef std::function<void()> loopCallback;
 
 class ESP32SvelteKit
 {
@@ -166,6 +170,11 @@ public:
         _apSettingsService.recoveryMode();
     }
 
+    void addLoopFunction(loopCallback function)
+    {
+        _loopFunctions.push_back(function);
+    }
+
 private:
     PsychicHttpServer *_server;
     unsigned int _numberEndpoints;
@@ -213,6 +222,8 @@ private:
 protected:
     static void _loopImpl(void *_this) { static_cast<ESP32SvelteKit *>(_this)->_loop(); }
     void _loop();
+
+    std::vector<loopCallback> _loopFunctions;
 };
 
 #endif

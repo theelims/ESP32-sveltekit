@@ -198,6 +198,12 @@ void ESP32SvelteKit::_loop()
 #if FT_ENABLED(FT_MQTT)
         _mqttSettingsService.loop(); // 5 seconds
 #endif
+        // iterate over all loop functions
+        for (auto &function : _loopFunctions)
+        {
+            function();
+        }
+
         vTaskDelay(20 / portTICK_PERIOD_MS);
     }
 }

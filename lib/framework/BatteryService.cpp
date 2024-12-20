@@ -17,6 +17,28 @@ BatteryService::BatteryService(EventSocket *socket) : _socket(socket)
 {
 }
 
+void BatteryService::updateSOC(float stateOfCharge)
+{
+    _lastSOC = (int)round(stateOfCharge);
+    batteryEvent();
+}
+
+void BatteryService::setCharging(boolean isCharging)
+{
+    _isCharging = isCharging;
+    batteryEvent();
+}
+
+boolean BatteryService::isCharging()
+{
+    return _isCharging;
+}
+
+boolean BatteryService::getSOC()
+{
+    return _lastSOC;
+}
+
 void BatteryService::begin()
 {
     _socket->registerEvent(EVENT_BATTERY);

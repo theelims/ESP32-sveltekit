@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## WIP
 
+### Added
+
+- Added compatibility with ESP32-C6
+- Added Arduino Log Colors
+- Possibility to add a loop callback to ESP32-Sveltekit to leverage its loop threat. Meant to include custom services so no separate task is needed for them.
+- Change wake-up pin in SleepService during runtime. It is also possible to use the internal pull-up or pull-down resistors now.
+
 ### Changed
 
 - Updated platform espressif32 to 6.8.1
@@ -11,6 +18,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Ensure thread safety for client subscriptions [#58](https://github.com/theelims/ESP32-sveltekit/pull/58)
+- Isolate non-returning functions in new tasks [#62](https://github.com/theelims/ESP32-sveltekit/pull/62)
 
 ## [0.5.0] - 2024-05-06
 

@@ -13,8 +13,11 @@
 
 #include <SleepService.h>
 
-// Definition of static member variable
+// Definition of static member variables
 void (*SleepService::_callbackSleep)() = nullptr;
+u_int64_t _wakeUpPin = WAKEUP_PIN_NUMBER;
+bool _wakeUpSignal = WAKEUP_SIGNAL;
+pinTermination _wakeUpTermination = pinTermination::FLOATING;
 
 SleepService::SleepService(PsychicHttpServer *server,
                            SecurityManager *securityManager) : _server(server),
@@ -71,15 +74,29 @@ void SleepService::sleepNow()
     WiFi.disconnect(true);
     delay(500);
 
-    // Prepare ESP for sleep
-    uint64_t bitmask = (uint64_t)1 << (WAKEUP_PIN_NUMBER);
+    ESP_LOGD("SleepService", "Enabling GPIO wakeup on pin GPIO%d\n", _wakeUpPin);
 
 // special treatment for ESP32-C3 because of the RISC-V architecture
 #ifdef CONFIG_IDF_TARGET_ESP32C3
-    esp_deep_sleep_enable_gpio_wakeup(bitmask, (esp_deepsleep_gpio_wake_up_mode_t)WAKEUP_SIGNAL);
+    esp_deep_sleep_enable_gpio_wakeup(BIT(_wakeUpPin), (esp_deepsleep_gpio_wake_up_mode_t)_wakeUpSignal);
 #else
-    esp_sleep_enable_ext1_wakeup(bitmask, (esp_sleep_ext1_wakeup_mode_t)WAKEUP_SIGNAL);
-    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
+    esp_sleep_enable_ext1_wakeup(BIT(_wakeUpPin), (esp_sleep_ext1_wakeup_mode_t)_wakeUpSignal);
+
+    switch (_wakeUpTermination)
+    {
+    case pinTermination::PULL_UP:
+        esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
+        rtc_gpio_pullup_dis((gpio_num_t)_wakeUpPin);
+        rtc_gpio_pulldown_en((gpio_num_t)_wakeUpPin);
+        break;
+    case pinTermination::PULL_DOWN:
+        esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
+        rtc_gpio_pullup_en((gpio_num_t)_wakeUpPin);
+        rtc_gpio_pulldown_dis((gpio_num_t)_wakeUpPin);
+        break;
+    default:
+        esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
+    }
 #endif
 
 #ifdef SERIAL_INFO
@@ -87,9 +104,17 @@ void SleepService::sleepNow()
 #endif
 
     xTaskCreate(
-        [](void *pvParams) {
+        [](void *pvParams)
+        {
             delay(200);
             esp_deep_sleep_start();
         },
         "Sleep task", 4096, nullptr, 10, nullptr);
+}
+
+void SleepService::setWakeUpPin(int pin, bool level, pinTermination termination)
+{
+    _wakeUpPin = (u_int64_t)pin;
+    _wakeUpSignal = level;
+    _wakeUpTermination = termination;
 }

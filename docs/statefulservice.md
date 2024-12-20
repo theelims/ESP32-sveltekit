@@ -481,6 +481,14 @@ esp32sveltekit.setMDNSAppName("ESP32 SvelteKit Demo App");
 
 making the entry a little bit more verbose. This must be called before `esp32sveltekit.begin();`. If you want to advertise further services just include `#include <ESPmNDS.h>` and use `MDNS.addService()` regularly.
 
+### Use ESP32-SvelteKit loop() Function
+
+Under some circumstances custom services might want to do something periodically. One solution would be to use a dedicated task or RTOS timer for this. Or you can leverage the ESP32-SvelteKit loop-function and have it executed as a callback every 20ms.
+
+```cpp
+esp32sveltekit.addLoopFunction(callback)
+```
+
 ### Factory Reset
 
 A factory reset can not only be evoked from the API, but also by calling
@@ -512,6 +520,14 @@ The settings wakeup pin definition and the signal polarity need to be defined in
 -D WAKEUP_PIN_NUMBER=38 ; pin number to wake up the ESP
 -D WAKEUP_SIGNAL=0 ; 1 for wakeup on HIGH, 0 for wakeup on LOW
 ```
+
+In addition it is possible to change this as well at runtime by calling:
+
+```cpp
+esp32sveltekit.getSleepService()->setWakeUpPin(int pin, bool level, pinTermination termination = pinTermination::FLOATING);
+```
+
+With this function it is also possible to configure the internal pull-up or pull-down resistor for this RTC pin. Albeit this might increase the deep sleep current slightly.
 
 A callback function can be attached and triggers when the ESP32 is requested to go into deep sleep. This allows you to safely deal with the power down event. Like persisting software state by writing to the flash, tiding up or notify a remote server about the immanent disappearance.
 

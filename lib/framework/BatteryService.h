@@ -25,21 +25,18 @@ public:
 
     void begin();
 
-    void updateSOC(float stateOfCharge)
-    {
-        _lastSOC = (int)round(stateOfCharge);
-        batteryEvent();
-    }
+    void updateSOC(float stateOfCharge);
 
-    void setCharging(boolean isCharging)
-    {
-        _isCharging = isCharging;
-        batteryEvent();
-    }
+    void setCharging(boolean isCharging);
+
+    boolean isCharging();
+
+    boolean getSOC();
 
 private:
-    void batteryEvent();
     EventSocket *_socket;
     int _lastSOC = 100;
     boolean _isCharging = false;
+
+    void batteryEvent();
 };

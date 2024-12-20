@@ -18,6 +18,7 @@
 
 #include <PsychicHttp.h>
 #include <SecurityManager.h>
+#include "driver/rtc_io.h"
 
 #define SLEEP_SERVICE_PATH "/rest/sleep"
 
@@ -28,6 +29,13 @@
 #ifndef WAKEUP_SIGNAL
 #define WAKEUP_SIGNAL 0
 #endif
+
+enum class pinTermination
+{
+    FLOATING,
+    PULL_UP,
+    PULL_DOWN
+};
 
 class SleepService
 {
@@ -42,6 +50,8 @@ public:
     {
         _callbackSleep = callbackSleep;
     }
+
+    void setWakeUpPin(int pin, bool level, pinTermination termination = pinTermination::FLOATING);
 
 private:
     PsychicHttpServer *_server;
