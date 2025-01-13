@@ -25,7 +25,7 @@ void EventSocket::registerEvent(String event)
 {
     if (!isEventValid(event))
     {
-        ESP_LOGV("EventSocket", "Registering event: %s", event.c_str());
+        ESP_LOGD("EventSocket", "Registering event: %s", event.c_str());
         events.push_back(event);
     }
     else
@@ -223,4 +223,9 @@ void EventSocket::onSubscribe(String event, SubscribeCallback callback)
 bool EventSocket::isEventValid(String event)
 {
     return std::find(events.begin(), events.end(), event) != events.end();
+}
+
+unsigned int EventSocket::getConnectedClients()
+{
+    return (unsigned int)_socket.getClientList().size();
 }

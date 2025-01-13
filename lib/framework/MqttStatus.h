@@ -31,6 +31,8 @@ public:
 
     void begin();
 
+    bool isConnected();
+
 private:
     PsychicHttpServer *_server;
     SecurityManager *_securityManager;

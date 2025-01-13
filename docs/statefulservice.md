@@ -550,9 +550,28 @@ esp32sveltekit.getBatteryService()->updateSOC(float stateOfCharge); // update st
 esp32sveltekit.getBatteryService()->setCharging(boolean isCharging); // notify the client that the device is charging
 ```
 
+### ESP32-SvelteKit Connection Status
+
+Especially for a cases like a colored status LED it can be useful to have a quick indication of the connection status. By calling:
+
+```cpp
+ConnectionStatus status = esp32sveltekit.getConnectionStatus();
+```
+
+the current connection status can be accessed. The following stats are available:
+
+| Status        | Description                                                                     |
+| ------------- | ------------------------------------------------------------------------------- |
+| OFFLINE       | Device is completely offline                                                    |
+| AP            | Access Point is available, but no client is connected                           |
+| AP_CONNECTED  | Access Point is used and at least 1 client is connected                         |
+| STA           | Device connected to a WiFi Station                                              |
+| STA_CONNECTED | Device connected to a WiFi Station and at least 1 client is connected           |
+| STA_MQTT      | Device connected to a WiFi Station and the device is connected to a MQTT server |
+
 ### Custom Features
 
-You may use the compile time feature service also to enable or disable custom features at runtime and thus control the frontend. A custom feature can only be added during initializing the ESP32 and ESP32-SvelteKit. A feature can't be updated on runtime once it is set.
+You may use the compile time feature service also to enable or disable custom features at runtime and thus control the frontend. A custom feature can only be added during initializing the ESP32 and ESP32-SvelteKit. The frontend queries the features only when first loading the page. Thus the frontend must be refreshed for the changes to become effective.
 
 ```cpp
 esp32sveltekit.getFeatureService()->addFeature("custom_feature", true); // or false to disable it

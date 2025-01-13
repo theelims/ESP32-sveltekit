@@ -191,6 +191,11 @@ void ESP32SvelteKit::begin()
 
 void ESP32SvelteKit::_loop()
 {
+    bool wifi = false;
+    bool ap = false;
+    bool event = false;
+    bool mqtt = false;
+
     while (1)
     {
         _wifiSettingsService.loop(); // 30 seconds
@@ -198,6 +203,32 @@ void ESP32SvelteKit::_loop()
 #if FT_ENABLED(FT_MQTT)
         _mqttSettingsService.loop(); // 5 seconds
 #endif
+        // Query the connectivity status
+        wifi = _wifiStatus.isConnected();
+        ap = _apStatus.isActive();
+        event = _socket.getConnectedClients() > 0;
+#if FT_ENABLED(FT_MQTT)
+        mqtt = _mqttStatus.isConnected();
+#endif
+
+        // Update the system status
+        if (wifi && mqtt)
+        {
+            _connectionStatus = ConnectionStatus::STA_MQTT;
+        }
+        else if (wifi)
+        {
+            _connectionStatus = event ? ConnectionStatus::STA_CONNECTED : ConnectionStatus::STA;
+        }
+        else if (ap)
+        {
+            _connectionStatus = event ? ConnectionStatus::AP_CONNECTED : ConnectionStatus::AP;
+        }
+        else
+        {
+            _connectionStatus = ConnectionStatus::OFFLINE;
+        }
+
         // iterate over all loop functions
         for (auto &function : _loopFunctions)
         {

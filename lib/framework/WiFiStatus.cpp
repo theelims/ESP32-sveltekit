@@ -91,3 +91,8 @@ esp_err_t WiFiStatus::wifiStatus(PsychicRequest *request)
 
     return response.send();
 }
+
+bool WiFiStatus::isConnected()
+{
+    return WiFi.status() == WL_CONNECTED;
+}

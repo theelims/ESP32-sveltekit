@@ -43,3 +43,8 @@ esp_err_t APStatus::apStatus(PsychicRequest *request)
 
     return response.send();
 }
+
+bool APStatus::isActive()
+{
+    return _apSettingsService->getAPNetworkStatus() == APNetworkStatus::ACTIVE ? true : false;
+}

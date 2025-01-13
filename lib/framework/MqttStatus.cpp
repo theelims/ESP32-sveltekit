@@ -44,3 +44,8 @@ esp_err_t MqttStatus::mqttStatus(PsychicRequest *request)
 
     return response.send();
 }
+
+bool MqttStatus::isConnected()
+{
+    return _mqttSettingsService->isConnected();
+}

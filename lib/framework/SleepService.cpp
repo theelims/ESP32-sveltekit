@@ -86,11 +86,13 @@ void SleepService::sleepNow()
     {
     case pinTermination::PULL_UP:
         esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
+        rtc_gpio_init((gpio_num_t)_wakeUpPin);
         rtc_gpio_pullup_dis((gpio_num_t)_wakeUpPin);
         rtc_gpio_pulldown_en((gpio_num_t)_wakeUpPin);
         break;
     case pinTermination::PULL_DOWN:
         esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
+        rtc_gpio_init((gpio_num_t)_wakeUpPin);
         rtc_gpio_pullup_en((gpio_num_t)_wakeUpPin);
         rtc_gpio_pulldown_dis((gpio_num_t)_wakeUpPin);
         break;
@@ -103,13 +105,11 @@ void SleepService::sleepNow()
     Serial.println("Good by!");
 #endif
 
-    xTaskCreate(
-        [](void *pvParams)
-        {
-            delay(200);
-            esp_deep_sleep_start();
-        },
-        "Sleep task", 4096, nullptr, 10, nullptr);
+    // Just to be sure
+    delay(100);
+
+    // Hibernate
+    esp_deep_sleep_start();
 }
 
 void SleepService::setWakeUpPin(int pin, bool level, pinTermination termination)

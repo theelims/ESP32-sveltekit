@@ -68,12 +68,28 @@
 // define callback function to include into the main loop
 typedef std::function<void()> loopCallback;
 
+// enum for connection status
+enum class ConnectionStatus
+{
+    OFFLINE,
+    AP,
+    AP_CONNECTED,
+    STA,
+    STA_CONNECTED,
+    STA_MQTT
+};
+
 class ESP32SvelteKit
 {
 public:
     ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEndpoints = 115);
 
     void begin();
+
+    ConnectionStatus getConnectionStatus()
+    {
+        return _connectionStatus;
+    }
 
     FS *getFS()
     {
@@ -224,6 +240,9 @@ protected:
     void _loop();
 
     std::vector<loopCallback> _loopFunctions;
+
+    // Connectivity status
+    ConnectionStatus _connectionStatus = ConnectionStatus::OFFLINE;
 };
 
 #endif
