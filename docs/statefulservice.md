@@ -180,8 +180,8 @@ The code below demonstrates how to extend the LightStateService class to provide
 ```cpp
 class LightStateService : public StatefulService<LightState> {
  public:
-  LightStateService(PsychicHttpServer* server, SecurityManager *securityManager) :
-      _httpEndpoint(LightState::read, LightState::update, this, server, "/rest/lightState", securityManager,AuthenticationPredicates::IS_AUTHENTICATED) {
+  LightStateService(PsychicHttpServer* server, ESP32SvelteKit *sveltekit) :
+      _httpEndpoint(LightState::read, LightState::update, this, server, "/rest/lightState", sveltekit->getSecurityManager(),AuthenticationPredicates::IS_AUTHENTICATED) {
   }
 
   void begin(); {
@@ -206,8 +206,8 @@ The code below demonstrates how to extend the LightStateService class to provide
 ```cpp
 class LightStateService : public StatefulService<LightState> {
  public:
-  LightStateService(FS* fs) :
-      _fsPersistence(LightState::read, LightState::update, this, fs, "/config/lightState.json") {
+  LightStateService(ESP32SvelteKit *sveltekit) :
+      _fsPersistence(LightState::read, LightState::update, this, sveltekit->getFS(), "/config/lightState.json") {
   }
 
  private:
@@ -224,8 +224,8 @@ The code below demonstrates how to extend the LightStateService class to provide
 ```cpp
 class LightStateService : public StatefulService<LightState> {
  public:
-  LightStateService(EventSocket *socket) :
-      _eventEndpoint(LightState::read, LightState::update, this, socket, "led") {}
+  LightStateService(ESP32SvelteKit *sveltekit) :
+      _eventEndpoint(LightState::read, LightState::update, this, sveltekit->getSocket(), "led") {}
 
   void begin()
   {
@@ -250,8 +250,8 @@ The code below demonstrates how to extend the LightStateService class to provide
 ```cpp
 class LightStateService : public StatefulService<LightState> {
  public:
-  LightStateService(PsychicHttpServer* server, SecurityManager *securityManager) :
-      _webSocket(LightState::read, LightState::update, this, server, "/ws/lightState", securityManager, AuthenticationPredicates::IS_AUTHENTICATED), {
+  LightStateService(PsychicHttpServer* server, ESP32SvelteKit *sveltekit) :
+      _webSocket(LightState::read, LightState::update, this, server, "/ws/lightState", sveltekit->getSecurityManager(), AuthenticationPredicates::IS_AUTHENTICATED), {
   }
 
   void begin() {
@@ -279,11 +279,11 @@ The code below demonstrates how to extend the LightStateService class to interfa
 
 class LightStateService : public StatefulService<LightState> {
  public:
-  LightStateService(AsyncMqttClient* mqttClient) :
+  LightStateService(ESP32SvelteKit *sveltekit) :
       _mqttEndpoint(LightState::read,
                   LightState::update,
                   this,
-                  mqttClient,
+                  sveltekit->getMqttClient(),
                   "homeassistant/light/my_light/set",
                   "homeassistant/light/my_light/state") {
   }

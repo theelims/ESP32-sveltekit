@@ -24,13 +24,10 @@ PsychicHttpServer server;
 ESP32SvelteKit esp32sveltekit(&server, 120);
 
 LightMqttSettingsService lightMqttSettingsService = LightMqttSettingsService(&server,
-                                                                             esp32sveltekit.getFS(),
-                                                                             esp32sveltekit.getSecurityManager());
+                                                                             &esp32sveltekit);
 
 LightStateService lightStateService = LightStateService(&server,
-                                                        esp32sveltekit.getSocket(),
-                                                        esp32sveltekit.getSecurityManager(),
-                                                        esp32sveltekit.getMqttClient(),
+                                                        &esp32sveltekit,
                                                         &lightMqttSettingsService);
 
 void setup()

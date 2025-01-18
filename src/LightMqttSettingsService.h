@@ -18,6 +18,7 @@
 #include <HttpEndpoint.h>
 #include <FSPersistence.h>
 #include <SettingValue.h>
+#include <ESP32SvelteKit.h>
 
 #define LIGHT_BROKER_SETTINGS_FILE "/config/brokerSettings.json"
 #define LIGHT_BROKER_SETTINGS_PATH "/rest/brokerSettings"
@@ -48,7 +49,7 @@ public:
 class LightMqttSettingsService : public StatefulService<LightMqttSettings>
 {
 public:
-    LightMqttSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager);
+    LightMqttSettingsService(PsychicHttpServer *server, ESP32SvelteKit *sveltekit);
     void begin();
 
 private:

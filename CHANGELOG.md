@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Updated platform espressif32 to 6.8.1
+- Lightstate example uses simpler, less explicit constructor
 
 ### Fixed
 

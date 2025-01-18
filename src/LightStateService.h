@@ -22,6 +22,7 @@
 #include <MqttEndpoint.h>
 #include <EventEndpoint.h>
 #include <WebSocketServer.h>
+#include <ESP32SvelteKit.h>
 
 #define DEFAULT_LED_STATE false
 #define OFF_STATE "OFF"
@@ -84,9 +85,7 @@ class LightStateService : public StatefulService<LightState>
 {
 public:
     LightStateService(PsychicHttpServer *server,
-                      EventSocket *socket,
-                      SecurityManager *securityManager,
-                      PsychicMqttClient *mqttClient,
+                      ESP32SvelteKit *sveltekit,
                       LightMqttSettingsService *lightMqttSettingsService);
 
     void begin();
