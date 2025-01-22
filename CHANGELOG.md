@@ -12,11 +12,13 @@ All notable changes to this project will be documented in this file.
 - Change wake-up pin in SleepService during runtime. It is also possible to use the internal pull-up or pull-down resistors now.
 - Get current connection status from ESP32-SvelteKit. Useful for status LED or displays.
 - Battery history graph to gauge battery consumption and device life.
+- FeatureService sends updates through the event system.
 
 ### Changed
 
 - Updated platform espressif32 to 6.8.1
 - Lightstate example uses simpler, less explicit constructor
+- MQTT library updated
 
 ### Fixed
 

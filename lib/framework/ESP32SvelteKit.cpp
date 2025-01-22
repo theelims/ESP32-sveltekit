@@ -16,7 +16,7 @@
 
 ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEndpoints) : _server(server),
                                                                                           _numberEndpoints(numberEndpoints),
-                                                                                          _featureService(server),
+                                                                                          _featureService(server, &_socket),
                                                                                           _securitySettingsService(server, &ESPFS),
                                                                                           _wifiSettingsService(server, &ESPFS, &_securitySettingsService, &_socket),
                                                                                           _wifiScanner(server, &_securitySettingsService),
