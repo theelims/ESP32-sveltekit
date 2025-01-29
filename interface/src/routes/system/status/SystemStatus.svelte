@@ -228,20 +228,22 @@
 					</div>
 				</div>
 
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-						<Pyramid class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">PSRAM (Size / Free)</div>
-						<div class="text-sm opacity-75">
-							{systemInformation.psram_size.toLocaleString('en-US')} / {systemInformation.psram_size.toLocaleString(
-								'en-US'
-							)} bytes
+					<!-- if psramFound -->
+					{#if (systemInformation.psram_size)}
+					<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+						<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
+							<Pyramid class="text-primary-content h-auto w-full scale-75" />
+						</div>
+						<div>
+							<div class="font-bold">PSRAM</div>
+							<div class="text-sm opacity-75">
+								{(((systemInformation.used_psram) / systemInformation.psram_size) * 100).toFixed(1)} % of {(systemInformation.psram_size / 1000).toFixed(0)} KB used
+								<span>({((systemInformation.free_psram) / 1000).toFixed(0)} KB free)</span>
+							</div>
 						</div>
 					</div>
-				</div>
-
+				{/if}
+			
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
 					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
 						<Sketch class="text-primary-content h-auto w-full scale-75" />
