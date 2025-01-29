@@ -34,7 +34,7 @@ boolean BatteryService::isCharging()
     return _isCharging;
 }
 
-boolean BatteryService::getSOC()
+int BatteryService::getSOC()
 {
     return _lastSOC;
 }

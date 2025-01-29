@@ -112,18 +112,18 @@ public:
     }
 
 #if FT_ENABLED(FT_SECURITY)
-    StatefulService<SecuritySettings> *getSecuritySettingsService()
+    SecuritySettingsService *getSecuritySettingsService()
     {
         return &_securitySettingsService;
     }
 #endif
 
-    StatefulService<WiFiSettings> *getWiFiSettingsService()
+    WiFiSettingsService *getWiFiSettingsService()
     {
         return &_wifiSettingsService;
     }
 
-    StatefulService<APSettings> *getAPSettingsService()
+    APSettingsService *getAPSettingsService()
     {
         return &_apSettingsService;
     }
@@ -134,14 +134,14 @@ public:
     }
 
 #if FT_ENABLED(FT_NTP)
-    StatefulService<NTPSettings> *getNTPSettingsService()
+    NTPSettingsService *getNTPSettingsService()
     {
         return &_ntpSettingsService;
     }
 #endif
 
 #if FT_ENABLED(FT_MQTT)
-    StatefulService<MqttSettings> *getMqttSettingsService()
+    MqttSettingsService *getMqttSettingsService()
     {
         return &_mqttSettingsService;
     }
@@ -169,6 +169,11 @@ public:
     FeaturesService *getFeatureService()
     {
         return &_featureService;
+    }
+
+    RestartService *getRestartService()
+    {
+        return &_restartService;
     }
 
     void factoryReset()

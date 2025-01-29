@@ -183,7 +183,7 @@ void ESP32SvelteKit::begin()
         "ESP32 SvelteKit Loop",     // Name of the task (for debugging)
         4096,                       // Stack size (bytes)
         this,                       // Pass reference to this class instance
-        (tskIDLE_PRIORITY + 1),     // task priority
+        (tskIDLE_PRIORITY + 2),     // task priority
         NULL,                       // Task handle
         ESP32SVELTEKIT_RUNNING_CORE // Pin to application core
     );

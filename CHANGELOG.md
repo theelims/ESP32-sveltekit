@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Get current connection status from ESP32-SvelteKit. Useful for status LED or displays.
 - Battery history graph to gauge battery consumption and device life.
 - FeatureService sends updates through the event system.
+- WiFiSettingsService can set the WiFi station mode to offline, without deleting the list of networks.
 
 ### Changed
 
@@ -25,6 +26,8 @@ All notable changes to this project will be documented in this file.
 - Ensure thread safety for client subscriptions [#58](https://github.com/theelims/ESP32-sveltekit/pull/58)
 - Isolate non-returning functions in new tasks [#62](https://github.com/theelims/ESP32-sveltekit/pull/62)
 - Deferred websocket event connection to after user validation & login [#72](https://github.com/theelims/ESP32-sveltekit/pull/72)
+- Wrong return type battery service
+- Wrong return types in various getService functions.
 
 ## [0.5.0] - 2024-05-06
 
