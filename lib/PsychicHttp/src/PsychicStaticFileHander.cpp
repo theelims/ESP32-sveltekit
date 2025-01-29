@@ -183,6 +183,8 @@ esp_err_t PsychicStaticFileHandler::handleRequest(PsychicRequest *request)
         response.addHeader("ETag", etag.c_str());
       }
 
+      _file.close();
+      
       return response.send();
     }
   } else {
