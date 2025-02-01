@@ -17,6 +17,7 @@
 #include <ArduinoJson.h>
 #include <ESPFS.h>
 #include <EventSocket.h>
+#include <task.h>
 
 #define MAX_ESP_ANALYTICS_SIZE 1024
 #define EVENT_ANALYTICS "analytics"
@@ -25,33 +26,19 @@
 class AnalyticsService
 {
 public:
-    AnalyticsService(EventSocket *socket) : _socket(socket){};
+    AnalyticsService(EventSocket *socket) : _socket(socket) {};
 
     void begin()
     {
         _socket->registerEvent(EVENT_ANALYTICS);
+    }
 
-        xTaskCreatePinnedToCore(
-            this->_loopImpl,            // Function that should be called
-            "Analytics Service",        // Name of the task (for debugging)
-            5120,                       // Stack size (bytes)
-            this,                       // Pass reference to this class instance
-            (tskIDLE_PRIORITY),         // task priority
-            NULL,                       // Task handle
-            ESP32SVELTEKIT_RUNNING_CORE // Pin to application core
-        );
-    };
-
-protected:
-    EventSocket *_socket;
-
-    static void _loopImpl(void *_this) { static_cast<AnalyticsService *>(_this)->_loop(); }
-    void _loop()
+    void loop()
     {
-        TickType_t xLastWakeTime = xTaskGetTickCount();
-        JsonDocument doc;
-        while (1)
+        if (millis() - lastMillis > ANALYTICS_INTERVAL)
         {
+            lastMillis = millis();
+            JsonDocument doc;
             doc["uptime"] = millis() / 1000;
             doc["free_heap"] = ESP.getFreeHeap();
             doc["total_heap"] = ESP.getHeapSize();
@@ -63,8 +50,11 @@ protected:
 
             JsonObject jsonObject = doc.as<JsonObject>();
             _socket->emitEvent(EVENT_ANALYTICS, jsonObject);
-
-            vTaskDelayUntil(&xLastWakeTime, ANALYTICS_INTERVAL / portTICK_PERIOD_MS);
         }
     };
+
+protected:
+    EventSocket *_socket;
+
+    unsigned long lastMillis = 0;
 };

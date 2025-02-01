@@ -44,6 +44,7 @@
 #include <ESPFS.h>
 #include <PsychicHttp.h>
 #include <vector>
+#include <task.h>
 
 #ifdef EMBED_WWW
 #include <WWWData.h>
@@ -63,6 +64,10 @@
 
 #ifndef ESP32SVELTEKIT_RUNNING_CORE
 #define ESP32SVELTEKIT_RUNNING_CORE -1
+#endif
+
+#ifndef ESP32SVELTEKIT_LOOP_INTERVAL
+#define ESP32SVELTEKIT_LOOP_INTERVAL 10
 #endif
 
 // define callback function to include into the main loop

@@ -16,7 +16,7 @@
 
 ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEndpoints) : _server(server),
                                                                                           _numberEndpoints(numberEndpoints),
-                                                                                          _featureService(server, &_socket),
+                                                                                          _featureService(server),
                                                                                           _securitySettingsService(server, &ESPFS),
                                                                                           _wifiSettingsService(server, &ESPFS, &_securitySettingsService, &_socket),
                                                                                           _wifiScanner(server, &_securitySettingsService),
@@ -166,14 +166,14 @@ void ESP32SvelteKit::begin()
     _authenticationService.begin();
     _securitySettingsService.begin();
 #endif
-#if FT_ENABLED(FT_ANALYTICS)
-    _analyticsService.begin();
-#endif
 #if FT_ENABLED(FT_SLEEP)
     _sleepService.begin();
 #endif
 #if FT_ENABLED(FT_BATTERY)
     _batteryService.begin();
+#endif
+#if FT_ENABLED(FT_ANALYTICS)
+    _analyticsService.begin();
 #endif
 
     // Start the loop task
@@ -191,6 +191,8 @@ void ESP32SvelteKit::begin()
 
 void ESP32SvelteKit::_loop()
 {
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+
     bool wifi = false;
     bool ap = false;
     bool event = false;
@@ -203,6 +205,10 @@ void ESP32SvelteKit::_loop()
 #if FT_ENABLED(FT_MQTT)
         _mqttSettingsService.loop(); // 5 seconds
 #endif
+#if FT_ENABLED(FT_ANALYTICS)
+        _analyticsService.loop();
+#endif
+
         // Query the connectivity status
         wifi = _wifiStatus.isConnected();
         ap = _apStatus.isActive();
@@ -235,6 +241,14 @@ void ESP32SvelteKit::_loop()
             function();
         }
 
-        vTaskDelay(20 / portTICK_PERIOD_MS);
+#ifdef TELEPLOT_TASKS
+        static int lastTime = 0;
+        if (millis() - lastTime > 1000)
+        {
+            lastTime = millis();
+            Serial.printf(">ESP32SveltekitTask:%i:%i\n", millis(), uxTaskGetStackHighWaterMark(NULL));
+        }
+#endif
+        vTaskDelayUntil(&xLastWakeTime, ESP32SVELTEKIT_LOOP_INTERVAL / portTICK_PERIOD_MS);
     }
 }
