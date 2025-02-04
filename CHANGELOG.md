@@ -42,6 +42,7 @@ All notable changes to this project will be documented in this file.
 - Wrong return type battery service
 - Wrong return types in various getService functions.
 - Add file.close in fileHandler handleRequest [#73](https://github.com/theelims/ESP32-sveltekit/pull/73)
+- Fixed bug in WiFiSettingsService preventing discovery of networks other than the first
 
 ## [0.5.0] - 2024-05-06
 

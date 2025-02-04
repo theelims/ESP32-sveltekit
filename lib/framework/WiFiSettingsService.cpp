@@ -164,7 +164,7 @@ void WiFiSettingsService::connectToWiFi()
 
             for (auto &network : _state.wifiSettings)
             {
-                if (ssid_scan == network.ssid)
+                if (ssid_scan.equals(network.ssid))
                 { // SSID match
                     if (rssi_scan > bestNetworkDb)
                     { // best network
@@ -181,8 +181,8 @@ void WiFiSettingsService::connectToWiFi()
                         network.channel = chan_scan;
                         memcpy(network.bssid, BSSID_scan, 6);
                     }
+                    break;
                 }
-                break;
             }
         }
 
