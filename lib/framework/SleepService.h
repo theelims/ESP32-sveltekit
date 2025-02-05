@@ -37,6 +37,9 @@ enum class pinTermination
     PULL_DOWN
 };
 
+// typdef for sleep service callback
+typedef std::function<void()> sleepCallback;
+
 class SleepService
 {
 public:
@@ -46,7 +49,7 @@ public:
 
     static void sleepNow();
 
-    void attachOnSleepCallback(void (*callbackSleep)())
+    void attachOnSleepCallback(sleepCallback callbackSleep)
     {
         _callbackSleep = callbackSleep;
     }
@@ -59,5 +62,5 @@ private:
     esp_err_t sleep(PsychicRequest *request);
 
 protected:
-    static void (*_callbackSleep)();
+    static sleepCallback _callbackSleep;
 };

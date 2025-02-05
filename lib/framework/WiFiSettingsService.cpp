@@ -59,6 +59,26 @@ void WiFiSettingsService::reconfigureWiFiConnection()
     // reset last connection attempt to force loop to reconnect immediately
     _lastConnectionAttempt = 0;
 
+    String connectionMode;
+
+    switch (_state.staConnectionMode)
+    {
+    case (u_int8_t)STAConnectionMode::OFFLINE:
+        connectionMode = "OFFLINE";
+        break;
+    case (u_int8_t)STAConnectionMode::PRIORITY:
+        connectionMode = "PRIORITY";
+        break;
+    case (u_int8_t)STAConnectionMode::STRENGTH:
+        connectionMode = "STRENGTH";
+        break;
+    default:
+        connectionMode = "UNKNOWN";
+        break;
+    }
+
+    ESP_LOGI("WiFiSettingsService", "Reconfiguring WiFi connection to: %s", connectionMode.c_str());
+
     // disconnect and de-configure wifi
     if (WiFi.disconnect(true))
     {
@@ -89,8 +109,8 @@ String WiFiSettingsService::getHostname()
 
 void WiFiSettingsService::manageSTA()
 {
-    // Abort if already connected, or if we have no SSID
-    if (WiFi.isConnected() || _state.wifiSettings.empty())
+    // Abort if already connected, if we have no SSID, or are in offline mode
+    if (WiFi.isConnected() || _state.wifiSettings.empty() || _state.staConnectionMode == (u_int8_t)STAConnectionMode::OFFLINE)
     {
         return;
     }
@@ -144,7 +164,7 @@ void WiFiSettingsService::connectToWiFi()
 
             for (auto &network : _state.wifiSettings)
             {
-                if (ssid_scan == network.ssid)
+                if (ssid_scan.equals(network.ssid))
                 { // SSID match
                     if (rssi_scan > bestNetworkDb)
                     { // best network
@@ -161,13 +181,14 @@ void WiFiSettingsService::connectToWiFi()
                         network.channel = chan_scan;
                         memcpy(network.bssid, BSSID_scan, 6);
                     }
+                    break;
                 }
-                break;
             }
         }
 
         // if configured to prioritize signal strength, use the best network else use the first available network
-        if (_state.priorityBySignalStrength == false)
+        // if (_state.priorityBySignalStrength == false)
+        if (_state.staConnectionMode == (u_int8_t)STAConnectionMode::PRIORITY)
         {
             for (auto &network : _state.wifiSettings)
             {
@@ -179,7 +200,7 @@ void WiFiSettingsService::connectToWiFi()
                 }
             }
         }
-        else if (_state.priorityBySignalStrength == true && bestNetwork)
+        else if (_state.staConnectionMode == (u_int8_t)STAConnectionMode::STRENGTH && bestNetwork)
         {
             ESP_LOGI("WiFiSettingsService", "Connecting to strongest network: %s, BSSID: " MACSTR " ", bestNetwork->ssid.c_str(), MAC2STR(bestNetwork->bssid));
             configureNetwork(*bestNetwork);
@@ -230,6 +251,7 @@ void WiFiSettingsService::onStationModeDisconnected(WiFiEvent_t event, WiFiEvent
 {
     WiFi.disconnect(true);
 }
+
 void WiFiSettingsService::onStationModeStop(WiFiEvent_t event, WiFiEventInfo_t info)
 {
     if (_stopping)

@@ -31,7 +31,7 @@ public:
 
     boolean isCharging();
 
-    boolean getSOC();
+    int getSOC();
 
 private:
     EventSocket *_socket;

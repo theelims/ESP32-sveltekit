@@ -70,6 +70,21 @@
 
 	let formErrorhostname = false;
 
+	let connectionMode = [
+		{
+			id: 0,
+			text: `Offline`
+		},
+		{
+			id: 1,
+			text: `Signal Strength`
+		},
+		{
+			id: 2,
+			text: `Priority`
+		}
+	];
+
 	async function getWifiStatus() {
 		try {
 			const response = await fetch('/rest/wifiStatus', {
@@ -139,7 +154,6 @@
 			wifiSettings.wifi_networks = dndNetworkList;
 			// Post to REST API
 			postWiFiSettings(wifiSettings);
-			console.log(wifiSettings);
 		}
 	}
 
@@ -563,14 +577,23 @@
 									>
 								</label>
 							</div>
-							<label class="label inline-flex cursor-pointer content-end justify-start gap-4">
-								<input
-									type="checkbox"
-									bind:checked={wifiSettings.priority_RSSI}
-									class="checkbox checkbox-primary sm:-mb-5"
-								/>
-								<span class="sm:-mb-5">Connect to strongest WiFi</span>
-							</label>
+
+							<div>
+								<label class="label" for="apmode">
+									<span class="label-text">WiFi Connection Mode</span>
+								</label>
+								<select
+									class="select select-bordered w-full"
+									id="apmode"
+									bind:value={wifiSettings.connection_mode}
+								>
+									{#each connectionMode as mode}
+										<option value={mode.id}>
+											{mode.text}
+										</option>
+									{/each}
+								</select>
+							</div>
 						</div>
 
 						{#if showNetworkEditor}
