@@ -16,7 +16,7 @@ PsychicStreamResponse::PsychicStreamResponse(PsychicRequest *request, const Stri
   setContentType(contentType.c_str());
 
   char buf[26+name.length()];
-  snprintf(buf, sizeof (buf), "attachment; filename=\"%s\"", name);
+  snprintf(buf, sizeof (buf), "attachment; filename=\"%s\"", name.c_str());
   addHeader("Content-Disposition", buf);
 }
 

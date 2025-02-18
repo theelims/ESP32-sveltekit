@@ -28,7 +28,7 @@ esp_err_t PsychicUploadHandler::handleRequest(PsychicRequest *request)
 
   //save it for later (multipart)
   _request = request;
-
+  _parsedLength = 0;
   /* File cannot be larger than a limit */
   if (request->contentLength() > request->server()->maxUploadSize)
   {
@@ -36,7 +36,7 @@ esp_err_t PsychicUploadHandler::handleRequest(PsychicRequest *request)
 
     /* Respond with 400 Bad Request */
     char error[50];
-    sprintf(error, "File size must be less than %u bytes!", request->server()->maxUploadSize);
+    sprintf(error, "File size must be less than %lu bytes!", request->server()->maxUploadSize);
     httpd_resp_send_err(request->request(), HTTPD_400_BAD_REQUEST, error);
 
     /* Return failure to close underlying connection else the incoming file content will keep the socket busy */
@@ -93,7 +93,7 @@ esp_err_t PsychicUploadHandler::_basicUploadHandler(PsychicRequest *request)
       httpd_sess_update_lru_counter(request->server()->server, request->client()->socket());
     #endif
 
-    ESP_LOGI(PH_TAG, "Remaining size : %d", remaining);
+    //ESP_LOGD(PH_TAG, "Remaining size : %d", remaining);
 
     /* Receive the file part by part into a buffer */
     if ((received = httpd_req_recv(request->request(), buf, min(remaining, FILE_CHUNK_SIZE))) <= 0)
@@ -161,7 +161,7 @@ esp_err_t PsychicUploadHandler::_multipartUploadHandler(PsychicRequest *request)
       httpd_sess_update_lru_counter(request->server()->server, request->client()->socket());
     #endif
 
-    ESP_LOGI(PH_TAG, "Remaining size : %d", remaining);
+    //ESP_LOGD(PH_TAG, "Remaining size : %d", remaining);
 
     /* Receive the file part by part into a buffer */
     if ((received = httpd_req_recv(request->request(), buf, min(remaining, FILE_CHUNK_SIZE))) <= 0)

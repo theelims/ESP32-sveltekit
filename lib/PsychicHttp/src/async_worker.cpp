@@ -166,7 +166,7 @@ esp_err_t httpd_req_async_handler_begin(httpd_req_t *r, httpd_req_t **out)
     if (async == NULL) {
         return ESP_ERR_NO_MEM;
     }
-    memcpy(async, r, sizeof(httpd_req_t));
+    memcpy((void *)async, (void *)r, sizeof(httpd_req_t));
 
     // alloc async aux
     async->aux = (httpd_req_aux *)malloc(sizeof(struct httpd_req_aux));

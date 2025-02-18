@@ -141,24 +141,16 @@ esp_err_t PsychicStaticFileHandler::handleRequest(PsychicRequest *request)
 {
   if (_file == true)
   {
-    DUMP(_filename);
-
     //is it not modified?
     String etag = String(_file.size());
     if (_last_modified.length() && _last_modified == request->header("If-Modified-Since"))
     {
-      DUMP("Last Modified Hit");
-      TRACE();
       _file.close();
       request->reply(304); // Not modified
     }
     //does our Etag match?
     else if (_cache_control.length() && request->hasHeader("If-None-Match") && request->header("If-None-Match").equals(etag))
     {
-      DUMP("Etag Hit");
-      DUMP(etag);
-      DUMP(_cache_control);
-
       _file.close();
 
       PsychicResponse response(request);
@@ -170,10 +162,6 @@ esp_err_t PsychicStaticFileHandler::handleRequest(PsychicRequest *request)
     //nope, send them the full file.
     else
     {
-      DUMP("No cache hit");
-      DUMP(_last_modified);
-      DUMP(_cache_control);
-
       PsychicFileResponse response(request, _fs, _filename);
 
       if (_last_modified.length())
@@ -183,8 +171,6 @@ esp_err_t PsychicStaticFileHandler::handleRequest(PsychicRequest *request)
         response.addHeader("ETag", etag.c_str());
       }
 
-      _file.close();
-      
       return response.send();
     }
   } else {
