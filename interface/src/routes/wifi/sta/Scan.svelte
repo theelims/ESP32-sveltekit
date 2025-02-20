@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { closeModal } from 'svelte-modals';
-	import { trapFocus } from 'trap-focus-svelte';
+	import { focusTrap } from 'svelte-focus-trap';
 	import { fly } from 'svelte/transition';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
@@ -93,7 +93,7 @@
 		transition:fly={{ y: 50 }}
 		on:introstart
 		on:outroend
-		use:trapFocus
+		use:focusTrap
 	>
 		<div
 			class="bg-base-100 shadow-secondary/30 rounded-box pointer-events-auto flex max-h-full min-w-fit max-w-md flex-col justify-between p-4 shadow-lg"
