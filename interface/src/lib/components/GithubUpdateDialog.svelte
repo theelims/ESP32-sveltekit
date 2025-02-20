@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { closeAllModals, onBeforeClose } from 'svelte-modals';
-	import { focusTrap } from 'svelte-focus-trap';
+	import { trapFocus } from 'trap-focus-svelte';
 	import { fly } from 'svelte/transition';
 	import { telemetry } from '$lib/stores/telemetry';
 	import Cancel from '~icons/tabler/x';
@@ -56,7 +56,7 @@
 		transition:fly={{ y: 50 }}
 		on:introstart
 		on:outroend
-		use:focusTrap
+		use:trapFocus
 	>
 		<div
 			class="bg-base-100 shadow-secondary/30 rounded-box pointer-events-auto flex max-h-full min-w-fit max-w-md flex-col justify-between p-4 shadow-lg"
