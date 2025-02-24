@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { openModal, closeAllModals } from 'svelte-modals';
+	import { openModal, closeAllModals } from 'svelte-modals/legacy';
 	import { user } from '$lib/stores/user';
 	import { notifications } from '$lib/components/toasts/notifications';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
@@ -23,16 +23,13 @@
 	async function getGithubAPI() {
 		const githubUrl = `https://api.github.com/repos/${$page.data.github}/releases/latest`;
 		try {
-			const response = await fetch(
-				githubUrl,
-				{
-					method: 'GET',
-					headers: {
-						accept: 'application/vnd.github+json',
-						'X-GitHub-Api-Version': '2022-11-28'
-					}
+			const response = await fetch(githubUrl, {
+				method: 'GET',
+				headers: {
+					accept: 'application/vnd.github+json',
+					'X-GitHub-Api-Version': '2022-11-28'
 				}
-			);
+			});
 			if (response.status !== 200) {
 				throw new Error(`Failed to fetch latest release from ${githubUrl}`);
 			}

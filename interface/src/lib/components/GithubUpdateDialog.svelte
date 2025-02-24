@@ -2,7 +2,7 @@
 	import { run, createBubbler } from 'svelte/legacy';
 
 	const bubble = createBubbler();
-	import { closeAllModals, onBeforeClose } from 'svelte-modals';
+	import { closeAllModals, onBeforeClose } from 'svelte-modals/legacy';
 	import { focusTrap } from 'svelte-focus-trap';
 	import { fly } from 'svelte/transition';
 	import { telemetry } from '$lib/stores/telemetry';

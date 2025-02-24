@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
-	import { openModal, closeModal, closeAllModals } from 'svelte-modals';
+	import { openModal, closeModal, closeAllModals } from 'svelte-modals/legacy';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';

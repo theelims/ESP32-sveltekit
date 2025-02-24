@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { openModal, closeModal } from 'svelte-modals';
+	import { openModal, closeModal } from 'svelte-modals/legacy';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';

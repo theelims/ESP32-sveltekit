@@ -2,7 +2,7 @@
 	import { createBubbler } from 'svelte/legacy';
 
 	const bubble = createBubbler();
-	import { closeModal } from 'svelte-modals';
+	import { closeModal } from 'svelte-modals/legacy';
 	import { focusTrap } from 'svelte-focus-trap';
 	import { fly } from 'svelte/transition';
 	import Cancel from '~icons/tabler/x';
@@ -24,9 +24,9 @@
 		message,
 		onConfirm,
 		labels = {
-		cancel: { label: 'Cancel', icon: Cancel },
-		confirm: { label: 'OK', icon: Check }
-	}
+			cancel: { label: 'Cancel', icon: Cancel },
+			confirm: { label: 'OK', icon: Check }
+		}
 	}: Props = $props();
 </script>
 
@@ -38,7 +38,7 @@
 		transition:fly={{ y: 50 }}
 		onintrostart={bubble('introstart')}
 		onoutroend={bubble('outroend')}
-        use:focusTrap
+		use:focusTrap
 	>
 		<div
 			class="rounded-box bg-base-100 shadow-secondary/30 pointer-events-auto flex min-w-fit max-w-md flex-col justify-between p-4 shadow-lg"
@@ -49,16 +49,12 @@
 			<div class="divider my-2"></div>
 			<div class="flex justify-end gap-2">
 				<button class="btn btn-primary inline-flex items-center" onclick={closeModal}
-					><labels.cancel.icon class="mr-2 h-5 w-5" /><span
-						>{labels?.cancel.label}</span
-					></button
+					><labels.cancel.icon class="mr-2 h-5 w-5" /><span>{labels?.cancel.label}</span></button
 				>
 				<button
 					class="btn btn-warning text-warning-content inline-flex items-center"
 					onclick={onConfirm}
-					><SvelteComponent class="mr-2 h-5 w-5" /><span
-						>{labels?.confirm.label}</span
-					></button
+					><SvelteComponent class="mr-2 h-5 w-5" /><span>{labels?.confirm.label}</span></button
 				>
 			</div>
 		</div>

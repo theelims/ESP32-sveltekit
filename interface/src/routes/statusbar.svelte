@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { telemetry } from '$lib/stores/telemetry';
-	import { openModal, closeModal } from 'svelte-modals';
+	import { openModal, closeModal } from 'svelte-modals/legacy';
 	import { user } from '$lib/stores/user';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import WiFiOff from '~icons/tabler/wifi-off';

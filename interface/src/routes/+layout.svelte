@@ -10,7 +10,7 @@
 	import { socket } from '$lib/stores/socket';
 	import type { userProfile } from '$lib/stores/user';
 	import { page } from '$app/stores';
-	import { Modals, closeModal } from 'svelte-modals';
+	import { Modals, closeModal } from 'svelte-modals/legacy';
 	import Toast from '$lib/components/toasts/Toast.svelte';
 	import { notifications } from '$lib/components/toasts/notifications';
 	import { fade } from 'svelte/transition';
@@ -167,14 +167,14 @@
 
 <Modals>
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	{#snippet backdrop()}
+	{#snippet backdrop({ close })}
 		<div
 			
 			class="fixed inset-0 z-40 max-h-full max-w-full bg-black/20 backdrop-blur"
 			transition:fade
-			onclick={closeModal}
-		>
-	{/snippet}</div>
+			onclick={() => close()}
+		></div> 
+	{/snippet}
 </Modals>
 
 <Toast />

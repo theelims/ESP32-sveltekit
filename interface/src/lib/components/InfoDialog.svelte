@@ -2,7 +2,7 @@
 	import { createBubbler } from 'svelte/legacy';
 
 	const bubble = createBubbler();
-	import { closeModal } from 'svelte-modals';
+	import { closeModal } from 'svelte-modals/legacy';
 	import { focusTrap } from 'svelte-focus-trap';
 	import { fly } from 'svelte/transition';
 	import Check from '~icons/tabler/check';

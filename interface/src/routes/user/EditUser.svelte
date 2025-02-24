@@ -3,7 +3,7 @@
 
 	const bubble = createBubbler();
 	import { onMount, onDestroy } from 'svelte';
-	import { closeModal } from 'svelte-modals';
+	import { closeModal } from 'svelte-modals/legacy';
 	import { fly } from 'svelte/transition';
 	import InputPassword from '$lib/components/InputPassword.svelte';
 	import Cancel from '~icons/tabler/x';
@@ -23,10 +23,10 @@
 		title,
 		onSaveUser,
 		user = $bindable({
-		username: '',
-		password: '',
-		admin: false
-	})
+			username: '',
+			password: '',
+			admin: false
+		})
 	}: Props = $props();
 
 	let errorUsername = $state(false);
