@@ -149,7 +149,7 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
         auto *client = _socket.getClient(originSubscriptionId);
         if (client)
         {
-            ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message[%d]: %s", event, client->remoteIP().toString().c_str(), len, output);
+            ESP_LOGV("EventSocket", "Emitting event: %s to %s[%u], Message[%d]: %s", event, client->remoteIP().toString().c_str(), client->socket(), len, output);
 #if FT_ENABLED(EVENT_USE_JSON)
             client->sendMessage(HTTPD_WS_TYPE_TEXT, output, len);
 #else
@@ -170,7 +170,7 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
                 subscriptions.remove(subscription);
                 continue;
             }
-            ESP_LOGV("EventSocket", "Emitting event: %s to %s, Message[%d]: %s", event, client->remoteIP().toString().c_str(), len, output);
+            ESP_LOGV("EventSocket", "Emitting event: %s to %s[%u], Message[%d]: %s", event, client->remoteIP().toString().c_str(), client->socket(), len, output);
 #if FT_ENABLED(EVENT_USE_JSON)
             client->sendMessage(HTTPD_WS_TYPE_TEXT, output, len);
 #else
