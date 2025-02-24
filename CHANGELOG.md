@@ -34,7 +34,7 @@ All notable changes to this project will be documented in this file.
 - MQTT library updated
 - Analytics task was refactored into a loop() function which is called by the ESP32-sveltekit main task.
 - Updated PsychicHttp to v1.2.1 incl. patches.
-- Updated TailwindCSS to v4
+- Updated DaisyUI
 
 ### Fixed
 
