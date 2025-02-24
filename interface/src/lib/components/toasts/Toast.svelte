@@ -7,30 +7,31 @@
 	import warning from '~icons/tabler/alert-triangle';
 	import info from '~icons/tabler/info-circle';
 
-	export let theme = {
+
+	/** @type {{theme?: any, icon?: any}} */
+	let { theme = {
 		error: 'alert-error',
 		success: 'alert-success',
 		warning: 'alert-warning',
 		info: 'alert-info'
-	};
-
-	export let icon = {
+	}, icon = {
 		error: error,
 		success: success,
 		warning: warning,
 		info: info
-	};
+	} } = $props();
 </script>
 
 <div class="toast toast-end mr-4">
 	{#each $notifications as notification (notification.id)}
+		{@const SvelteComponent = icon[notification.type]}
 		<div
 			animate:flip={{ duration: 400 }}
 			class="alert animate-none {theme[notification.type]}"
 			in:fly={{ y: 100, duration: 400 }}
 			out:fly={{ x: 100, duration: 400 }}
 		>
-			<svelte:component this={icon[notification.type]} class="h-6 w-6 flex-shrink-0" />
+			<SvelteComponent class="h-6 w-6 flex-shrink-0" />
 			<span>{notification.message}</span>
 		</div>
 	{/each}

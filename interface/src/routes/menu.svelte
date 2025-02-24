@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import logo from '$lib/assets/logo.png';
 	import Github from '~icons/tabler/brand-github';
 	import Discord from '~icons/tabler/brand-discord';
@@ -42,7 +44,7 @@
 		active: boolean;
 	};
 
-	let menuItems = [
+	let menuItems = $state([
 		{
 			title: 'Demo App',
 			icon: Control,
@@ -130,7 +132,7 @@
 				}
 			]
 		}
-	] as menuItem[];
+	] as menuItem[]);
 
 	const dispatch = createEventDispatcher();
 
@@ -145,7 +147,9 @@
 		dispatch('menuClicked');
 	}
 
-	$: setActiveMenuItem($page.data.title);
+	run(() => {
+		setActiveMenuItem($page.data.title);
+	});
 </script>
 
 <div class="bg-base-200 text-base-content flex h-full w-80 flex-col p-4">
@@ -153,7 +157,7 @@
 	<a
 		href="/"
 		class="rounded-box mb-4 flex items-center hover:scale-[1.02] active:scale-[0.98]"
-		on:click={() => setActiveMenuItem('')}
+		onclick={() => setActiveMenuItem('')}
 	>
 		<img src={logo} alt="Logo" class="h-12 w-12" />
 		<h1 class="px-4 text-2xl font-bold">{$page.data.appName}</h1>
@@ -165,7 +169,7 @@
 					{#if menuItem.submenu}
 						<details>
 							<summary class="text-lg font-bold">
-								<svelte:component this={menuItem.icon} class="h-6 w-6" />
+								<menuItem.icon class="h-6 w-6" />
 								{menuItem.title}
 							</summary>
 							<ul>
@@ -176,12 +180,11 @@
 												href={subMenuItem.href}
 												class:bg-base-100={subMenuItem.active}
 												class="text-ml font-bold"
-												on:click={() => {
+												onclick={() => {
 													setActiveMenuItem(subMenuItem.title);
 													menuItems = menuItems;
 												}}
-												><svelte:component
-													this={subMenuItem.icon}
+												><subMenuItem.icon
 													class="h-5 w-5"
 												/>{subMenuItem.title}</a
 											>
@@ -195,10 +198,10 @@
 							href={menuItem.href}
 							class:bg-base-100={menuItem.active}
 							class="text-lg font-bold"
-							on:click={() => {
+							onclick={() => {
 								setActiveMenuItem(menuItem.title);
 								menuItems = menuItems;
-							}}><svelte:component this={menuItem.icon} class="h-6 w-6" />{menuItem.title}</a
+							}}><menuItem.icon class="h-6 w-6" />{menuItem.title}</a
 						>
 					{/if}
 				</li>
@@ -206,18 +209,18 @@
 		{/each}
 	</ul>
 
-	<div class="flex-col" />
-	<div class="flex-grow" />
+	<div class="flex-col"></div>
+	<div class="flex-grow"></div>
 
 	{#if $page.data.features.security}
 		<div class="flex items-center">
 			<Avatar class="h-8 w-8" />
 			<span class="flex-grow px-4 text-xl font-bold">{$user.username}</span>
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
-			<!-- svelte-ignore a11y-no-static-element-interactions -->
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div
 				class="btn btn-ghost"
-				on:click={() => {
+				onclick={() => {
 					user.invalidate();
 				}}
 			>
@@ -226,7 +229,7 @@
 		</div>
 	{/if}
 
-	<div class="divider my-0" />
+	<div class="divider my-0"></div>
 	<div class="flex items-center">
 		{#if github.active}
 			<a href={github.href} class="btn btn-ghost" target="_blank" rel="noopener noreferrer"

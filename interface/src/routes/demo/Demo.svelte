@@ -11,9 +11,9 @@
 	import { socket } from '$lib/stores/socket';
 	import type { LightState } from '$lib/types/models';
 
-	let lightState: LightState = { led_on: false };
+	let lightState: LightState = $state({ led_on: false });
 
-	let lightOn = false;
+	let lightOn = $state(false);
 
 	async function getLightstate() {
 		try {
@@ -65,8 +65,12 @@
 </script>
 
 <SettingsCard collapsible={false}>
-	<Light slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">Light State</span>
+	{#snippet icon()}
+		<Light  class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+	{/snippet}
+	{#snippet title()}
+		<span >Light State</span>
+	{/snippet}
 	<div class="w-full">
 		<h1 class="text-xl font-semibold">REST Example</h1>
 		<div class="alert alert-info my-2 shadow-lg">
@@ -81,15 +85,15 @@
 					<input type="checkbox" bind:checked={lightOn} class="checkbox checkbox-primary" />
 				</label>
 			</div>
-			<div class="flex-grow" />
-			<button class="btn btn-primary inline-flex items-center" on:click={postLightstate}
+			<div class="flex-grow"></div>
+			<button class="btn btn-primary inline-flex items-center" onclick={postLightstate}
 				><Save class="mr-2 h-5 w-5" /><span>Save</span></button
 			>
-			<button class="btn btn-primary inline-flex items-center" on:click={getLightstate}
+			<button class="btn btn-primary inline-flex items-center" onclick={getLightstate}
 				><Reload class="mr-2 h-5 w-5" /><span>Reload</span></button
 			>
 		</div>
-		<div class="divider" />
+		<div class="divider"></div>
 		<h1 class="text-xl font-semibold">Event Socket Example</h1>
 		<div class="alert alert-info my-2 shadow-lg">
 			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
@@ -105,7 +109,7 @@
 					type="checkbox"
 					class="toggle toggle-primary"
 					bind:checked={lightState.led_on}
-					on:change={() => {
+					onchange={() => {
 						socket.sendEvent('led', lightState);
 					}}
 				/>

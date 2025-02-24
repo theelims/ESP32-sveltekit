@@ -23,7 +23,11 @@
 	import Cancel from '~icons/tabler/x';
 	import Check from '~icons/tabler/check';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	type userSetting = {
 		username: string;
@@ -36,7 +40,7 @@
 		users: userSetting[];
 	};
 
-	let securitySettings: SecuritySettings;
+	let securitySettings: SecuritySettings = $state();
 
 	async function getSecuritySettings() {
 		try {
@@ -149,15 +153,19 @@
      sm:mx-8 sm:my-8"
 	>
 		<SettingsCard collapsible={false}>
-			<Users slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-			<span slot="title">Manage Users</span>
+			{#snippet icon()}
+						<Users  class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+					{/snippet}
+			{#snippet title()}
+						<span >Manage Users</span>
+					{/snippet}
 			{#await getSecuritySettings()}
 				<Spinner />
 			{:then nothing}
 				<div class="relative w-full overflow-visible">
 					<button
 						class="btn btn-primary text-primary-content btn-md absolute -top-14 right-0"
-						on:click={handleNewUser}
+						onclick={handleNewUser}
 					>
 						<AddUser class="h-6 w-6" /></button
 					>
@@ -184,13 +192,13 @@
 											<span class="my-auto inline-flex flex-row space-x-2">
 												<button
 													class="btn btn-ghost btn-circle btn-xs"
-													on:click={() => handleEdit(index)}
+													onclick={() => handleEdit(index)}
 												>
 													<Edit class="h-6 w-6" /></button
 												>
 												<button
 													class="btn btn-ghost btn-circle btn-xs"
-													on:click={() => confirmDelete(index)}
+													onclick={() => confirmDelete(index)}
 												>
 													<Delete class="text-error h-6 w-6" />
 												</button>
@@ -202,7 +210,7 @@
 						</table>
 					</div>
 				</div>
-				<div class="divider mb-0" />
+				<div class="divider mb-0"></div>
 
 				<span class="pb-2 text-xl font-medium">Security Settings</span>
 				<div class="alert alert-warning shadow-lg">
@@ -217,7 +225,7 @@
 				</label>
 				<InputPassword bind:value={securitySettings.jwt_secret} id="secret" />
 				<div class="mt-6 flex justify-end">
-					<button class="btn btn-primary" on:click={() => postSecuritySettings(securitySettings)}
+					<button class="btn btn-primary" onclick={() => postSecuritySettings(securitySettings)}
 						>Apply Settings</button
 					>
 				</div>

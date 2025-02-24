@@ -6,7 +6,11 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	if (!$page.data.features.analytics && !$page.data.features.battery) {
 		goto('/');

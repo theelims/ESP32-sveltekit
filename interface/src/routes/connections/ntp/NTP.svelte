@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { preventDefault } from 'svelte/legacy';
+
 	import { onMount, onDestroy } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
@@ -16,8 +18,8 @@
 	import Stopwatch from '~icons/tabler/24-hours';
 	import type { NTPSettings, NTPStatus } from '$lib/types/models';
 
-	let ntpSettings: NTPSettings;
-	let ntpStatus: NTPStatus;
+	let ntpSettings: NTPSettings = $state();
+	let ntpStatus: NTPStatus = $state();
 
 	async function getNTPStatus() {
 		try {
@@ -63,11 +65,11 @@
 		}
 	});
 
-	let formField: any;
+	let formField: any = $state();
 
-	let formErrors = {
+	let formErrors = $state({
 		server: false
-	};
+	});
 
 	async function postNTPSettings(data: NTPSettings) {
 		try {
@@ -146,8 +148,12 @@
 </script>
 
 <SettingsCard collapsible={false}>
-	<Clock slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">Network Time</span>
+	{#snippet icon()}
+		<Clock  class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+	{/snippet}
+	{#snippet title()}
+		<span >Network Time</span>
+	{/snippet}
 	<div class="w-full overflow-x-auto">
 		{#await getNTPStatus()}
 			<Spinner />
@@ -236,10 +242,12 @@
 
 	{#if !$page.data.features.security || $user.admin}
 		<Collapsible open={false} class="shadow-lg" on:closed={getNTPSettings}>
-			<span slot="title">Change NTP Settings</span>
+			{#snippet title()}
+						<span >Change NTP Settings</span>
+					{/snippet}
 			<form
 				class="form-control w-full"
-				on:submit|preventDefault={handleSubmitNTP}
+				onsubmit={preventDefault(handleSubmitNTP)}
 				novalidate
 				bind:this={formField}
 			>

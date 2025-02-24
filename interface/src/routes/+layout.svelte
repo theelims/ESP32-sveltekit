@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import type { LayoutData } from './$types';
 	import { onDestroy, onMount } from 'svelte';
 	import { user } from '$lib/stores/user';
@@ -21,7 +23,12 @@
 	import type { Battery } from '$lib/types/models';
 	import type { DownloadOTA } from '$lib/types/models';
 
-	export let data: LayoutData;
+	interface Props {
+		data: LayoutData;
+		children?: import('svelte').Snippet;
+	}
+
+	let { data, children }: Props = $props();
 
 	onMount(async () => {
 		if ($user.bearer_token !== '') {
@@ -29,9 +36,6 @@
 		}
 	});
 
-	$: if (!($page.data.features.security && $user.bearer_token === '')) {
-		initSocket();
-	}
 
 	const initSocket = () => {
 		const ws_token = $page.data.features.security ? '?access_token=' + $user.bearer_token : '';
@@ -125,7 +129,12 @@
 
 	const handleOAT = (data: DownloadOTA) => telemetry.setDownloadOTA(data);
 
-	let menuOpen = false;
+	let menuOpen = $state(false);
+	run(() => {
+		if (!($page.data.features.security && $user.bearer_token === '')) {
+			initSocket();
+		}
+	});
 </script>
 
 <svelte:head>
@@ -142,11 +151,11 @@
 			<Statusbar />
 
 			<!-- Main page content here -->
-			<slot />
+			{@render children?.()}
 		</div>
 		<!-- Side Navigation -->
 		<div class="drawer-side z-30 shadow-lg">
-			<label for="main-menu" class="drawer-overlay" />
+			<label for="main-menu" class="drawer-overlay"></label>
 			<Menu
 				on:menuClicked={() => {
 					menuOpen = false;
@@ -157,13 +166,15 @@
 {/if}
 
 <Modals>
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<div
-		slot="backdrop"
-		class="fixed inset-0 z-40 max-h-full max-w-full bg-black/20 backdrop-blur"
-		transition:fade
-		on:click={closeModal}
-	/>
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	{#snippet backdrop()}
+		<div
+			
+			class="fixed inset-0 z-40 max-h-full max-w-full bg-black/20 backdrop-blur"
+			transition:fade
+			onclick={closeModal}
+		>
+	{/snippet}</div>
 </Modals>
 
 <Toast />

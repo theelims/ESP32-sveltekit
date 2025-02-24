@@ -11,13 +11,13 @@
 
 	Chart.register(...registerables);
 
-	let heapChartElement: HTMLCanvasElement;
+	let heapChartElement: HTMLCanvasElement = $state();
 	let heapChart: Chart;
 
-	let filesystemChartElement: HTMLCanvasElement;
+	let filesystemChartElement: HTMLCanvasElement = $state();
 	let filesystemChart: Chart;
 
-	let temperatureChartElement: HTMLCanvasElement;
+	let temperatureChartElement: HTMLCanvasElement = $state();
 	let temperatureChart: Chart;
 
 	onMount(() => {
@@ -273,15 +273,19 @@
 </script>
 
 <SettingsCard collapsible={false}>
-	<Metrics slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">System Metrics</span>
+	{#snippet icon()}
+		<Metrics  class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+	{/snippet}
+	{#snippet title()}
+		<span >System Metrics</span>
+	{/snippet}
 
 	<div class="w-full overflow-x-auto">
 		<div
 			class="flex w-full flex-col space-y-1 h-60"
 			transition:slide|local={{ duration: 300, easing: cubicOut }}
 		>
-			<canvas bind:this={heapChartElement} />
+			<canvas bind:this={heapChartElement}></canvas>
 		</div>
 	</div>
 	<div class="w-full overflow-x-auto">
@@ -289,7 +293,7 @@
 			class="flex w-full flex-col space-y-1 h-52"
 			transition:slide|local={{ duration: 300, easing: cubicOut }}
 		>
-			<canvas bind:this={filesystemChartElement} />
+			<canvas bind:this={filesystemChartElement}></canvas>
 		</div>
 	</div>
 	<div class="w-full overflow-x-auto">
@@ -297,7 +301,7 @@
 			class="flex w-full flex-col space-y-1 h-52"
 			transition:slide|local={{ duration: 300, easing: cubicOut }}
 		>
-			<canvas bind:this={temperatureChartElement} />
+			<canvas bind:this={temperatureChartElement}></canvas>
 		</div>
 	</div>
 </SettingsCard>

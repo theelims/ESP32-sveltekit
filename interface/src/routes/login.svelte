@@ -11,10 +11,10 @@
 		username: string;
 	};
 
-	let username = '';
-	let password = '';
+	let username = $state('');
+	let password = $state('');
 
-	let loginFailed = false;
+	let loginFailed = $state(false);
 
 	let token = { access_token: '' };
 
@@ -77,7 +77,7 @@
 				<div class="card-actions mt-4 justify-end">
 					<button
 						class="btn btn-primary inline-flex items-center"
-						on:click={() => {
+						onclick={() => {
 							signInUser({ username: username, password: password });
 						}}><Login class="mr-2 h-5 w-5" /><span>Login</span></button
 					>

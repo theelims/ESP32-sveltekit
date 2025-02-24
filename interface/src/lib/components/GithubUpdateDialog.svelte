@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { run, createBubbler } from 'svelte/legacy';
+
+	const bubble = createBubbler();
 	import { closeAllModals, onBeforeClose } from 'svelte-modals';
 	import { focusTrap } from 'svelte-focus-trap';
 	import { fly } from 'svelte/transition';
@@ -6,35 +9,45 @@
 	import Cancel from '~icons/tabler/x';
 
 	// provided by <Modals />
-	export let isOpen: boolean;
-
-	let updating = true;
-
-	let progress = 0;
-	$: if ($telemetry.download_ota.status == 'progress') {
-		progress = $telemetry.download_ota.progress;
+	interface Props {
+		isOpen: boolean;
 	}
 
-	$: if ($telemetry.download_ota.status == 'error') {
-		updating = false;
-	}
+	let { isOpen }: Props = $props();
 
-	let message = 'Preparing ...';
-	let timerId: number;
+	let updating = $state(true);
 
-	$: if ($telemetry.download_ota.status == 'progress') {
-		message = 'Downloading ...';
-	} else if ($telemetry.download_ota.status == 'error') {
-		message = $telemetry.download_ota.error;
-	} else if ($telemetry.download_ota.status == 'finished') {
-		message = 'Restarting ...';
-		progress = 0;
-		// Reload page after 5 sec
-		timerId = setTimeout(() => {
-			closeAllModals();
-			location.reload();
-		}, 5000);
-	}
+	let progress = $state(0);
+	run(() => {
+		if ($telemetry.download_ota.status == 'progress') {
+			progress = $telemetry.download_ota.progress;
+		}
+	});
+
+	run(() => {
+		if ($telemetry.download_ota.status == 'error') {
+			updating = false;
+		}
+	});
+
+	let message = $state('Preparing ...');
+	let timerId: number = $state();
+
+	run(() => {
+		if ($telemetry.download_ota.status == 'progress') {
+			message = 'Downloading ...';
+		} else if ($telemetry.download_ota.status == 'error') {
+			message = $telemetry.download_ota.error;
+		} else if ($telemetry.download_ota.status == 'finished') {
+			message = 'Restarting ...';
+			progress = 0;
+			// Reload page after 5 sec
+			timerId = setTimeout(() => {
+				closeAllModals();
+				location.reload();
+			}, 5000);
+		}
+	});
 
 	onBeforeClose(() => {
 		if (updating) {
@@ -54,32 +67,32 @@
 		role="dialog"
 		class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center"
 		transition:fly={{ y: 50 }}
-		on:introstart
-		on:outroend
+		onintrostart={bubble('introstart')}
+		onoutroend={bubble('outroend')}
 		use:focusTrap
 	>
 		<div
 			class="bg-base-100 shadow-secondary/30 rounded-box pointer-events-auto flex max-h-full min-w-fit max-w-md flex-col justify-between p-4 shadow-lg"
 		>
 			<h2 class="text-base-content text-start text-2xl font-bold">Updating Firmware</h2>
-			<div class="divider my-2" />
+			<div class="divider my-2"></div>
 			<div class="overflow-y-auto">
 				<div class="bg-base-100 flex flex-col items-center justify-center p-6">
 					{#if $telemetry.download_ota.status == 'progress'}
-						<progress class="progress progress-primary w-56" value={progress} max="100" />
+						<progress class="progress progress-primary w-56" value={progress} max="100"></progress>
 					{:else}
-						<progress class="progress progress-primary w-56" />
+						<progress class="progress progress-primary w-56"></progress>
 					{/if}
 					<p class="mt-8 text-2xl">{message}</p>
 				</div>
 			</div>
-			<div class="divider my-2" />
+			<div class="divider my-2"></div>
 			<div class="flex flex-wrap justify-end gap-2">
-				<div class="flex-grow" />
+				<div class="flex-grow"></div>
 				<button
 					class="btn btn-warning text-warning-content inline-flex flex-none items-center"
 					disabled={updating}
-					on:click={() => {
+					onclick={() => {
 						closeAllModals();
 						location.reload();
 					}}

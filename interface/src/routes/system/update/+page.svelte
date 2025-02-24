@@ -5,7 +5,11 @@
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 </script>
 
 <div

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { preventDefault } from 'svelte/legacy';
+
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
@@ -10,9 +12,9 @@
 	import Info from '~icons/tabler/info-circle';
 	import type { BrokerSettings } from '$lib/types/models';
 
-	let brokerSettings: BrokerSettings;
+	let brokerSettings: BrokerSettings = $state();
 
-	let formField: any;
+	let formField: any = $state();
 
 	async function getBrokerSettings() {
 		try {
@@ -30,11 +32,11 @@
 		return;
 	}
 
-	let formErrors = {
+	let formErrors = $state({
 		uid: false,
 		path: false,
 		name: false
-	};
+	});
 
 	async function postBrokerSettings() {
 		try {
@@ -93,14 +95,18 @@
 </script>
 
 <SettingsCard collapsible={true} open={false}>
-	<MQTT slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">MQTT Broker Settings</span>
+	{#snippet icon()}
+		<MQTT  class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+	{/snippet}
+	{#snippet title()}
+		<span >MQTT Broker Settings</span>
+	{/snippet}
 	<div class="w-full overflow-x-auto">
 		{#await getBrokerSettings()}
 			<Spinner />
 		{:then nothing}
 			<form
-				on:submit|preventDefault={handleSubmitBroker}
+				onsubmit={preventDefault(handleSubmitBroker)}
 				novalidate
 				bind:this={formField}
 				transition:slide|local={{ duration: 300, easing: cubicOut }}
@@ -177,7 +183,7 @@
 						</label>
 					</div>
 				</div>
-				<div class="divider mb-2 mt-0" />
+				<div class="divider mb-2 mt-0"></div>
 				<div class="mx-4 flex flex-wrap justify-end gap-2">
 					<button class="btn btn-primary" type="submit">Apply Settings</button>
 				</div>

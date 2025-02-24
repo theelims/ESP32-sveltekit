@@ -3,7 +3,11 @@
 	import logo from '$lib/assets/logo.png';
 	import { notifications } from '$lib/components/toasts/notifications';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 </script>
 
 <div class="hero bg-base-100 h-screen">
@@ -31,7 +35,7 @@
 			<a
 				class="btn btn-primary"
 				href="/demo"
-				on:click={() => notifications.success('You did it!', 1000)}>Start Demo</a
+				onclick={() => notifications.success('You did it!', 1000)}>Start Demo</a
 			>
 		</div>
 	</div>

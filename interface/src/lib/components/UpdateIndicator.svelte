@@ -11,10 +11,14 @@
 	import { compareVersions } from 'compare-versions';
 	import { onMount } from 'svelte';
 
-	export let update = false;
+	interface Props {
+		update?: boolean;
+	}
 
-	let firmwareVersion: string;
-	let firmwareDownloadLink: string;
+	let { update = $bindable(false) }: Props = $props();
+
+	let firmwareVersion: string = $state();
+	let firmwareDownloadLink: string = $state();
 
 	async function getGithubAPI() {
 		const githubUrl = `https://api.github.com/repos/${$page.data.github}/releases/latest`;
@@ -105,7 +109,7 @@
 {#if update}
 	<button
 		class="btn btn-square btn-ghost h-9 w-9"
-		on:click={() => confirmGithubUpdate(firmwareDownloadLink)}
+		onclick={() => confirmGithubUpdate(firmwareDownloadLink)}
 	>
 		<span
 			class="indicator-item indicator-top indicator-center badge badge-info badge-xs top-2 scale-75 lg:top-1"

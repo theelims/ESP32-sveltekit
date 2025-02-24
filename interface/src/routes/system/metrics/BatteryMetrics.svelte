@@ -13,7 +13,7 @@
 	Chart.register(...registerables);
 	Chart.register(LuxonAdapter);
 
-	let heapChartElement: HTMLCanvasElement;
+	let heapChartElement: HTMLCanvasElement = $state();
 	let heapChart: Chart;
 
 	onMount(() => {
@@ -142,15 +142,19 @@
 </script>
 
 <SettingsCard collapsible={false}>
-	<Battery slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">Battery History</span>
+	{#snippet icon()}
+		<Battery  class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+	{/snippet}
+	{#snippet title()}
+		<span >Battery History</span>
+	{/snippet}
 
 	<div class="w-full overflow-x-auto">
 		<div
 			class="flex w-full flex-col space-y-1 h-60"
 			transition:slide|local={{ duration: 300, easing: cubicOut }}
 		>
-			<canvas bind:this={heapChartElement} />
+			<canvas bind:this={heapChartElement}></canvas>
 		</div>
 	</div>
 </SettingsCard>

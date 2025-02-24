@@ -2,7 +2,11 @@
 	import type { PageData } from './$types';
 	import Wifi from './Wifi.svelte';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 </script>
 
 <div

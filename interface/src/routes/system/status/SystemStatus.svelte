@@ -27,7 +27,7 @@
 	import type { SystemInformation, Analytics } from '$lib/types/models';
 	import { socket } from '$lib/stores/socket';
 
-	let systemInformation: SystemInformation;
+	let systemInformation: SystemInformation = $state();
 
 	async function getSystemStatus() {
 		try {
@@ -153,8 +153,12 @@
 </script>
 
 <SettingsCard collapsible={false}>
-	<Health slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">System Status</span>
+	{#snippet icon()}
+		<Health  class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+	{/snippet}
+	{#snippet title()}
+		<span >System Status</span>
+	{/snippet}
 
 	<div class="w-full overflow-x-auto">
 		{#await getSystemStatus()}
@@ -348,15 +352,15 @@
 
 	<div class="mt-4 flex flex-wrap justify-end gap-2">
 		{#if $page.data.features.sleep}
-			<button class="btn btn-primary inline-flex items-center" on:click={confirmSleep}
+			<button class="btn btn-primary inline-flex items-center" onclick={confirmSleep}
 				><Sleep class="mr-2 h-5 w-5" /><span>Sleep</span></button
 			>
 		{/if}
 		{#if !$page.data.features.security || $user.admin}
-			<button class="btn btn-primary inline-flex items-center" on:click={confirmRestart}
+			<button class="btn btn-primary inline-flex items-center" onclick={confirmRestart}
 				><Power class="mr-2 h-5 w-5" /><span>Restart</span></button
 			>
-			<button class="btn btn-secondary inline-flex items-center" on:click={confirmReset}
+			<button class="btn btn-secondary inline-flex items-center" onclick={confirmReset}
 				><FactoryReset class="mr-2 h-5 w-5" /><span>Factory Reset</span></button
 			>
 		{/if}

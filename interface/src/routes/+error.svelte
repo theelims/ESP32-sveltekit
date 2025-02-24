@@ -13,7 +13,7 @@
 			<div class="text-secondary pr-2 text-7xl font-bold">{$page.status}</div>
 			<div class="text-base-content text-5xl font-semibold">{$page.error?.message}</div>
 		</div>
-		<div class="divider" />
+		<div class="divider"></div>
 		<p class="text-xl">Oops! Something has gone wrong.</p>
 	</div>
 </div>

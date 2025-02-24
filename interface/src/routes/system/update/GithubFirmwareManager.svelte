@@ -95,8 +95,12 @@
 </script>
 
 <SettingsCard collapsible={false}>
-	<Github slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end rounded-full" />
-	<span slot="title">Github Firmware Manager</span>
+	{#snippet icon()}
+		<Github  class="lex-shrink-0 mr-2 h-6 w-6 self-end rounded-full" />
+	{/snippet}
+	{#snippet title()}
+		<span >Github Firmware Manager</span>
+	{/snippet}
 	{#await getGithubAPI()}
 		<Spinner />
 	{:then githubReleases}
@@ -142,7 +146,7 @@
 									{#if compareVersions($page.data.features.firmware_version, release.tag_name) != 0}
 										<button
 											class="btn btn-ghost btn-circle btn-sm"
-											on:click={() => {
+											onclick={() => {
 												confirmGithubUpdate(release.assets);
 											}}
 										>
