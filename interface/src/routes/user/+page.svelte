@@ -2,12 +2,12 @@
 	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { openModal, closeModal } from 'svelte-modals/legacy';
+	import { modals } from 'svelte-modals';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { user } from '$lib/stores/user';
 	import type { userProfile } from '$lib/stores/user';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { notifications } from '$lib/components/toasts/notifications';
 	import InputPassword from '$lib/components/InputPassword.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
@@ -47,7 +47,7 @@
 			const response = await fetch('/rest/securitySettings', {
 				method: 'GET',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
@@ -63,7 +63,7 @@
 			const response = await fetch('/rest/securitySettings', {
 				method: 'POST',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(data)
@@ -103,7 +103,7 @@
 	}
 
 	function confirmDelete(index: number) {
-		openModal(ConfirmDialog, {
+		modals.open(ConfirmDialog, {
 			title: 'Confirm Delete User',
 			message:
 				'Are you sure you want to delete the user "' +
@@ -116,30 +116,30 @@
 			onConfirm: () => {
 				securitySettings.users.splice(index, 1);
 				securitySettings = securitySettings;
-				closeModal();
+				modals.close();
 				postSecuritySettings(securitySettings);
 			}
 		});
 	}
 
 	function handleEdit(index: number) {
-		openModal(EditUser, {
+		modals.open(EditUser, {
 			title: 'Edit User',
 			user: { ...securitySettings.users[index] }, // Shallow Copy
 			onSaveUser: (editedUser: userSetting) => {
 				securitySettings.users[index] = editedUser;
-				closeModal();
+				modals.close();
 				postSecuritySettings(securitySettings);
 			}
 		});
 	}
 
 	function handleNewUser() {
-		openModal(EditUser, {
+		modals.open(EditUser, {
 			title: 'Add User',
 			onSaveUser: (newUser: userSetting) => {
 				securitySettings.users = [...securitySettings.users, newUser];
-				closeModal();
+				modals.close();
 				postSecuritySettings(securitySettings);
 			}
 		});

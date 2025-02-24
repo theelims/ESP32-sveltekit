@@ -1,8 +1,6 @@
 <script lang="ts">
-	import { run, createBubbler } from 'svelte/legacy';
-
-	const bubble = createBubbler();
-	import { closeAllModals, onBeforeClose } from 'svelte-modals/legacy';
+	import { run } from 'svelte/legacy';
+	import { modals, onBeforeClose } from 'svelte-modals';
 	import { focusTrap } from 'svelte-focus-trap';
 	import { fly } from 'svelte/transition';
 	import { telemetry } from '$lib/stores/telemetry';
@@ -18,6 +16,7 @@
 	let updating = $state(true);
 
 	let progress = $state(0);
+
 	run(() => {
 		if ($telemetry.download_ota.status == 'progress') {
 			progress = $telemetry.download_ota.progress;
@@ -43,7 +42,7 @@
 			progress = 0;
 			// Reload page after 5 sec
 			timerId = setTimeout(() => {
-				closeAllModals();
+				modals.closeAll();
 				location.reload();
 			}, 5000);
 		}
@@ -67,8 +66,6 @@
 		role="dialog"
 		class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center"
 		transition:fly={{ y: 50 }}
-		onintrostart={bubble('introstart')}
-		onoutroend={bubble('outroend')}
 		use:focusTrap
 	>
 		<div
@@ -93,7 +90,7 @@
 					class="btn btn-warning text-warning-content inline-flex flex-none items-center"
 					disabled={updating}
 					onclick={() => {
-						closeAllModals();
+						modals.closeAll();
 						location.reload();
 					}}
 				>

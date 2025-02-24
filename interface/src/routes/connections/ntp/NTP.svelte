@@ -8,7 +8,7 @@
 	import Collapsible from '$lib/components/Collapsible.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import { user } from '$lib/stores/user';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { notifications } from '$lib/components/toasts/notifications';
 	import { TIME_ZONES } from './timezones';
 	import NTP from '~icons/tabler/clock-check';
@@ -26,7 +26,7 @@
 			const response = await fetch('/rest/ntpStatus', {
 				method: 'GET',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
@@ -42,7 +42,7 @@
 			const response = await fetch('/rest/ntpSettings', {
 				method: 'GET',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
@@ -60,7 +60,7 @@
 	onDestroy(() => clearInterval(interval));
 
 	onMount(() => {
-		if (!$page.data.features.security || $user.admin) {
+		if (!page.data.features.security || $user.admin) {
 			getNTPSettings();
 		}
 	});
@@ -76,7 +76,7 @@
 			const response = await fetch('/rest/ntpSettings', {
 				method: 'POST',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(data)
@@ -240,7 +240,7 @@
 		{/await}
 	</div>
 
-	{#if !$page.data.features.security || $user.admin}
+	{#if !page.data.features.security || $user.admin}
 		<Collapsible open={false} class="shadow-lg" on:closed={getNTPSettings}>
 			{#snippet title()}
 						<span >Change NTP Settings</span>

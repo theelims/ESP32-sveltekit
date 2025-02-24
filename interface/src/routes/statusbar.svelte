@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { telemetry } from '$lib/stores/telemetry';
-	import { openModal, closeModal } from 'svelte-modals/legacy';
+	import { modals } from 'svelte-modals';
 	import { user } from '$lib/stores/user';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import WiFiOff from '~icons/tabler/wifi-off';
@@ -16,13 +16,13 @@
 		const response = await fetch('/rest/sleep', {
 			method: 'POST',
 			headers: {
-				Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic'
+				Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic'
 			}
 		});
 	}
 
 	function confirmSleep() {
-		openModal(ConfirmDialog, {
+		modals.open(ConfirmDialog, {
 			title: 'Confirm Power Down',
 			message: 'Are you sure you want to switch off the device?',
 			labels: {
@@ -30,7 +30,7 @@
 				confirm: { label: 'Switch Off', icon: Power }
 			},
 			onConfirm: () => {
-				closeModal();
+				modals.close();
 				postSleep();
 			}
 		});
@@ -43,7 +43,7 @@
 		<label for="main-menu" class="btn btn-ghost btn-circle btn-sm drawer-button lg:hidden"
 			><Hamburger class="h-6 w-auto" /></label
 		>
-		<span class="px-2 text-xl font-bold lg:text-2xl">{$page.data.title}</span>
+		<span class="px-2 text-xl font-bold lg:text-2xl">{page.data.title}</span>
 	</div>
 	<div class="indicator flex-none">
 		<UpdateIndicator />
@@ -61,7 +61,7 @@
 		{/if}
 	</div>
 
-	{#if $page.data.features.battery}
+	{#if page.data.features.battery}
 		<div class="flex-none">
 			<BatteryIndicator
 				charging={$telemetry.battery.charging}
@@ -71,7 +71,7 @@
 		</div>
 	{/if}
 
-	{#if $page.data.features.sleep}
+	{#if page.data.features.sleep}
 		<div class="flex-none">
 			<button class="btn btn-square btn-ghost h-9 w-10" onclick={confirmSleep}>
 				<Power class="text-error h-9 w-9" />

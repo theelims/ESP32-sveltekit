@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { page } from '$app/stores';
-	import { openModal, closeAllModals } from 'svelte-modals/legacy';
+	import { page } from '$app/state';
+	import { modals } from 'svelte-modals';
 	import { user } from '$lib/stores/user';
 	import { notifications } from '$lib/components/toasts/notifications';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
@@ -17,11 +17,11 @@
 
 	let { update = $bindable(false) }: Props = $props();
 
-	let firmwareVersion: string = $state();
-	let firmwareDownloadLink: string = $state();
+	let firmwareVersion: string;
+	let firmwareDownloadLink: string;
 
 	async function getGithubAPI() {
-		const githubUrl = `https://api.github.com/repos/${$page.data.github}/releases/latest`;
+		const githubUrl = `https://api.github.com/repos/${page.data.github}/releases/latest`;
 		try {
 			const response = await fetch(githubUrl, {
 				method: 'GET',
@@ -38,13 +38,13 @@
 			update = false;
 			firmwareVersion = '';
 
-			if (compareVersions(results.tag_name, $page.data.features.firmware_version) === 1) {
+			if (compareVersions(results.tag_name, page.data.features.firmware_version) === 1) {
 				// iterate over assets and find the correct one
 				for (let i = 0; i < results.assets.length; i++) {
 					// check if the asset is of type *.bin
 					if (
 						results.assets[i].name.includes('.bin') &&
-						results.assets[i].name.includes($page.data.features.firmware_built_target)
+						results.assets[i].name.includes(page.data.features.firmware_built_target)
 					) {
 						update = true;
 						firmwareVersion = results.tag_name;
@@ -63,7 +63,7 @@
 			const apiResponse = await fetch('/rest/downloadUpdate', {
 				method: 'POST',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({ download_url: url })
@@ -74,7 +74,7 @@
 	}
 
 	onMount(() => {
-		if ($page.data.features.download_firmware && (!$page.data.features.security || $user.admin)) {
+		if (page.data.features.download_firmware && (!page.data.features.security || $user.admin)) {
 			getGithubAPI();
 			const interval = setInterval(
 				async () => {
@@ -86,7 +86,7 @@
 	});
 
 	function confirmGithubUpdate(url: string) {
-		openModal(ConfirmDialog, {
+		modals.open(ConfirmDialog, {
 			title: 'Confirm flashing new firmware to the device',
 			message: 'Are you sure you want to overwrite the existing firmware with a new one?',
 			labels: {
@@ -95,8 +95,8 @@
 			},
 			onConfirm: () => {
 				postGithubDownload(url);
-				openModal(GithubUpdateDialog, {
-					onConfirm: () => closeAllModals()
+				modals.open(GithubUpdateDialog, {
+					onConfirm: () => modals.closeAll()
 				});
 			}
 		});

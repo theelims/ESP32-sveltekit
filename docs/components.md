@@ -125,12 +125,12 @@ Shows a modal on the UI which must be deliberately dismissed. It features a `tit
 ```ts
 import InfoDialog from "$lib/components/InfoDialog.svelte";
 
-openModal(InfoDialog, {
+modals.open(InfoDialog, {
   title: 'You have a new Info',
   message:
     'Something really important happened that justifies showing you a modal which must be clicked away.',
   dismiss: { label: 'OK', icon: Check },
-  onDismiss: () => closeModal();
+  onDismiss: () => modals.close();
 });
 ```
 
@@ -143,14 +143,14 @@ Shows a confirm modal on the UI which must be confirmed to proceed, or can be ca
 ```ts
 import ConfirmDialog from "$lib/components/ConfirmDialog.svelte";
 
-openModal(ConfirmDialog, {
+modals.open(ConfirmDialog, {
   title: "Confirm what you are doing",
   message: "Are you sure you want to proceed? This could break stuff!",
   labels: {
     cancel: { label: "Abort", icon: Cancel },
     confirm: { label: "Confirm", icon: Check },
   },
-  onConfirm: () => closeModal(),
+  onConfirm: () => modals.close(),
 });
 ```
 

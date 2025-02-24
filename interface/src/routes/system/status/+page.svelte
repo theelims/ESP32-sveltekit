@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import SystemStatus from './SystemStatus.svelte';
 	import { user } from '$lib/stores/user';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	interface Props {
 		data: PageData;

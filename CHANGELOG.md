@@ -35,6 +35,7 @@ All notable changes to this project will be documented in this file.
 - Analytics task was refactored into a loop() function which is called by the ESP32-sveltekit main task.
 - Updated PsychicHttp to v1.2.1 incl. patches.
 - Updated DaisyUI
+- Updated Svelte 5 --> see [Svelte Migration Guide](https://svelte.dev/docs/svelte/v5-migration-guide#Snippets-instead-of-slots)
 
 ### Fixed
 

@@ -4,11 +4,11 @@
 	import { preventDefault } from 'svelte/legacy';
 
 	import { onMount, onDestroy } from 'svelte';
-	import { openModal, closeModal } from 'svelte-modals/legacy';
+	import { modals } from 'svelte-modals';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { user } from '$lib/stores/user';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { notifications } from '$lib/components/toasts/notifications';
 	import DragDropList, { VerticalDropZone, reorder, type DropEvent } from 'svelte-dnd-list';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
@@ -92,7 +92,7 @@
 			const response = await fetch('/rest/wifiStatus', {
 				method: 'GET',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
@@ -108,7 +108,7 @@
 			const response = await fetch('/rest/wifiSettings', {
 				method: 'GET',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
@@ -131,7 +131,7 @@
 			const response = await fetch('/rest/wifiSettings', {
 				method: 'POST',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(data)
@@ -237,12 +237,12 @@
 	}
 
 	function scanForNetworks() {
-		openModal(ScanNetworks, {
+		modals.open(ScanNetworks, {
 			storeNetwork: (network: string) => {
 				addNetwork();
 				networkEditable.ssid = network;
 				showNetworkEditor = true;
-				closeModal();
+				modals.close();
 			}
 		});
 	}
@@ -268,7 +268,7 @@
 	}
 
 	function confirmDelete(index: number) {
-		openModal(ConfirmDialog, {
+		modals.open(ConfirmDialog, {
 			title: 'Delete Network',
 			message: 'Are you sure you want to delete this network?',
 			labels: {
@@ -284,20 +284,20 @@
 				dndNetworkList.splice(index, 1);
 				dndNetworkList = [...dndNetworkList]; //Trigger reactivity
 				showNetworkEditor = false;
-				closeModal();
+				modals.close();
 			}
 		});
 	}
 
 	function checkNetworkList() {
 		if (dndNetworkList.length >= 5) {
-			openModal(InfoDialog, {
+			modals.open(InfoDialog, {
 				title: 'Reached Maximum Networks',
 				message:
 					'You have reached the maximum number of networks. Please delete one to add another.',
 				dismiss: { label: 'OK', icon: Check },
 				onDismiss: () => {
-					closeModal();
+					modals.close();
 				}
 			});
 			return false;
@@ -472,7 +472,7 @@
 		{/await}
 	</div>
 
-	{#if !$page.data.features.security || $user.admin}
+	{#if !page.data.features.security || $user.admin}
 		<div class="bg-base-200 shadow-lg relative grid w-full max-w-2xl self-center overflow-hidden">
 			<div class="h-16 flex w-full items-center justify-between space-x-3 p-0 text-xl font-medium">
 				Saved Networks
@@ -525,7 +525,7 @@
 									<div>
 										<div class="font-bold">{dndNetworkList[index].ssid}</div>
 									</div>
-									{#if !$page.data.features.security || $user.admin}
+									{#if !page.data.features.security || $user.admin}
 										<div class="flex-grow"></div>
 										<div class="space-x-0 px-0 mx-0">
 											<button

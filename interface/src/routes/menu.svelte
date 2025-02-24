@@ -19,11 +19,11 @@
 	import MQTT from '~icons/tabler/topology-star-3';
 	import NTP from '~icons/tabler/clock-check';
 	import Metrics from '~icons/tabler/report-analytics';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { user } from '$lib/stores/user';
 	import { createEventDispatcher } from 'svelte';
 
-	const github = { href: 'https://github.com/' + $page.data.github, active: true };
+	const github = { href: 'https://github.com/' + page.data.github, active: true };
 
 	const discord = { href: '.', active: false };
 
@@ -49,27 +49,24 @@
 			title: 'Demo App',
 			icon: Control,
 			href: '/demo',
-			feature: true,
-			
+			feature: true
 		},
 		{
 			title: 'Connections',
 			icon: Remote,
-			feature: $page.data.features.mqtt || $page.data.features.ntp,
+			feature: page.data.features.mqtt || page.data.features.ntp,
 			submenu: [
 				{
 					title: 'MQTT',
 					icon: MQTT,
 					href: '/connections/mqtt',
-					feature: $page.data.features.mqtt,
-					
+					feature: page.data.features.mqtt
 				},
 				{
 					title: 'NTP',
 					icon: NTP,
 					href: '/connections/ntp',
-					feature: $page.data.features.ntp,
-					
+					feature: page.data.features.ntp
 				}
 			]
 		},
@@ -82,15 +79,13 @@
 					title: 'WiFi Station',
 					icon: Router,
 					href: '/wifi/sta',
-					feature: true,
-					
+					feature: true
 				},
 				{
 					title: 'Access Point',
 					icon: AP,
 					href: '/wifi/ap',
-					feature: true,
-					
+					feature: true
 				}
 			]
 		},
@@ -98,8 +93,7 @@
 			title: 'Users',
 			icon: Users,
 			href: '/user',
-			feature: $page.data.features.security && $user.admin,
-			
+			feature: page.data.features.security && $user.admin
 		},
 		{
 			title: 'System',
@@ -110,25 +104,23 @@
 					title: 'System Status',
 					icon: Health,
 					href: '/system/status',
-					feature: true,
-					
+					feature: true
 				},
 				{
 					title: 'System Metrics',
 					icon: Metrics,
 					href: '/system/metrics',
-					feature: $page.data.features.analytics,
-					
+					feature: page.data.features.analytics
 				},
 				{
 					title: 'Firmware Update',
 					icon: Update,
 					href: '/system/update',
 					feature:
-						($page.data.features.ota ||
-							$page.data.features.upload_firmware ||
-							$page.data.features.download_firmware) &&
-						(!$page.data.features.security || $user.admin),
+						(page.data.features.ota ||
+							page.data.features.upload_firmware ||
+							page.data.features.download_firmware) &&
+						(!page.data.features.security || $user.admin)
 				}
 			]
 		}
@@ -137,18 +129,18 @@
 	const dispatch = createEventDispatcher();
 
 	function setActiveMenuItem(targetTitle: string) {
-		menuItems.forEach(item => {
+		menuItems.forEach((item) => {
 			item.active = item.title === targetTitle;
-			item.submenu?.forEach(subItem => {
+			item.submenu?.forEach((subItem) => {
 				subItem.active = subItem.title === targetTitle;
 			});
 		});
-		menuItems = menuItems
+		menuItems = menuItems;
 		dispatch('menuClicked');
 	}
 
 	run(() => {
-		setActiveMenuItem($page.data.title);
+		setActiveMenuItem(page.data.title);
 	});
 </script>
 
@@ -160,7 +152,7 @@
 		onclick={() => setActiveMenuItem('')}
 	>
 		<img src={logo} alt="Logo" class="h-12 w-12" />
-		<h1 class="px-4 text-2xl font-bold">{$page.data.appName}</h1>
+		<h1 class="px-4 text-2xl font-bold">{page.data.appName}</h1>
 	</a>
 	<ul class="menu rounded-box menu-vertical flex-nowrap overflow-y-auto">
 		{#each menuItems as menuItem, i (menuItem.title)}
@@ -183,10 +175,7 @@
 												onclick={() => {
 													setActiveMenuItem(subMenuItem.title);
 													menuItems = menuItems;
-												}}
-												><subMenuItem.icon
-													class="h-5 w-5"
-												/>{subMenuItem.title}</a
+												}}><subMenuItem.icon class="h-5 w-5" />{subMenuItem.title}</a
 											>
 										</li>
 									{/if}
@@ -212,7 +201,7 @@
 	<div class="flex-col"></div>
 	<div class="flex-grow"></div>
 
-	{#if $page.data.features.security}
+	{#if page.data.features.security}
 		<div class="flex items-center">
 			<Avatar class="h-8 w-8" />
 			<span class="flex-grow px-4 text-xl font-bold">{$user.username}</span>
@@ -242,7 +231,7 @@
 			>
 		{/if}
 		<div class="inline-flex flex-grow items-center justify-end text-sm">
-			<Copyright class="h-4 w-4" /><span class="px-2">{$page.data.copyright}</span>
+			<Copyright class="h-4 w-4" /><span class="px-2">{page.data.copyright}</span>
 		</div>
 	</div>
 </div>

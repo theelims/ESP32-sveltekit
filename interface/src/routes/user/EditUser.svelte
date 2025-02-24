@@ -1,9 +1,6 @@
 <script lang="ts">
-	import { createBubbler, preventDefault } from 'svelte/legacy';
-
-	const bubble = createBubbler();
 	import { onMount, onDestroy } from 'svelte';
-	import { closeModal } from 'svelte-modals/legacy';
+	import { modals } from 'svelte-modals';
 	import { fly } from 'svelte/transition';
 	import InputPassword from '$lib/components/InputPassword.svelte';
 	import Cancel from '~icons/tabler/x';
@@ -56,8 +53,6 @@
 		role="dialog"
 		class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center overflow-y-auto"
 		transition:fly={{ y: 50 }}
-		onintrostart={bubble('introstart')}
-		onoutroend={bubble('outroend')}
 	>
 		<div
 			class="rounded-box bg-base-100 shadow-secondary/30 pointer-events-auto flex min-w-fit max-w-md flex-col justify-between p-4 shadow-lg md:w-[28rem]"
@@ -98,7 +93,7 @@
 				<div class="flex justify-end gap-2">
 					<button
 						class="btn btn-neutral text-neutral-content inline-flex items-center"
-						onclick={closeModal}
+						onclick={modals.close}
 						type="button"
 					>
 						<Cancel class="mr-2 h-5 w-5" /><span>Cancel</span></button

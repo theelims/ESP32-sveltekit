@@ -17,7 +17,7 @@ The actual code for the front end is located under [interface/src/](https://gith
 
 ## Features
 
-The back end provides a JSON which features of the back end are enabled by the [feature selection](buildprocess.md#selecting-features). It is fetched with the page load and made available in the `$pages`-store and can be accessed on any site with `$page.data.features`. It is used to hide any disabled setting element.
+The back end provides a JSON which features of the back end are enabled by the [feature selection](buildprocess.md#selecting-features). It is fetched with the page load and made available in the `pages`-store and can be accessed on any site with `page.data.features`. It is used to hide any disabled setting element.
 
 ## Delete `demo/` Project
 
@@ -48,11 +48,11 @@ The menu consists of an array of menu items. These are defined as follows:
     title: 'Demo App',
     icon: Control,
     href: '/demo',
-    feature: $page.data.features.project,
+    feature: page.data.features.project,
 },
 ```
 
-- Where `title` refers to the page title. It must be identical to `$page.data.title` as defined in the `+page.ts` in any of your routes. If they do not match the corresponding menu item is not highlighted on first page load or a page refresh. A minimum `+page.ts` looks like this:
+- Where `title` refers to the page title. It must be identical to `page.data.title` as defined in the `+page.ts` in any of your routes. If they do not match the corresponding menu item is not highlighted on first page load or a page refresh. A minimum `+page.ts` looks like this:
 
 ```ts
 import type { PageLoad } from "./$types";

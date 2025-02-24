@@ -1,12 +1,9 @@
 <script lang="ts">
-	import { createBubbler } from 'svelte/legacy';
-
-	const bubble = createBubbler();
-	import { closeModal } from 'svelte-modals/legacy';
+	import { modals } from 'svelte-modals';
 	import { focusTrap } from 'svelte-focus-trap';
 	import { fly } from 'svelte/transition';
 	import { user } from '$lib/stores/user';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import Network from '~icons/tabler/router';
 	import AP from '~icons/tabler/access-point';
 	import Cancel from '~icons/tabler/x';
@@ -21,7 +18,7 @@
 		storeNetwork: any;
 	}
 
-	let { isOpen, storeNetwork }: Props = $props();
+	const { isOpen, storeNetwork }: Props = $props();
 
 	const encryptionType = [
 		'Open',
@@ -46,7 +43,7 @@
 		const scan = await fetch('/rest/scanNetworks', {
 			method: 'GET',
 			headers: {
-				Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+				Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 				'Content-Type': 'application/json'
 			}
 		});
@@ -60,7 +57,7 @@
 		const response = await fetch('/rest/listNetworks', {
 			method: 'GET',
 			headers: {
-				Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+				Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 				'Content-Type': 'application/json'
 			}
 		});
@@ -98,8 +95,6 @@
 		role="dialog"
 		class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center"
 		transition:fly={{ y: 50 }}
-		onintrostart={bubble('introstart')}
-		onoutroend={bubble('outroend')}
 		use:focusTrap
 	>
 		<div
@@ -155,7 +150,9 @@
 				<div class="flex-grow"></div>
 				<button
 					class="btn btn-warning text-warning-content inline-flex flex-none items-center"
-					onclick={closeModal}><Cancel class="mr-2 h-5 w-5" /><span>Cancel</span></button
+					onclick={() => {
+						modals.close();
+					}}><Cancel class="mr-2 h-5 w-5" /><span>Cancel</span></button
 				>
 			</div>
 		</div>

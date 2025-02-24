@@ -1,8 +1,5 @@
 <script lang="ts">
-	import { createBubbler } from 'svelte/legacy';
-
-	const bubble = createBubbler();
-	import { closeModal } from 'svelte-modals/legacy';
+	import { modals } from 'svelte-modals';
 	import { focusTrap } from 'svelte-focus-trap';
 	import { fly } from 'svelte/transition';
 	import Check from '~icons/tabler/check';
@@ -17,7 +14,7 @@
 		dismiss?: any;
 	}
 
-	let {
+	const {
 		isOpen,
 		title,
 		message,
@@ -31,8 +28,6 @@
 		role="dialog"
 		class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center"
 		transition:fly={{ y: 50 }}
-		onintrostart={bubble('introstart')}
-		onoutroend={bubble('outroend')}
 		use:focusTrap
 	>
 		<div
@@ -46,8 +41,7 @@
 				<button
 					class="btn btn-warning text-warning-content inline-flex items-center"
 					onclick={onDismiss}
-					><dismiss.icon class="mr-2 h-5 w-5" /><span>{dismiss.label}</span
-					></button
+					><dismiss.icon class="mr-2 h-5 w-5" /><span>{dismiss.label}</span></button
 				>
 			</div>
 		</div>

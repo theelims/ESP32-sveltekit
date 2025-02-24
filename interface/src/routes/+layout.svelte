@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { run } from 'svelte/legacy';
-
 	import type { LayoutData } from './$types';
 	import { onDestroy, onMount } from 'svelte';
 	import { user } from '$lib/stores/user';
@@ -9,8 +8,8 @@
 	import { batteryHistory } from '$lib/stores/battery';
 	import { socket } from '$lib/stores/socket';
 	import type { userProfile } from '$lib/stores/user';
-	import { page } from '$app/stores';
-	import { Modals, closeModal } from 'svelte-modals/legacy';
+	import { page } from '$app/state';
+	import { Modals, modals } from 'svelte-modals';
 	import Toast from '$lib/components/toasts/Toast.svelte';
 	import { notifications } from '$lib/components/toasts/notifications';
 	import { fade } from 'svelte/transition';
@@ -38,10 +37,10 @@
 
 
 	const initSocket = () => {
-		const ws_token = $page.data.features.security ? '?access_token=' + $user.bearer_token : '';
+		const ws_token = page.data.features.security ? '?access_token=' + $user.bearer_token : '';
 		socket.init(
 			`ws://${window.location.host}/ws/events${ws_token}`,
-			$page.data.features.event_use_json
+			page.data.features.event_use_json
 		);
 		addEventListeners();
 	};
@@ -56,9 +55,9 @@
 		socket.on('error', handleError);
 		socket.on('rssi', handleNetworkStatus);
 		socket.on('notification', handleNotification);
-		if ($page.data.features.analytics) socket.on('analytics', handleAnalytics);
-		if ($page.data.features.battery) socket.on('battery', handleBattery);
-		if ($page.data.features.download_firmware) socket.on('otastatus', handleOAT);
+		if (page.data.features.analytics) socket.on('analytics', handleAnalytics);
+		if (page.data.features.battery) socket.on('battery', handleBattery);
+		if (page.data.features.download_firmware) socket.on('otastatus', handleOAT);
 	};
 
 	const removeEventListeners = () => {
@@ -130,18 +129,19 @@
 	const handleOAT = (data: DownloadOTA) => telemetry.setDownloadOTA(data);
 
 	let menuOpen = $state(false);
+    
 	run(() => {
-		if (!($page.data.features.security && $user.bearer_token === '')) {
+		if (!(page.data.features.security && $user.bearer_token === '')) {
 			initSocket();
 		}
 	});
 </script>
 
 <svelte:head>
-	<title>{$page.data.title}</title>
+	<title>{page.data.title}</title>
 </svelte:head>
 
-{#if $page.data.features.security && $user.bearer_token === ''}
+{#if page.data.features.security && $user.bearer_token === ''}
 	<Login />
 {:else}
 	<div class="drawer lg:drawer-open">
@@ -171,7 +171,7 @@
 		<div
 			
 			class="fixed inset-0 z-40 max-h-full max-w-full bg-black/20 backdrop-blur"
-			transition:fade
+			transition:fade|global
 			onclick={() => close()}
 		></div> 
 	{/snippet}

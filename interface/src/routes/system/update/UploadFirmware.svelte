@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { openModal, closeModal } from 'svelte-modals/legacy';
+	import { modals } from 'svelte-modals';
 	import { user } from '$lib/stores/user';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import OTA from '~icons/tabler/file-upload';
@@ -17,7 +17,7 @@
 			const response = await fetch('/rest/uploadFirmware', {
 				method: 'POST',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic'
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic'
 				},
 				body: formData
 			});
@@ -28,7 +28,7 @@
 	}
 
 	function confirmBinUpload() {
-		openModal(ConfirmDialog, {
+		modals.open(ConfirmDialog, {
 			title: 'Confirm Flashing the Device',
 			message: 'Are you sure you want to overwrite the existing firmware with a new one?',
 			labels: {
@@ -36,7 +36,7 @@
 				confirm: { label: 'Upload', icon: OTA }
 			},
 			onConfirm: () => {
-				closeModal();
+				modals.close();
 				uploadBIN();
 			}
 		});
