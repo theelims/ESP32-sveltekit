@@ -47,6 +47,11 @@ public:
             doc["fs_used"] = ESPFS.usedBytes();
             doc["fs_total"] = ESPFS.totalBytes();
             doc["core_temp"] = temperatureRead();
+            if (psramFound()) {
+                doc["free_psram"] = ESP.getFreePsram();
+                doc["used_psram"] = ESP.getPsramSize() - ESP.getFreePsram();
+                doc["psram_size"] = ESP.getPsramSize();
+            }
 
             JsonObject jsonObject = doc.as<JsonObject>();
             _socket->emitEvent(EVENT_ANALYTICS, jsonObject);
