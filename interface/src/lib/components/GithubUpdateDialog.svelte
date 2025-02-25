@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
 	import { modals, onBeforeClose } from 'svelte-modals';
 	import { focusTrap } from 'svelte-focus-trap';
 	import { fly } from 'svelte/transition';
@@ -17,13 +16,13 @@
 
 	let progress = $state(0);
 
-	run(() => {
+	$effect(() => {
 		if ($telemetry.download_ota.status == 'progress') {
 			progress = $telemetry.download_ota.progress;
 		}
 	});
 
-	run(() => {
+	$effect(() => {
 		if ($telemetry.download_ota.status == 'error') {
 			updating = false;
 		}
@@ -32,7 +31,7 @@
 	let message = $state('Preparing ...');
 	let timerId: number = $state();
 
-	run(() => {
+	$effect(() => {
 		if ($telemetry.download_ota.status == 'progress') {
 			message = 'Downloading ...';
 		} else if ($telemetry.download_ota.status == 'error') {

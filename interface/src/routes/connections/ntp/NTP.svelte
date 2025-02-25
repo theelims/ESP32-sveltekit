@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { preventDefault } from 'svelte/legacy';
-
 	import { onMount, onDestroy } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
@@ -144,6 +142,13 @@
 		result += seconds + ' second' + (seconds > 1 ? 's' : '');
 
 		return result;
+	}
+
+    function preventDefault(fn) {
+		return function (event) {
+			event.preventDefault();
+			fn.call(this, event);
+		};
 	}
 </script>
 

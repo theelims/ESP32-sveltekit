@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## WIP
 
+> [!CAUTION]
+> This update has breaking changes!
+
 ### Added
 
 - Added compatibility with ESP32-C6
@@ -35,7 +38,7 @@ All notable changes to this project will be documented in this file.
 - Analytics task was refactored into a loop() function which is called by the ESP32-sveltekit main task.
 - Updated PsychicHttp to v1.2.1 incl. patches.
 - Updated DaisyUI
-- Updated Svelte 5 --> see [Svelte Migration Guide](https://svelte.dev/docs/svelte/v5-migration-guide#Snippets-instead-of-slots)
+- Updated Svelte 5 --> see [Svelte 5 Migration Guide](https://svelte.dev/docs/svelte/v5-migration-guide)
 
 ### Fixed
 
@@ -46,6 +49,12 @@ All notable changes to this project will be documented in this file.
 - Wrong return types in various getService functions.
 - Add file.close in fileHandler handleRequest [#73](https://github.com/theelims/ESP32-sveltekit/pull/73)
 - Fixed bug in WiFiSettingsService preventing discovery of networks other than the first
+
+### Migration Guide
+
+#### Frontend
+
+SvelteKit was updated to v2 and Svelte to v5. Please check the migration guides for [SvelteKit 2](https://svelte.dev/docs/kit/migrating-to-sveltekit-2) and the [Svelte 5 Migration Guide](https://svelte.dev/docs/svelte/v5-migration-guide) for the changes required on your frontend code.
 
 ## [0.5.0] - 2024-05-06
 

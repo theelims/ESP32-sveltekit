@@ -1,25 +1,21 @@
-<!-- @migration-task Error while migrating Svelte code: $$props is used together with named props in a way that cannot be automatically migrated. -->
 <script lang="ts">
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import Down from '~icons/tabler/chevron-down';
-	import { createEventDispatcher } from 'svelte';
 
-	const dispatch = createEventDispatcher();
+	let { opened, closed, open = false, class: className = '' } = $props();
 
 	function openCollapsible() {
 		open = !open;
 		if (open) {
-			dispatch('opened');
+			opened();
 		} else {
-			dispatch('closed');
+			closed();
 		}
 	}
-
-	export let open = false;
 </script>
 
-<div class="{$$props.class || ''} relative grid w-full max-w-2xl self-center overflow-hidden">
+<div class="{className} relative grid w-full max-w-2xl self-center overflow-hidden">
 	<div class="min-h-16 flex w-full items-center justify-between space-x-3 p-4 text-xl font-medium">
 		<span class="inline-flex items-baseline">
 			<slot name="icon" />

@@ -1,8 +1,4 @@
-<svelte:options immutable={true} />
-
 <script lang="ts">
-	import { preventDefault } from 'svelte/legacy';
-
 	import { onMount, onDestroy } from 'svelte';
 	import { modals } from 'svelte-modals';
 	import { slide } from 'svelte/transition';
@@ -313,6 +309,13 @@
 
 		dndNetworkList = reorder(dndNetworkList, from.index, to.index);
 		console.log(dndNetworkList);
+	}
+
+    function preventDefault(fn) {
+		return function (event) {
+			event.preventDefault();
+			fn.call(this, event);
+		};
 	}
 </script>
 

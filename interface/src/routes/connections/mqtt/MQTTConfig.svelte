@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { preventDefault } from 'svelte/legacy';
-
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
@@ -91,6 +89,13 @@
 			postBrokerSettings();
 			//alert('Form Valid');
 		}
+	}
+
+    function preventDefault(fn) {
+		return function (event) {
+			event.preventDefault();
+			fn.call(this, event);
+		};
 	}
 </script>
 

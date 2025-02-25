@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
 	import type { LayoutData } from './$types';
 	import { onDestroy, onMount } from 'svelte';
 	import { user } from '$lib/stores/user';
@@ -32,6 +31,9 @@
 	onMount(async () => {
 		if ($user.bearer_token !== '') {
 			await validateUser($user);
+		}
+        if (!(page.data.features.security && $user.bearer_token === '')) {
+			initSocket();
 		}
 	});
 
@@ -130,11 +132,6 @@
 
 	let menuOpen = $state(false);
     
-	run(() => {
-		if (!(page.data.features.security && $user.bearer_token === '')) {
-			initSocket();
-		}
-	});
 </script>
 
 <svelte:head>
@@ -142,7 +139,7 @@
 </svelte:head>
 
 {#if page.data.features.security && $user.bearer_token === ''}
-	<Login />
+	<Login on:signIn={initSocket}/>
 {:else}
 	<div class="drawer lg:drawer-open">
 		<input id="main-menu" type="checkbox" class="drawer-toggle" bind:checked={menuOpen} />
@@ -156,11 +153,7 @@
 		<!-- Side Navigation -->
 		<div class="drawer-side z-30 shadow-lg">
 			<label for="main-menu" class="drawer-overlay"></label>
-			<Menu
-				on:menuClicked={() => {
-					menuOpen = false;
-				}}
-			/>
+			<Menu bind:value={menuOpen}/>
 		</div>
 	</div>
 {/if}

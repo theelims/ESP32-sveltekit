@@ -46,6 +46,13 @@
 			onSaveUser(user);
 		}
 	}
+
+	function preventDefault(fn) {
+		return function (event) {
+			event.preventDefault();
+			fn.call(this, event);
+		};
+	}
 </script>
 
 {#if isOpen}

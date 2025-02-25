@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import logo from '$lib/assets/logo.png';
 	import Github from '~icons/tabler/brand-github';
 	import Discord from '~icons/tabler/brand-discord';
@@ -21,7 +19,8 @@
 	import Metrics from '~icons/tabler/report-analytics';
 	import { page } from '$app/state';
 	import { user } from '$lib/stores/user';
-	import { createEventDispatcher } from 'svelte';
+
+	let { menuOpen = $bindable() } = $props();
 
 	const github = { href: 'https://github.com/' + page.data.github, active: true };
 
@@ -126,8 +125,6 @@
 		}
 	] as menuItem[]);
 
-	const dispatch = createEventDispatcher();
-
 	function setActiveMenuItem(targetTitle: string) {
 		menuItems.forEach((item) => {
 			item.active = item.title === targetTitle;
@@ -136,10 +133,10 @@
 			});
 		});
 		menuItems = menuItems;
-		dispatch('menuClicked');
+		menuOpen = false;
 	}
 
-	run(() => {
+	$effect(() => {
 		setActiveMenuItem(page.data.title);
 	});
 </script>

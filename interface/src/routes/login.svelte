@@ -11,6 +11,8 @@
 		username: string;
 	};
 
+	let { signIn } = $props();
+
 	let username = $state('');
 	let password = $state('');
 
@@ -32,6 +34,7 @@
 				user.init(token.access_token);
 				let username = $user.username;
 				notifications.success('User ' + username + ' signed in', 5000);
+				signIn();
 			} else {
 				username = '';
 				password = '';
