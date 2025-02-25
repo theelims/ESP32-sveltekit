@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - Battery history graph to gauge battery consumption and device life.
 - FeatureService sends updates through the event system.
 - WiFiSettingsService can set the WiFi station mode to offline, without deleting the list of networks.
+- Expands menu on selected subitem [#77](https://github.com/theelims/ESP32-sveltekit/pull/77)
 - Added build flag `-D TELEPLOT_TASKS` to plot task heap high water mark with teleplot. You can include this in your tasks as well:
 
 ```cpp
