@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## WIP
+## Upcoming [0.5.0] - tbd
 
 > [!CAUTION]
 > This update has breaking changes!
@@ -33,13 +33,13 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Updated platform espressif32 to 6.8.1
 - Lightstate example uses simpler, less explicit constructor
 - MQTT library updated
 - Analytics task was refactored into a loop() function which is called by the ESP32-sveltekit main task.
 - Updated PsychicHttp to v1.2.1 incl. patches.
 - Updated DaisyUI
 - Updated Svelte 5 --> see [Svelte 5 Migration Guide](https://svelte.dev/docs/svelte/v5-migration-guide)
+- Changed platform to latest stable pioarduino (at time of writing: Arduino 3.1.3 and IDF 5.3.2.250210). The code remains fully backward compatible with platform espressif32 6.8.1
 
 ### Fixed
 

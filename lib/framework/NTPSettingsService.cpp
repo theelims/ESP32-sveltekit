@@ -74,9 +74,24 @@ void NTPSettingsService::configureNTP()
     }
     else
     {
+
+#ifdef CONFIG_LWIP_TCPIP_CORE_LOCKING
+        if (!sys_thread_tcpip(LWIP_CORE_LOCK_QUERY_HOLDER))
+        {
+            LOCK_TCPIP_CORE();
+        }
+#endif
+
         setenv("TZ", _state.tzFormat.c_str(), 1);
         tzset();
         sntp_stop();
+
+#ifdef CONFIG_LWIP_TCPIP_CORE_LOCKING
+        if (sys_thread_tcpip(LWIP_CORE_LOCK_QUERY_HOLDER))
+        {
+            UNLOCK_TCPIP_CORE();
+        }
+#endif
     }
 }
 

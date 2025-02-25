@@ -118,9 +118,16 @@ String MqttSettingsService::getLastError()
 
 void MqttSettingsService::onMqttConnect(bool sessionPresent)
 {
-    ESP_LOGI("MQTT", "Connected to MQTT: %s", _mqttClient.getMqttConfig()->uri);
+
+#if ESP_IDF_VERSION_MAJOR == 5
+    String uri = _mqttClient.getMqttConfig()->broker.address.uri;
+#else
+    String uri = _mqttClient.getMqttConfig()->uri;
+#endif
+
+    ESP_LOGI("MQTT", "Connected to MQTT: %s", uri.c_str());
 #ifdef SERIAL_INFO
-    Serial.printf("Connected to MQTT: %s\n", _mqttClient.getMqttConfig()->uri);
+    Serial.printf("Connected to MQTT: %s\n", uri.c_str());
 #endif
     _lastError = "None";
 }
