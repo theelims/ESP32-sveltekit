@@ -13,18 +13,36 @@ All notable changes to this project will be documented in this file.
 - Get current connection status from ESP32-SvelteKit. Useful for status LED or displays.
 - Battery history graph to gauge battery consumption and device life.
 - FeatureService sends updates through the event system.
+- WiFiSettingsService can set the WiFi station mode to offline, without deleting the list of networks.
+- Added build flag `-D TELEPLOT_TASKS` to plot task heap high water mark with teleplot. You can include this in your tasks as well:
+
+```cpp
+#ifdef TELEPLOT_TASKS
+        static int lastTime = 0;
+        if (millis() - lastTime > 1000)
+        {
+            lastTime = millis();
+            Serial.printf(">ESP32SveltekitTask:%i:%i\n", millis(), uxTaskGetStackHighWaterMark(NULL));
+        }
+#endif
+```
 
 ### Changed
 
 - Updated platform espressif32 to 6.8.1
 - Lightstate example uses simpler, less explicit constructor
 - MQTT library updated
+- Analytics task was refactored into a loop() function which is called by the ESP32-sveltekit main task.
 
 ### Fixed
 
 - Ensure thread safety for client subscriptions [#58](https://github.com/theelims/ESP32-sveltekit/pull/58)
 - Isolate non-returning functions in new tasks [#62](https://github.com/theelims/ESP32-sveltekit/pull/62)
 - Deferred websocket event connection to after user validation & login [#72](https://github.com/theelims/ESP32-sveltekit/pull/72)
+- Wrong return type battery service
+- Wrong return types in various getService functions.
+- Add file.close in fileHandler handleRequest [#73](https://github.com/theelims/ESP32-sveltekit/pull/73)
+- Fixed bug in WiFiSettingsService preventing discovery of networks other than the first
 
 ## [0.5.0] - 2024-05-06
 

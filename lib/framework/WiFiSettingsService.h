@@ -67,18 +67,25 @@ typedef struct
     bool available;
 } wifi_settings_t;
 
+enum class STAConnectionMode
+{
+    OFFLINE = 0,
+    STRENGTH,
+    PRIORITY
+};
+
 class WiFiSettings
 {
 public:
     // core wifi configuration
     String hostname;
-    bool priorityBySignalStrength;
+    u_int8_t staConnectionMode;
     std::vector<wifi_settings_t> wifiSettings;
 
     static void read(WiFiSettings &settings, JsonObject &root)
     {
         root["hostname"] = settings.hostname;
-        root["priority_RSSI"] = settings.priorityBySignalStrength;
+        root["connection_mode"] = settings.staConnectionMode;
 
         // create JSON array from root
         JsonArray wifiNetworks = root["wifi_networks"].to<JsonArray>();
@@ -108,7 +115,7 @@ public:
     static StateUpdateResult update(JsonObject &root, WiFiSettings &settings)
     {
         settings.hostname = root["hostname"] | SettingValue::format(FACTORY_WIFI_HOSTNAME);
-        settings.priorityBySignalStrength = root["priority_RSSI"] | true;
+        settings.staConnectionMode = root["connection_mode"] | 1;
 
         settings.wifiSettings.clear();
 
