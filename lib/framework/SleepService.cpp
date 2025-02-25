@@ -14,7 +14,7 @@
 #include <SleepService.h>
 
 // Definition of static member variables
-void (*SleepService::_callbackSleep)() = nullptr;
+sleepCallback SleepService::_callbackSleep = nullptr;
 u_int64_t _wakeUpPin = WAKEUP_PIN_NUMBER;
 bool _wakeUpSignal = WAKEUP_SIGNAL;
 pinTermination _wakeUpTermination = pinTermination::FLOATING;
