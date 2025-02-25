@@ -163,7 +163,7 @@
 			{#if menuItem.feature}
 				<li>
 					{#if menuItem.submenu}
-						<details>
+						<details open={menuItem.submenu.some(subItem => subItem.active)}>
 							<summary class="text-lg font-bold">
 								<svelte:component this={menuItem.icon} class="h-6 w-6" />
 								{menuItem.title}
