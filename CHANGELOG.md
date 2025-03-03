@@ -39,7 +39,7 @@ All notable changes to this project will be documented in this file.
 - Updated PsychicHttp to v1.2.1 incl. patches.
 - Updated DaisyUI
 - Updated Svelte 5 --> see [Svelte 5 Migration Guide](https://svelte.dev/docs/svelte/v5-migration-guide)
-- Changed platform to latest stable pioarduino (at time of writing: Arduino 3.1.3 and IDF 5.3.2.250210). The code remains fully backward compatible with platform espressif32 6.8.1
+- Changed platform to latest stable espressif32 6.8.1
 
 ### Fixed
 
@@ -56,6 +56,13 @@ All notable changes to this project will be documented in this file.
 #### Frontend
 
 SvelteKit was updated to v2 and Svelte to v5. Please check the migration guides for [SvelteKit 2](https://svelte.dev/docs/kit/migrating-to-sveltekit-2) and the [Svelte 5 Migration Guide](https://svelte.dev/docs/svelte/v5-migration-guide) for the changes required on your frontend code.
+
+To migrate your frontend run
+
+```
+npm install --force
+npx sv migrate svelte-5
+```
 
 ## [0.5.0] - 2024-05-06
 
