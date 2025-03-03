@@ -20,7 +20,7 @@
 	import { page } from '$app/state';
 	import { user } from '$lib/stores/user';
 
-	let { menuOpen = $bindable() } = $props();
+	let { closeMenu } = $props();
 
 	const github = { href: 'https://github.com/' + page.data.github, active: true };
 
@@ -132,8 +132,7 @@
 				subItem.active = subItem.title === targetTitle;
 			});
 		});
-		menuItems = menuItems;
-		menuOpen = false;
+		closeMenu();
 	}
 
 	$effect(() => {
@@ -156,7 +155,7 @@
 			{#if menuItem.feature}
 				<li>
 					{#if menuItem.submenu}
-						<details open={menuItem.submenu.some(subItem => subItem.active)}>
+						<details open={menuItem.submenu.some((subItem) => subItem.active)}>
 							<summary class="text-lg font-bold">
 								<menuItem.icon class="h-6 w-6" />
 								{menuItem.title}
@@ -171,7 +170,6 @@
 												class="text-ml font-bold"
 												onclick={() => {
 													setActiveMenuItem(subMenuItem.title);
-													menuItems = menuItems;
 												}}><subMenuItem.icon class="h-5 w-5" />{subMenuItem.title}</a
 											>
 										</li>
@@ -186,7 +184,6 @@
 							class="text-lg font-bold"
 							onclick={() => {
 								setActiveMenuItem(menuItem.title);
-								menuItems = menuItems;
 							}}><menuItem.icon class="h-6 w-6" />{menuItem.title}</a
 						>
 					{/if}

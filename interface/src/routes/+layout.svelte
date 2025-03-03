@@ -32,11 +32,10 @@
 		if ($user.bearer_token !== '') {
 			await validateUser($user);
 		}
-        if (!(page.data.features.security && $user.bearer_token === '')) {
+		if (!(page.data.features.security && $user.bearer_token === '')) {
 			initSocket();
 		}
 	});
-
 
 	const initSocket = () => {
 		const ws_token = page.data.features.security ? '?access_token=' + $user.bearer_token : '';
@@ -131,7 +130,6 @@
 	const handleOAT = (data: DownloadOTA) => telemetry.setDownloadOTA(data);
 
 	let menuOpen = $state(false);
-    
 </script>
 
 <svelte:head>
@@ -139,7 +137,7 @@
 </svelte:head>
 
 {#if page.data.features.security && $user.bearer_token === ''}
-	<Login on:signIn={initSocket}/>
+	<Login on:signIn={initSocket} />
 {:else}
 	<div class="drawer lg:drawer-open">
 		<input id="main-menu" type="checkbox" class="drawer-toggle" bind:checked={menuOpen} />
@@ -153,7 +151,11 @@
 		<!-- Side Navigation -->
 		<div class="drawer-side z-30 shadow-lg">
 			<label for="main-menu" class="drawer-overlay"></label>
-			<Menu bind:value={menuOpen}/>
+			<Menu
+				closeMenu={() => {
+					menuOpen = false;
+				}}
+			/>
 		</div>
 	</div>
 {/if}
@@ -162,11 +164,10 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	{#snippet backdrop({ close })}
 		<div
-			
 			class="fixed inset-0 z-40 max-h-full max-w-full bg-black/20 backdrop-blur"
 			transition:fade|global
 			onclick={() => close()}
-		></div> 
+		></div>
 	{/snippet}
 </Modals>
 
