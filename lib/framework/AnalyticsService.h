@@ -17,7 +17,6 @@
 #include <ArduinoJson.h>
 #include <ESPFS.h>
 #include <EventSocket.h>
-#include <task.h>
 
 #define MAX_ESP_ANALYTICS_SIZE 1024
 #define EVENT_ANALYTICS "analytics"

@@ -44,7 +44,6 @@
 #include <ESPFS.h>
 #include <PsychicHttp.h>
 #include <vector>
-#include <task.h>
 
 #ifdef EMBED_WWW
 #include <WWWData.h>
