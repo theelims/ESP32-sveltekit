@@ -916,7 +916,7 @@
 </code></pre></div>
 <h3 id="partitioning">Partitioning</h3>
 <p>If you choose to embed the frontend it becomes part of the firmware binary (default). As many ESP32 modules only come with 4MB built-in flash this results in the binary being too large for the reserved flash. Therefor a partition scheme with a larger section for the executable code is selected. However, this limits the LITTLEFS partition to 200kb. There are a great number of <a href="https://github.com/espressif/arduino-esp32/tree/master/tools/partitions">default partition tables</a> for Arduino-ESP32 to choose from. If you have 8MB or 16MB flash this would be your first choice. If you don't need OTA you can choose a partition scheme without OTA.</p>
-<p>Should you want to deploy the frontend from the flash's LITTLEFS partition on a 4MB chip you need to comment out the following two lines. Otherwise the 200kb will not be large enough to host the front end code.</p>
+<p>Should you want to deploy the frontend from the flash's LITTLEFS partition on a 4MB chip you need to comment out the following line. Otherwise the 200kb will not be large enough to host the front end code.</p>
 <div class="highlight"><pre><span></span><code><span class="na">board_build.partitions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">min_spiffs.csv</span>
 </code></pre></div>
 <h2 id="selecting-features">Selecting Features</h2>
