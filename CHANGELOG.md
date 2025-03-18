@@ -50,6 +50,7 @@ All notable changes to this project will be documented in this file.
 - Wrong return types in various getService functions.
 - Add file.close in fileHandler handleRequest [#73](https://github.com/theelims/ESP32-sveltekit/pull/73)
 - Fixed bug in WiFiSettingsService preventing discovery of networks other than the first
+- Fixed mixup pull up and pull down when configuring wake up pin in SleepService.cpp
 
 ### Migration Guide
 

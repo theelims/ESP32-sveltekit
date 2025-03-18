@@ -84,13 +84,13 @@ void SleepService::sleepNow()
 
     switch (_wakeUpTermination)
     {
-    case pinTermination::PULL_UP:
+    case pinTermination::PULL_DOWN:
         esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
         rtc_gpio_init((gpio_num_t)_wakeUpPin);
         rtc_gpio_pullup_dis((gpio_num_t)_wakeUpPin);
         rtc_gpio_pulldown_en((gpio_num_t)_wakeUpPin);
         break;
-    case pinTermination::PULL_DOWN:
+    case pinTermination::PULL_UP:
         esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
         rtc_gpio_init((gpio_num_t)_wakeUpPin);
         rtc_gpio_pullup_en((gpio_num_t)_wakeUpPin);
