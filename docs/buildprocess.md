@@ -171,3 +171,7 @@ The script will download a public certificate store from Mozilla (`board_ssl_cer
 ## Vite and LittleFS 32 Character Limit
 
 The static files for the website are build using vite. By default vite adds a unique hash value to all filenames for improved caching performance. However, LittleFS on the ESP32 is limited to filenames with 32 characters. This restricts the number of characters available for the user to name svelte files. To give a little bit more headroom a vite-plugin removes all hash values, as they offer no benefit on an ESP32. However, have the 32 character limit in mind when naming files. Excessively long names may still cause some issues when building the LittleFS binary.
+
+## Merged Firmware File for Web Flasher
+
+The PIO build system calls a script `merge_bin.py` to create a merged firmware binary ready to be used with [ESP Web Tools](https://esphome.github.io/esp-web-tools/). The file is located under the PIO build folder. Typically `.pio/build/{env}/firmware_merged.bin`.

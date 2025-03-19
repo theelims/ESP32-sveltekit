@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Added a build script to create a merged firmware file to use with [ESP Web Tools](https://esphome.github.io/esp-web-tools/)
 - Added compatibility with ESP32-C6
 - Added Arduino Log Colors
 - Possibility to add a loop callback to ESP32-Sveltekit to leverage its loop threat. Meant to include custom services so no separate task is needed for them.
