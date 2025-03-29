@@ -9,7 +9,7 @@
 	import { daisyColor } from '$lib/DaisyUiHelper';
 	import { analytics } from '$lib/stores/analytics';
 
-	Chart.register(...registerables);
+	Chart.register(...registerables); 
 
 	let heapChartElement: HTMLCanvasElement = $state();
 	let heapChart: Chart;
@@ -87,7 +87,7 @@
 						},
 						position: 'left',
 						min: 0,
-						max: Math.round($analytics.total_heap[0]),
+						max: Math.round(Math.max(...$analytics.total_heap)),
 						grid: { color: daisyColor('--bc', 10) },
 						ticks: {
 							color: daisyColor('--bc')
@@ -97,81 +97,71 @@
 				}
 			}
 		});
-		if ($analytics.psram_size[0]) {
-			psramChart = new Chart(psramChartElement, {
-				type: 'line',
-				data: {
-					labels: $analytics.uptime,
-					datasets: [
-						{
-							label: 'Total',
-							borderColor: daisyColor('--p'),
-							backgroundColor: daisyColor('--p', 50),
-							borderWidth: 2,
-							data: $analytics.psram_size,
-							yAxisID: 'y'
-						},
-						{
-							label: 'Used',
-							borderColor: daisyColor('--s'),
-							backgroundColor: daisyColor('--s', 50),
-							borderWidth: 2,
-							data: $analytics.free_psram,
-							yAxisID: 'y'
-						}
-					]
+		psramChart = new Chart(psramChartElement, {
+			type: 'line',
+			data: {
+				labels: $analytics.uptime,
+				datasets: [
+					{
+						label: 'Used',
+						borderColor: daisyColor('--p'),
+						backgroundColor: daisyColor('--p', 50),
+						borderWidth: 2,
+						data: $analytics.free_psram,
+						yAxisID: 'y'
+					}
+				]
+			},
+			options: {
+				maintainAspectRatio: false,
+				responsive: true,
+				plugins: {
+					legend: {
+						display: true
+					},
+					tooltip: {
+						mode: 'index',
+						intersect: false
+					}
 				},
-				options: {
-					maintainAspectRatio: false,
-					responsive: true,
-					plugins: {
-						legend: {
-							display: true
+				elements: {
+					point: {
+						radius: 1
+					}
+				},
+				scales: {
+					x: {
+						grid: {
+							color: daisyColor('--bc', 10)
 						},
-						tooltip: {
-							mode: 'index',
-							intersect: false
-						}
-					},
-					elements: {
-						point: {
-							radius: 1
-						}
-					},
-					scales: {
-						x: {
-							grid: {
-								color: daisyColor('--bc', 10)
-							},
-							ticks: {
-								color: daisyColor('--bc')
-							},
-							display: false
+						ticks: {
+							color: daisyColor('--bc')
 						},
-						y: {
-							type: 'linear',
-							title: {
-								display: true,
-								text: 'PSRAM [KB]',
-								color: daisyColor('--bc'),
-								font: {
-									size: 16,
-									weight: 'bold'
-								}
-							},
-							position: 'left',
-							min: 0,
-							max: Math.round($analytics.psram_size[0]),
-							grid: { color: daisyColor('--bc', 10) },
-							ticks: {
-								color: daisyColor('--bc')
-							},
-							border: { color: daisyColor('--bc', 10) }
-						}
+						display: false
+					},
+					y: {
+						type: 'linear',
+						title: {
+							display: true,
+							text: 'PSRAM [KB]',
+							color: daisyColor('--bc'),
+							font: {
+								size: 16,
+								weight: 'bold'
+							}
+						},
+						position: 'left',
+						min: 0,
+						max: Math.round(Math.max(...$analytics.psram_size)),
+						grid: { color: daisyColor('--bc', 10) },
+						ticks: {
+							color: daisyColor('--bc')
+						},
+						border: { color: daisyColor('--bc', 10) }
 					}
 				}
-			});
-		}
+			}
+		});
 		filesystemChart = new Chart(filesystemChartElement, {
 			type: 'line',
 			data: {
@@ -227,7 +217,7 @@
 						},
 						position: 'left',
 						min: 0,
-						max: Math.round($analytics.fs_total[0]),
+						max: Math.round(Math.max(...$analytics.fs_total)),
 						grid: { color: daisyColor('--bc', 10) },
 						ticks: {
 							color: daisyColor('--bc')
@@ -312,17 +302,19 @@
 		heapChart.data.datasets[0].data = $analytics.used_heap;
 		heapChart.data.datasets[1].data = $analytics.max_alloc_heap;
 		heapChart.update('none');
+		heapChart.options.scales.y.max = Math.round(Math.max(...$analytics.total_heap));
 
-		if ($analytics.psram_size[0]) {
+		if (Math.max(...$analytics.psram_size)) {
 			psramChart.data.labels = $analytics.uptime;
-			psramChart.data.datasets[0].data = $analytics.psram_size;
-			psramChart.data.datasets[1].data = $analytics.used_psram;
+			psramChart.data.datasets[0].data = $analytics.used_psram;
 			psramChart.update('none');
+			psramChart.options.scales.y.max = Math.round(Math.max(...$analytics.psram_size));
 		}
 
 		filesystemChart.data.labels = $analytics.uptime;
 		filesystemChart.data.datasets[0].data = $analytics.fs_used;
 		filesystemChart.update('none');
+		filesystemChart.options.scales.y.max = Math.round(Math.max(...$analytics.fs_total));
 
 		temperatureChart.data.labels = $analytics.uptime;
 		temperatureChart.data.datasets[0].data = $analytics.core_temp;
@@ -373,7 +365,7 @@
 			<canvas bind:this={heapChartElement}></canvas>
 		</div>
 	</div>
-	{#if ($analytics.psram_size[0])}
+	{#if (Math.max(...$analytics.psram_size))}
 		<div class="w-full overflow-x-auto">
 			<div
 				class="flex w-full flex-col space-y-1 h-60"
