@@ -169,6 +169,133 @@
 				transition:slide|local={{ duration: 300, easing: cubicOut }}
 			>
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10">
+						<Stopwatch class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Uptime</div>
+						<div class="text-sm opacity-75">
+							{convertSeconds(systemInformation.uptime)}
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
+						<Heap class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Memory</div>
+						<div class="text-sm opacity-75">
+							{(((systemInformation.total_heap-systemInformation.free_heap) / systemInformation.total_heap) * 100).toFixed(1)} % of {Math.round(systemInformation.total_heap / 1000).toLocaleString('en-US')} KB
+							<span>({Math.round(systemInformation.free_heap / 1000).toLocaleString('en-US')} KB free, Max alloc {Math.round(systemInformation.max_alloc_heap/1000).toLocaleString('en-US')} KB)</span>
+						</div>
+					</div>
+				</div>
+
+				{#if (systemInformation.psram_size)}
+					<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+						<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
+							<Pyramid class="text-primary-content h-auto w-full scale-75" />
+						</div>
+						<div>
+							<div class="font-bold">PSRAM</div>
+							<div class="text-sm opacity-75">
+								{(((systemInformation.used_psram) / systemInformation.psram_size) * 100).toFixed(1)} % of {Math.round(systemInformation.psram_size / 1000).toLocaleString('en-US')} KB
+								<span>({Math.round(systemInformation.free_psram / 1000).toLocaleString('en-US')} KB free)</span>
+							</div>
+						</div>
+					</div>
+				{/if}
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
+						<Folder class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">File System</div>
+						<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
+							<span
+								>{((systemInformation.fs_used / systemInformation.fs_total) * 100).toFixed(1)} % of {Math.round(
+									systemInformation.fs_total / 1000
+								).toLocaleString('en-US')} KB</span
+							>
+
+							<span
+								>({Math.round(
+									(systemInformation.fs_total - systemInformation.fs_used) /
+									1000
+								).toLocaleString('en-US')}
+								KB free)</span
+							>
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
+						<Temperature class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Core Temperature</div>
+						<div class="text-sm opacity-75">
+							{systemInformation.core_temp == 53.33
+								? 'NaN'
+								: systemInformation.core_temp.toFixed(2) + ' °C'}
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
+						<Power class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Reset Reason</div>
+						<div class="text-sm opacity-75">
+							{systemInformation.cpu_reset_reason}
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
+						<Sketch class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Sketch</div>
+						<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
+							<span>
+								{(
+									(systemInformation.sketch_size / systemInformation.free_sketch_space) *
+									100
+								).toFixed(1)} % of
+								{Math.round(systemInformation.free_sketch_space / 1000).toLocaleString('en-US')} KB
+							</span>
+
+							<span>
+								({Math.round(
+									(systemInformation.free_sketch_space - systemInformation.sketch_size) /
+									1000
+								).toLocaleString('en-US')} KB free)
+							</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
+						<CPP class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Firmware Version</div>
+						<div class="text-sm opacity-75">
+							{systemInformation.firmware_version}
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
 					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
 						<CPU class="text-primary-content h-auto w-full scale-75" />
 					</div>
@@ -194,18 +321,6 @@
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
 					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-						<CPP class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">Firmware Version</div>
-						<div class="text-sm opacity-75">
-							{systemInformation.firmware_version}
-						</div>
-					</div>
-				</div>
-
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
 						<Speed class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -220,132 +335,18 @@
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
 					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-						<Heap class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">Heap (Free / Max Alloc)</div>
-						<div class="text-sm opacity-75">
-							{systemInformation.free_heap.toLocaleString('en-US')} / {systemInformation.max_alloc_heap.toLocaleString(
-								'en-US'
-							)} bytes
-						</div>
-					</div>
-				</div>
-
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-						<Pyramid class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">PSRAM (Size / Free)</div>
-						<div class="text-sm opacity-75">
-							{systemInformation.psram_size.toLocaleString('en-US')} / {systemInformation.psram_size.toLocaleString(
-								'en-US'
-							)} bytes
-						</div>
-					</div>
-				</div>
-
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-						<Sketch class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">Sketch (Used / Free)</div>
-						<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
-							<span>
-								{(
-									(systemInformation.sketch_size / systemInformation.free_sketch_space) *
-									100
-								).toFixed(1)} % of
-								{(systemInformation.free_sketch_space / 1000000).toLocaleString('en-US')} MB used
-							</span>
-
-							<span>
-								({(
-									(systemInformation.free_sketch_space - systemInformation.sketch_size) /
-									1000000
-								).toLocaleString('en-US')} MB free)
-							</span>
-						</div>
-					</div>
-				</div>
-
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
 						<Flash class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
-						<div class="font-bold">Flash Chip (Size / Speed)</div>
+						<div class="font-bold">Flash Chip</div>
 						<div class="text-sm opacity-75">
-							{(systemInformation.flash_chip_size / 1000000).toLocaleString('en-US')} MB / {(
+							{Math.round(systemInformation.flash_chip_size / 1000).toLocaleString('en-US')} KB / {(
 								systemInformation.flash_chip_speed / 1000000
 							).toLocaleString('en-US')} MHz
 						</div>
 					</div>
 				</div>
 
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-						<Folder class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">File System (Used / Total)</div>
-						<div class="flex flex-wrap justify-start gap-1 text-sm opacity-75">
-							<span
-								>{((systemInformation.fs_used / systemInformation.fs_total) * 100).toFixed(1)} % of {(
-									systemInformation.fs_total / 1000000
-								).toLocaleString('en-US')} MB used</span
-							>
-
-							<span
-								>({(
-									(systemInformation.fs_total - systemInformation.fs_used) /
-									1000000
-								).toLocaleString('en-US')}
-								MB free)</span
-							>
-						</div>
-					</div>
-				</div>
-
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-						<Temperature class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">Core Temperature</div>
-						<div class="text-sm opacity-75">
-							{systemInformation.core_temp == 53.33
-								? 'NaN'
-								: systemInformation.core_temp.toFixed(2) + ' °C'}
-						</div>
-					</div>
-				</div>
-
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
-						<Stopwatch class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">Uptime</div>
-						<div class="text-sm opacity-75">
-							{convertSeconds(systemInformation.uptime)}
-						</div>
-					</div>
-				</div>
-
-				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10 flex-none">
-						<Power class="text-primary-content h-auto w-full scale-75" />
-					</div>
-					<div>
-						<div class="font-bold">Reset Reason</div>
-						<div class="text-sm opacity-75">
-							{systemInformation.cpu_reset_reason}
-						</div>
-					</div>
-				</div>
 			</div>
 		{/await}
 	</div>
