@@ -44,7 +44,7 @@ void SleepService::begin()
                 _securityManager->wrapRequest(std::bind(&SleepService::sleep, this, std::placeholders::_1),
                                               AuthenticationPredicates::IS_AUTHENTICATED));
 
-    ESP_LOGV("SleepService", "Registered POST endpoint: %s", SLEEP_SERVICE_PATH);
+    ESP_LOGV(TAG, "Registered POST endpoint: %s", SLEEP_SERVICE_PATH);
 }
 
 esp_err_t SleepService::sleep(PsychicRequest *request)
@@ -60,7 +60,7 @@ void SleepService::sleepNow()
 #ifdef SERIAL_INFO
     Serial.println("Going into deep sleep now");
 #endif
-    ESP_LOGI("SleepService", "Going into deep sleep now");
+    ESP_LOGI(TAG, "Going into deep sleep now");
     // Callback for main code sleep preparation
     if (_callbackSleep != nullptr)
     {
@@ -74,7 +74,7 @@ void SleepService::sleepNow()
     WiFi.disconnect(true);
     delay(500);
 
-    ESP_LOGD("SleepService", "Enabling GPIO wakeup on pin GPIO%d\n", _wakeUpPin);
+    ESP_LOGD(TAG, "Enabling GPIO wakeup on pin GPIO%d\n", _wakeUpPin);
 
 // special treatment for ESP32-C3 because of the RISC-V architecture
 #ifdef CONFIG_IDF_TARGET_ESP32C3

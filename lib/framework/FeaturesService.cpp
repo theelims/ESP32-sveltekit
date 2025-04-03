@@ -27,13 +27,13 @@ void FeaturesService::begin()
                     createJSON(root);
                     return response.send(); });
 
-    ESP_LOGV("FeaturesService", "Registered GET endpoint: %s", FEATURES_SERVICE_PATH);
+    ESP_LOGV(TAG, "Registered GET endpoint: %s", FEATURES_SERVICE_PATH);
 
     _socket->registerEvent(FEATURES_SERVICE_EVENT);
 
     _socket->onSubscribe(FEATURES_SERVICE_EVENT, [&](const String &originId)
                          {
-                             ESP_LOGV("FeaturesService", "Sending features to %s", originId.c_str());
+                             ESP_LOGV(TAG, "Sending features to %s", originId.c_str());
                              JsonDocument doc;
                              JsonObject root = doc.as<JsonObject>();
                              createJSON(root);

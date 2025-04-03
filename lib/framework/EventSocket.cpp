@@ -18,25 +18,25 @@ void EventSocket::begin()
     _socket.onFrame(std::bind(&EventSocket::onFrame, this, std::placeholders::_1, std::placeholders::_2));
     _server->on(EVENT_SERVICE_PATH, &_socket);
 
-    ESP_LOGV("EventSocket", "Registered event socket endpoint: %s", EVENT_SERVICE_PATH);
+    ESP_LOGV(TAG, "Registered event socket endpoint: %s", EVENT_SERVICE_PATH);
 }
 
 void EventSocket::registerEvent(String event)
 {
     if (!isEventValid(event))
     {
-        ESP_LOGD("EventSocket", "Registering event: %s", event.c_str());
+        ESP_LOGD(TAG, "Registering event: %s", event.c_str());
         events.push_back(event);
     }
     else
     {
-        ESP_LOGW("EventSocket", "Event already registered: %s", event.c_str());
+        ESP_LOGW(TAG, "Event already registered: %s", event.c_str());
     }
 }
 
 void EventSocket::onWSOpen(PsychicWebSocketClient *client)
 {
-    ESP_LOGI("EventSocket", "ws[%s][%u] connect", client->remoteIP().toString().c_str(), client->socket());
+    ESP_LOGI(TAG, "ws[%s][%u] connect", client->remoteIP().toString().c_str(), client->socket());
 }
 
 void EventSocket::onWSClose(PsychicWebSocketClient *client)
@@ -47,26 +47,26 @@ void EventSocket::onWSClose(PsychicWebSocketClient *client)
         event_subscriptions.second.remove(client->socket());
     }
     xSemaphoreGive(clientSubscriptionsMutex);
-    ESP_LOGI("EventSocket", "ws[%s][%u] disconnect", client->remoteIP().toString().c_str(), client->socket());
+    ESP_LOGI(TAG, "ws[%s][%u] disconnect", client->remoteIP().toString().c_str(), client->socket());
 }
 
 esp_err_t EventSocket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame *frame)
 {
-    ESP_LOGV("EventSocket", "ws[%s][%u] opcode[%d]", request->client()->remoteIP().toString().c_str(),
+    ESP_LOGV(TAG, "ws[%s][%u] opcode[%d]", request->client()->remoteIP().toString().c_str(),
              request->client()->socket(), frame->type);
 
     JsonDocument doc;
 #if FT_ENABLED(EVENT_USE_JSON)
     if (frame->type == HTTPD_WS_TYPE_TEXT)
     {
-        ESP_LOGV("EventSocket", "ws[%s][%u] request: %s", request->client()->remoteIP().toString().c_str(),
+        ESP_LOGV(TAG, "ws[%s][%u] request: %s", request->client()->remoteIP().toString().c_str(),
                  request->client()->socket(), (char *)frame->payload);
 
         DeserializationError error = deserializeJson(doc, (char *)frame->payload, frame->len);
 #else
     if (frame->type == HTTPD_WS_TYPE_BINARY)
     {
-        ESP_LOGV("EventSocket", "ws[%s][%u] request: %s", request->client()->remoteIP().toString().c_str(),
+        ESP_LOGV(TAG, "ws[%s][%u] request: %s", request->client()->remoteIP().toString().c_str(),
                  request->client()->socket(), (char *)frame->payload);
 
         DeserializationError error = deserializeMsgPack(doc, (char *)frame->payload, frame->len);
@@ -85,7 +85,7 @@ esp_err_t EventSocket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame 
                 }
                 else
                 {
-                    ESP_LOGW("EventSocket", "Client tried to subscribe to unregistered event: %s", doc["data"].as<String>().c_str());
+                    ESP_LOGW(TAG, "Client tried to subscribe to unregistered event: %s", doc["data"].as<String>().c_str());
                 }
             }
             else if (event == "unsubscribe")
@@ -99,7 +99,7 @@ esp_err_t EventSocket::onFrame(PsychicWebSocketRequest *request, httpd_ws_frame 
             }
             return ESP_OK;
         }
-        ESP_LOGW("EventSocket", "Error[%d] parsing JSON: %s", error, (char *)frame->payload);
+        ESP_LOGW(TAG, "Error[%d] parsing JSON: %s", error, (char *)frame->payload);
     }
     return ESP_OK;
 }
@@ -109,7 +109,7 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
     // Only process valid events
     if (!isEventValid(String(event)))
     {
-        ESP_LOGW("EventSocket", "Method tried to emit unregistered event: %s", event);
+        ESP_LOGW(TAG, "Method tried to emit unregistered event: %s", event);
         return;
     }
 
@@ -149,7 +149,7 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
         auto *client = _socket.getClient(originSubscriptionId);
         if (client)
         {
-            ESP_LOGV("EventSocket", "Emitting event: %s to %s[%u], Message[%d]: %s", event, client->remoteIP().toString().c_str(), client->socket(), len, output);
+            ESP_LOGV(TAG, "Emitting event: %s to %s[%u], Message[%d]: %s", event, client->remoteIP().toString().c_str(), client->socket(), len, output);
 #if FT_ENABLED(EVENT_USE_JSON)
             client->sendMessage(HTTPD_WS_TYPE_TEXT, output, len);
 #else
@@ -170,7 +170,7 @@ void EventSocket::emitEvent(String event, JsonObject &jsonObject, const char *or
                 subscriptions.remove(subscription);
                 continue;
             }
-            ESP_LOGV("EventSocket", "Emitting event: %s to %s[%u], Message[%d]: %s", event, client->remoteIP().toString().c_str(), client->socket(), len, output);
+            ESP_LOGV(TAG, "Emitting event: %s to %s[%u], Message[%d]: %s", event, client->remoteIP().toString().c_str(), client->socket(), len, output);
 #if FT_ENABLED(EVENT_USE_JSON)
             client->sendMessage(HTTPD_WS_TYPE_TEXT, output, len);
 #else
@@ -203,7 +203,7 @@ void EventSocket::onEvent(String event, EventCallback callback)
 {
     if (!isEventValid(event))
     {
-        ESP_LOGW("EventSocket", "Method tried to register unregistered event: %s", event.c_str());
+        ESP_LOGW(TAG, "Method tried to register unregistered event: %s", event.c_str());
         return;
     }
     event_callbacks[event].push_back(callback);
@@ -213,11 +213,11 @@ void EventSocket::onSubscribe(String event, SubscribeCallback callback)
 {
     if (!isEventValid(event))
     {
-        ESP_LOGW("EventSocket", "Method tried to subscribe to unregistered event: %s", event.c_str());
+        ESP_LOGW(TAG, "Method tried to subscribe to unregistered event: %s", event.c_str());
         return;
     }
     subscribe_callbacks[event].push_back(callback);
-    ESP_LOGI("EventSocket", "onSubscribe for event: %s", event.c_str());
+    ESP_LOGI(TAG, "onSubscribe for event: %s", event.c_str());
 }
 
 bool EventSocket::isEventValid(String event)
