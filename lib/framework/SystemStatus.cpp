@@ -109,7 +109,7 @@ void SystemStatus::begin()
                 _securityManager->wrapRequest(std::bind(&SystemStatus::systemStatus, this, std::placeholders::_1),
                                               AuthenticationPredicates::IS_AUTHENTICATED));
 
-    ESP_LOGV("SystemStatus", "Registered GET endpoint: %s", SYSTEM_STATUS_SERVICE_PATH);
+    ESP_LOGV(TAG, "Registered GET endpoint: %s", SYSTEM_STATUS_SERVICE_PATH);
 }
 
 esp_err_t SystemStatus::systemStatus(PsychicRequest *request)

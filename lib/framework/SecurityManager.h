@@ -26,6 +26,9 @@
 #define AUTHORIZATION_HEADER_PREFIX "Bearer "
 #define AUTHORIZATION_HEADER_PREFIX_LEN 7
 
+#undef TAG
+#define TAG "🐼"
+
 class User
 {
 public:

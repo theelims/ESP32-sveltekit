@@ -109,7 +109,7 @@ public:
             JsonUtils::writeIP(root, "dns_ip_2", wifi.dnsIP2);
         }
 
-        ESP_LOGV("WiFiSettings", "WiFi Settings read");
+        ESP_LOGV(TAG, "WiFi Settings read");
     }
 
     static StateUpdateResult update(JsonObject &root, WiFiSettings &settings)
@@ -130,7 +130,7 @@ public:
                 // max 5 wifi networks
                 if (i++ >= 5)
                 {
-                    ESP_LOGE("WiFiSettings", "Too many wifi networks");
+                    ESP_LOGE(TAG, "Too many wifi networks");
                     break;
                 }
 
@@ -140,7 +140,7 @@ public:
                 // Check if SSID length is between 1 and 31 characters and password between 0 and 64 characters
                 if (wifi["ssid"].as<String>().length() < 1 || wifi["ssid"].as<String>().length() > 31 || wifi["password"].as<String>().length() > 64)
                 {
-                    ESP_LOGE("WiFiSettings", "SSID or password length is invalid");
+                    ESP_LOGE(TAG, "SSID or password length is invalid");
                 }
                 else
                 {
@@ -201,7 +201,7 @@ public:
                 });
             }
         }
-        ESP_LOGV("WiFiSettings", "WiFi Settings updated");
+        ESP_LOGV(TAG, "WiFi Settings updated");
 
         return StateUpdateResult::CHANGED;
     };
