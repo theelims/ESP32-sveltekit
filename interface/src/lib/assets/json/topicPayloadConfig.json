@@ -1,0 +1,18 @@
+{
+    "~": "homeassistant/binary_sensor/genius-2222699880",
+    "name": "Genius Plus X",
+    "unique_id": 2222699880,
+    "device_class": "smoke",
+    "state_topic": "~/state",
+    "schema": "json",
+    "value_template": "{{value_json.state}}",
+    "entity_picture": "http://genius-gateway/hekatron-genius-plus-x.png",
+    "device": {
+      "identifiers": 2222699880,
+      "manufacturer": "Hekatron Vertriebs GmbH",
+      "model": "Genius Plus X",
+      "name": "Rauchmelder",
+      "serial_number": 2222699880,
+      "suggested_area": "Wohnzimmer"
+    }
+  }

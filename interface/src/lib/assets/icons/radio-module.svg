@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="24"
+   height="24"
+   viewBox="0 0 24 24"
+   version="1.1"
+   id="svg1"
+   xml:space="preserve"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   sodipodi:docname="radio-module.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="px"
+     inkscape:zoom="16.267265"
+     inkscape:cx="10.05086"
+     inkscape:cy="14.937975"
+     inkscape:window-width="1055"
+     inkscape:window-height="1032"
+     inkscape:window-x="81"
+     inkscape:window-y="73"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" /><defs
+     id="defs1" /><g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1"><path
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
+       d="M 8.0079389,8.6940024 V 4.8908475 C 8.4395047,4.3733967 8.9416135,3.9619046 9.4715492,3.5922097 h 8.2443868 c 1.646643,1.1717376 2.737728,2.5882538 3.149541,4.3040574 V 11.755077 L 20.031775,13.48041 H 16.474647 V 7.2283962 h -5.743281 v 1.4656062 z"
+       id="path1"
+       sodipodi:nodetypes="cccccccccccc" /><g
+       style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"
+       id="g3"
+       transform="rotate(-144.82497,10.895309,15.344246)"
+       inkscape:transform-center-x="3.1226071"
+       inkscape:transform-center-y="4.0324753"><path
+         d="m 12,18 h 0.01"
+         id="path2" /><path
+         d="m 9.172,15.172 a 4,4 0 0 1 5.656,0"
+         id="path3" /><path
+         d="m 6.343,12.343 a 8,8 0 0 1 11.314,0"
+         id="path4" /></g></g></svg>

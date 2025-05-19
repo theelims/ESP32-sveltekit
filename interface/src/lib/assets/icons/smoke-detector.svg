@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="24"
+   height="24"
+   viewBox="0 0 24 24"
+   fill="none"
+   stroke="currentColor"
+   stroke-width="2"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   class="icon icon-tabler icons-tabler-outline icon-tabler-circle-rectangle"
+   version="1.1"
+   id="svg3"
+   sodipodi:docname="hekatron.svg"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs3" />
+  <sodipodi:namedview
+     id="namedview3"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     showguides="true"
+     showgrid="false"
+     inkscape:zoom="16.812501"
+     inkscape:cx="11.420074"
+     inkscape:cy="12.936802"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3">
+    <inkscape:grid
+       id="grid9"
+       units="px"
+       originx="0"
+       originy="0"
+       spacingx="1"
+       spacingy="1"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="5"
+       enabled="true"
+       visible="false" />
+  </sodipodi:namedview>
+  <path
+     stroke="none"
+     d="M0 0h24v24H0z"
+     fill="none"
+     id="path1" />
+  <path
+     id="path5"
+     d="M 1.5062151,10.816626 C 1.4467357,6.3856654 6.2072253,1.4467364 12.006215,1.4467363 c 5.79899,0 10.5,4.7010108 10.5,10.5000017 0,5.798991 -4.70101,10.500002 -10.5,10.500002 -5.7989898,0 -10.4999999,-4.998409 -10.4999999,-9.250931"
+     sodipodi:nodetypes="csssc"
+     style="stroke-linecap:butt;stroke-width:1.88976378;stroke-dasharray:none" />
+  <rect
+     style="fill:none;stroke-width:0.755905;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+     id="rect5"
+     width="5.504591"
+     height="2.2479048"
+     x="0.88202548"
+     y="10.897077" />
+  <ellipse
+     style="fill:none;stroke-width:0.755906;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+     id="path9"
+     cx="7.7620578"
+     cy="8.6367283"
+     rx="2.5216043"
+     ry="2.5630317" />
+</svg>

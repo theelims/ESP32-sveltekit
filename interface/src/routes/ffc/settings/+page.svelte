@@ -1,0 +1,442 @@
+<script lang="ts">
+	import type { PageData } from './$types';
+	import { onMount, onDestroy } from 'svelte';
+	import { socket } from '$lib/stores/socket';
+	import { slide } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
+	import InputPassword from '$lib/components/InputPassword.svelte';
+	import SettingsCard from '$lib/components/SettingsCard.svelte';
+	import { user } from '$lib/stores/user';
+	import { page } from '$app/state';
+	import { notifications } from '$lib/components/toasts/notifications';
+	import Spinner from '$lib/components/Spinner.svelte';
+	import InputUnit from '$lib/components/InputUnit.svelte';
+	import Collapsible from '$lib/components/Collapsible.svelte';
+	import IconSettings from '~icons/tabler/adjustments';
+	import IconCPU from '~icons/tabler/cpu';
+	import IconTemperature from '~icons/tabler/temperature';
+	import IconWind from '~icons/tabler/wind';
+	import IconSave from '~icons/tabler/device-floppy';
+
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
+
+	const minTemp = 1;
+	const maxTemp = 100;
+	const minDutyCycle = 0;
+	const maxDutyCycle = 100;
+
+	type ControllerSettings = {
+		lowerTemp: number; // °C
+		upperTemp: number; // °C
+		minDutyCycle: number; // %
+		maxDutyCycle: number; // %
+		relevantSensor: number; // 1: compressor, 2: condenser
+	};
+
+	type ControllerStatus = {
+		tempCompressor: number;
+		tempCondenser: number;
+		rpmSupplyFan: number;
+		rpmExhaustFan: number;
+		dutyCycleSupplyFan: number;
+		dutyCycleExhaustFan: number;
+	};
+
+	let sensorOpts = $state([
+		{
+			id: 1,
+			text: `Compressor temperature`
+		},
+		{
+			id: 2,
+			text: `Condenser temperature`
+		}
+	]);
+
+	const defaultSettings: ControllerSettings = {
+		lowerTemp: 25, // °C
+		upperTemp: 50, // °C
+		minDutyCycle: 20, // %
+		maxDutyCycle: 100, // %
+		relevantSensor: 1 // 1: compressor
+	};
+
+	let settings: ControllerSettings = $state(defaultSettings);
+	let strSettings: string = $state(JSON.stringify(defaultSettings)); // to recognize changes
+	let isSettingsDirty: boolean = $derived(JSON.stringify(settings) !== strSettings);
+
+	let status: ControllerStatus = $state({
+		tempCompressor: NaN,
+		tempCondenser: NaN,
+		rpmSupplyFan: NaN,
+		rpmExhaustFan: NaN,
+		dutyCycleSupplyFan: NaN,
+		dutyCycleExhaustFan: NaN
+	});
+
+	async function getControllerSettings() {
+		try {
+			const response = await fetch('/rest/controller/settings', {
+				method: 'GET',
+				headers: {
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					'Content-Type': 'application/json'
+				}
+			});
+			settings = await response.json();
+			strSettings = JSON.stringify(settings); // Store the recently loaded settings in a string variable
+		} catch (error) {
+			console.error('Error:', error);
+		}
+	}
+
+	async function getControllerStatus() {
+		try {
+			const response = await fetch('/rest/controller/status', {
+				method: 'GET',
+				headers: {
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					'Content-Type': 'application/json'
+				}
+			});
+			status = await response.json();
+		} catch (error) {
+			console.error('Error:', error);
+		}
+	}
+
+	async function postControllerSettings() {
+		try {
+			const response = await fetch('/rest/controller/settings', {
+				method: 'POST',
+				headers: {
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(settings)
+			});
+			if (response.status == 200) {
+				notifications.success('Controller settings updated.', 3000);
+				settings = await response.json();
+				strSettings = JSON.stringify(settings); // Store the recently loaded settings in a string variable
+			} else {
+				notifications.error('User not authorized.', 3000);
+			}
+		} catch (error) {
+			console.error('Error:', error);
+		}
+	}
+
+	onMount(() => {
+		socket.on<ControllerStatus>('controller-status', (data) => {
+			status = data;
+		});
+	});
+
+	onDestroy(() => socket.off('controller-status'));
+
+	let formErrors = $state({
+		lowerTemp: false,
+		upperTemp: false,
+		minDutyCycle: false,
+		maxDutyCycle: false
+	});
+
+	let hasError = $derived(
+		formErrors.lowerTemp ||
+			formErrors.upperTemp ||
+			formErrors.minDutyCycle ||
+			formErrors.maxDutyCycle
+	);
+</script>
+
+<div
+	class="mx-0 my-1 flex flex-col space-y-4
+     sm:mx-8 sm:my-8"
+>
+	<SettingsCard collapsible={false}>
+		{#snippet icon()}
+			<IconCPU class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+		{/snippet}
+		{#snippet title()}
+			<span>Controller</span>
+		{/snippet}
+		<div class="w-full overflow-x-auto">
+			{#await getControllerStatus()}
+				<Spinner text="" />
+			{:then nothing}
+				<div
+					class="grid w-full grid-cols-1 content-center gap-1 sm:grid-cols-2"
+					transition:slide|local={{ duration: 300, easing: cubicOut }}
+				>
+					<!-- Temp Compressor -->
+					<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+						<div
+							class="mask mask-hexagon h-auto w-10 {!isNaN(status.tempCompressor)
+								? 'bg-primary'
+								: 'bg-base-300'}"
+						>
+							<IconTemperature class="text-primary-content h-auto w-full scale-75" />
+						</div>
+						<div>
+							<div class="font-bold">Compressor temp.</div>
+							<div class="text-sm opacity-75">
+								{#if !isNaN(status.tempCompressor)}
+									{status.tempCompressor} °C
+								{:else}
+									Not available
+								{/if}
+							</div>
+						</div>
+					</div>
+					<!-- Temp Condenser -->
+					<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+						<div
+							class="mask mask-hexagon h-auto w-10 {!isNaN(status.tempCondenser)
+								? 'bg-primary'
+								: 'bg-base-300'}"
+						>
+							<IconTemperature class="text-primary-content h-auto w-full scale-75" />
+						</div>
+						<div>
+							<div class="font-bold">Condenser temp.</div>
+							<div class="text-sm opacity-75">
+								{#if !isNaN(status.tempCondenser)}
+									{status.tempCondenser} °C
+								{:else}
+									Not available
+								{/if}
+							</div>
+						</div>
+					</div>
+					<!-- Supply Fan -->
+					<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+						<div
+							class="mask mask-hexagon h-auto w-10 {!isNaN(status.rpmSupplyFan) &&
+							!isNaN(status.dutyCycleSupplyFan)
+								? 'bg-primary'
+								: 'bg-base-300'}"
+						>
+							<IconWind class="text-primary-content h-auto w-full scale-75" />
+						</div>
+						<div>
+							<div class="font-bold">Supply air fan</div>
+							<div class="text-sm opacity-75">
+								{#if !isNaN(status.rpmSupplyFan) && !isNaN(status.dutyCycleSupplyFan)}
+									{status.rpmSupplyFan} min<sup>-1</sup>, {status.dutyCycleSupplyFan} %
+								{:else}
+									Not available
+								{/if}
+							</div>
+						</div>
+					</div>
+					<!-- Exhaust Fan -->
+					<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+						<div
+							class="mask mask-hexagon h-auto w-10 {!isNaN(status.rpmExhaustFan) &&
+							!isNaN(status.dutyCycleExhaustFan)
+								? 'bg-primary'
+								: 'bg-base-300'}"
+						>
+							<IconWind class="text-primary-content h-auto w-full scale-75" />
+						</div>
+						<div>
+							<div class="font-bold">Exhaust air fan</div>
+							<div class="text-sm opacity-75">
+								{#if !isNaN(status.rpmExhaustFan) && !isNaN(status.dutyCycleExhaustFan)}
+									{status.rpmExhaustFan} min<sup>-1</sup>, {status.dutyCycleExhaustFan} %
+								{:else}
+									Not available
+								{/if}
+							</div>
+						</div>
+					</div>
+				</div>
+			{/await}
+		</div>
+
+		{#if !page.data.features.security || $user.admin}
+			<Collapsible open={false} class="shadow-lg" isDirty={isSettingsDirty}>
+				{#snippet icon()}
+					<IconSettings class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+				{/snippet}
+				{#snippet title()}
+					<span>Controller Settings</span>
+				{/snippet}
+				{#await getControllerSettings()}
+					<Spinner text="" />
+				{:then nothing}
+					<div class="grid w-full grid-cols-1 content-center gap-x-4 gap-y-1 px-4 sm:grid-cols-2">
+						<!-- Lower temperaure -->
+						<div class="flex flex-col">
+							<label class="label" for="lowerTemp">
+								<span class="label-text text-md">Lower temperature</span>
+							</label>
+							<InputUnit
+								type="number"
+								placeholder="Enter the lower temperature"
+								min={minTemp}
+								max={maxTemp}
+								step="1"
+								required
+								class="input input-bordered w-full invalid:border-error invalid:border-2 {formErrors.lowerTemp
+									? 'border-error border-2'
+									: ''}"
+								unit="°C"
+								bind:value={settings.lowerTemp}
+								id="lowerTemp"
+								oninput={(event: Event) => {
+									formErrors.lowerTemp =
+										!(event.target as HTMLInputElement).validity.valid ||
+										settings.lowerTemp >= settings.upperTemp;
+								}}
+							/>
+							{#if formErrors.lowerTemp}
+								<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
+									<label for="lowerTemp" class="label">
+										<span class="label-text-alt text-error text-xs text-wrap">
+											Value must be btw. {minTemp} and {maxTemp} and has to be less than
+											<em>Upper temperature</em> value.
+										</span>
+									</label>
+								</div>
+							{/if}
+						</div>
+						<!-- Upper temperaure -->
+						<div class="flex flex-col">
+							<label class="label" for="upperTemp">
+								<span class="label-text text-md">Upper temperature</span>
+							</label>
+							<InputUnit
+								type="number"
+								placeholder="Enter the upper temperature"
+								min={minTemp}
+								max={maxTemp}
+								step="1"
+								required
+								class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.upperTemp
+									? 'border-error border-2'
+									: ''}"
+								unit="°C"
+								bind:value={settings.upperTemp}
+								id="upperTemp"
+								oninput={(event: Event) => {
+									formErrors.upperTemp =
+										!(event.target as HTMLInputElement).validity.valid ||
+										settings.upperTemp <= settings.lowerTemp;
+								}}
+							/>
+							{#if formErrors.upperTemp}
+								<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
+									<label for="upperTemp" class="label">
+										<span class="label-text-alt text-error text-xs text-wrap">
+											Value must be btw. {minTemp} and {maxTemp} and has to be higher than
+											<em>Lower temperature</em> value.
+										</span>
+									</label>
+								</div>
+							{/if}
+						</div>
+						<!-- Minimum Duty Cycle -->
+						<div class="flex flex-col">
+							<label class="label" for="minFanPower">
+								<span class="label-text text-md">Min. fan power</span>
+							</label>
+							<InputUnit
+								type="number"
+								placeholder="Enter minimum fan duty cycle"
+								min={minDutyCycle}
+								max={maxDutyCycle}
+								step="1"
+								required
+								class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.minDutyCycle
+									? 'border-error border-2'
+									: ''}"
+								unit="%"
+								bind:value={settings.minDutyCycle}
+								id="minFanPower"
+								oninput={(event: Event) => {
+									formErrors.minDutyCycle =
+										!(event.target as HTMLInputElement).validity.valid ||
+										settings.minDutyCycle >= settings.maxDutyCycle;
+								}}
+							/>
+							{#if formErrors.minDutyCycle}
+								<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
+									<label for="minFanPower" class="label">
+										<span class="label-text-alt text-error text-xs text-wrap">
+											Value must be btw. {minDutyCycle} and {maxDutyCycle} and has to be less than
+											<em>Max. fan power</em> value.
+										</span>
+									</label>
+								</div>
+							{/if}
+						</div>
+						<!-- Maximum Duty Cycle -->
+						<div class="flex flex-col">
+							<label class="label" for="maxFanPower">
+								<span class="label-text text-md">Max. fan power</span>
+							</label>
+							<InputUnit
+								type="number"
+								placeholder="Enter maximum fan duty cycle"
+								min={minDutyCycle}
+								max={maxDutyCycle}
+								step="1"
+								required
+								class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.maxDutyCycle
+									? 'border-error border-2'
+									: ''}"
+								unit="%"
+								bind:value={settings.maxDutyCycle}
+								id="maxFanPower"
+								oninput={(event: Event) => {
+									formErrors.maxDutyCycle =
+										!(event.target as HTMLInputElement).validity.valid ||
+										settings.maxDutyCycle <= settings.minDutyCycle;
+								}}
+							/>
+							{#if formErrors.maxDutyCycle}
+								<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
+									<label for="maxFanPower" class="label">
+										<span class="label-text-alt text-error text-xs text-wrap">
+											Value must be btw. {minDutyCycle} and {maxDutyCycle} and has to be higher than
+											<em>Min. fan power</em> value.
+										</span>
+									</label>
+								</div>
+							{/if}
+						</div>
+						<!-- Relevant Temp. Sensor -->
+						<div class="flex flex-col">
+							<label class="label" for="relevantSensor">
+								<span class="label-text">Controlling based on</span>
+							</label>
+							<select class="select ps-3" id="relevantSensor" bind:value={settings.relevantSensor}>
+								{#each sensorOpts as opt}
+									<option value={opt.id}>
+										{opt.text}
+									</option>
+								{/each}
+							</select>
+						</div>
+					</div>
+					<div class="divider mb-2 mt-0"></div>
+					<div class="mx-4 flex flex-wrap justify-end gap-2">
+						<button
+							class="btn btn-primary text-primary-content inline-flex items-center"
+							disabled={hasError || !isSettingsDirty}
+						>
+							<IconSave class="mr-2 h-5 w-5" />
+							<span>Save</span>
+						</button>
+					</div>
+				{/await}
+			</Collapsible>
+		{/if}
+	</SettingsCard>
+</div>

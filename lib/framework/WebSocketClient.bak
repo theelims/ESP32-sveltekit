@@ -1,0 +1,242 @@
+#pragma once
+/**
+ *   ESP32 SvelteKit
+ *
+ *   A simple, secure and extensible framework for IoT projects for ESP32 platforms
+ *   with responsive Sveltekit front-end built with TailwindCSS and DaisyUI.
+ *   https://github.com/theelims/ESP32-sveltekit
+ *
+ *   Copyright (C) 2023 - 2024 theelims
+ *
+ *   All Rights Reserved. This software may be modified and distributed under
+ *   the terms of the LGPL v3 license. See the LICENSE file for details.
+ **/
+
+#include <StatefulService.h>
+#include <SecurityManager.h>
+#include <esp_websocket_client.h>
+#include <esp_int_wdt.h>
+#include "freertos/timers.h"
+
+#define WEB_SOCKET_CLIENT_ORIGIN "wsclient"
+
+static const char root_CA[] PROGMEM = R"EOF(
+-----BEGIN CERTIFICATE-----
+MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw
+TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
+cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMTUwNjA0MTEwNDM4
+WhcNMzUwNjA0MTEwNDM4WjBPMQswCQYDVQQGEwJVUzEpMCcGA1UEChMgSW50ZXJu
+ZXQgU2VjdXJpdHkgUmVzZWFyY2ggR3JvdXAxFTATBgNVBAMTDElTUkcgUm9vdCBY
+MTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAK3oJHP0FDfzm54rVygc
+h77ct984kIxuPOZXoHj3dcKi/vVqbvYATyjb3miGbESTtrFj/RQSa78f0uoxmyF+
+0TM8ukj13Xnfs7j/EvEhmkvBioZxaUpmZmyPfjxwv60pIgbz5MDmgK7iS4+3mX6U
+A5/TR5d8mUgjU+g4rk8Kb4Mu0UlXjIB0ttov0DiNewNwIRt18jA8+o+u3dpjq+sW
+T8KOEUt+zwvo/7V3LvSye0rgTBIlDHCNAymg4VMk7BPZ7hm/ELNKjD+Jo2FR3qyH
+B5T0Y3HsLuJvW5iB4YlcNHlsdu87kGJ55tukmi8mxdAQ4Q7e2RCOFvu396j3x+UC
+B5iPNgiV5+I3lg02dZ77DnKxHZu8A/lJBdiB3QW0KtZB6awBdpUKD9jf1b0SHzUv
+KBds0pjBqAlkd25HN7rOrFleaJ1/ctaJxQZBKT5ZPt0m9STJEadao0xAH0ahmbWn
+OlFuhjuefXKnEgV4We0+UXgVCwOPjdAvBbI+e0ocS3MFEvzG6uBQE3xDk3SzynTn
+jh8BCNAw1FtxNrQHusEwMFxIt4I7mKZ9YIqioymCzLq9gwQbooMDQaHWBfEbwrbw
+qHyGO0aoSCqI3Haadr8faqU9GY/rOPNk3sgrDQoo//fb4hVC1CLQJ13hef4Y53CI
+rU7m2Ys6xt0nUW7/vGT1M0NPAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNV
+HRMBAf8EBTADAQH/MB0GA1UdDgQWBBR5tFnme7bl5AFzgAiIyBpY9umbbjANBgkq
+hkiG9w0BAQsFAAOCAgEAVR9YqbyyqFDQDLHYGmkgJykIrGF1XIpu+ILlaS/V9lZL
+ubhzEFnTIZd+50xx+7LSYK05qAvqFyFWhfFQDlnrzuBZ6brJFe+GnY+EgPbk6ZGQ
+3BebYhtF8GaV0nxvwuo77x/Py9auJ/GpsMiu/X1+mvoiBOv/2X/qkSsisRcOj/KK
+NFtY2PwByVS5uCbMiogziUwthDyC3+6WVwW6LLv3xLfHTjuCvjHIInNzktHCgKQ5
+ORAzI4JMPJ+GslWYHb4phowim57iaztXOoJwTdwJx4nLCgdNbOhdjsnvzqvHu7Ur
+TkXWStAmzOVyyghqpZXjFaH3pO3JLF+l+/+sKAIuvtd7u+Nxe5AW0wdeRlN8NwdC
+jNPElpzVmbUq4JUagEiuTDkHzsxHpFKVK7q4+63SM1N95R1NbdWhscdCb+ZAJzVc
+oyi3B43njTOQ5yOf+1CceWxG1bQVs5ZufpsMljq4Ui0/1lvh+wjChP4kqKOJ2qxq
+4RgqsahDYVvTH9w7jXbyLeiNdd8XM2w9U/t7y0Ff/9yi0GE44Za4rF2LN9d11TPA
+mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d
+emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
+-----END CERTIFICATE-----
+)EOF";
+
+static const char *wsTAG = "WS_Client";
+
+template <class T>
+class WebSocketClient
+{
+public:
+    WebSocketClient(JsonStateReader<T> stateReader,
+                    JsonStateUpdater<T> stateUpdater,
+                    StatefulService<T> *statefulService,
+                    const char *webSocketUri) : _stateReader(stateReader),
+                                                               _stateUpdater(stateUpdater),
+                                                               _statefulService(statefulService),
+                                                               _bufferSize(bufferSize)
+    {
+        _statefulService->addUpdateHandler(
+            [&](const String &originId)
+            { transmitData(originId); },
+            false);
+
+        xTaskCreatePinnedToCore(
+            this->loopImpl,
+            "initiateClientTask",
+            4096,
+            this,
+            tskIDLE_PRIORITY + 1,
+            NULL,
+            ESP32SVELTEKIT_RUNNING_CORE);
+
+        wsClientConfig(webSocketUri);
+
+        wsClientConnect();
+    }
+
+    boolean wsClientConnected()
+    {
+        return esp_websocket_client_is_connected(client);
+    }
+
+    void wsClientConnect()
+    {
+        if (client)
+        {
+            esp_websocket_client_start(client);
+            freshConnected = true;
+        }
+        else
+        {
+            ESP_LOGE(wsTAG, "Websocket client is not initialized.");
+        }
+    }
+
+    void wsClientDisconnect()
+    {
+        esp_websocket_client_close(client, pdTICKS_TO_MS(200));
+        esp_websocket_client_destroy(client);
+        client = nullptr;
+    }
+
+    void wsClientConfig(const char *webSocketUri)
+    {
+        if (client)
+        {
+            wsClientDisconnect();
+        }
+
+        // Configure WS Client
+        websocket_cfg.uri = "ws://192.168.1.91:1880/ws/request";
+        //.uri = "wss://webhook.xtoys.app/ypFXRRx9kzkn?token=91ffdf3434946903a6d34acba97e9b69",
+
+        websocket_cfg.buffer_size = _bufferSize;
+
+        // websocket_cfg.cert_pem = (const char *)root_CA;
+        // websocket_cfg.cert_len = sizeof(root_CA);
+
+        client = esp_websocket_client_init(&websocket_cfg);
+
+        // Register event handler
+        esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, &onWSEventStatic, (void *)client);
+        ESP_LOGI(wsTAG, "Websocket Client configured to %s", websocket_cfg.uri);
+    }
+
+protected:
+    StatefulService<T> *_statefulService;
+    esp_websocket_client_handle_t client = nullptr;
+    esp_websocket_client_config_t websocket_cfg;
+    size_t _bufferSize;
+    JsonStateUpdater<T> _stateUpdater;
+    JsonStateReader<T> _stateReader;
+    boolean freshConnected = true;
+
+    static void onWSEventStatic(void *handler_args,
+                                esp_event_base_t base,
+                                int32_t event_id,
+                                void *event_data)
+    {
+        // Since this is a static function, we need to cast the first argument (void*) back to the class instance type
+        WebSocketClient *instance = (WebSocketClient *)handler_args;
+        instance->onWSEvent(handler_args, base, event_id, event_data);
+    }
+
+    void onWSEvent(void *handler_args,
+                   esp_event_base_t base,
+                   int32_t event_id,
+                   void *event_data)
+    {
+        switch (event_id)
+        {
+        case WEBSOCKET_EVENT_DISCONNECTED:
+            ESP_LOGI(wsTAG, "WEBSOCKET_EVENT_DISCONNECTED");
+            // mark as disconnected
+            freshConnected = true;
+            break;
+        case WEBSOCKET_EVENT_ERROR:
+            ESP_LOGI(wsTAG, "WEBSOCKET_EVENT_ERROR");
+            break;
+        case WEBSOCKET_EVENT_DATA:
+
+            esp_websocket_event_data_t *data = (esp_websocket_event_data_t *)event_data;
+
+            ESP_LOGV(wsTAG, "WEBSOCKET_EVENT_DATA");
+            ESP_LOGV(wsTAG, "Received opcode=%d", data->op_code);
+            if (data->op_code == 0x08 && data->data_len == 2)
+            {
+                ESP_LOGW(wsTAG, "Received closed message with code=%d", 256 * data->data_ptr[0] + data->data_ptr[1]);
+            }
+            else
+            {
+                // Filter for Text-Messages
+                if (data->op_code == 0x01)
+                {
+                    ESP_LOGV(wsTAG, "Total payload length=%d, data_len=%d, current payload offset=%d", data->payload_len, data->data_len, data->payload_offset);
+                    ESP_LOGV(wsTAG, "Received=%.*s", data->data_len, (char *)data->data_ptr);
+
+                    // Copy the characters from data->data_ptr to c-string
+                    char payload[_bufferSize];
+                    strncpy(payload, (char *)data->data_ptr, data->data_len);
+                    payload[data->data_len] = '\0';
+                    ESP_LOGV(wsTAG, "Payload=%s", payload);
+
+                    // JsonDocument jsonDocument;
+                    // DeserializationError error = deserializeJson(jsonDocument, payload);
+
+                    // ESP_LOGE(wsTAG, "deserializeJson() status: %s", error.c_str());
+
+                    /*                     if (!error && jsonDocument.is<JsonObject>())
+                                        {
+                                            JsonObject jsonObject = jsonDocument.as<JsonObject>();
+                                            _statefulService->update(
+                                                jsonObject, _stateUpdater, WEB_SOCKET_CLIENT_ORIGIN);
+                                            ESP_LOGV(wsTAG, "Updated StatefulService");
+                                        } */
+                }
+            }
+            break;
+        }
+    }
+
+    static void loopImpl(void *_this) { static_cast<WebSocketClient *>(_this)->loop(); }
+
+    void loop()
+    {
+        while (true)
+        {
+            // Workaround for a bug in the WEBSOCKET_EVENT_CONNECTED event handler causing a kernel panic. Revisit with ESP-IDF v5.1
+            if (wsClientConnected() && freshConnected)
+            {
+                ESP_LOGI(wsTAG, "Websocket Client Connected");
+                transmitData(WEB_SOCKET_ORIGIN);
+                freshConnected = false;
+            }
+
+            vTaskDelay(pdMS_TO_TICKS(150));
+        }
+    }
+
+    void transmitData(const String &originId)
+    {
+        JsonDocument jsonDocument;
+        JsonObject payload = jsonDocument.to<JsonObject>();
+        _statefulService->read(payload, _stateReader);
+        String json_string;
+        serializeJson(jsonDocument, json_string);
+        esp_websocket_client_send_text(client, json_string.c_str(), json_string.length() + 1, portMAX_DELAY);
+        ESP_LOGI(wsTAG, "Websocket Client Transmission: %s", json_string.c_str());
+    }
+};
