@@ -4,7 +4,6 @@
 	import { socket } from '$lib/stores/socket';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
-	import InputPassword from '$lib/components/InputPassword.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/state';
@@ -242,7 +241,7 @@
 								? 'bg-primary'
 								: 'bg-base-300'}"
 						>
-							<IconWind class="text-primary-content h-auto w-full scale-75" />
+							<IconWind class="text-primary-content h-auto w-full scale-75 rotate-180" />
 						</div>
 						<div>
 							<div class="font-bold">Exhaust air fan</div>
@@ -428,10 +427,10 @@
 					<div class="divider mb-2 mt-0"></div>
 					<div class="mx-4 flex flex-wrap justify-end gap-2">
 						<button
-							class="btn btn-primary text-primary-content inline-flex items-center"
+							class="btn btn-primary"
 							disabled={hasError || !isSettingsDirty}
 						>
-							<IconSave class="mr-2 h-5 w-5" />
+							<IconSave class="h-6 w-6" />
 							<span>Save</span>
 						</button>
 					</div>

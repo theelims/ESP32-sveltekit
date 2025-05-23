@@ -65,7 +65,7 @@
 					feature: true
 				},
 				{
-					title: 'Fan Configuration',
+					title: 'Fans Configuration',
 					icon: Windmill,
 					href: '/ffc/fans',
 					feature: true
