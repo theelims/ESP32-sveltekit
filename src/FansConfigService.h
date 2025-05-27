@@ -8,11 +8,11 @@
 
 typedef struct fan_spec_
 {
-    unsigned long minRPM;   // 1/min
-    unsigned long maxRPM;   // 1/min
-    unsigned int minPWM;    // %
-    float airflow;          // cfm
-    float staticPressure;   // mmH2O
+    uint32_t minRPM;      // 1/min
+    uint32_t maxRPM;      // 1/min
+    uint32_t minPWM;      // %
+    float airflow;        // cfm
+    float staticPressure; // mmH2O
 
 } fan_spec_t;
 
@@ -48,22 +48,34 @@ public:
 
     static StateUpdateResult update(JsonObject &root, FansConfig &fansConfig)
     {
-        if (root["supplyFan"].is<JsonObject>()) {
+        if (root["supplyFan"].is<JsonObject>())
+        {
             JsonObject supply = root["supplyFan"].as<JsonObject>();
-            if (supply.containsKey("minRPM")) fansConfig.supplyFan.minRPM = supply["minRPM"];
-            if (supply.containsKey("maxRPM")) fansConfig.supplyFan.maxRPM = supply["maxRPM"];
-            if (supply.containsKey("minPWM")) fansConfig.supplyFan.minPWM = supply["minPWM"];
-            if (supply.containsKey("airflow")) fansConfig.supplyFan.airflow = supply["airflow"];
-            if (supply.containsKey("staticPressure")) fansConfig.supplyFan.staticPressure = supply["staticPressure"];
+            if (supply["minRPM"].is<uint32_t>())
+                fansConfig.supplyFan.minRPM = supply["minRPM"];
+            if (supply["maxRPM"].is<uint32_t>())
+                fansConfig.supplyFan.maxRPM = supply["maxRPM"];
+            if (supply["minPWM"].is<uint32_t>())
+                fansConfig.supplyFan.minPWM = supply["minPWM"];
+            if (supply["airflow"].is<float>())
+                fansConfig.supplyFan.airflow = supply["airflow"];
+            if (supply["staticPressure"].is<float>())
+                fansConfig.supplyFan.staticPressure = supply["staticPressure"];
         }
 
-        if (root["exhaustFan"].is<JsonObject>()) {
+        if (root["exhaustFan"].is<JsonObject>())
+        {
             JsonObject exhaust = root["exhaustFan"].as<JsonObject>();
-            if (exhaust.containsKey("minRPM")) fansConfig.exhaustFan.minRPM = exhaust["minRPM"];
-            if (exhaust.containsKey("maxRPM")) fansConfig.exhaustFan.maxRPM = exhaust["maxRPM"];
-            if (exhaust.containsKey("minPWM")) fansConfig.exhaustFan.minPWM = exhaust["minPWM"];
-            if (exhaust.containsKey("airflow")) fansConfig.exhaustFan.airflow = exhaust["airflow"];
-            if (exhaust.containsKey("staticPressure")) fansConfig.exhaustFan.staticPressure = exhaust["staticPressure"];
+            if (exhaust["minRPM"].is<uint32_t>())
+                fansConfig.exhaustFan.minRPM = exhaust["minRPM"];
+            if (exhaust["maxRPM"].is<uint32_t>())
+                fansConfig.exhaustFan.maxRPM = exhaust["maxRPM"];
+            if (exhaust["minPWM"].is<uint32_t>())
+                fansConfig.exhaustFan.minPWM = exhaust["minPWM"];
+            if (exhaust["airflow"].is<float>())
+                fansConfig.exhaustFan.airflow = exhaust["airflow"];
+            if (exhaust["staticPressure"].is<float>())
+                fansConfig.exhaustFan.staticPressure = exhaust["staticPressure"];
         }
 
         ESP_LOGV(FansConfig::TAG, "Fans configuration updated.");

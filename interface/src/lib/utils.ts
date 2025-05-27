@@ -10,6 +10,14 @@ export function jsonDateReviver(key: string, value: any) {
     return value;
 }
 
+export function jsonFromBigIntReviver(key: string, value: any) {
+    return typeof value === 'bigint' ? value.toString() : value;
+}
+
+export function jsonToBigIntReviver(key: string, value: any) {
+    return key === 'address' ? BigInt(value) : value;
+}
+
 export function downloadObjectAsJson(exportObj: any, exportName: string){
     var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
     var downloadAnchorNode = document.createElement('a');

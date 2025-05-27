@@ -16,6 +16,8 @@
 	import IconTemperature from '~icons/tabler/temperature';
 	import IconWind from '~icons/tabler/wind';
 	import IconSave from '~icons/tabler/device-floppy';
+	import type { Sensor } from '$lib/types/models';
+	import { jsonFromBigIntReviver, jsonToBigIntReviver } from '$lib/utils';
 
 	interface Props {
 		data: PageData;
@@ -33,7 +35,7 @@
 		upperTemp: number; // °C
 		minDutyCycle: number; // %
 		maxDutyCycle: number; // %
-		relevantSensor: number; // 1: compressor, 2: condenser
+		tempSensorAddr: BigInt;
 	};
 
 	type ControllerStatus = {
@@ -45,28 +47,21 @@
 		dutyCycleExhaustFan: number;
 	};
 
-	let sensorOpts = $state([
-		{
-			id: 1,
-			text: `Compressor temperature`
-		},
-		{
-			id: 2,
-			text: `Condenser temperature`
-		}
-	]);
+	let sensorOpts: { id: BigInt; text: string }[] = $state([]);
 
 	const defaultSettings: ControllerSettings = {
 		lowerTemp: 25, // °C
 		upperTemp: 50, // °C
 		minDutyCycle: 20, // %
 		maxDutyCycle: 100, // %
-		relevantSensor: 1 // 1: compressor
+		tempSensorAddr: 0n // BigInt, default to 0 (no sensor)
 	};
 
 	let settings: ControllerSettings = $state(defaultSettings);
-	let strSettings: string = $state(JSON.stringify(defaultSettings)); // to recognize changes
-	let isSettingsDirty: boolean = $derived(JSON.stringify(settings) !== strSettings);
+	let strSettings: string = $state(JSON.stringify(defaultSettings, jsonFromBigIntReviver)); // to recognize changes
+	let isSettingsDirty: boolean = $derived(
+		JSON.stringify(settings, jsonFromBigIntReviver) !== strSettings
+	);
 
 	let status: ControllerStatus = $state({
 		tempCompressor: NaN,
@@ -77,6 +72,11 @@
 		dutyCycleExhaustFan: NaN
 	});
 
+	async function getSettings() {
+		await getControllerSettings();
+		await getSensors();
+	}
+
 	async function getControllerSettings() {
 		try {
 			const response = await fetch('/rest/controller/settings', {
@@ -86,8 +86,31 @@
 					'Content-Type': 'application/json'
 				}
 			});
-			settings = await response.json();
-			strSettings = JSON.stringify(settings); // Store the recently loaded settings in a string variable
+			settings = JSON.parse(await response.text(), jsonToBigIntReviver) as ControllerSettings;
+			strSettings = JSON.stringify(settings, jsonFromBigIntReviver); // Store the recently loaded settings in a string variable
+		} catch (error) {
+			console.error('Error:', error);
+		}
+	}
+
+	async function getSensors() {
+		try {
+			const response = await fetch('/rest/sensors', {
+				method: 'GET',
+				headers: {
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					'Content-Type': 'application/json'
+				}
+			});
+			let sensors: Sensor[] = JSON.parse(await response.text(), jsonToBigIntReviver).sensors;
+			sensorOpts.length = 0; // Clear the sensor options array
+			for (let sensor of sensors) {
+				let name = sensor.name ? `, ${sensor.name}` : '';
+				sensorOpts.push({
+					id: sensor.address,
+					text: `${sensor.address} ( 0x${sensor.address.toString(16).padStart(16, '0')}${name} )`
+				});
+			}
 		} catch (error) {
 			console.error('Error:', error);
 		}
@@ -116,12 +139,12 @@
 					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify(settings)
+				body: JSON.stringify(settings, jsonFromBigIntReviver)
 			});
 			if (response.status == 200) {
 				notifications.success('Controller settings updated.', 3000);
-				settings = await response.json();
-				strSettings = JSON.stringify(settings); // Store the recently loaded settings in a string variable
+				settings = JSON.parse(await response.text(), jsonToBigIntReviver) as ControllerSettings;
+				strSettings = JSON.stringify(settings, jsonFromBigIntReviver); // Store the recently loaded settings in a string variable
 			} else {
 				notifications.error('User not authorized.', 3000);
 			}
@@ -131,12 +154,12 @@
 	}
 
 	onMount(() => {
-		socket.on<ControllerStatus>('controller-status', (data) => {
-			status = data;
+		socket.on<ControllerStatus>('tempsenors', (data) => {
+			console.log(data);
 		});
 	});
 
-	onDestroy(() => socket.off('controller-status'));
+	onDestroy(() => socket.off('tempsenors'));
 
 	let formErrors = $state({
 		lowerTemp: false,
@@ -185,7 +208,7 @@
 							<div class="font-bold">Compressor temp.</div>
 							<div class="text-sm opacity-75">
 								{#if !isNaN(status.tempCompressor)}
-									{status.tempCompressor} °C
+									{status.tempCompressor.toFixed(1)} °C
 								{:else}
 									Not available
 								{/if}
@@ -205,7 +228,7 @@
 							<div class="font-bold">Condenser temp.</div>
 							<div class="text-sm opacity-75">
 								{#if !isNaN(status.tempCondenser)}
-									{status.tempCondenser} °C
+									{status.tempCondenser.toFixed(1)} °C
 								{:else}
 									Not available
 								{/if}
@@ -266,7 +289,7 @@
 				{#snippet title()}
 					<span>Controller Settings</span>
 				{/snippet}
-				{#await getControllerSettings()}
+				{#await getSettings()}
 					<Spinner text="" />
 				{:then nothing}
 					<div class="grid w-full grid-cols-1 content-center gap-x-4 gap-y-1 px-4 sm:grid-cols-2">
@@ -411,13 +434,17 @@
 							{/if}
 						</div>
 						<!-- Relevant Temp. Sensor -->
-						<div class="flex flex-col">
+						<div class="flex flex-col col-span-2">
 							<label class="label" for="relevantSensor">
 								<span class="label-text">Controlling based on</span>
 							</label>
-							<select class="select ps-3" id="relevantSensor" bind:value={settings.relevantSensor}>
+							<select
+								class="select ps-3 w-full"
+								id="relevantSensor"
+								bind:value={settings.tempSensorAddr}
+							>
 								{#each sensorOpts as opt}
-									<option value={opt.id}>
+									<option value={opt.id} selected={opt.id.toString() === settings.tempSensorAddr.toString()}>
 										{opt.text}
 									</option>
 								{/each}
@@ -429,6 +456,7 @@
 						<button
 							class="btn btn-primary"
 							disabled={hasError || !isSettingsDirty}
+							onclick={postControllerSettings}
 						>
 							<IconSave class="h-6 w-6" />
 							<span>Save</span>

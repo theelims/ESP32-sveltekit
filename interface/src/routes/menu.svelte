@@ -13,6 +13,7 @@
 	import AP from '~icons/tabler/access-point';
 	import Remote from '~icons/tabler/network';
 	import Fan from '~icons/tabler/car-fan-filled';
+	import Temp from '~icons/tabler/temperature-plus-filled';
 	import Chart from '~icons/tabler/chart-histogram';
 	import Avatar from '~icons/tabler/user-circle';
 	import Logout from '~icons/tabler/logout';
@@ -68,6 +69,12 @@
 					title: 'Fans Configuration',
 					icon: Windmill,
 					href: '/ffc/fans',
+					feature: true
+				},
+				{
+					title: 'Sensors',
+					icon: Temp,
+					href: '/ffc/sensors',
 					feature: true
 				},
 				{
