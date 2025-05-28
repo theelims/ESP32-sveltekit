@@ -12,4 +12,8 @@
 - Discovery!
     Bei Discovery: temps löschen
 
-- Bei Fehler: Sensor offline setzen? Wiederholungen konfigurierbar?
+- MQTT für 
+    - Werte
+    - Alarme
+
+Bug: Dropdown-Feld für Temp-Sensor hat keine Vorauswahl!

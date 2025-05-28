@@ -154,12 +154,12 @@
 	}
 
 	onMount(() => {
-		socket.on<ControllerStatus>('tempsenors', (data) => {
+		socket.on<ControllerStatus>('xy', (data) => {
 			console.log(data);
 		});
 	});
 
-	onDestroy(() => socket.off('tempsenors'));
+	onDestroy(() => socket.off('xy'));
 
 	let formErrors = $state({
 		lowerTemp: false,
