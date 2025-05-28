@@ -113,12 +113,20 @@
 	}
 
 	onMount(() => {
-		socket.on<any>('tempsensors', (data) => {
+		// Temperature values updates
+		socket.on<any>('tempvalues', (data) => {
 			temperatures = JSON.parse(JSON.stringify(data), jsonToBigIntReviver).temperatures;
+		});
+		// Temperature sensors updates
+		socket.on<any>('tempsensors', () => {
+			getTempSensors();
 		});
 	});
 
-	onDestroy(() => socket.off('cntrstat'));
+	onDestroy(() => {
+		socket.off('tempvalues');
+		socket.off('tempsensors');
+	});
 
 	function lookupTemperature(address: BigInt): number | undefined {
 		let tempData = temperatures.find((t) => t.address.toString() === address.toString());

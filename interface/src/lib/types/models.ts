@@ -153,4 +153,5 @@ export type Sensor = {
 	address: BigInt;
 	online: boolean;
 	name: string;
+	readErrors: number;
 };

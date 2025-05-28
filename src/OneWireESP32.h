@@ -18,6 +18,22 @@ https://github.com/junkfix/esp32-ds18b20
 #define MAX_BLOCKS	48
 #endif
 
+#define OWR_OK	0
+#define OWR_CRC	1
+#define OWR_BAD_DATA	2
+#define OWR_TIMEOUT	3
+#define OWR_DRIVER	4
+
+#define OW_RESET_PULSE	500
+#define OW_RESET_WAIT	200
+#define OW_RESET_PRESENCE_WAIT_MIN	15
+#define OW_RESET_PRESENCE_MIN	60
+#define OW_SLOT_BIT_SAMPLE_TIME	15
+#define OW_SLOT_START	2
+#define OW_SLOT_BIT	60
+#define OW_SLOT_RECOVERY	5
+#define OW_TIMEOUT	50
+
 IRAM_ATTR bool owrxdone(rmt_channel_handle_t ch, const rmt_rx_done_event_data_t *edata, void *udata);
 
 class OneWire32 {

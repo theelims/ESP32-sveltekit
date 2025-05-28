@@ -7,6 +7,7 @@ void FanController::_ctrlLoop()
 {
     controller_settings_t ctrl_settings;
     uint32_t targetDutyCycle = 0;
+    float temp;
 
     ESP_LOGI(pcTaskGetName(0), "Started.");
 
@@ -28,32 +29,39 @@ void FanController::_ctrlLoop()
             ESP_LOGE(pcTaskGetName(0), "Relevant temperature sensor address is not yet set.");
             continue;
         }
+
         if (!_tempSensorsService.isSensorOnline(ctrl_settings.tempSensorAddr))
         {
-            ESP_LOGE(pcTaskGetName(0), "Relevant temperature sensor 0x%llx is no longer available. Please set a new one.", ctrl_settings.tempSensorAddr);
-            continue;
+            temp = ctrl_settings.upperTemp; // Use upper limit as fallback to get full duty cycle
+            ESP_LOGE(pcTaskGetName(0), "Relevant temperature sensor 0x%llx is no longer available. Please set a new one. Assuming max. controller value (%lu °C).",
+                     ctrl_settings.tempSensorAddr,
+                     ctrl_settings.upperTemp);
         }
-
-        /* Get relevant temperature */
-        float temp;
-        res = _tempSensorsService.getTemperature(ctrl_settings.tempSensorAddr, temp);
-        if (res != ESP_OK)
+        else
         {
-            ESP_LOGE(pcTaskGetName(0), "Failed to get temperature of sensor 0x%llx: %s", ctrl_settings.tempSensorAddr, esp_err_to_name(res));
-            continue;
+            /* Get temperature for controller */
+            res = _tempSensorsService.getTemperature(ctrl_settings.tempSensorAddr, temp);
+            if (res != ESP_OK)
+            {
+                temp = ctrl_settings.upperTemp; // Use upper limit as fallback to get full duty cycle
+                ESP_LOGE(pcTaskGetName(0), "Failed to get temperature of sensor 0x%llx (%s), assuming max. controller value (%lu °C).",
+                         ctrl_settings.tempSensorAddr,
+                         esp_err_to_name(res),
+                         ctrl_settings.upperTemp);
+            }
         }
 
-        ESP_LOGV(pcTaskGetName(0), "Current controller settings: lowerTemp=%lu°C, upperTemp=%lu°C, minDutyCycle=%lu%%, maxDutyCycle=%lu%%, tempSensorAddr=0x%llx (%s)",
+        ESP_LOGV(pcTaskGetName(0), "Current controller settings: lowerTemp=%lu °C, upperTemp=%lu °C, minDutyCycle=%lu %%, maxDutyCycle=%lu %%, tempSensorAddr=0x%llx (%s)",
                  ctrl_settings.lowerTemp, ctrl_settings.upperTemp,
                  ctrl_settings.minDutyCycle, ctrl_settings.maxDutyCycle,
                  ctrl_settings.tempSensorAddr, _tempSensorsService.getSensorName(ctrl_settings.tempSensorAddr).c_str());
 
         /* Calculate new duty cycle */
-        if (temp < ctrl_settings.lowerTemp)
+        if (temp <= ctrl_settings.lowerTemp)
         {
             targetDutyCycle = ctrl_settings.minDutyCycle;
         }
-        else if (temp > ctrl_settings.upperTemp)
+        else if (temp >= ctrl_settings.upperTemp)
         {
             targetDutyCycle = ctrl_settings.maxDutyCycle;
         }

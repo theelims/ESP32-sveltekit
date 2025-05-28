@@ -7,16 +7,20 @@
 #define TEMP_SENSORS_FILE "/config/sensors.json"
 
 #define TEMP_SENSORS_UPDATE_FROM_DISCOVERY "update-by-discovery"
-#define TEMP_SENSORS_ACQUISITION_INTERVAL_MS 1000 // 1 second
+#define TEMP_SENSORS_ACQUISITION_INTERVAL_MS 1000    // 1 second
 #define TEMP_SENSORS_MAX_ACQUISITION_DURATION_MS 750 // 750 milliseconds
 
+#define TEMP_SENSORS_MAX_READ_ERRORS 5 // Maximum number of read errors before marking sensor as offline
+
+#define TEMP_VALUES_EVENT_ID "tempvalues"
 #define TEMP_SENSORS_EVENT_ID "tempsensors"
 
 typedef struct temp_sensor_
 {
-    uint64_t address;  // 64-bit address of the sensor
-    bool online;       // Is the sensor online?
-    String name;       // Name of the sensor
+    uint64_t address;    // 64-bit address of the sensor
+    bool online;         // Is the sensor online?
+    String name;         // Name of the sensor
+    uint32_t readErrors; // Number of read errors for this sensor
 } temp_sensor_t;
 
 class TempSensors
@@ -43,7 +47,8 @@ public:
     static StateUpdateResult update(JsonObject &root, TempSensors &tempSsensors)
     {
         tempSsensors.sensors.clear();
-        if (root["sensors"].is<JsonArray>()) {
+        if (root["sensors"].is<JsonArray>())
+        {
             JsonArray jsonSensors = root["sensors"].as<JsonArray>();
             for (JsonObject jsonSensor : jsonSensors)
             {
@@ -55,7 +60,7 @@ public:
                 tempSsensors.sensors.push_back(sensor);
             }
         }
-        
+
         ESP_LOGV(TempSensors::TAG, "Temperature sensors updated.");
         return StateUpdateResult::CHANGED;
     }
@@ -76,14 +81,12 @@ public:
     String getSensorName(uint64_t &address);
 
 private:
-    static const uint8_t MAX_NUM_DEVS = 5; // Maximum number of devices on the bus    
+    static const uint8_t MAX_NUM_DEVS = 5; // Maximum number of devices on the bus
 
     ESP32SvelteKit *_sveltekit;
     HttpEndpoint<TempSensors> _httpEndpoint;
     FSPersistence<TempSensors> _fsPersistence;
     EventSocket *_eventSocket;
-
-    
 
     OneWire32 _ds_bus;
     std::map<uint64_t, float> _temperatures;

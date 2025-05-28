@@ -5,23 +5,6 @@ https://github.com/junkfix/esp32-ds18b20
 #include <Arduino.h>
 #include "OneWireESP32.h"
 
-#define OWR_OK	0
-#define OWR_CRC	1
-#define OWR_BAD_DATA	2
-#define OWR_TIMEOUT	3
-#define OWR_DRIVER	4
-
-#define OW_RESET_PULSE	500
-#define OW_RESET_WAIT	200
-#define OW_RESET_PRESENCE_WAIT_MIN	15
-#define OW_RESET_PRESENCE_MIN	60
-#define OW_SLOT_BIT_SAMPLE_TIME	15
-#define OW_SLOT_START	2
-#define OW_SLOT_BIT	60
-#define OW_SLOT_RECOVERY	5
-#define OW_TIMEOUT	50
-
-
 static rmt_symbol_word_t ow_bit0 = {
 	.duration0 = OW_SLOT_START + OW_SLOT_BIT,
 	.level0 = 0,

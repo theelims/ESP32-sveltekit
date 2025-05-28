@@ -1,4 +1,5 @@
 #include <TempSensorsService.h>
+#include <OneWireESP32.h>
 
 const char *errt[] = {"", "CRC", "BAD", "DC", "DRV"};
 
@@ -27,6 +28,7 @@ void TempSensorsService::begin()
     _httpEndpoint.begin();
     _fsPersistence.readFromFS();
 
+    _eventSocket->registerEvent(TEMP_VALUES_EVENT_ID);
     _eventSocket->registerEvent(TEMP_SENSORS_EVENT_ID);
 
     /* Discover current temperature sensors */
@@ -58,7 +60,7 @@ esp_err_t TempSensorsService::getTemperature(uint64_t &address, float &temperatu
 {
     if (_temperatures.find(address) == _temperatures.end())
     {
-        ESP_LOGE(TempSensorsService::TAG, "Now temperature value for sensor with address 0x%llx found.", address);
+        ESP_LOGE(TempSensorsService::TAG, "No temperature value for sensor with address 0x%llx found. Did the sensor went offline?", address);
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -151,18 +153,48 @@ void TempSensorsService::_acquireTemps()
 
     vTaskDelay(TEMP_SENSORS_MAX_ACQUISITION_DURATION_MS / portTICK_PERIOD_MS); // Max. conversion of DS18B20 for 12 bit resolution is 750 ms
 
+    bool onlineChanged = false;
+
     beginTransaction();
     for (auto &sensor : _state.sensors)
     {
-        if (sensor.online)
+        uint8_t res = _ds_bus.getTemp(sensor.address, _temperatures[sensor.address]);
+        if (res != OWR_OK)
         {
-            /* Read temperature from the sensor */
-            uint8_t err = _ds_bus.getTemp(sensor.address, _temperatures[sensor.address]);
-            if (err)
-                ESP_LOGE(TempSensorsService::TAG, "Error reading sensor 0x%llx: %s", sensor.address, errt[err]);
+            if (sensor.online)
+            {
+                sensor.readErrors++;
+                _temperatures.erase(sensor.address);
+                if (sensor.readErrors > TEMP_SENSORS_MAX_READ_ERRORS)
+                {
+                    sensor.online = false;
+                    onlineChanged |= true;
+                    ESP_LOGE(TempSensorsService::TAG, "Sensor 0x%llx marked as offline due to too many read errors (>%d).", sensor.address, TEMP_SENSORS_MAX_READ_ERRORS);
+                }
+                else
+                {
+                    ESP_LOGE(TempSensorsService::TAG, "Error reading sensor 0x%llx: %s (read errors: %lu)", sensor.address, errt[res], sensor.readErrors);
+                }
+            }
+        }
+        else
+        {
+            if (!sensor.online) {
+                sensor.online = true;
+                onlineChanged |= true;
+                ESP_LOGI(TempSensorsService::TAG, "Sensor 0x%llx is back online after successful read.", sensor.address);
+            }
+            
+            sensor.readErrors = 0; // Reset read errors if reading was successful
         }
     }
     endTransaction();
+
+    if (onlineChanged)
+    {
+        JsonObject emptyJson;
+        _eventSocket->emitEvent(TEMP_SENSORS_EVENT_ID, emptyJson);
+    }
 }
 
 bool TempSensorsService::_isSensorKnown(uint64_t &address, uint32_t &index)
@@ -199,5 +231,5 @@ void TempSensorsService::_emitSensorValues()
     }
     endTransaction();
 
-    _eventSocket->emitEvent(TEMP_SENSORS_EVENT_ID, jsonRoot);
+    _eventSocket->emitEvent(TEMP_VALUES_EVENT_ID, jsonRoot);
 }
