@@ -21,6 +21,7 @@
 	import MQTT from '~icons/tabler/topology-star-3';
 	import NTP from '~icons/tabler/clock-check';
 	import Metrics from '~icons/tabler/report-analytics';
+	import Alarm from '~icons/tabler/bell';
 	import { page } from '$app/state';
 	import { user } from '$lib/stores/user';
 
@@ -75,6 +76,12 @@
 					title: 'Sensors',
 					icon: Temp,
 					href: '/ffc/sensors',
+					feature: true
+				},
+				{
+					title: 'Alarm log',
+					icon: Alarm,
+					href: '/ffc/alarms',
 					feature: true
 				},
 				{

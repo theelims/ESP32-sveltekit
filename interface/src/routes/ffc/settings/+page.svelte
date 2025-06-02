@@ -47,7 +47,18 @@
 		dutyCycleExhaustFan: number;
 	};
 
-	let sensorOpts: { id: BigInt; text: string }[] = $state([]);
+	type SensorOption = {
+		id: BigInt;
+		text: string;
+		valid: boolean;
+	};
+
+	let sensorOpts: SensorOption[] = $state([]);
+	let selectedSensor: SensorOption = $state({
+		id: 0n,
+		text: 'No sensor selected',
+		valid: true
+	});
 
 	const defaultSettings: ControllerSettings = {
 		lowerTemp: 25, // °C
@@ -103,13 +114,24 @@
 				}
 			});
 			let sensors: Sensor[] = JSON.parse(await response.text(), jsonToBigIntReviver).sensors;
-			sensorOpts.length = 0; // Clear the sensor options array
+			// (Re)build sensor options
+			let preSelectionId = selectedSensor.id;	// Preserve current selection (e.g. on hot reload)
+			sensorOpts.length = 0;	// Clear previous options
 			for (let sensor of sensors) {
-				let name = sensor.name ? `, ${sensor.name}` : '';
+				let name = sensor.name ? `${sensor.name}` : 'Unnamed Sensor';
+				let offline = sensor.online ? '' : ' (offline)';
 				sensorOpts.push({
 					id: sensor.address,
-					text: `${sensor.address} ( 0x${sensor.address.toString(16).padStart(16, '0')}${name} )`
+					text: `${name} (${sensor.address} / 0x${sensor.address.toString(16).padStart(16, '0')})${offline}`,
+					valid: sensor.online
 				});
+			}
+			// Select previously selected sensor or configured relevant controller sensor (if none has been selected before)
+			if (preSelectionId == 0n) preSelectionId = settings.tempSensorAddr;
+			const foundOpt = sensorOpts.find((opt) => opt.id.toString() === preSelectionId.toString());
+			if (foundOpt) {
+				selectedSensor = foundOpt;
+				formErrors.relevantSensor = !selectedSensor.valid;
 			}
 		} catch (error) {
 			console.error('Error:', error);
@@ -143,8 +165,8 @@
 			});
 			if (response.status == 200) {
 				notifications.success('Controller settings updated.', 3000);
-				settings = JSON.parse(await response.text(), jsonToBigIntReviver) as ControllerSettings;
-				strSettings = JSON.stringify(settings, jsonFromBigIntReviver); // Store the recently loaded settings in a string variable
+				// Reload settings and sensors
+				getSettings();
 			} else {
 				notifications.error('User not authorized.', 3000);
 			}
@@ -154,25 +176,30 @@
 	}
 
 	onMount(() => {
-		socket.on<ControllerStatus>('xy', (data) => {
-			console.log(data);
+		// Temperature sensors updates
+		socket.on<any>('tempsensors', () => {
+			getSensors();
 		});
 	});
 
-	onDestroy(() => socket.off('xy'));
+	onDestroy(() => {
+		socket.off('tempsensors');
+	});
 
 	let formErrors = $state({
 		lowerTemp: false,
 		upperTemp: false,
 		minDutyCycle: false,
-		maxDutyCycle: false
+		maxDutyCycle: false,
+		relevantSensor: false
 	});
 
 	let hasError = $derived(
 		formErrors.lowerTemp ||
 			formErrors.upperTemp ||
 			formErrors.minDutyCycle ||
-			formErrors.maxDutyCycle
+			formErrors.maxDutyCycle ||
+			formErrors.relevantSensor
 	);
 </script>
 
@@ -439,16 +466,32 @@
 								<span class="label-text">Controlling based on</span>
 							</label>
 							<select
-								class="select ps-3 w-full"
+								class="select ps-3 invalid:border-error w-full invalid:border-2 {formErrors.relevantSensor
+									? 'border-error border-2'
+									: ''}"
+								class:text-error={!selectedSensor.valid}
 								id="relevantSensor"
-								bind:value={settings.tempSensorAddr}
+								bind:value={selectedSensor}
+								onchange={() => {
+									settings.tempSensorAddr = selectedSensor.id;
+									formErrors.relevantSensor = !selectedSensor.valid;
+								}}
 							>
 								{#each sensorOpts as opt}
-									<option value={opt.id} selected={opt.id.toString() === settings.tempSensorAddr.toString()}>
+									<option class={opt.valid ? 'text-base-content' : 'text-error'} value={opt}>
 										{opt.text}
 									</option>
 								{/each}
 							</select>
+							{#if formErrors.relevantSensor}
+								<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
+									<label for="relevantSensor" class="label">
+										<span class="label-text-alt text-error text-xs text-wrap">
+											Please select a temperature sensor, that is currently available.
+										</span>
+									</label>
+								</div>
+							{/if}
 						</div>
 					</div>
 					<div class="divider mb-2 mt-0"></div>

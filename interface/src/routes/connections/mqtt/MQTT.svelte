@@ -13,7 +13,7 @@
 	import IconSettings from '~icons/tabler/adjustments-alt';
 	import Client from '~icons/tabler/robot';
 	import type { MQTTSettings, MQTTStatus } from '$lib/types/models';
-	import GatewayMqttConfig from './GatewayMQTTConfig.svelte';
+	import FFCMqttConfig from './FFCMqttConfig.svelte';
 
 	let mqttSettings: MQTTSettings = $state();
 	let mqttStatus: MQTTStatus = $state();
@@ -303,6 +303,6 @@
 			</form>
 		</Collapsible>
 
-		<GatewayMqttConfig />
+		<FFCMqttConfig />
 	{/if}
 </SettingsCard>

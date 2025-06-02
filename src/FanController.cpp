@@ -97,7 +97,8 @@ FanController::FanController(ESP32SvelteKit *sveltekit) : _server(sveltekit->get
                                                           _securityManager(sveltekit->getSecurityManager()),
                                                           _eventSocket(sveltekit->getSocket()),
                                                           _controllerSettingsService(sveltekit),
-                                                          _tempSensorsService(sveltekit, 2), // GPIO 2 for 1-wire bus
+                                                          _alarmService(sveltekit),
+                                                          _tempSensorsService(sveltekit, &_alarmService, 2), // GPIO 2 for 1-wire bus
                                                           _txTaskHandle(NULL)
 {
 }
@@ -106,6 +107,7 @@ void FanController::begin()
 {
     _tempSensorsService.begin();
     _controllerSettingsService.begin();
+    _alarmService.begin();
 
     _eventSocket->registerEvent(CONTROLLER_STATE_EVENT_ID);
 

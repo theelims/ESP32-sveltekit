@@ -155,3 +155,11 @@ export type Sensor = {
 	name: string;
 	readErrors: number;
 };
+
+export type Alarm = {
+	id: number;
+	message: string;
+	active: boolean;
+	created: Date;
+	confirmed: Date;
+};

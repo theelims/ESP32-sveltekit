@@ -1,19 +1,16 @@
-- Dirty für alle Dialoge
- - Revert Changes Button
- - Indicator an allen Feldern
- - Indicator-Farbe: Primary oder Secondary
-
  Statistik
  - Graph mit 4 Kurven
 
-- Bei Fehler bei Temperatur-Ermittlung: Max Power + Alarm
+- Bei Fehler bei Temperatur-Ermittlung: larm
 - Bei Fehler bei RPM-Ermittlung: Alarm
 
 - Discovery!
-    Bei Discovery: temps löschen
+    - In UI!
+    - Bei Discovery: temps löschen
+        Wie ist das im Laufenden Betrieb, wenn plötzlich die Temperaturen weg sind
 
 - MQTT für 
     - Werte
-    - Alarme
 
-Bug: Dropdown-Feld für Temp-Sensor hat keine Vorauswahl!
+Alarming:
+    - Alarm-Operation sollte zu Status-Aktualisierung führen

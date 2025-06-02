@@ -3,23 +3,24 @@
 
 const char *errt[] = {"", "CRC", "BAD", "DC", "DRV"};
 
-TempSensorsService::TempSensorsService(ESP32SvelteKit *sveltekit, uint8_t bus_pin) : _sveltekit(sveltekit),
-                                                                                     _httpEndpoint(TempSensors::read,
-                                                                                                   TempSensors::update,
-                                                                                                   this,
-                                                                                                   sveltekit->getServer(),
-                                                                                                   TEMP_SENSORS_PATH,
-                                                                                                   sveltekit->getSecurityManager(),
-                                                                                                   AuthenticationPredicates::IS_ADMIN),
+TempSensorsService::TempSensorsService(ESP32SvelteKit *sveltekit, AlarmService *alarmService, uint8_t bus_pin) : _sveltekit(sveltekit),
+                                                                                                                 _httpEndpoint(TempSensors::read,
+                                                                                                                               TempSensors::update,
+                                                                                                                               this,
+                                                                                                                               sveltekit->getServer(),
+                                                                                                                               TEMP_SENSORS_PATH,
+                                                                                                                               sveltekit->getSecurityManager(),
+                                                                                                                               AuthenticationPredicates::IS_ADMIN),
 
-                                                                                     _fsPersistence(TempSensors::read,
-                                                                                                    TempSensors::update,
-                                                                                                    this,
-                                                                                                    sveltekit->getFS(),
-                                                                                                    TEMP_SENSORS_FILE),
-                                                                                     _eventSocket(sveltekit->getSocket()),
-                                                                                     _lastAcquired(0),
-                                                                                     _ds_bus(bus_pin)
+                                                                                                                 _fsPersistence(TempSensors::read,
+                                                                                                                                TempSensors::update,
+                                                                                                                                this,
+                                                                                                                                sveltekit->getFS(),
+                                                                                                                                TEMP_SENSORS_FILE),
+                                                                                                                 _eventSocket(sveltekit->getSocket()),
+                                                                                                                 _alarmService(alarmService),
+                                                                                                                 _lastAcquired(0),
+                                                                                                                 _ds_bus(bus_pin)
 {
 }
 
@@ -170,6 +171,7 @@ void TempSensorsService::_acquireTemps()
                     sensor.online = false;
                     onlineChanged |= true;
                     ESP_LOGE(TempSensorsService::TAG, "Sensor 0x%llx marked as offline due to too many read errors (>%d).", sensor.address, TEMP_SENSORS_MAX_READ_ERRORS);
+                    _alarmService->publishAlarm("Temperature sensor 0x" + String(sensor.address, HEX) + " (" + sensor.name + ") went offline.");
                 }
                 else
                 {
@@ -179,12 +181,13 @@ void TempSensorsService::_acquireTemps()
         }
         else
         {
-            if (!sensor.online) {
+            if (!sensor.online)
+            {
                 sensor.online = true;
                 onlineChanged |= true;
                 ESP_LOGI(TempSensorsService::TAG, "Sensor 0x%llx is back online after successful read.", sensor.address);
             }
-            
+
             sensor.readErrors = 0; // Reset read errors if reading was successful
         }
     }

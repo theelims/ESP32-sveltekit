@@ -3,6 +3,7 @@
 #include <ESP32SvelteKit.h>
 #include <ControllerSettingsService.h>
 #include <TempSensorsService.h>
+#include <AlarmService.h>
 
 #define CONTROLLER_STATUS_PATH "/rest/controller/status"
 #define CONTROLLER_STATE_EVENT_ID "cntrstat"
@@ -24,6 +25,7 @@ private:
     SecurityManager *_securityManager;
     EventSocket *_eventSocket;
     ControllerSettingsService _controllerSettingsService;
+    AlarmService _alarmService;
     TempSensorsService _tempSensorsService;
 
     TaskHandle_t _txTaskHandle;

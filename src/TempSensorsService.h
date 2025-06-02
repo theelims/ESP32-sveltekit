@@ -2,6 +2,7 @@
 
 #include <ESP32SvelteKit.h>
 #include <OneWireESP32.h>
+#include <AlarmService.h>
 
 #define TEMP_SENSORS_PATH "/rest/sensors"
 #define TEMP_SENSORS_FILE "/config/sensors.json"
@@ -71,7 +72,7 @@ class TempSensorsService : public StatefulService<TempSensors>
 public:
     static constexpr const char *TAG = "TempSensorsService";
 
-    TempSensorsService(ESP32SvelteKit *sveltekit, uint8_t bus_pin = 2);
+    TempSensorsService(ESP32SvelteKit *sveltekit, AlarmService *alarmService, uint8_t bus_pin);
 
     void begin();
     void _loop();
@@ -87,6 +88,7 @@ private:
     HttpEndpoint<TempSensors> _httpEndpoint;
     FSPersistence<TempSensors> _fsPersistence;
     EventSocket *_eventSocket;
+    AlarmService *_alarmService;
 
     OneWire32 _ds_bus;
     std::map<uint64_t, float> _temperatures;
