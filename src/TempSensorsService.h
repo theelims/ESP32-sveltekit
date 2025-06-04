@@ -75,7 +75,7 @@ public:
     TempSensorsService(ESP32SvelteKit *sveltekit, AlarmService *alarmService, uint8_t bus_pin);
 
     void begin();
-    void _loop();
+    void loop();
 
     bool isSensorOnline(uint64_t &address);
     esp_err_t getTemperature(uint64_t &address, float &temperature);

@@ -36,7 +36,7 @@ void TempSensorsService::begin()
     _updateSensors();
 
     /* Enable acquisition loop */
-    _sveltekit->addLoopFunction(std::bind(&TempSensorsService::_loop, this));
+    _sveltekit->addLoopFunction(std::bind(&TempSensorsService::loop, this));
 }
 
 bool TempSensorsService::isSensorOnline(uint64_t &address)
@@ -131,7 +131,7 @@ void TempSensorsService::_updateSensors()
     callUpdateHandlers(TEMP_SENSORS_UPDATE_FROM_DISCOVERY);
 }
 
-void TempSensorsService::_loop()
+void TempSensorsService::loop()
 {
     uint32_t currentMillis = millis();
     uint32_t timeElapsed = currentMillis - _lastAcquired;
@@ -189,6 +189,8 @@ void TempSensorsService::_acquireTemps()
             }
 
             sensor.readErrors = 0; // Reset read errors if reading was successful
+
+            ESP_LOGV(TempSensorsService::TAG, "Acquired sensor 0x%llx temperature: %.2f °C", sensor.address, _temperatures[sensor.address]);
         }
     }
     endTransaction();

@@ -28,7 +28,7 @@ public:
     static void read(FansConfig &fansConfig, JsonObject &root)
     {
         // Create supplyFan JSON object
-        JsonObject supply = root["supplyFan"].as<JsonObject>();
+        JsonObject supply = root["supplyFan"].to<JsonObject>();
         supply["minRPM"] = fansConfig.supplyFan.minRPM;
         supply["maxRPM"] = fansConfig.supplyFan.maxRPM;
         supply["minPWM"] = fansConfig.supplyFan.minPWM;
@@ -36,7 +36,7 @@ public:
         supply["staticPressure"] = fansConfig.supplyFan.staticPressure;
 
         // Create exhaustFan JSON object
-        JsonObject exhaust = root["exhaustFan"].as<JsonObject>();
+        JsonObject exhaust = root["exhaustFan"].to<JsonObject>();
         exhaust["minRPM"] = fansConfig.exhaustFan.minRPM;
         exhaust["maxRPM"] = fansConfig.exhaustFan.maxRPM;
         exhaust["minPWM"] = fansConfig.exhaustFan.minPWM;

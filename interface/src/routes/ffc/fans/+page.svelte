@@ -6,6 +6,8 @@
 	import { notifications } from '$lib/components/toasts/notifications';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
+	import { onMount, onDestroy } from 'svelte';
+	import { socket } from '$lib/stores/socket';
 	import Collapsible from '$lib/components/Collapsible.svelte';
 	import InputUnit from '$lib/components/InputUnit.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
@@ -44,22 +46,36 @@
 		exhaustFan: FanSpecs;
 	};
 
+	type FansState = {
+		supplyFan: {
+			rpm: number;
+		};
+		exhaustFan: {
+			rpm: number;
+		};
+	};
+
 	const defaultConfig: FansConfig = {
 		supplyFan: {
-			minRPM: 400,
-			maxRPM: 3300,
-			minPWM: 2,
-			airflow: 137.69,
-			staticPressure: 4.35
+			minRPM: NaN,
+			maxRPM: NaN,
+			minPWM: NaN,
+			airflow: NaN,
+			staticPressure: NaN
 		},
 		exhaustFan: {
-			minRPM: 400,
-			maxRPM: 3300,
-			minPWM: 2,
-			airflow: 137.69,
-			staticPressure: 4.35
+			minRPM: NaN,
+			maxRPM: NaN,
+			minPWM: NaN,
+			airflow: NaN,
+			staticPressure: NaN
 		}
 	};
+
+	let fansState: FansState = $state({
+		supplyFan: { rpm: NaN },
+		exhaustFan: { rpm: NaN }
+	});
 
 	let fansConfig: FansConfig = $state(defaultConfig);
 	let strConfig: string = $state(JSON.stringify(defaultConfig)); // to recognize changes
@@ -129,6 +145,13 @@
 		Object.values(formErrors.supplyFan).some(Boolean) ||
 			Object.values(formErrors.exhaustFan).some(Boolean)
 	);
+
+	onMount(() => {
+		// Subscribe to fans status
+		socket.on<FansState>('rpms', (state) => {
+			fansState = state;
+		});
+	});
 </script>
 
 {#if $user.admin}
@@ -143,10 +166,61 @@
 			{#snippet title()}
 				<span>Fans Configuration</span>
 			{/snippet}
-			{#await true}
+			<div
+				class="grid w-full grid-cols-1 content-center gap-1 sm:grid-cols-2"
+				transition:slide|local={{ duration: 300, easing: cubicOut }}
+			>
+				<!-- Supply Fan -->
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div
+						class="mask mask-hexagon h-auto w-10 {!isNaN(fansState.supplyFan.rpm)
+							? 'bg-primary'
+							: 'bg-base-300'}"
+					>
+						<IconWind class="text-primary-content h-auto w-full scale-75" />
+					</div>
+					<div>
+						<div class="font-bold">Supply air fan</div>
+						<div class="text-sm opacity-75">
+							{#if !isNaN(fansState.supplyFan.rpm)}
+								{fansState.supplyFan.rpm} min<sup>-1</sup>
+								{#if !isNaN(fansConfig.supplyFan.maxRPM)}
+								, {Math.round(fansState.supplyFan.rpm / fansConfig.supplyFan.maxRPM * 100).toFixed(0)}% max. RPM
+								{/if}
+							{:else}
+								Awaiting data...
+							{/if}
+						</div>
+					</div>
+				</div>
+				<!-- Exhaust Fan -->
+				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+					<div
+						class="mask mask-hexagon h-auto w-10 {!isNaN(fansState.exhaustFan.rpm)
+							? 'bg-primary'
+							: 'bg-base-300'}"
+					>
+						<IconWind class="text-primary-content h-auto w-full scale-75 rotate-180" />
+					</div>
+					<div>
+						<div class="font-bold">Exhaust air fan</div>
+						<div class="text-sm opacity-75">
+							{#if !isNaN(fansState.exhaustFan.rpm)}
+								{fansState.exhaustFan.rpm} min<sup>-1</sup>
+								{#if !isNaN(fansConfig.exhaustFan.maxRPM)}
+								, {Math.round(fansState.exhaustFan.rpm / fansConfig.exhaustFan.maxRPM * 100).toFixed(0)}% max. RPM
+								{/if}
+							{:else}
+								Awaiting data...
+							{/if}
+						</div>
+					</div>
+				</div>
+			</div>
+			{#await getFansConfig()}
 				<Spinner />
 			{:then nothing}
-				<Collapsible open={true} class="shadow-lg">
+				<Collapsible open={false} class="shadow-lg">
 					{#snippet icon()}
 						<IconWind class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 					{/snippet}
@@ -332,7 +406,7 @@
 						</div>
 					</div>
 				</Collapsible>
-				<Collapsible open={true} class="shadow-lg">
+				<Collapsible open={false} class="shadow-lg">
 					{#snippet icon()}
 						<IconWind class="rotate-180 lex-shrink-0 mr-2 h-6 w-6 self-end" />
 					{/snippet}
@@ -465,7 +539,8 @@
 								bind:value={fansConfig.exhaustFan.airflow}
 								id="exhaustFanAirflow"
 								oninput={(event: Event) => {
-									formErrors.exhaustFan.airflow = !(event.target as HTMLInputElement).validity.valid;
+									formErrors.exhaustFan.airflow = !(event.target as HTMLInputElement).validity
+										.valid;
 								}}
 							/>
 							{#if formErrors.exhaustFan.airflow}
@@ -500,8 +575,8 @@
 								bind:value={fansConfig.exhaustFan.staticPressure}
 								id="exhaustStaticPressure"
 								oninput={(event: Event) => {
-									formErrors.exhaustFan.staticPressure = !(event.target as HTMLInputElement).validity
-										.valid;
+									formErrors.exhaustFan.staticPressure = !(event.target as HTMLInputElement)
+										.validity.valid;
 								}}
 							/>
 							{#if formErrors.exhaustFan.staticPressure}

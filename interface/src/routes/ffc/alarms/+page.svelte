@@ -6,11 +6,8 @@
 	import { cubicOut } from 'svelte/easing';
 	import { user } from '$lib/stores/user';
 	import { notifications } from '$lib/components/toasts/notifications';
-	import { onMount, onDestroy } from 'svelte';
-	import { socket } from '$lib/stores/socket';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
-	import Spinner from '$lib/components/Spinner.svelte';
 	import Logs from '~icons/tabler/logs';
 	import Delete from '~icons/tabler/trash';
 	import Confirm from '~icons/tabler/check';
@@ -19,7 +16,6 @@
 	import Seen from '~icons/tabler/eye';
 	import Alert from '~icons/tabler/alert-triangle';
 	import { jsonDateReviver } from '$lib/utils';
-	import type { Alarm } from '$lib/types/models';
 	import { alarmLog } from '$lib/alarm.svelte';
 
 	interface Props {
