@@ -105,6 +105,4 @@ void AlarmService::_emitAlarmMQTT(uint32_t id)
     String payload;
     serializeJson(alarm_jsonDoc, payload);
     _mqttClient->publish(alarmTopic.c_str(), 0, false, payload.c_str());
-
-    ESP_LOGV(TAG, "Published alarm %d to MQTT topic %s: %s", id, alarmTopic.c_str(), payload.c_str());
 }

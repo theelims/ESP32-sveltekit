@@ -8,9 +8,9 @@
 	import IconAlert from '~icons/tabler/alert-triangle-filled';
 	import { jsonDateReviver } from '$lib/utils';
 	import { goto } from '$app/navigation';
+	import { alarmLog } from '$lib/alarm.svelte';
 
-	let alarms: Alarm[] = $state([]);
-	let numActiveAlarms = $derived(alarms.filter((alarm) => alarm.active).length);
+	let numActiveAlarms = $derived(alarmLog.alarms.filter((alarm) => alarm.active).length);
 	let isAlarming = $derived(numActiveAlarms > 0);
 
 	async function getAlarms() {
@@ -22,7 +22,7 @@
 					'Content-Type': 'application/json'
 				}
 			});
-			alarms = JSON.parse(await response.text(), jsonDateReviver).alarms || [];
+			alarmLog.alarms = JSON.parse(await response.text(), jsonDateReviver).alarms;
 		} catch (error) {
 			console.error('Error:', error);
 		}

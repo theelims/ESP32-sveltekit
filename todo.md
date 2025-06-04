@@ -10,7 +10,4 @@
         Wie ist das im Laufenden Betrieb, wenn plötzlich die Temperaturen weg sind
 
 - MQTT für 
-    - Werte
-
-Alarming:
-    - Alarm-Operation sollte zu Status-Aktualisierung führen
+    - Werte (--> ESPHome-kompatibel)
