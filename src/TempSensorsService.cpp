@@ -190,7 +190,7 @@ void TempSensorsService::_acquireTemps()
 
             sensor.readErrors = 0; // Reset read errors if reading was successful
 
-            ESP_LOGV(TempSensorsService::TAG, "Acquired sensor 0x%llx temperature: %.2f °C", sensor.address, _temperatures[sensor.address]);
+            ESP_LOGV(TempSensorsService::TAG, "Acquired temperature sensor 0x%llx: %.2f °C", sensor.address, _temperatures[sensor.address]);
         }
     }
     endTransaction();

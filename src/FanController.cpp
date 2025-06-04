@@ -100,7 +100,7 @@ FanController::FanController(ESP32SvelteKit *sveltekit) : _server(sveltekit->get
                                                           _alarmService(sveltekit),
                                                           _fansConfigService(sveltekit),
                                                           _tempSensorsService(sveltekit, &_alarmService, 2), // GPIO 2 for 1-wire bus
-                                                          _rpmSensor(sveltekit, 8, 7), // GPIO 8 for supply fan, GPIO 7 for exhaust fan
+                                                          _rpmSensor(sveltekit, &_alarmService, 8, 7), // GPIO 8 for supply fan, GPIO 7 for exhaust fan
                                                           _txTaskHandle(NULL)
 {
 }

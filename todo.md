@@ -13,6 +13,4 @@
     - Temp + DC as Event
     - Alarm bei zu niedrigen RPM
 
-- RPMSensor:
-    - Exhaust Fan
-    - Bei Fehler bei RPM-Ermittlung: Alarm (indirekt über RPM = 0?)
+- Gute externe Alarmierung!
