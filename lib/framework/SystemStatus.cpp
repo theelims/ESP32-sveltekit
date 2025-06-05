@@ -15,84 +15,99 @@
 #include <SystemStatus.h>
 #include <esp32-hal.h>
 
-#if CONFIG_IDF_TARGET_ESP32 // ESP32/PICO-D4
-#include "esp32/rom/rtc.h"
-#define ESP_PLATFORM "ESP32";
+#if CONFIG_IDF_TARGET_ESP32  // ESP32/PICO-D4
+    #include "esp32/rom/rtc.h"
+    #define ESP_PLATFORM "ESP32";
 #elif CONFIG_IDF_TARGET_ESP32S2
-#include "esp32/rom/rtc.h"
-#define ESP_PLATFORM "ESP32-S2";
+    #include "esp32/rom/rtc.h"
+    #define ESP_PLATFORM "ESP32-S2";
 #elif CONFIG_IDF_TARGET_ESP32C3
-#include "esp32c3/rom/rtc.h"
-#define ESP_PLATFORM "ESP32-C3";
+    #include "esp32c3/rom/rtc.h"
+    #define ESP_PLATFORM "ESP32-C3";
 #elif CONFIG_IDF_TARGET_ESP32S3
-#include "esp32s3/rom/rtc.h"
-#define ESP_PLATFORM "ESP32-S3";
+    #include "esp32s3/rom/rtc.h"
+    #define ESP_PLATFORM "ESP32-S3";
 #elif CONFIG_IDF_TARGET_ESP32C6
-#include "esp32c6/rom/rtc.h"
-#define ESP_PLATFORM "ESP32-C6";
+    #include "esp32c6/rom/rtc.h"
+    #define ESP_PLATFORM "ESP32-C6";
 #else
-#error Target CONFIG_IDF_TARGET is not supported
+    #error Target CONFIG_IDF_TARGET is not supported
 #endif
 
 #ifndef ARDUINO_VERSION
-#ifndef STRINGIZE
-#define STRINGIZE(s) #s
-#endif
-#define ARDUINO_VERSION_STR(major, minor, patch) "v" STRINGIZE(major) "." STRINGIZE(minor) "." STRINGIZE(patch)
-#define ARDUINO_VERSION ARDUINO_VERSION_STR(ESP_ARDUINO_VERSION_MAJOR, ESP_ARDUINO_VERSION_MINOR, ESP_ARDUINO_VERSION_PATCH)
+    #ifndef STRINGIZE
+        #define STRINGIZE(s) #s
+    #endif
+    #define ARDUINO_VERSION_STR(major, minor, patch) "v" STRINGIZE(major) "." STRINGIZE(minor) "." STRINGIZE(patch)
+    #define ARDUINO_VERSION ARDUINO_VERSION_STR(ESP_ARDUINO_VERSION_MAJOR, ESP_ARDUINO_VERSION_MINOR, ESP_ARDUINO_VERSION_PATCH)
 #endif
 
 String verbosePrintResetReason(int reason)
 {
-    switch (reason)
-    {
-    case 1:
-        return ("Vbat power on reset");
-        break;
-    case 3:
-        return ("Software reset digital core");
-        break;
-    case 4:
-        return ("Legacy watch dog reset digital core");
-        break;
-    case 5:
-        return ("Deep Sleep reset digital core");
-        break;
-    case 6:
-        return ("Reset by SLC module, reset digital core");
-        break;
-    case 7:
-        return ("Timer Group0 Watch dog reset digital core");
-        break;
-    case 8:
-        return ("Timer Group1 Watch dog reset digital core");
-        break;
-    case 9:
-        return ("RTC Watch dog Reset digital core");
-        break;
-    case 10:
-        return ("Intrusion tested to reset CPU");
-        break;
-    case 11:
-        return ("Time Group reset CPU");
-        break;
-    case 12:
-        return ("Software reset CPU");
-        break;
-    case 13:
-        return ("RTC Watch dog Reset CPU");
-        break;
-    case 14:
-        return ("for APP CPU, reseted by PRO CPU");
-        break;
-    case 15:
-        return ("Reset when the vdd voltage is not stable");
-        break;
-    case 16:
-        return ("RTC Watch dog reset digital core and rtc module");
-        break;
-    default:
-        return ("NO_MEAN");
+    switch (reason) {
+        case ESP_RST_UNKNOWN:
+            return ("Reset reason can not be determined");
+            break;
+        case ESP_RST_POWERON:
+            return ("Reset due to power-on event");
+            break;
+        case ESP_RST_EXT:
+            return ("Reset by external pin (not applicable for ESP32)");
+            break;
+        case ESP_RST_SW:
+            return ("Software reset via esp_restart");
+            break;
+        case ESP_RST_PANIC:
+            return ("Software reset due to exception/panic");
+            break;
+        case ESP_RST_INT_WDT:
+            return ("Reset (software or hardware) due to interrupt watchdog");
+            break;
+        case ESP_RST_TASK_WDT:
+            return ("Reset due to task watchdog");
+            break;
+        case ESP_RST_WDT:
+            return ("Reset due to other watchdogs");
+            break;
+        case ESP_RST_DEEPSLEEP:
+            return ("Reset after exiting deep sleep mode");
+            break;
+        case ESP_RST_BROWNOUT:
+            return ("Brownout reset (software or hardware)");
+            break;
+        case ESP_RST_SDIO:
+            return ("Reset over SDIO");
+            break;
+#ifdef ESP_RST_USB
+        case ESP_RST_USB:
+            return ("Reset by USB peripheral");
+            break;
+#endif
+#ifdef ESP_RST_JTAG
+        case ESP_RST_JTAG:
+            return ("Reset by JTAG");
+            break;
+#endif
+#ifdef ESP_RST_EFUSE
+        case ESP_RST_EFUSE:
+            return ("Reset due to efuse error");
+            break;
+#endif
+#ifdef ESP_RST_PWR_GLITCH
+        case ESP_RST_PWR_GLITCH:
+            return ("Reset due to power glitch detected");
+            break;
+#endif
+#ifdef ESP_RST_CPU_LOCKUP
+        case ESP_RST_CPU_LOCKUP:
+            return ("Reset due to CPU lock up (double exception)");
+            break;
+#endif
+        default:
+            char buffer[50];
+            snprintf(buffer, sizeof(buffer), "Unknown reset reason (%d)", reason);
+            return String(buffer);
+            break;
     }
 }
 
@@ -142,7 +157,7 @@ esp_err_t SystemStatus::systemStatus(PsychicRequest *request)
     root["fs_total"] = ESPFS.totalBytes();
     root["fs_used"] = ESPFS.usedBytes();
     root["core_temp"] = temperatureRead();
-    root["cpu_reset_reason"] = verbosePrintResetReason(rtc_get_reset_reason(0));
+    root["cpu_reset_reason"] = verbosePrintResetReason(esp_reset_reason());
     root["uptime"] = millis() / 1000;
 
     return response.send();
