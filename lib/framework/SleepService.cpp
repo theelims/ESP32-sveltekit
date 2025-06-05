@@ -97,7 +97,7 @@ void SleepService::sleepNow()
         rtc_gpio_pulldown_dis((gpio_num_t)_wakeUpPin);
         break;
     default:
-        esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
+        esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO);
     }
 #endif
 

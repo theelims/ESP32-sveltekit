@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Upcoming [0.5.0] - tbd
+## Upcoming [0.6.0] - tbd
 
 > [!CAUTION]
 > This update has breaking changes!
@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 
 - Added a build script to create a merged firmware file to use with [ESP Web Tools](https://esphome.github.io/esp-web-tools/)
 - Added compatibility with ESP32-C6
+- Added getIP() function to WiFiSettingsService.
 - Added Arduino Log Colors
 - Possibility to add a loop callback to ESP32-Sveltekit to leverage its loop threat. Meant to include custom services so no separate task is needed for them.
 - Change wake-up pin in SleepService during runtime. It is also possible to use the internal pull-up or pull-down resistors now.
@@ -40,7 +41,7 @@ All notable changes to this project will be documented in this file.
 - Updated PsychicHttp to v1.2.1 incl. patches.
 - Updated DaisyUI
 - Updated Svelte 5 --> see [Svelte 5 Migration Guide](https://svelte.dev/docs/svelte/v5-migration-guide)
-- Changed platform to latest stable espressif32 6.8.1
+- Changed platform to [PIO Arduino](https://github.com/pioarduino/platform-espressif32)
 
 ### Fixed
 
@@ -54,6 +55,8 @@ All notable changes to this project will be documented in this file.
 - Fixed mixup pull up and pull down when configuring wake up pin in SleepService.cpp
 
 ### Migration Guide
+
+#### PIO Arduino & ESP-IDF 5
 
 #### Frontend
 
