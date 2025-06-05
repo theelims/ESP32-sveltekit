@@ -29,7 +29,7 @@ void MqttStatus::begin()
                 _securityManager->wrapRequest(std::bind(&MqttStatus::mqttStatus, this, std::placeholders::_1),
                                               AuthenticationPredicates::IS_AUTHENTICATED));
 
-    ESP_LOGV(TAG, "Registered GET endpoint: %s", MQTT_STATUS_SERVICE_PATH);
+    ESP_LOGV(SVK_TAG, "Registered GET endpoint: %s", MQTT_STATUS_SERVICE_PATH);
 }
 
 esp_err_t MqttStatus::mqttStatus(PsychicRequest *request)

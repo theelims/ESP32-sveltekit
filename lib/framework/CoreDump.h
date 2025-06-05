@@ -23,16 +23,17 @@
 
 #define CORE_DUMP_SERVICE_PATH "/rest/coreDump"
 
-class CoreDump {
-   public:
+class CoreDump
+{
+public:
     CoreDump(PsychicHttpServer *server, SecurityManager *securityManager);
 
     void begin();
 
-   private:
+private:
     PsychicHttpServer *_server;
     SecurityManager *_securityManager;
     esp_err_t coreDump(PsychicRequest *request);
 };
 
-#endif  // end CoreDump_h
+#endif // end CoreDump_h

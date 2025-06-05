@@ -70,6 +70,8 @@
 #define ESP32SVELTEKIT_LOOP_INTERVAL 10
 #endif
 
+#define SVK_TAG "🐼"
+
 // define callback function to include into the main loop
 typedef std::function<void()> loopCallback;
 
@@ -239,10 +241,12 @@ private:
 #if FT_ENABLED(FT_ANALYTICS)
     AnalyticsService _analyticsService;
 #endif
+#if FT_ENABLED(FT_COREDUMP)
+    CoreDump _coreDump;
+#endif
     RestartService _restartService;
     FactoryResetService _factoryResetService;
     SystemStatus _systemStatus;
-    CoreDump _coreDump;
 
     String _appName = APP_NAME;
 

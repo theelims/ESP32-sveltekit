@@ -125,7 +125,7 @@ void MqttSettingsService::onMqttConnect(bool sessionPresent)
     String uri = _mqttClient.getMqttConfig()->uri;
 #endif
 
-    ESP_LOGI(TAG, "Connected to MQTT: %s", uri.c_str());
+    ESP_LOGI(SVK_TAG, "Connected to MQTT: %s", uri.c_str());
 #ifdef SERIAL_INFO
     Serial.printf("Connected to MQTT: %s\n", uri.c_str());
 #endif
@@ -134,7 +134,7 @@ void MqttSettingsService::onMqttConnect(bool sessionPresent)
 
 void MqttSettingsService::onMqttDisconnect(bool sessionPresent)
 {
-    ESP_LOGI(TAG, "Disconnected from MQTT.");
+    ESP_LOGI(SVK_TAG, "Disconnected from MQTT.");
 #ifdef SERIAL_INFO
     Serial.println("Disconnected from MQTT.");
 #endif
@@ -145,7 +145,7 @@ void MqttSettingsService::onMqttError(esp_mqtt_error_codes_t error)
     if (error.error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT)
     {
         _lastError = strerror(error.esp_transport_sock_errno);
-        ESP_LOGE(TAG, "MQTT TCP error: %s", _lastError.c_str());
+        ESP_LOGE(SVK_TAG, "MQTT TCP error: %s", _lastError.c_str());
     }
 }
 
@@ -158,7 +158,7 @@ void MqttSettingsService::onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t 
 {
     if (_state.enabled)
     {
-        ESP_LOGI(TAG, "WiFi connection established, starting MQTT client.");
+        ESP_LOGI(SVK_TAG, "WiFi connection established, starting MQTT client.");
         onConfigUpdated();
     }
 }
@@ -167,7 +167,7 @@ void MqttSettingsService::onStationModeDisconnected(WiFiEvent_t event, WiFiEvent
 {
     if (_state.enabled)
     {
-        ESP_LOGI(TAG, "WiFi connection dropped, stopping MQTT client.");
+        ESP_LOGI(SVK_TAG, "WiFi connection dropped, stopping MQTT client.");
         onConfigUpdated();
     }
 }

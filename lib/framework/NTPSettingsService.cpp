@@ -41,7 +41,7 @@ void NTPSettingsService::begin()
                     std::bind(&NTPSettingsService::configureTime, this, std::placeholders::_1, std::placeholders::_2),
                     AuthenticationPredicates::IS_ADMIN));
 
-    ESP_LOGV(TAG, "Registered POST endpoint: %s", TIME_PATH);
+    ESP_LOGV(SVK_TAG, "Registered POST endpoint: %s", TIME_PATH);
 
     _fsPersistence.readFromFS();
     configureNTP();

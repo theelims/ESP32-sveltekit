@@ -62,4 +62,9 @@
 #define EVENT_USE_JSON 0
 #endif
 
+// Endpoint for Core Dump, off by default
+#ifndef FT_COREDUMP
+#define FT_COREDUMP 0
+#endif
+
 #endif
