@@ -216,6 +216,7 @@ public:
     void begin();
     void loop();
     String getHostname();
+    String getIP();
 
 private:
     PsychicHttpServer *_server;

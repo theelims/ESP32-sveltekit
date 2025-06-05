@@ -107,6 +107,15 @@ String WiFiSettingsService::getHostname()
     return _state.hostname;
 }
 
+String WiFiSettingsService::getIP()
+{
+    if (WiFi.isConnected())
+    {
+        return WiFi.localIP().toString();
+    }
+    return "Not connected";
+}
+
 void WiFiSettingsService::manageSTA()
 {
     // Abort if already connected, if we have no SSID, or are in offline mode
