@@ -38,6 +38,7 @@
 #include <SecuritySettingsService.h>
 #include <SleepService.h>
 #include <SystemStatus.h>
+#include <CoreDump.h>
 #include <WiFiScanner.h>
 #include <WiFiSettingsService.h>
 #include <WiFiStatus.h>
@@ -241,6 +242,7 @@ private:
     RestartService _restartService;
     FactoryResetService _factoryResetService;
     SystemStatus _systemStatus;
+    CoreDump _coreDump;
 
     String _appName = APP_NAME;
 

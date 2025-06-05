@@ -53,7 +53,8 @@ ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEnd
 #endif
                                                                                           _restartService(server, &_securitySettingsService),
                                                                                           _factoryResetService(server, &ESPFS, &_securitySettingsService),
-                                                                                          _systemStatus(server, &_securitySettingsService)
+                                                                                          _systemStatus(server, &_securitySettingsService),
+                                                                                          _coreDump(server, &_securitySettingsService)
 {
 }
 
@@ -147,6 +148,7 @@ void ESP32SvelteKit::begin()
     _wifiSettingsService.begin();
     _wifiScanner.begin();
     _wifiStatus.begin();
+    _coreDump.begin();
 
 #if FT_ENABLED(FT_UPLOAD_FIRMWARE)
     _uploadFirmwareService.begin();
