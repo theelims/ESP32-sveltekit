@@ -11,8 +11,7 @@ node_modules
 /releases
 /src/certs
 /temp
-/build/firmware
-/build/elf
+/build
 /lib/framework/WWWData.h
 *WWWData.h
 lib/framework/WWWData.h

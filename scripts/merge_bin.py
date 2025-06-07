@@ -1,8 +1,22 @@
+import os
+import re
 Import("env")
 
 APP_BIN = "$BUILD_DIR/${PROGNAME}.bin"
-MERGED_BIN = "$BUILD_DIR/firmware_merged.bin"
+OUTPUT_DIR = "$PROJECT_DIR{}build{}merged{}".format(os.path.sep, os.path.sep, os.path.sep)
+
 BOARD_CONFIG = env.BoardConfig()
+
+def readFlag(flag):
+    buildFlags = env.ParseFlags(env["BUILD_FLAGS"])
+    # print(buildFlags.get("CPPDEFINES"))
+    for define in buildFlags.get("CPPDEFINES"):
+        if (define == flag or (isinstance(define, list) and define[0] == flag)):
+            # print("Found "+flag+" = "+define[1])
+            # strip quotes ("") from define[1]
+            cleanedFlag = re.sub(r'^"|"$', '', define[1])
+            return cleanedFlag
+    return None
 
 
 def merge_bin(source, target, env):
@@ -20,6 +34,8 @@ def merge_bin(source, target, env):
         flash_mode = "dio"
     if memory_type == "opi_opi" or memory_type == "opi_qspi":
         flash_mode = "dout"
+
+    MERGED_BIN = "{}{}_{}_{}.bin".format(OUTPUT_DIR, readFlag("APP_NAME"), env.get('PIOENV'), readFlag("APP_VERSION").replace(".", "-"))
 
     # Run esptool to merge images into a single binary
     env.Execute(

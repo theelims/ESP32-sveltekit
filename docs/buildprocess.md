@@ -174,4 +174,4 @@ The static files for the website are build using vite. By default vite adds a un
 
 ## Merged Firmware File for Web Flasher
 
-The PIO build system calls a script `merge_bin.py` to create a merged firmware binary ready to be used with [ESP Web Tools](https://esphome.github.io/esp-web-tools/). The file is located under the PIO build folder. Typically `.pio/build/{env}/firmware_merged.bin`.
+The PIO build system calls a script `merge_bin.py` to create a merged firmware binary ready to be used with [ESP Web Tools](https://esphome.github.io/esp-web-tools/). The file is located under the PIO build folder. Typically `build/merged/{APP_NAME}_{$PIOENV}_{APP_VERSION}.bin`.
