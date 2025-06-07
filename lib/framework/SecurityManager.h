@@ -20,6 +20,8 @@
 #include <PsychicHttp.h>
 #include <list>
 
+#define SVK_TAG "🐼"
+
 #define ACCESS_TOKEN_PARAMATER "access_token"
 
 #define AUTHORIZATION_HEADER "Authorization"

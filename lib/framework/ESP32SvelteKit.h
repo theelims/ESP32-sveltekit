@@ -70,8 +70,6 @@
 #define ESP32SVELTEKIT_LOOP_INTERVAL 10
 #endif
 
-#define SVK_TAG "🐼"
-
 // define callback function to include into the main loop
 typedef std::function<void()> loopCallback;
 
