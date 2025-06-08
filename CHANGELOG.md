@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Upcoming [0.6.0] - tbd
+## Upcoming [Main] - tbd
 
 > [!CAUTION]
 > This update has breaking changes!

@@ -3,7 +3,7 @@ import re
 Import("env")
 
 APP_BIN = "$BUILD_DIR/${PROGNAME}.bin"
-OUTPUT_DIR = "$PROJECT_DIR{}build{}merged{}".format(os.path.sep, os.path.sep, os.path.sep)
+OUTPUT_DIR = "build{}merged{}".format(os.path.sep, os.path.sep)
 
 BOARD_CONFIG = env.BoardConfig()
 
@@ -20,6 +20,16 @@ def readFlag(flag):
 
 
 def merge_bin(source, target, env):
+
+    # check if output directories exist and create if necessary
+    if not os.path.isdir("build"):
+        os.mkdir("build")
+
+    if not os.path.isdir(OUTPUT_DIR):
+        os.mkdir(OUTPUT_DIR)
+
+    MERGED_BIN = "$PROJECT_DIR{}{}{}_{}_{}.bin".format(os.path.sep, OUTPUT_DIR, readFlag("APP_NAME"), env.get('PIOENV'), readFlag("APP_VERSION").replace(".", "-"))
+
     # The list contains all extra images (bootloader, partitions, eboot) and
     # the final application binary
     flash_images = env.Flatten(env.get("FLASH_EXTRA_IMAGES", [])) + ["$ESP32_APP_OFFSET", APP_BIN]
@@ -34,8 +44,6 @@ def merge_bin(source, target, env):
         flash_mode = "dio"
     if memory_type == "opi_opi" or memory_type == "opi_qspi":
         flash_mode = "dout"
-
-    MERGED_BIN = "{}{}_{}_{}.bin".format(OUTPUT_DIR, readFlag("APP_NAME"), env.get('PIOENV'), readFlag("APP_VERSION").replace(".", "-"))
 
     # Run esptool to merge images into a single binary
     env.Execute(
