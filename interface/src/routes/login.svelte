@@ -58,7 +58,7 @@
 		in:fly={{ delay: 200, y: 100, duration: 500 }}
 		out:fade={{ duration: 200 }}
 	>
-		<figure class="bg-base-200"><img src={logo} alt="Logo" class="h-auto w-48 lg:w-64" /></figure>
+		<figure class="bg-base-200"><img src={logo} alt="Logo" class="h-auto w-28 lg:w-38" /></figure>
 		<div class="card-body w-80">
 			<h2 class="card-title text-2xl">Login</h2>
 			<form class="form-control w-full max-w-xs">

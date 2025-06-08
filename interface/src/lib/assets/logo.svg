@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="265"
+   height="515"
+   viewBox="0 0 70.1147 136.26042"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   sodipodi:docname="logo.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.71891835"
+     inkscape:cx="227.42499"
+     inkscape:cy="338.00779"
+     inkscape:window-width="1323"
+     inkscape:window-height="1032"
+     inkscape:window-x="54"
+     inkscape:window-y="8"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="fill:#ff3e00;fill-opacity:1;stroke:none;stroke-width:0.529167;stroke-linecap:round;stroke-linejoin:round;paint-order:markers fill stroke"
+       d="M 0.031099,68.130207 V -1.075e-4 H 35.057346 70.083601 V 68.130207 136.26053 H 35.057346 0.031099 Z"
+       id="path18" />
+    <text
+       xml:space="preserve"
+       style="font-size:77.9057px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#0000ff;stroke:none;stroke-width:0.529167;stroke-linecap:round;stroke-linejoin:round;paint-order:markers fill stroke"
+       x="-135.95534"
+       y="61.019577"
+       id="text18"
+       transform="rotate(-90)"><tspan
+         sodipodi:role="line"
+         id="tspan18"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:77.9057px;font-family:'Bauhaus 93';-inkscape-font-specification:'Bauhaus 93, ';fill:#ffffff;stroke-width:0.529167"
+         x="-135.95534"
+         y="61.019577">FFC</tspan></text>
+  </g>
+</svg>

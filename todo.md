@@ -1,9 +1,5 @@
-- Discovery!
-    - In UI!
-    - Bei Discovery: temps löschen
-        Wie ist das im Laufenden Betrieb, wenn plötzlich die Temperaturen weg sind
 -  Controller:
     - Alarm bei zu niedrigen RPM
+    - ALarm konfigurierbar
 - Startseite
-- Logo
 - Gute externe Alarmierung!
