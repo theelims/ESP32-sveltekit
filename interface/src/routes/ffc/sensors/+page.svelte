@@ -52,7 +52,6 @@
 		} catch (error) {
 			console.error('Error:', error);
 		}
-		return;
 	}
 
 	async function postTempSensors(sensors: Sensor[]) {
@@ -70,12 +69,31 @@
 				notifications.success('Temperature sensors updated.', 3000);
 				sensors = JSON.parse(await response.text(), jsonToBigIntReviver).sensors;
 			} else {
-				notifications.error('Error on updating sensors.', 3000);
+				notifications.error('Error on updating sensors.', 5000);
 			}
 		} catch (error) {
 			console.error('Error:', error);
 		}
-		return;
+	}
+
+	async function postSensorDiscovery() {
+		try {
+			const response = await fetch('/rest/sensors/discovery', {
+				method: 'POST',
+				headers: {
+					Authorization: data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (response.status == 200) {
+				notifications.success('Sensor discovery finished.', 3000);
+			} else {
+				notifications.error('Error on performing sensor discovery.', 5000);
+			}
+		} catch (error) {
+			console.error('Error:', error);
+		}
 	}
 
 	function confirmDelete(index: number) {
@@ -110,6 +128,14 @@
 				postTempSensors(sensors);
 			}
 		});
+	}
+
+	let performingDiscovery = $state(false);
+
+	async function handleDiscoverSensors() {
+		performingDiscovery = true;
+		await postSensorDiscovery();
+		performingDiscovery = false;
 	}
 
 	onMount(() => {
@@ -151,7 +177,11 @@
 				<div class="relative w-full overflow-visible">
 					<div class="flex flex-row absolute right-0 -top-13 gap-2 justify-end">
 						<div class="tooltip tooltip-left" data-tip="Discover 1-Wire sensors">
-							<button class="btn btn-primary text-primary-content btn-md">
+							<button
+								class="btn btn-primary text-primary-content btn-md"
+								onclick={handleDiscoverSensors}
+								disabled={performingDiscovery}
+							>
 								<Radar class="h-6 w-6" />
 							</button>
 						</div>

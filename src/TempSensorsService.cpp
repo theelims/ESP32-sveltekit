@@ -4,6 +4,8 @@
 const char *errt[] = {"", "CRC", "BAD", "DC", "DRV"};
 
 TempSensorsService::TempSensorsService(ESP32SvelteKit *sveltekit, AlarmService *alarmService, uint8_t bus_pin) : _sveltekit(sveltekit),
+                                                                                                                 _server(sveltekit->getServer()),
+                                                                                                                 _securityManager(sveltekit->getSecurityManager()),
                                                                                                                  _httpEndpoint(TempSensors::read,
                                                                                                                                TempSensors::update,
                                                                                                                                this,
@@ -33,10 +35,16 @@ void TempSensorsService::begin()
     _eventSocket->registerEvent(TEMP_SENSORS_EVENT_ID);
 
     /* Discover current temperature sensors */
-    _updateSensors();
+    _discoverSensors();
 
     /* Enable acquisition loop */
     _sveltekit->addLoopFunction(std::bind(&TempSensorsService::loop, this));
+
+    /* Register endpoint to trigger sensor disovery */
+    _server->on(TEMP_SENSORS_DISCOVERY_PATH,
+                HTTP_POST,
+                _securityManager->wrapRequest(std::bind(&TempSensorsService::_handleSensorDiscovery, this, std::placeholders::_1),
+                                              AuthenticationPredicates::IS_ADMIN));
 }
 
 bool TempSensorsService::isSensorOnline(uint64_t &address)
@@ -61,7 +69,7 @@ esp_err_t TempSensorsService::getTemperature(uint64_t &address, float &temperatu
 {
     if (_temperatures.find(address) == _temperatures.end())
     {
-        ESP_LOGE(TempSensorsService::TAG, "No temperature value for sensor with address 0x%llx found. Did the sensor went offline?", address);
+        ESP_LOGE(TAG, "No temperature value for sensor with address 0x%llx found. Did the sensor went offline?", address);
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -87,11 +95,11 @@ String TempSensorsService::getSensorName(uint64_t &address)
     return name;
 }
 
-void TempSensorsService::_updateSensors()
+void TempSensorsService::_discoverSensors()
 {
     uint64_t addr[MAX_NUM_DEVS];
 
-    ESP_LOGI(TempSensorsService::TAG, "Searching 1-wire devices...");
+    ESP_LOGI(TAG, "Searching 1-wire devices...");
 
     beginTransaction();
 
@@ -130,6 +138,24 @@ void TempSensorsService::_updateSensors()
 
     callUpdateHandlers(TEMP_SENSORS_UPDATE_FROM_DISCOVERY);
 }
+
+esp_err_t TempSensorsService::_handleSensorDiscovery(PsychicRequest *request)
+{
+    ESP_LOGI(TAG, "Starting sensor discovery after request...");
+
+    /* Discover sensors */
+    _discoverSensors();
+
+    ESP_LOGI(TAG, "Sensor discovery finished, emitting notification event...");
+
+    /* Emit event to notify about sensor discovery */
+    JsonObject emptyJson;
+    _eventSocket->emitEvent(TEMP_SENSORS_EVENT_ID, emptyJson);
+
+    ESP_LOGI(TAG, "Sensor discovery completed successfully.");
+
+    return request->reply(200, "text/plain", "Sensor discovery completed successfully.");
+}           
 
 void TempSensorsService::loop()
 {
@@ -170,12 +196,12 @@ void TempSensorsService::_acquireTemps()
                 {
                     sensor.online = false;
                     onlineChanged |= true;
-                    ESP_LOGE(TempSensorsService::TAG, "Sensor 0x%llx marked as offline due to too many read errors (>%d).", sensor.address, TEMP_SENSORS_MAX_READ_ERRORS);
+                    ESP_LOGE(TAG, "Sensor 0x%llx marked as offline due to too many read errors (>%d).", sensor.address, TEMP_SENSORS_MAX_READ_ERRORS);
                     _alarmService->publishAlarm("Temperature sensor 0x" + String(sensor.address, HEX) + " (" + sensor.name + ") went offline.");
                 }
                 else
                 {
-                    ESP_LOGE(TempSensorsService::TAG, "Error reading sensor 0x%llx: %s (read errors: %lu)", sensor.address, errt[res], sensor.readErrors);
+                    ESP_LOGE(TAG, "Error reading sensor 0x%llx: %s (read errors: %lu)", sensor.address, errt[res], sensor.readErrors);
                 }
             }
         }
@@ -185,12 +211,12 @@ void TempSensorsService::_acquireTemps()
             {
                 sensor.online = true;
                 onlineChanged |= true;
-                ESP_LOGI(TempSensorsService::TAG, "Sensor 0x%llx is back online after successful read.", sensor.address);
+                ESP_LOGI(TAG, "Sensor 0x%llx is back online after successful read.", sensor.address);
             }
 
             sensor.readErrors = 0; // Reset read errors if reading was successful
 
-            ESP_LOGV(TempSensorsService::TAG, "Acquired temperature sensor 0x%llx: %.2f °C", sensor.address, _temperatures[sensor.address]);
+            ESP_LOGV(TAG, "Acquired temperature sensor 0x%llx: %.2f °C", sensor.address, _temperatures[sensor.address]);
         }
     }
     endTransaction();
@@ -202,7 +228,7 @@ void TempSensorsService::_acquireTemps()
     }
 }
 
-bool TempSensorsService::_isSensorKnown(uint64_t &address, uint32_t &index)
+bool TempSensorsService::_isSensorKnown(const uint64_t &address, uint32_t &index)
 {
     bool found = false;
     beginTransaction();
@@ -221,20 +247,49 @@ bool TempSensorsService::_isSensorKnown(uint64_t &address, uint32_t &index)
     return found;
 }
 
-void TempSensorsService::_emitSensorValues()
+String TempSensorsService::_getSensorName(const uint64_t &address)
 {
-    JsonDocument jsonDoc;
-    JsonObject jsonRoot = jsonDoc.to<JsonObject>();
-    JsonArray jsonSensors = jsonRoot["temperatures"].to<JsonArray>();
+    uint32_t sensorIdx;
+    if (!_isSensorKnown(address, sensorIdx))
+    {
+        return String();
+    }
+
+    beginTransaction();
+    String name = _state.sensors[sensorIdx].name;
+    endTransaction();
+
+    return name;
+}
+
+esp_err_t TempSensorsService::temperaturesAsJson(JsonObject &root)
+{
+    if (!root)
+    {
+        ESP_LOGE(TAG, "Invalid JSON object provided.");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    JsonArray jsonSensors = root["temperatures"].to<JsonArray>();
 
     beginTransaction();
     for (const auto &entry : _temperatures)
     {
         JsonObject sensorObj = jsonSensors.add<JsonObject>();
         sensorObj["address"] = String(entry.first);
+        sensorObj["name"] = _getSensorName(entry.first);
         sensorObj["temperature"] = entry.second;
     }
     endTransaction();
+
+    return ESP_OK;
+}
+
+void TempSensorsService::_emitSensorValues()
+{
+    JsonDocument jsonDoc;
+    JsonObject jsonRoot = jsonDoc.to<JsonObject>();
+    temperaturesAsJson(jsonRoot);
 
     _eventSocket->emitEvent(TEMP_VALUES_EVENT_ID, jsonRoot);
 }

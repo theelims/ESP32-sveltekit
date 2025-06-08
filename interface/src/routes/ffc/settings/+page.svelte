@@ -14,7 +14,7 @@
 	import IconSettings from '~icons/tabler/adjustments';
 	import IconCPU from '~icons/tabler/cpu';
 	import IconTemperature from '~icons/tabler/temperature';
-	import IconWind from '~icons/tabler/wind';
+	import IconGauge from '~icons/tabler/gauge';
 	import IconSave from '~icons/tabler/device-floppy';
 	import type { Sensor } from '$lib/types/models';
 	import { jsonFromBigIntReviver, jsonToBigIntReviver } from '$lib/utils';
@@ -38,13 +38,9 @@
 		tempSensorAddr: BigInt;
 	};
 
-	type ControllerStatus = {
-		tempCompressor: number;
-		tempCondenser: number;
-		rpmSupplyFan: number;
-		rpmExhaustFan: number;
-		dutyCycleSupplyFan: number;
-		dutyCycleExhaustFan: number;
+	type ControllerState = {
+		baseTemp: number;
+		dutyCycle: number;
 	};
 
 	type SensorOption = {
@@ -74,13 +70,9 @@
 		JSON.stringify(settings, jsonFromBigIntReviver) !== strSettings
 	);
 
-	let status: ControllerStatus = $state({
-		tempCompressor: NaN,
-		tempCondenser: NaN,
-		rpmSupplyFan: NaN,
-		rpmExhaustFan: NaN,
-		dutyCycleSupplyFan: NaN,
-		dutyCycleExhaustFan: NaN
+	let controllerState: ControllerState = $state({
+		baseTemp: NaN,
+		dutyCycle: NaN
 	});
 
 	async function getSettings() {
@@ -138,16 +130,16 @@
 		}
 	}
 
-	async function getControllerStatus() {
+	async function getControllerState() {
 		try {
-			const response = await fetch('/rest/controller/status', {
+			const response = await fetch('/rest/controller/state', {
 				method: 'GET',
 				headers: {
 					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
-			status = await response.json();
+			controllerState = await response.json();
 		} catch (error) {
 			console.error('Error:', error);
 		}
@@ -176,6 +168,10 @@
 	}
 
 	onMount(() => {
+		// Controller state updates
+		socket.on<ControllerState>('ctrl-state', (state) => {
+			controllerState = state;
+		});
 		// Temperature sensors updates
 		socket.on<any>('tempsensors', () => {
 			getSensors();
@@ -183,6 +179,7 @@
 	});
 
 	onDestroy(() => {
+		socket.off('ctrl-state');
 		socket.off('tempsensors');
 	});
 
@@ -215,95 +212,53 @@
 			<span>Controller</span>
 		{/snippet}
 		<div class="w-full overflow-x-auto">
-			{#await getControllerStatus()}
+			{#await getControllerState()}
 				<Spinner text="" />
 			{:then nothing}
 				<div
 					class="grid w-full grid-cols-1 content-center gap-1 sm:grid-cols-2"
 					transition:slide|local={{ duration: 300, easing: cubicOut }}
 				>
-					<!-- Temp Compressor -->
+					<!-- Temp -->
 					<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
 						<div
-							class="mask mask-hexagon h-auto w-10 {!isNaN(status.tempCompressor)
+							class="mask mask-hexagon h-auto w-10 {!isNaN(controllerState.baseTemp)
 								? 'bg-primary'
 								: 'bg-base-300'}"
 						>
 							<IconTemperature class="text-primary-content h-auto w-full scale-75" />
 						</div>
 						<div>
-							<div class="font-bold">Compressor temp.</div>
+							<div class="font-bold">Base temperature</div>
 							<div class="text-sm opacity-75">
-								{#if !isNaN(status.tempCompressor)}
-									{status.tempCompressor.toFixed(1)} °C
+								{#if !isNaN(controllerState.baseTemp)}
+									{controllerState.baseTemp.toFixed(1)} °C
 								{:else}
-									Not available
+									Awaiting data...
 								{/if}
 							</div>
 						</div>
 					</div>
-					<!-- Temp Condenser -->
+					<!-- Target duty cycle -->
 					<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
 						<div
-							class="mask mask-hexagon h-auto w-10 {!isNaN(status.tempCondenser)
+							class="mask mask-hexagon h-auto w-10 {!isNaN(controllerState.dutyCycle)
 								? 'bg-primary'
 								: 'bg-base-300'}"
 						>
-							<IconTemperature class="text-primary-content h-auto w-full scale-75" />
+							<IconGauge class="text-primary-content h-auto w-full scale-75" />
 						</div>
 						<div>
-							<div class="font-bold">Condenser temp.</div>
+							<div class="font-bold">Calculated duty cycle</div>
 							<div class="text-sm opacity-75">
-								{#if !isNaN(status.tempCondenser)}
-									{status.tempCondenser.toFixed(1)} °C
+								{#if !isNaN(controllerState.dutyCycle)}
+									{controllerState.dutyCycle.toFixed(0)} %
 								{:else}
-									Not available
+									Awaiting data...
 								{/if}
 							</div>
 						</div>
-					</div>
-					<!-- Supply Fan -->
-					<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-						<div
-							class="mask mask-hexagon h-auto w-10 {!isNaN(status.rpmSupplyFan) &&
-							!isNaN(status.dutyCycleSupplyFan)
-								? 'bg-primary'
-								: 'bg-base-300'}"
-						>
-							<IconWind class="text-primary-content h-auto w-full scale-75" />
-						</div>
-						<div>
-							<div class="font-bold">Supply air fan</div>
-							<div class="text-sm opacity-75">
-								{#if !isNaN(status.rpmSupplyFan) && !isNaN(status.dutyCycleSupplyFan)}
-									{status.rpmSupplyFan} min<sup>-1</sup>, {status.dutyCycleSupplyFan} %
-								{:else}
-									Not available
-								{/if}
-							</div>
-						</div>
-					</div>
-					<!-- Exhaust Fan -->
-					<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-						<div
-							class="mask mask-hexagon h-auto w-10 {!isNaN(status.rpmExhaustFan) &&
-							!isNaN(status.dutyCycleExhaustFan)
-								? 'bg-primary'
-								: 'bg-base-300'}"
-						>
-							<IconWind class="text-primary-content h-auto w-full scale-75 rotate-180" />
-						</div>
-						<div>
-							<div class="font-bold">Exhaust air fan</div>
-							<div class="text-sm opacity-75">
-								{#if !isNaN(status.rpmExhaustFan) && !isNaN(status.dutyCycleExhaustFan)}
-									{status.rpmExhaustFan} min<sup>-1</sup>, {status.dutyCycleExhaustFan} %
-								{:else}
-									Not available
-								{/if}
-							</div>
-						</div>
-					</div>
+					</div>					
 				</div>
 			{/await}
 		</div>

@@ -3,105 +3,17 @@
 #include <driver/ledc.h>
 #include <ControllerSettingsService.h>
 
-void FanController::_ctrlLoop()
-{
-    controller_settings_t ctrl_settings;
-    uint32_t targetDutyCycle = 0;
-    float temp;
-
-    ESP_LOGI(pcTaskGetName(0), "Started.");
-
-    while (1)
-    {
-        vTaskDelay(CONTROLLER_INTERVALL_MS / portTICK_PERIOD_MS);
-
-        /* Get current controller settings */
-        esp_err_t res = _controllerSettingsService.getCurrentSettings(&ctrl_settings);
-        if (res != ESP_OK)
-        {
-            ESP_LOGE(pcTaskGetName(0), "Failed to get current controller settings: %s", esp_err_to_name(res));
-            continue;
-        }
-
-        /* Check controller prerequisites */
-        if (0 == ctrl_settings.tempSensorAddr)
-        {
-            ESP_LOGE(pcTaskGetName(0), "Relevant temperature sensor address is not yet set.");
-            continue;
-        }
-
-        if (!_tempSensorsService.isSensorOnline(ctrl_settings.tempSensorAddr))
-        {
-            temp = ctrl_settings.upperTemp; // Use upper limit as fallback to get full duty cycle
-            ESP_LOGE(pcTaskGetName(0), "Relevant temperature sensor 0x%llx is no longer available. Please set a new one. Assuming max. controller value (%lu °C).",
-                     ctrl_settings.tempSensorAddr,
-                     ctrl_settings.upperTemp);
-        }
-        else
-        {
-            /* Get temperature for controller */
-            res = _tempSensorsService.getTemperature(ctrl_settings.tempSensorAddr, temp);
-            if (res != ESP_OK)
-            {
-                temp = ctrl_settings.upperTemp; // Use upper limit as fallback to get full duty cycle
-                ESP_LOGE(pcTaskGetName(0), "Failed to get temperature of sensor 0x%llx (%s), assuming max. controller value (%lu °C).",
-                         ctrl_settings.tempSensorAddr,
-                         esp_err_to_name(res),
-                         ctrl_settings.upperTemp);
-            }
-        }
-
-        ESP_LOGV(pcTaskGetName(0), "Current controller settings: lowerTemp=%lu °C, upperTemp=%lu °C, minDutyCycle=%lu %%, maxDutyCycle=%lu %%, tempSensorAddr=0x%llx (%s)",
-                 ctrl_settings.lowerTemp, ctrl_settings.upperTemp,
-                 ctrl_settings.minDutyCycle, ctrl_settings.maxDutyCycle,
-                 ctrl_settings.tempSensorAddr, _tempSensorsService.getSensorName(ctrl_settings.tempSensorAddr).c_str());
-
-        /* Calculate new duty cycle */
-        if (temp <= ctrl_settings.lowerTemp)
-        {
-            targetDutyCycle = ctrl_settings.minDutyCycle;
-        }
-        else if (temp >= ctrl_settings.upperTemp)
-        {
-            targetDutyCycle = ctrl_settings.maxDutyCycle;
-        }
-        else
-        {
-            targetDutyCycle = ((temp - ctrl_settings.lowerTemp) /
-                               static_cast<float>(ctrl_settings.upperTemp - ctrl_settings.lowerTemp)) *
-                                  (ctrl_settings.maxDutyCycle - ctrl_settings.minDutyCycle) +
-                              ctrl_settings.minDutyCycle;
-        }
-
-        ESP_LOGV(pcTaskGetName(0), "New target duty cycle for %.1f °C: %lu%%", temp, targetDutyCycle);
-
-        /* Update duty cycle */
-        esp_err_t err = ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, targetDutyCycle * MAX_DUTY_CYCLE / 100);
-        if (err != ESP_OK)
-        {
-            ESP_LOGE(pcTaskGetName(0), "Failed to set duty cycle: %s", esp_err_to_name(err));
-        }
-
-        err = ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
-        if (err != ESP_OK)
-        {
-            ESP_LOGE(pcTaskGetName(0), "Failed to update duty cycle: %s", esp_err_to_name(err));
-        }
-
-        /* Publish status to frontend */
-        _emitStatus();
-    }
-}
-
-FanController::FanController(ESP32SvelteKit *sveltekit) : _server(sveltekit->getServer()),
+FanController::FanController(ESP32SvelteKit *sveltekit) : _sveltekit(sveltekit),
+                                                          _server(sveltekit->getServer()),
                                                           _securityManager(sveltekit->getSecurityManager()),
                                                           _eventSocket(sveltekit->getSocket()),
                                                           _controllerSettingsService(sveltekit),
                                                           _alarmService(sveltekit),
                                                           _fansConfigService(sveltekit),
                                                           _tempSensorsService(sveltekit, &_alarmService, 2), // GPIO 2 for 1-wire bus
-                                                          _rpmSensor(sveltekit, &_alarmService, 8, 7), // GPIO 8 for supply fan, GPIO 7 for exhaust fan
-                                                          _txTaskHandle(NULL)
+                                                          _rpmSensor(sveltekit, &_alarmService, 8, 7),       // GPIO 8 for supply fan, GPIO 7 for exhaust fan
+                                                          _accessMutex(xSemaphoreCreateRecursiveMutex()),
+                                                          _lastAcquired(0)
 {
 }
 
@@ -115,24 +27,8 @@ void FanController::begin()
 
     _eventSocket->registerEvent(CONTROLLER_STATE_EVENT_ID);
 
-    /* Start the controller task */
-    BaseType_t xReturned = xTaskCreatePinnedToCore(
-        this->_ctrlLoopImpl,        // Function that should be called
-        "fan-ctrl",                 // Name of the task (for debugging)
-        4096,                       // Stack size (bytes)
-        this,                       // Pass reference to this class instance
-        (tskIDLE_PRIORITY + 2),     // task priority
-        NULL,                       // Task handle
-        ESP32SVELTEKIT_RUNNING_CORE // Pin to application core
-    );
-
-    if (xReturned != pdPASS)
-    {
-        ESP_LOGE(FanController::TAG, "Temperature acquisition task creation failed.");
-        return;
-    }
-
-    ESP_LOGI(FanController::TAG, "Temperature acquisition task created: %p", _txTaskHandle);
+    /* Enable acquisition loop */
+    _sveltekit->addLoopFunction(std::bind(&FanController::loop, this));
 
     /* Set up PWM */
     esp_err_t err;
@@ -170,14 +66,110 @@ void FanController::begin()
 
     ESP_LOGI(FanController::TAG, "PWM channel configured @ GPIO %d", channel.gpio_num);
 
-    /* Register endpoints for CC1101 status */
-    _server->on(CONTROLLER_STATUS_PATH,
+    /* Register endpoint to get controller status */
+    _server->on(CONTROLLER_STATE_PATH,
                 HTTP_GET,
-                _securityManager->wrapRequest(std::bind(&FanController::_handlerGetStatus, this, std::placeholders::_1),
-                                              AuthenticationPredicates::IS_AUTHENTICATED));
+                _securityManager->wrapRequest(std::bind(&FanController::_handlerGetState, this, std::placeholders::_1),
+                                              AuthenticationPredicates::NONE_REQUIRED));
 }
 
-esp_err_t FanController::_statusAsJSON(JsonObject &root)
+void FanController::loop()
+{
+    uint32_t currentMillis = millis();
+    uint32_t timeElapsed = currentMillis - _lastAcquired;
+    if (timeElapsed >= CONTROLLER_INTERVALL_MS)
+    {
+        _lastAcquired = currentMillis;
+
+        controller_settings_t ctrl_settings;
+        uint32_t targetDutyCycle = 100;
+        float temp = 0.0f;
+        bool calculationSuccessful = false;
+
+        /* Get current controller settings */
+        esp_err_t res = _controllerSettingsService.getCurrentSettings(&ctrl_settings);
+        if (res != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Failed to get current controller settings: %s", esp_err_to_name(res));
+        }
+        else
+        {
+            /* Check controller prerequisites */
+            if (0 == ctrl_settings.tempSensorAddr)
+            {
+                ESP_LOGE(TAG, "Relevant temperature sensor address is not yet set.");
+            }
+            else
+            {
+                if (!_tempSensorsService.isSensorOnline(ctrl_settings.tempSensorAddr))
+                {
+                    ESP_LOGE(TAG, "Relevant temperature sensor 0x%llx is no longer available. Please set a new one.",
+                             ctrl_settings.tempSensorAddr);
+                }
+                else
+                {
+                    /* Get temperature for controller */
+                    res = _tempSensorsService.getTemperature(ctrl_settings.tempSensorAddr, temp);
+                    if (res != ESP_OK)
+                    {
+                        ESP_LOGE(TAG, "Failed to get temperature of sensor 0x%llx (%s)",
+                                 ctrl_settings.tempSensorAddr,
+                                 esp_err_to_name(res));
+                    }
+                }
+
+                /* Calculate new duty cycle */
+                if (temp <= ctrl_settings.lowerTemp)
+                {
+                    targetDutyCycle = ctrl_settings.minDutyCycle;
+                }
+                else if (temp >= ctrl_settings.upperTemp)
+                {
+                    targetDutyCycle = ctrl_settings.maxDutyCycle;
+                }
+                else
+                {
+                    targetDutyCycle = ((temp - ctrl_settings.lowerTemp) /
+                                       static_cast<float>(ctrl_settings.upperTemp - ctrl_settings.lowerTemp)) *
+                                          (ctrl_settings.maxDutyCycle - ctrl_settings.minDutyCycle) +
+                                      ctrl_settings.minDutyCycle;
+                }
+
+                calculationSuccessful = true;
+                ESP_LOGV(TAG, "New target duty cycle for %.1f °C: %lu%%", temp, targetDutyCycle);
+            }
+        }
+
+        if (!calculationSuccessful)
+            ESP_LOGE(TAG, "Controller calculation failed. Using default duty cycle of 100%%.");
+
+        /* Update duty cycle */
+        esp_err_t err = ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, targetDutyCycle * MAX_DUTY_CYCLE / 100);
+        if (err != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Failed to set duty cycle: %s", esp_err_to_name(err));
+        }
+
+        err = ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+        if (err != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Failed to update duty cycle: %s", esp_err_to_name(err));
+        }
+
+        /* Obtain full state */
+        _beginTransaction();
+        _state.baseTemp = temp;
+        _state.dutyCycle = targetDutyCycle;
+        _state.fan1RPM = _rpmSensor.getRPMSupplyFan();
+        _state.fan2RPM = _rpmSensor.getRPMExhaustFan();
+        _endTransaction();
+
+        /* Publish status to frontend */
+        _emitState();
+    }
+}
+
+esp_err_t FanController::_stateAsJSON(JsonObject &root)
 {
     if (!root)
     {
@@ -185,22 +177,23 @@ esp_err_t FanController::_statusAsJSON(JsonObject &root)
         return ESP_ERR_INVALID_ARG;
     }
 
-    root["tempCompressor"] = 0;
-    root["tempCondenser"] = 0;
-    root["rpmSupplyFan"] = 0;        // Placeholder, replace with actual RPM reading
-    root["rpmExhaustFan"] = 0;       // Placeholder, replace with actual RPM reading
-    root["dutyCycleSupplyFan"] = 0;  // Placeholder, replace with actual duty cycle
-    root["dutyCycleExhaustFan"] = 0; // Placeholder, replace with actual duty cycle
+    _beginTransaction();
+    root["baseTemp"] = _state.baseTemp;
+    root["dutyCycle"] = _state.dutyCycle;
+    root["fan1RPM"] = _state.fan1RPM;
+    root["fan2RPM"] = _state.fan2RPM;
+    esp_err_t res = _tempSensorsService.temperaturesAsJson(root);
+    _endTransaction();
 
-    return ESP_OK;
+    return res;
 }
 
-esp_err_t FanController::_handlerGetStatus(PsychicRequest *request)
+esp_err_t FanController::_handlerGetState(PsychicRequest *request)
 {
     PsychicJsonResponse response = PsychicJsonResponse(request, false);
     JsonObject json = response.getRoot();
 
-    if (_statusAsJSON(json) != ESP_OK)
+    if (_stateAsJSON(json) != ESP_OK)
     {
         ESP_LOGE(FanController::TAG, "Failed to get controller status as JSON.");
         return request->reply(HTTPD_500_INTERNAL_SERVER_ERROR, "text/plain", "Failed to get controller status.");
@@ -209,10 +202,10 @@ esp_err_t FanController::_handlerGetStatus(PsychicRequest *request)
     return response.send();
 }
 
-void FanController::_emitStatus()
+void FanController::_emitState()
 {
     JsonDocument jsonDoc;
     JsonObject jsonRoot = jsonDoc.to<JsonObject>();
-    _statusAsJSON(jsonRoot);
+    _stateAsJSON(jsonRoot);
     _eventSocket->emitEvent(CONTROLLER_STATE_EVENT_ID, jsonRoot);
 }

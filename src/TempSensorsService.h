@@ -6,6 +6,7 @@
 
 #define TEMP_SENSORS_PATH "/rest/sensors"
 #define TEMP_SENSORS_FILE "/config/sensors.json"
+#define TEMP_SENSORS_DISCOVERY_PATH "/rest/sensors/discovery"
 
 #define TEMP_SENSORS_UPDATE_FROM_DISCOVERY "update-by-discovery"
 #define TEMP_SENSORS_ACQUISITION_INTERVAL_MS 1000    // 1 second
@@ -80,11 +81,14 @@ public:
     bool isSensorOnline(uint64_t &address);
     esp_err_t getTemperature(uint64_t &address, float &temperature);
     String getSensorName(uint64_t &address);
+    esp_err_t temperaturesAsJson(JsonObject &root);
 
 private:
     static const uint8_t MAX_NUM_DEVS = 5; // Maximum number of devices on the bus
 
     ESP32SvelteKit *_sveltekit;
+    PsychicHttpServer *_server;
+    SecurityManager *_securityManager;
     HttpEndpoint<TempSensors> _httpEndpoint;
     FSPersistence<TempSensors> _fsPersistence;
     EventSocket *_eventSocket;
@@ -94,8 +98,11 @@ private:
     std::map<uint64_t, float> _temperatures;
     volatile uint32_t _lastAcquired; // Last time (millies) the temperatures were acquired
 
-    void _updateSensors();
+    esp_err_t _handleSensorDiscovery(PsychicRequest *request);
+
+    void _discoverSensors();
     void _acquireTemps();
-    bool _isSensorKnown(uint64_t &address, uint32_t &index);
+    bool _isSensorKnown(const uint64_t &address, uint32_t &index);
+    String _getSensorName(const uint64_t &address);
     void _emitSensorValues();
 };
