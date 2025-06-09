@@ -164,7 +164,7 @@
 										</td>
 										<td align="left">
 											<span class:font-bold={alarm.active}>
-												{alarm.message}
+												{@html alarm.message.replace(/min-1/g, 'min<sup>-1</sup>')}
 											</span>
 										</td>
 

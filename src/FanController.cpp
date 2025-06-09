@@ -13,7 +13,9 @@ FanController::FanController(ESP32SvelteKit *sveltekit) : _sveltekit(sveltekit),
                                                           _tempSensorsService(sveltekit, &_alarmService, 2), // GPIO 2 for 1-wire bus
                                                           _rpmSensor(sveltekit, &_alarmService, 8, 7),       // GPIO 8 for supply fan, GPIO 7 for exhaust fan
                                                           _accessMutex(xSemaphoreCreateRecursiveMutex()),
-                                                          _lastAcquired(0)
+                                                          _lastAcquired(0),
+                                                          _tempError(false),
+                                                          _fanError(false)
 {
 }
 
@@ -116,6 +118,20 @@ void FanController::loop()
                                  ctrl_settings.tempSensorAddr,
                                  esp_err_to_name(res));
                     }
+
+                    /* Check max. temperature */
+                    if (ctrl_settings.monitorTemperature && temp > ctrl_settings.maxTemp && !_tempError)
+                    {
+                        ESP_LOGW(TAG, "Current temperature (%.1f °C) exceeds maximum allowed temperature (%lu °C).",
+                                 temp, ctrl_settings.maxTemp);
+                        _tempError = true;
+                        _alarmService.publishAlarm("Current temperature (" + String(temp, 1) + " °C) exceeds maximum allowed temperature (" + String(ctrl_settings.maxTemp) + " °C).");
+                    }
+                    else
+                    {
+                        if (temp < ctrl_settings.maxTemp - CONTROLLER_TEMP_MONITOR_HYSTERESIS) // Reset temperature error if within limits
+                            _tempError = false;
+                    }
                 }
 
                 /* Calculate new duty cycle */
@@ -156,12 +172,32 @@ void FanController::loop()
             ESP_LOGE(TAG, "Failed to update duty cycle: %s", esp_err_to_name(err));
         }
 
+        /* Check fans */
+        uint32_t supplyFanRPM = _rpmSensor.getRPMSupplyFan();
+        uint32_t exhaustFanRPM = _rpmSensor.getRPMExhaustFan();
+        if (ctrl_settings.monitorFans &&
+            targetDutyCycle > 10 &&
+            (supplyFanRPM < CONTROLLER_MIN_RPM_SUPPLY_FAN || exhaustFanRPM < CONTROLLER_MIN_RPM_EXHAUST_FAN))
+        {
+            if (!_fanError)
+            {
+                ESP_LOGW(TAG, "One or both fans are not running properly. Supply fan RPM: %lu min-1, Exhaust fan RPM: %lu min-1.",
+                         supplyFanRPM, exhaustFanRPM);
+                _fanError = true;
+                _alarmService.publishAlarm("Fan failure detected. Supply fan RPM: " + String(supplyFanRPM) + " min-1, Exhaust fan RPM: " + String(exhaustFanRPM) + " min-1.");
+            }
+        }
+        else
+        {
+            _fanError = false; // Reset fan error if fans are running properly
+        }
+
         /* Obtain full state */
         _beginTransaction();
         _state.baseTemp = temp;
         _state.dutyCycle = targetDutyCycle;
-        _state.fan1RPM = _rpmSensor.getRPMSupplyFan();
-        _state.fan2RPM = _rpmSensor.getRPMExhaustFan();
+        _state.fan1RPM = supplyFanRPM;
+        _state.fan2RPM = exhaustFanRPM;
         _endTransaction();
 
         /* Publish status to frontend */

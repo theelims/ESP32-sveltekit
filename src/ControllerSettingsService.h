@@ -7,11 +7,14 @@
 
 typedef struct controller_settings_
 {
-    uint32_t lowerTemp;     // °C
-    uint32_t upperTemp;     // °C
-    uint32_t minDutyCycle;  // %
-    uint32_t maxDutyCycle;  // %
+    uint32_t lowerTemp;      // °C
+    uint32_t upperTemp;      // °C
+    uint32_t minDutyCycle;   // %
+    uint32_t maxDutyCycle;   // %
     uint64_t tempSensorAddr; // 64-bit address of the relevant temperature sensor
+    bool monitorFans;        // Whether to monitor fans or not
+    bool monitorTemperature; // Whether to monitor temperature or not
+    uint32_t maxTemp;        // °C, maximum temperature to monitor
 
 } controller_settings_t;
 
@@ -25,10 +28,13 @@ public:
     {
         main = {
             .lowerTemp = 20,
-            .upperTemp = 35,
+            .upperTemp = 50,
             .minDutyCycle = 0,
             .maxDutyCycle = 100,
-            .tempSensorAddr = 0      // Address not yet set
+            .tempSensorAddr = 0,        // Address not yet set
+            .monitorFans = true,        // Default to monitoring fans
+            .monitorTemperature = true, // Default to monitoring temperature
+            .maxTemp = 60               // Default maximum temperature to monitor
         };
     }
 
@@ -41,6 +47,9 @@ public:
         root["minDutyCycle"] = settings.main.minDutyCycle;
         root["maxDutyCycle"] = settings.main.maxDutyCycle;
         root["tempSensorAddr"] = String(settings.main.tempSensorAddr);
+        root["monitorFans"] = settings.main.monitorFans;
+        root["monitorTemperature"] = settings.main.monitorTemperature;
+        root["maxTemp"] = settings.main.maxTemp;
 
         ESP_LOGV(ControllerSettings::TAG, "Fan controller settings read.");
     }
@@ -101,6 +110,39 @@ public:
             if (newValue64 != settings.main.tempSensorAddr)
             {
                 settings.main.tempSensorAddr = newValue64;
+                changed |= true;
+            }
+        }
+
+        /* Monitor Fans */
+        if (root["monitorFans"].is<bool>())
+        {
+            bool newValueBool = root["monitorFans"];
+            if (newValueBool != settings.main.monitorFans)
+            {
+                settings.main.monitorFans = newValueBool;
+                changed |= true;
+            }
+        }
+
+        /* Monitor Temperature */
+        if (root["monitorTemperature"].is<bool>())
+        {
+            bool newValueBool = root["monitorTemperature"];
+            if (newValueBool != settings.main.monitorTemperature)
+            {
+                settings.main.monitorTemperature = newValueBool;
+                changed |= true;
+            }
+        }
+
+        /* Maximum Temperature */
+        if (root["maxTemp"].is<uint32_t>())
+        {
+            newValue = root["maxTemp"];
+            if (newValue != settings.main.maxTemp)
+            {
+                settings.main.maxTemp = newValue;
                 changed |= true;
             }
         }

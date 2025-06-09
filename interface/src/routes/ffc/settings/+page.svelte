@@ -36,6 +36,9 @@
 		minDutyCycle: number; // %
 		maxDutyCycle: number; // %
 		tempSensorAddr: BigInt;
+		monitorFans: boolean; // Whether to monitor fans
+		monitorTemperature: boolean; // Whether to monitor temperature
+		maxTemp: number; // °C, maximum temperature to monitor
 	};
 
 	type ControllerState = {
@@ -61,7 +64,10 @@
 		upperTemp: 50, // °C
 		minDutyCycle: 20, // %
 		maxDutyCycle: 100, // %
-		tempSensorAddr: 0n // BigInt, default to 0 (no sensor)
+		tempSensorAddr: 0n, // BigInt, default to 0 (no sensor)
+		monitorFans: true, // Default to monitoring fans
+		monitorTemperature: true, // Default to monitoring temperature
+		maxTemp: 60 // °C, default maximum temperature to monitor
 	};
 
 	let settings: ControllerSettings = $state(defaultSettings);
@@ -107,8 +113,8 @@
 			});
 			let sensors: Sensor[] = JSON.parse(await response.text(), jsonToBigIntReviver).sensors;
 			// (Re)build sensor options
-			let preSelectionId = selectedSensor.id;	// Preserve current selection (e.g. on hot reload)
-			sensorOpts.length = 0;	// Clear previous options
+			let preSelectionId = selectedSensor.id; // Preserve current selection (e.g. on hot reload)
+			sensorOpts.length = 0; // Clear previous options
 			for (let sensor of sensors) {
 				let name = sensor.name ? `${sensor.name}` : 'Unnamed Sensor';
 				let offline = sensor.online ? '' : ' (offline)';
@@ -188,7 +194,8 @@
 		upperTemp: false,
 		minDutyCycle: false,
 		maxDutyCycle: false,
-		relevantSensor: false
+		relevantSensor: false,
+		maxTemp: false
 	});
 
 	let hasError = $derived(
@@ -196,7 +203,8 @@
 			formErrors.upperTemp ||
 			formErrors.minDutyCycle ||
 			formErrors.maxDutyCycle ||
-			formErrors.relevantSensor
+			formErrors.relevantSensor ||
+			formErrors.maxTemp
 	);
 </script>
 
@@ -258,7 +266,7 @@
 								{/if}
 							</div>
 						</div>
-					</div>					
+					</div>
 				</div>
 			{/await}
 		</div>
@@ -443,6 +451,61 @@
 									<label for="relevantSensor" class="label">
 										<span class="label-text-alt text-error text-xs text-wrap">
 											Please select a temperature sensor, that is currently available.
+										</span>
+									</label>
+								</div>
+							{/if}
+						</div>
+						<!-- Monitor Fans -->
+						<div class="flex flex-col col-span-2 py-2">
+							<label class="label cursor-pointer">								
+								<input
+									type="checkbox"
+									class="toggle toggle-primary"
+									bind:checked={settings.monitorFans}
+								/>
+								<span class="ml-1">Alert if the fans' RPM is too low.</span>
+							</label>
+						</div>
+						<!--Monitor Temperature -->
+						<div class="flex flex-col justify-center">
+							<label class="label cursor-pointer">								
+								<input
+									type="checkbox"
+									class="toggle toggle-primary"
+									bind:checked={settings.monitorTemperature}
+								/>
+								<span class="ml-1 text-wrap">Alert if the temperature exceeds the maximum temperature.</span>
+							</label>
+						</div>
+						<!--Maximum Temperature -->
+						<div class="flex flex-col">
+							<label class="label" for="maxTemp">
+								<span class="label-text text-md">Maximum temperature</span>
+							</label>
+							<InputUnit
+								type="number"
+								placeholder="Enter the max. temperature"
+								min={minTemp}
+								max={maxTemp}
+								required
+								step="1"
+								class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.maxTemp
+									? 'border-error border-2'
+									: ''}"
+								unit="°C"
+								bind:value={settings.maxTemp}
+								id="maxTemp"
+								disabled={!settings.monitorTemperature}
+								oninput={(event: Event) => {
+									formErrors.maxTemp = !(event.target as HTMLInputElement).validity.valid;
+								}}
+							/>
+							{#if formErrors.maxTemp}
+								<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
+									<label for="maxTemp" class="label">
+										<span class="label-text-alt text-error text-xs text-wrap">
+											Value must be btw. {minTemp} and {maxTemp}.
 										</span>
 									</label>
 								</div>

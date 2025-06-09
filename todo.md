@@ -1,4 +1,3 @@
 -  Controller:
     - Alarm bei zu niedrigen RPM
     - ALarm konfigurierbar
-- Gute externe Alarmierung!

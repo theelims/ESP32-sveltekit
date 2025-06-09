@@ -35,7 +35,7 @@
 		// Subscribe to alarm events
 		socket.on<Alarm>('alarm', (alarm) => {
 			getAlarms(); // Just update alarms
-			notifications.error(alarm.message, 5000);
+			notifications.error(alarm.message.replace(/min-1/g, 'min<sup>-1</sup>'), 5000);
 		});
 	});
 

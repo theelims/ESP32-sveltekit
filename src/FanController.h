@@ -14,6 +14,12 @@
 
 #define CONTROLLER_INTERVALL_MS 5000 // ms
 
+#define CONTROLLER_TEMP_MONITOR_HYSTERESIS 2.5f // °C
+
+#define CONTROLLER_MIN_RPM 400
+#define CONTROLLER_MIN_RPM_SUPPLY_FAN CONTROLLER_MIN_RPM
+#define CONTROLLER_MIN_RPM_EXHAUST_FAN CONTROLLER_MIN_RPM
+
 typedef struct controller_state {
     float baseTemp;
     uint32_t dutyCycle;
@@ -44,6 +50,8 @@ private:
 
     volatile uint32_t _lastAcquired; // Last time (millies) the controller was executed
 
+    bool _tempError;
+    bool _fanError;
     volatile controller_state_t _state;
 
     void _ctrlLoop();
