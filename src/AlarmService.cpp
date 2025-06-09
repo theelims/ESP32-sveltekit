@@ -41,7 +41,7 @@ esp_err_t AlarmService::publishAlarm(const String &message)
     _state._entries.insert(_state._entries.begin(), entry);
     endTransaction();
 
-    _emitAlarm(entry.id);     // Publish to frontend
+    _emitAlarmTCP(entry.id); // Publish via HTTP/WebSocket
     _emitAlarmMQTT(entry.id); // Publish via MQTT
 
     return ESP_OK;
@@ -63,7 +63,7 @@ const alarm_log_entry_t *AlarmService::_getAlarmById(uint32_t id)
     return p;
 }
 
-void AlarmService::_emitAlarm(uint32_t id)
+void AlarmService::_emitAlarmTCP(uint32_t id)
 {
     const alarm_log_entry_t *alarm = _getAlarmById(id);
     if (!alarm)
@@ -78,7 +78,10 @@ void AlarmService::_emitAlarm(uint32_t id)
     AlarmLog::readSingleAlarm(*alarm, alarm_jsonRoot);
     endTransaction();
 
+    /* Web Socket (to frontend) */
     _eventSocket->emitEvent(ALARMS_EVENT_ID, alarm_jsonRoot);
+    /* HTTP POST request (smarthome integration) */
+    // ...
 }
 
 void AlarmService::_emitAlarmMQTT(uint32_t id)

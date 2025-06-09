@@ -95,7 +95,7 @@ private:
 
     const alarm_log_entry_t *_getAlarmById(uint32_t id);
 
-    void _emitAlarm(uint32_t id);
+    void _emitAlarmTCP(uint32_t id);
     void _emitAlarmMQTT(uint32_t id);
 
     uint32_t _generateUID(uint64_t &timestamp)

@@ -2,7 +2,6 @@
 	import logo from '$lib/assets/logo.png';
 	import Github from '~icons/tabler/brand-github';
 	import Discord from '~icons/tabler/brand-discord';
-	import Heartbeat from '~icons/tabler/heartbeat';
 	import Users from '~icons/tabler/users';
 	import CPU from '~icons/tabler/cpu';
 	import Windmill from '~icons/tabler/windmill';
@@ -14,7 +13,6 @@
 	import Remote from '~icons/tabler/network';
 	import Fan from '~icons/tabler/car-fan-filled';
 	import Temp from '~icons/tabler/temperature-plus-filled';
-	import Chart from '~icons/tabler/chart-histogram';
 	import Avatar from '~icons/tabler/user-circle';
 	import Logout from '~icons/tabler/logout';
 	import Copyright from '~icons/tabler/copyright';
@@ -49,12 +47,6 @@
 	};
 
 	let menuItems = $state([
-		{
-			title: 'Overview',
-			icon: Heartbeat,
-			href: '/',
-			feature: true
-		},
 		{
 			title: 'Fan Controller',
 			icon: Fan,

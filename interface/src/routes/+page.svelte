@@ -4,16 +4,14 @@
 	import { jsonDateReviver } from '$lib/utils';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import Info from '~icons/tabler/info-circle';
+	import { goto } from '$app/navigation';
 
 	interface Props {
 		data: PageData;
 	}
 
 	let { data }: Props = $props();
-</script>
 
-<div >
-	<div class="flex flex-wrap gap-10 px-10 py-10" style="justify-content: center;">
-		Put some content here...
-	</div>
-</div>
+	// redirect to settings as start page
+	goto('ffc/settings');
+</script>

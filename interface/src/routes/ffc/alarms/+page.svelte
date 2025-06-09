@@ -87,7 +87,7 @@
 
 {#if $user.admin}
 	<div class="mx-0 my-1 flex flex-col space-y-4 sm:mx-8 sm:my-8">
-		<SettingsCard collapsible={false}>
+		<SettingsCard collapsible={false} maxwidth="max-w-3xl">
 			{#snippet icon()}
 				<Logs class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 			{/snippet}
@@ -130,6 +130,7 @@
 								<tr class="font-bold">
 									<th align="center"></th>
 									<th align="left">Timestamp</th>
+									<th align="center">ID</th>
 									<th align="left">Event</th>
 									<th align="center">Confirm</th>
 								</tr>
@@ -154,6 +155,11 @@
 													minute: '2-digit',
 													second: '2-digit'
 												})}
+											</span>
+										</td>
+										<td align="center">
+											<span class:font-bold={alarm.active}>
+												{alarm.id}
 											</span>
 										</td>
 										<td align="left">
