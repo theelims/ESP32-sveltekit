@@ -63,13 +63,12 @@ Also the Svelte Logo can be replaced with your own. It is located under [interfa
 
 ### Daisy UI Themes
 
-The overall theme of the front end is defined by [DaisyUI](https://daisyui.com/docs/themes/) and can be easily changed according to their documentation. Either by selecting one of the standard themes of DaisyUI, or creating your own. By default the `corporate` and `business` for dark are defined in [tailwind.config.cjs](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/tailwind.config.cjs):
+The overall theme of the front end is defined by [DaisyUI](https://daisyui.com/docs/themes/) and can be easily changed according to their documentation. Either by selecting one of the standard themes of DaisyUI, or creating your own. By default the `corporate` and `business` for dark are defined in [app.css](https://github.com/theelims/ESP32-sveltekit/blob/main/interface/src/app.css):
 
 ```js
-	daisyui: {
-		themes: ['corporate', 'business'],
-		darkTheme: 'business'
-	}
+@plugin "daisyui" {
+    themes: corporate --default, business --prefersdark;
+}
 ```
 
 #### Opinionated use of Shadows
@@ -78,13 +77,13 @@ The front end makes some use of colored shadows with the `shadow-primary` and `s
 
 #### Color Scheme Helper
 
-Some JS modules do not accept DaisyUI/TailwindCSS color class names. A small helper function can be imported and used to convert any CSS variable name for a DaisyUI color into HSLA. That way modules like e.g. Charts.js can be styled in the current color scheme in a responsive manner.
+Some JS modules do not accept DaisyUI/TailwindCSS color class names. A small helper function can be imported and used to convert any CSS variable name for a DaisyUI color into OKCHL. That way modules like e.g. Charts.js can be styled in the current color scheme in a responsive manner.
 
 ```js
 import { daisyColor } from "$lib/DaisyUiHelper";
 
-borderColor: daisyColor('--p'),
-backgroundColor: daisyColor('--p', 50),
+borderColor: daisyColor('--color-primary'),
+backgroundColor: daisyColor('--color-primary', 50),
 ```
 
 ## TS Types Definition

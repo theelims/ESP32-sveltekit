@@ -112,6 +112,6 @@
 			class="indicator-item indicator-top indicator-center badge badge-info badge-xs top-2 scale-75 lg:top-1"
 			>{firmwareVersion}</span
 		>
-		<Firmware class="h-7 w-7" />
+		<Firmware class="inline-block h-7 w-7" />
 	</button>
 {/if}

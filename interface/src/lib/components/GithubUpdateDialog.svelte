@@ -84,7 +84,7 @@
 			</div>
 			<div class="divider my-2"></div>
 			<div class="flex flex-wrap justify-end gap-2">
-				<div class="flex-grow"></div>
+				<div class="grow"></div>
 				<button
 					class="btn btn-warning text-warning-content inline-flex flex-none items-center"
 					disabled={updating}

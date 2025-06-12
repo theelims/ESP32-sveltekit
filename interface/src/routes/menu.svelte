@@ -150,7 +150,7 @@
 		<img src={logo} alt="Logo" class="h-12 w-12" />
 		<h1 class="px-4 text-2xl font-bold">{page.data.appName}</h1>
 	</a>
-	<ul class="menu rounded-box menu-vertical flex-nowrap overflow-y-auto">
+	<ul class="menu w-full rounded-box menu-vertical flex-nowrap overflow-y-auto">
 		{#each menuItems as menuItem, i (menuItem.title)}
 			{#if menuItem.feature}
 				<li>
@@ -193,12 +193,12 @@
 	</ul>
 
 	<div class="flex-col"></div>
-	<div class="flex-grow"></div>
+	<div class="grow"></div>
 
 	{#if page.data.features.security}
 		<div class="flex items-center">
 			<Avatar class="h-8 w-8" />
-			<span class="flex-grow px-4 text-xl font-bold">{$user.username}</span>
+			<span class="grow px-4 text-xl font-bold">{$user.username}</span>
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div
@@ -224,7 +224,7 @@
 				><Discord class="h-5 w-5" /></a
 			>
 		{/if}
-		<div class="inline-flex flex-grow items-center justify-end text-sm">
+		<div class="inline-flex grow items-center justify-end text-sm">
 			<Copyright class="h-4 w-4" /><span class="px-2">{page.data.copyright}</span>
 		</div>
 	</div>

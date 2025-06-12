@@ -31,7 +31,7 @@
 			in:fly={{ y: 100, duration: 400 }}
 			out:fly={{ x: 100, duration: 400 }}
 		>
-			<SvelteComponent class="h-6 w-6 flex-shrink-0" />
+			<SvelteComponent class="h-6 w-6 shrink-0" />
 			<span>{notification.message}</span>
 		</div>
 	{/each}

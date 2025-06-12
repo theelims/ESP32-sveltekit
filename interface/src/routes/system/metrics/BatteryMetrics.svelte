@@ -24,16 +24,16 @@
 				datasets: [
 					{
 						label: 'SOC',
-						borderColor: daisyColor('--p'),
-						backgroundColor: daisyColor('--p', 50),
+						borderColor: daisyColor('--color-primary'),
+						backgroundColor: daisyColor('--color-primary', 50),
 						borderWidth: 2,
 						data: $batteryHistory.soc,
 						yAxisID: 'y1'
 					},
 					{
 						label: 'Charging',
-						borderColor: daisyColor('--s', 25),
-						backgroundColor: daisyColor('--s', 25),
+						borderColor: daisyColor('--color-secondary', 25),
+						backgroundColor: daisyColor('--color-secondary', 25),
 						borderWidth: 0,
 						data: $batteryHistory.charging,
 						fill: true,
@@ -63,10 +63,10 @@
 					x: {
 						type: 'time',
 						grid: {
-							color: daisyColor('--bc', 10)
+							color: daisyColor('--color-base-content', 10)
 						},
 						ticks: {
-							color: daisyColor('--bc')
+							color: daisyColor('--color-base-content')
 						},
 						display: true
 					},
@@ -75,7 +75,7 @@
 						title: {
 							display: true,
 							text: 'State of Charge [%]',
-							color: daisyColor('--bc'),
+							color: daisyColor('--color-base-content'),
 							font: {
 								size: 16,
 								weight: 'bold'
@@ -84,11 +84,11 @@
 						position: 'left',
 						min: 0,
 						suggestedMax: 100,
-						grid: { color: daisyColor('--bc', 10) },
+						grid: { color: daisyColor('--color-base-content', 10) },
 						ticks: {
-							color: daisyColor('--bc')
+							color: daisyColor('--color-base-content')
 						},
-						border: { color: daisyColor('--bc', 10) }
+						border: { color: daisyColor('--color-base-content', 10) }
 					},
 					y2: {
 						type: 'linear',
@@ -143,10 +143,10 @@
 
 <SettingsCard collapsible={false}>
 	{#snippet icon()}
-		<Battery  class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+		<Battery class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	{/snippet}
 	{#snippet title()}
-		<span >Battery History</span>
+		<span>Battery History</span>
 	{/snippet}
 
 	<div class="w-full overflow-x-auto">

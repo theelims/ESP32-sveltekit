@@ -45,13 +45,13 @@
 
 <SettingsCard collapsible={false}>
 	{#snippet icon()}
-		<OTA  class="lex-shrink-0 mr-2 h-6 w-6 self-end rounded-full" />
+		<OTA class="lex-shrink-0 mr-2 h-6 w-6 self-end rounded-full" />
 	{/snippet}
 	{#snippet title()}
-		<span >Upload Firmware</span>
+		<span>Upload Firmware</span>
 	{/snippet}
 	<div class="alert alert-warning shadow-lg">
-		<Warning class="h-6 w-6 flex-shrink-0" />
+		<Warning class="h-6 w-6 shrink-0" />
 		<span
 			>Uploading a new firmware (.bin) file will replace the existing firmware. You may upload a
 			(.md5) file first to verify the uploaded firmware.</span
@@ -61,7 +61,7 @@
 	<input
 		type="file"
 		id="binFile"
-		class="file-input file-input-bordered file-input-secondary mt-4 w-full"
+		class="file-input file-input-secondary mt-4 w-full"
 		bind:files
 		accept=".bin,.md5"
 		onchange={confirmBinUpload}

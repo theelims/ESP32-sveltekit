@@ -14,7 +14,7 @@
 </script>
 
 <div class="relative">
-	<input {type} class="input input-bordered w-full" {value} oninput={handleInput} {id} />
+	<input {type} class="input w-full" {value} oninput={handleInput} {id} />
 	<div class="absolute inset-y-0 right-0 flex items-center pr-1">
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<svg

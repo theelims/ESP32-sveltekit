@@ -62,37 +62,33 @@
 		transition:fly={{ y: 50 }}
 	>
 		<div
-			class="rounded-box bg-base-100 shadow-secondary/30 pointer-events-auto flex min-w-fit max-w-md flex-col justify-between p-4 shadow-lg md:w-[28rem]"
+			class="rounded-box bg-base-100 shadow-secondary/30 pointer-events-auto flex min-w-fit max-w-md flex-col justify-between p-4 shadow-lg md:w-md"
 		>
 			<h2 class="text-base-content text-start text-2xl font-bold">{title}</h2>
 			<div class="divider my-2"></div>
 			<form
-				class="form-control text-base-content mb-1 w-full"
+				class="fieldset text-base-content mb-1 w-full"
 				onsubmit={preventDefault(handleSave)}
 				novalidate
 			>
-				<label class="label" for="username">
-					<span class="label-text text-md">Username</span>
-				</label>
+				<label class="label" for="username">Username</label>
 				<input
 					type="text"
 					min="3"
 					max="32"
-					class="input input-bordered invalid:border-error w-full invalid:border-2"
+					class="input invalid:border-error w-full invalid:border-2"
 					bind:value={user.username}
 					id="username"
 					disabled={!usernameEditable}
 				/>
 				<label for="username" class="label"
-					><span class="label-text-alt text-error {errorUsername ? '' : 'hidden'}"
+					><span class="text-error {errorUsername ? '' : 'hidden'}"
 						>Username must be between 3 and 32 characters long</span
 					></label
 				>
-				<label class="label" for="pwd">
-					<span class="label-text text-md">Password</span>
-				</label>
+				<label class="label" for="pwd">Password </label>
 				<InputPassword bind:value={user.password} id="pwd" />
-				<label class="label my-auto cursor-pointer justify-start gap-4">
+				<label class="label my-auto cursor-pointer justify-start gap-4 mt-4">
 					<input type="checkbox" bind:checked={user.admin} class="checkbox checkbox-primary" />
 					<span class="">Is Admin?</span>
 				</label>
@@ -100,7 +96,9 @@
 				<div class="flex justify-end gap-2">
 					<button
 						class="btn btn-neutral text-neutral-content inline-flex items-center"
-						onclick={modals.close}
+						onclick={() => {
+							modals.close();
+						}}
 						type="button"
 					>
 						<Cancel class="mr-2 h-5 w-5" /><span>Cancel</span></button

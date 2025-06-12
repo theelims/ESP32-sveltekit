@@ -144,7 +144,7 @@
 		return result;
 	}
 
-    function preventDefault(fn) {
+	function preventDefault(fn) {
 		return function (event) {
 			event.preventDefault();
 			fn.call(this, event);
@@ -154,12 +154,12 @@
 
 <SettingsCard collapsible={false}>
 	{#snippet icon()}
-		<Clock  class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+		<Clock class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	{/snippet}
 	{#snippet title()}
-		<span >Network Time</span>
+		<span>Network Time</span>
 	{/snippet}
-	<div class="w-full overflow-x-auto">
+	<div class="w-full">
 		{#await getNTPStatus()}
 			<Spinner />
 		{:then nothing}
@@ -246,53 +246,48 @@
 	</div>
 
 	{#if !page.data.features.security || $user.admin}
-		<Collapsible open={false} class="shadow-lg" on:closed={getNTPSettings}>
+		<Collapsible open={false} class="shadow-lg" icon={null} opened={() => {}} closed={() => {}}>
 			{#snippet title()}
-						<span >Change NTP Settings</span>
-					{/snippet}
+				<span>Change NTP Settings</span>
+			{/snippet}
 			<form
-				class="form-control w-full"
+				class="fieldset"
 				onsubmit={preventDefault(handleSubmitNTP)}
 				novalidate
 				bind:this={formField}
 			>
-				<label class="label cursor-pointer justify-start gap-4">
+				<label class="label text-base inline-flex cursor-pointer content-end justify-start gap-4">
 					<input
 						type="checkbox"
 						bind:checked={ntpSettings.enabled}
 						class="checkbox checkbox-primary"
-					/>
-					<span class="">Enable NTP</span>
+					/>Enable NTP
 				</label>
-				<label class="label" for="server">
-					<span class="label-text text-md">Server</span>
-				</label>
+
+				<label class="label" for="server">Server</label>
 				<input
 					type="text"
 					min="3"
 					max="64"
-					class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.server
+					class="input w-full invalid:border-error invalid:border-2 {formErrors.server
 						? 'border-error border-2'
 						: ''}"
 					bind:value={ntpSettings.server}
 					id="server"
 					required
 				/>
-				<label class="label" for="subnet">
-					<span class="label-text-alt text-error {formErrors.server ? '' : 'hidden'}"
-						>Must be a valid IPv4 address or URL</span
-					>
-				</label>
-				<label class="label" for="tz">
-					<span class="label-text text-md">Pick Time Zone</span>
-				</label>
-				<select class="select select-bordered" bind:value={ntpSettings.tz_label} id="tz">
+				{#if formErrors.server}
+					<p class="text-error text-sm">Please enter a valid NTP server.</p>
+				{/if}
+
+				<label class="label" for="tz">Pick Time Zone</label>
+				<select class="select w-full" bind:value={ntpSettings.tz_label} id="tz">
 					{#each Object.entries(TIME_ZONES) as [tz_label, tz_format]}
 						<option value={tz_label}>{tz_label}</option>
 					{/each}
 				</select>
 
-				<div class="mt-6 place-self-end">
+				<div class="mt-4 place-self-end">
 					<button class="btn btn-primary" type="submit">Apply Settings</button>
 				</div>
 			</form>

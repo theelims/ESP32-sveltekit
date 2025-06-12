@@ -162,7 +162,7 @@
 		</div>
 	{:catch error}
 		<div class="alert alert-error shadow-lg">
-			<Error class="h-6 w-6 flex-shrink-0" />
+			<Error class="h-6 w-6 shrink-0" />
 			<span>Please connect to a network with internet access to perform a firmware update.</span>
 		</div>
 	{/await}

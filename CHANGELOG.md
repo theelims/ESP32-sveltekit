@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Added compatibility with ESP32-C6
 - Added getIP() function to WiFiSettingsService.
 - Added Arduino Log Colors
+- Added linker optimization `-O3`, saving a few kb flash memory.
 - Possibility to add a loop callback to ESP32-Sveltekit to leverage its loop threat. Meant to include custom services so no separate task is needed for them.
 - Change wake-up pin in SleepService during runtime. It is also possible to use the internal pull-up or pull-down resistors now.
 - Get current connection status from ESP32-SvelteKit. Useful for status LED or displays.
@@ -81,6 +82,10 @@ Also DaisyUI and Tailwind CSS have been updated to their last major revision. Ru
 ```
 npx @tailwindcss/upgrade
 ```
+
+This will migrate some of your svelte files to the new naming convention of Tailwind. For DaisyUI follow this [guide](https://daisyui.com/docs/upgrade/#changes-from-v4). Likely you'll need to redo all forms, as the components behave differently. Forms will need the a `fieldset` class. Inputs will need an additional `w-full` to have the same behavior as before. And [labels](https://daisyui.com/components/label/) have a different syntax, too.
+
+The themes are to be found in `app.css` now. Add them back if they had been changed from the default.
 
 ## [0.5.0] - 2024-05-06
 
