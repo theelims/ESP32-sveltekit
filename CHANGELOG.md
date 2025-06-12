@@ -63,6 +63,8 @@ All notable changes to this project will be documented in this file.
 
 #### PIO Arduino & ESP-IDF 5
 
+The firmware is based on the community maintained fork [PIO Arduino](https://github.com/pioarduino/platform-espressif32) of Arduino 3 for ESP32. Which is based on ESP-IDF 5. Please make sure all your dependencies and application code is compatible with ESP-IDF 5.
+
 #### Frontend
 
 SvelteKit was updated to v2 and Svelte to v5. Please check the migration guides for [SvelteKit 2](https://svelte.dev/docs/kit/migrating-to-sveltekit-2) and the [Svelte 5 Migration Guide](https://svelte.dev/docs/svelte/v5-migration-guide) for the changes required on your frontend code.
@@ -72,6 +74,12 @@ To migrate your frontend run
 ```
 npm install --force
 npx sv migrate svelte-5
+```
+
+Also DaisyUI and Tailwind CSS have been updated to their last major revision. Run the official Tailwind upgrade tool:
+
+```
+npx @tailwindcss/upgrade
 ```
 
 ## [0.5.0] - 2024-05-06
