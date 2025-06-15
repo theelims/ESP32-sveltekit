@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Upcoming [Main] - tbd
+## Upcoming [0.6.0] - tbd
 
 > [!CAUTION]
 > This update has breaking changes!
@@ -42,9 +42,9 @@ All notable changes to this project will be documented in this file.
 - MQTT library updated
 - Analytics task was refactored into a loop() function which is called by the ESP32-sveltekit main task.
 - Updated PsychicHttp to v1.2.1 incl. patches.
-- Updated DaisyUI
+- Updated to DaisyUI 5 and Tailwind CSS 4
 - Updated Svelte 5 --> see [Svelte 5 Migration Guide](https://svelte.dev/docs/svelte/v5-migration-guide)
-- Changed platform to [PIO Arduino](https://github.com/pioarduino/platform-espressif32)
+- Changed platform to [PIO Arduino](https://github.com/pioarduino/platform-espressif32) using Arduino 3 Core. Also upgrades ESP-IDF to v5.
 - ESPD_LOGx: replace first argument with TAG and define TAG as 🐼 [#85](https://github.com/theelims/ESP32-sveltekit/pull/85)
 - Replace rtc_get_reset_reason(0) with esp_reset_reason() [#86](https://github.com/theelims/ESP32-sveltekit/pull/86)
 
@@ -77,13 +77,13 @@ npm install --force
 npx sv migrate svelte-5
 ```
 
-Also DaisyUI and Tailwind CSS have been updated to their last major revision. Run the official Tailwind upgrade tool:
+Also DaisyUI and Tailwind CSS have been updated to their last major versions. Run the official Tailwind upgrade tool:
 
 ```
 npx @tailwindcss/upgrade
 ```
 
-This will migrate some of your svelte files to the new naming convention of Tailwind. For DaisyUI follow this [guide](https://daisyui.com/docs/upgrade/#changes-from-v4). Likely you'll need to redo all forms, as the components behave differently. Forms will need the a `fieldset` class. Inputs will need an additional `w-full` to have the same behavior as before. And [labels](https://daisyui.com/components/label/) have a different syntax, too.
+This will migrate some of your svelte files to the new naming convention of Tailwind. For DaisyUI follow this [guide](https://daisyui.com/docs/upgrade/#changes-from-v4). Likely you'll need to redo all forms, as the components behave differently. Forms will need the `fieldset` class. Inputs will need an additional `w-full` to have the same behavior as before. And [labels](https://daisyui.com/components/label/) have a different syntax, too.
 
 The themes are to be found in `app.css` now. Add them back if they had been changed from the default.
 

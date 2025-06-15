@@ -154,11 +154,11 @@
 	>
 		<SettingsCard collapsible={false}>
 			{#snippet icon()}
-						<Users  class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-					{/snippet}
+				<Users class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+			{/snippet}
 			{#snippet title()}
-						<span >Manage Users</span>
-					{/snippet}
+				<span>Manage Users</span>
+			{/snippet}
 			{#await getSecuritySettings()}
 				<Spinner />
 			{:then nothing}
@@ -220,9 +220,7 @@
 						users will be signed out.</span
 					>
 				</div>
-				<label class="label" for="secret">
-					<span class="label-text text-md">JWT Secret</span>
-				</label>
+				<label class="label" for="secret">JWT Secret</label>
 				<InputPassword bind:value={securitySettings.jwt_secret} id="secret" />
 				<div class="mt-6 flex justify-end">
 					<button class="btn btn-primary" onclick={() => postSecuritySettings(securitySettings)}
