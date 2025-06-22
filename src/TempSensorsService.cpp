@@ -105,6 +105,8 @@ void TempSensorsService::_discoverSensors()
 
     uint8_t num_devs = _ds_bus.search(addr, MAX_NUM_DEVS);
 
+    ESP_LOGI(TAG, "%d 1-wire devices found.", num_devs);
+
     /* Check existing (stored) sensors */
     for (auto &sensor : _state.sensors)
     {

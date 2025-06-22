@@ -20,6 +20,7 @@
 	import NTP from '~icons/tabler/clock-check';
 	import Metrics from '~icons/tabler/report-analytics';
 	import Alarm from '~icons/tabler/bell';
+	import Message from '~icons/tabler/message';
 	import { page } from '$app/state';
 	import { user } from '$lib/stores/user';
 

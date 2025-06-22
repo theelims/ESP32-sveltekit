@@ -10,8 +10,8 @@ FanController::FanController(ESP32SvelteKit *sveltekit) : _sveltekit(sveltekit),
                                                           _controllerSettingsService(sveltekit),
                                                           _alarmService(sveltekit),
                                                           _fansConfigService(sveltekit),
-                                                          _tempSensorsService(sveltekit, &_alarmService, 2), // GPIO 2 for 1-wire bus
-                                                          _rpmSensor(sveltekit, &_alarmService, 8, 7),       // GPIO 8 for supply fan, GPIO 7 for exhaust fan
+                                                          _tempSensorsService(sveltekit, &_alarmService, ONE_WIRE_BUS_GPIO),
+                                                          _rpmSensor(sveltekit, &_alarmService, RPM_SUPPLY_FAN_GPIO, RPM_EXHAUST_FAN_GPIO), // GPIO 8 for supply fan, GPIO 7 for exhaust fan
                                                           _accessMutex(xSemaphoreCreateRecursiveMutex()),
                                                           _lastAcquired(0),
                                                           _tempError(false),
@@ -37,7 +37,7 @@ void FanController::begin()
     ledc_timer_config_t timer = {
         .speed_mode = LEDC_LOW_SPEED_MODE,
         .duty_resolution = LEDC_TIMER_10_BIT,
-        .timer_num = LEDC_TIMER_0,
+        .timer_num = CONTROLLER_PWM_TIMER_NUM,
         .freq_hz = 25000,
         .clk_cfg = LEDC_AUTO_CLK};
 
@@ -50,23 +50,53 @@ void FanController::begin()
 
     ESP_LOGI(FanController::TAG, "PWM timer configured @ %d Hz", timer.freq_hz);
 
-    ledc_channel_config_t channel = {
-        .gpio_num = 1, // GPIO 1 for PWM output
+    ledc_channel_config_t channel_supply_fan = {
+        .gpio_num = PWM_SUPPLY_FAN_GPIO,
         .speed_mode = LEDC_LOW_SPEED_MODE,
-        .channel = LEDC_CHANNEL_0,
+        .channel = CONTROLLER_PWM_CHANNEL_SUPPLY_FAN,
         .intr_type = LEDC_INTR_DISABLE,
-        .timer_sel = LEDC_TIMER_0,
+        .timer_sel = CONTROLLER_PWM_TIMER_NUM,
         .duty = 1023, // Full duty cycle (@ 10-bit resolution)
         .hpoint = 0};
 
-    err = ledc_channel_config(&channel);
+    err = ledc_channel_config(&channel_supply_fan);
     if (err != ESP_OK)
     {
-        ESP_LOGE(FanController::TAG, "Failed to configure PWM channel: %s", esp_err_to_name(err));
+        ESP_LOGE(FanController::TAG, "Failed to configure PWM channel for supply fan: %s", esp_err_to_name(err));
         return;
     }
 
-    ESP_LOGI(FanController::TAG, "PWM channel configured @ GPIO %d", channel.gpio_num);
+    ESP_LOGI(FanController::TAG, "PWM channel for supply fan configured @ GPIO %d", channel_supply_fan.gpio_num);
+
+    // Configure second channel for the same PWM signal on another GPIO
+    ledc_channel_config_t channel_exhaust_fan = {
+        .gpio_num = PWM_EXHAUST_FAN_GPIO,
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .channel = CONTROLLER_PWM_CHANNEL_EXHAUST_FAN,
+        .intr_type = LEDC_INTR_DISABLE,
+        .timer_sel = CONTROLLER_PWM_TIMER_NUM,
+        .duty = 1023, // Full duty cycle (@ 10-bit resolution)
+        .hpoint = 0};
+
+    err = ledc_channel_config(&channel_exhaust_fan);
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(FanController::TAG, "Failed to configure PWM channel for exhaust fan: %s", esp_err_to_name(err));
+        return;
+    }
+
+    ESP_LOGI(FanController::TAG, "PWM channel for exhaust fan configured @ GPIO %d", channel_exhaust_fan.gpio_num);
+
+    /* Configure/set GPIO to enable level shifter */
+    gpio_config_t oe_gpio_conf = {
+        .pin_bit_mask = (1ULL << LEVEL_SHIFT_IC_OE_GPIO),
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE};
+    gpio_config(&oe_gpio_conf);
+
+    gpio_set_level((gpio_num_t)LEVEL_SHIFT_IC_OE_GPIO, 1); // Enable level shifter by setting output enable (OE) pin high
 
     /* Register endpoint to get controller status */
     _server->on(CONTROLLER_STATE_PATH,
@@ -118,58 +148,72 @@ void FanController::loop()
                                  ctrl_settings.tempSensorAddr,
                                  esp_err_to_name(res));
                     }
-
-                    /* Check max. temperature */
-                    if (ctrl_settings.monitorTemperature && temp > ctrl_settings.maxTemp && !_tempError)
-                    {
-                        ESP_LOGW(TAG, "Current temperature (%.1f °C) exceeds maximum allowed temperature (%lu °C).",
-                                 temp, ctrl_settings.maxTemp);
-                        _tempError = true;
-                        _alarmService.publishAlarm("Current temperature (" + String(temp, 1) + " °C) exceeds maximum allowed temperature (" + String(ctrl_settings.maxTemp) + " °C).");
-                    }
                     else
                     {
-                        if (temp < ctrl_settings.maxTemp - CONTROLLER_TEMP_MONITOR_HYSTERESIS) // Reset temperature error if within limits
-                            _tempError = false;
+                        /* Check max. temperature */
+                        if (ctrl_settings.monitorTemperature && temp > ctrl_settings.maxTemp && !_tempError)
+                        {
+                            ESP_LOGW(TAG, "Current temperature (%.1f °C) exceeds maximum allowed temperature (%lu °C).",
+                                     temp, ctrl_settings.maxTemp);
+                            _tempError = true;
+                            _alarmService.publishAlarm("Current temperature (" + String(temp, 1) + " °C) exceeds maximum allowed temperature (" + String(ctrl_settings.maxTemp) + " °C).");
+                        }
+                        else
+                        {
+                            if (temp < ctrl_settings.maxTemp - CONTROLLER_TEMP_MONITOR_HYSTERESIS) // Reset temperature error if within limits
+                                _tempError = false;
+                        }
+
+                        /* Calculate new duty cycle */
+                        if (temp <= ctrl_settings.lowerTemp)
+                        {
+                            targetDutyCycle = ctrl_settings.minDutyCycle;
+                        }
+                        else if (temp >= ctrl_settings.upperTemp)
+                        {
+                            targetDutyCycle = ctrl_settings.maxDutyCycle;
+                        }
+                        else
+                        {
+                            targetDutyCycle = ((temp - ctrl_settings.lowerTemp) /
+                                               static_cast<float>(ctrl_settings.upperTemp - ctrl_settings.lowerTemp)) *
+                                                  (ctrl_settings.maxDutyCycle - ctrl_settings.minDutyCycle) +
+                                              ctrl_settings.minDutyCycle;
+                        }
+
+                        calculationSuccessful = true;
+                        ESP_LOGV(TAG, "New target duty cycle for %.1f °C: %lu%%", temp, targetDutyCycle);
                     }
                 }
-
-                /* Calculate new duty cycle */
-                if (temp <= ctrl_settings.lowerTemp)
-                {
-                    targetDutyCycle = ctrl_settings.minDutyCycle;
-                }
-                else if (temp >= ctrl_settings.upperTemp)
-                {
-                    targetDutyCycle = ctrl_settings.maxDutyCycle;
-                }
-                else
-                {
-                    targetDutyCycle = ((temp - ctrl_settings.lowerTemp) /
-                                       static_cast<float>(ctrl_settings.upperTemp - ctrl_settings.lowerTemp)) *
-                                          (ctrl_settings.maxDutyCycle - ctrl_settings.minDutyCycle) +
-                                      ctrl_settings.minDutyCycle;
-                }
-
-                calculationSuccessful = true;
-                ESP_LOGV(TAG, "New target duty cycle for %.1f °C: %lu%%", temp, targetDutyCycle);
             }
         }
 
         if (!calculationSuccessful)
             ESP_LOGE(TAG, "Controller calculation failed. Using default duty cycle of 100%%.");
 
-        /* Update duty cycle */
-        esp_err_t err = ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, targetDutyCycle * MAX_DUTY_CYCLE / 100);
+        /* Update duty cycles */
+        esp_err_t err = ledc_set_duty(LEDC_LOW_SPEED_MODE, CONTROLLER_PWM_CHANNEL_SUPPLY_FAN, targetDutyCycle * MAX_DUTY_CYCLE / 100);
         if (err != ESP_OK)
         {
-            ESP_LOGE(TAG, "Failed to set duty cycle: %s", esp_err_to_name(err));
+            ESP_LOGE(TAG, "Failed to set duty cycle of supply fan: %s", esp_err_to_name(err));
         }
 
-        err = ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+        err = ledc_update_duty(LEDC_LOW_SPEED_MODE, CONTROLLER_PWM_CHANNEL_SUPPLY_FAN);
         if (err != ESP_OK)
         {
-            ESP_LOGE(TAG, "Failed to update duty cycle: %s", esp_err_to_name(err));
+            ESP_LOGE(TAG, "Failed to update duty cycle of supply fan: %s", esp_err_to_name(err));
+        }
+
+        err = ledc_set_duty(LEDC_LOW_SPEED_MODE, CONTROLLER_PWM_CHANNEL_EXHAUST_FAN, targetDutyCycle * MAX_DUTY_CYCLE / 100);
+        if (err != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Failed to set duty cycle of exhaust fan: %s", esp_err_to_name(err));
+        }
+
+        err = ledc_update_duty(LEDC_LOW_SPEED_MODE, CONTROLLER_PWM_CHANNEL_EXHAUST_FAN);
+        if (err != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Failed to update duty cycle of exhaust fan: %s", esp_err_to_name(err));
         }
 
         /* Check fans */
