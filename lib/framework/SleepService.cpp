@@ -14,7 +14,7 @@
 #include <SleepService.h>
 
 // Definition of static member variables
-sleepCallback SleepService::_callbackSleep = nullptr;
+std::vector<sleepCallback> SleepService::_sleepCallbacks;
 u_int64_t _wakeUpPin = WAKEUP_PIN_NUMBER;
 bool _wakeUpSignal = WAKEUP_SIGNAL;
 pinTermination _wakeUpTermination = pinTermination::FLOATING;
@@ -44,7 +44,7 @@ void SleepService::begin()
                 _securityManager->wrapRequest(std::bind(&SleepService::sleep, this, std::placeholders::_1),
                                               AuthenticationPredicates::IS_AUTHENTICATED));
 
-    ESP_LOGV(SVK_TAG, "Registered POST endpoint: %s", SLEEP_SERVICE_PATH);
+    ESP_LOGV("SleepService", "Registered POST endpoint: %s", SLEEP_SERVICE_PATH);
 }
 
 esp_err_t SleepService::sleep(PsychicRequest *request)
@@ -60,12 +60,14 @@ void SleepService::sleepNow()
 #ifdef SERIAL_INFO
     Serial.println("Going into deep sleep now");
 #endif
-    ESP_LOGI(SVK_TAG, "Going into deep sleep now");
+    ESP_LOGI("SleepService", "Going into deep sleep now");
+
     // Callback for main code sleep preparation
-    if (_callbackSleep != nullptr)
+    for (auto callback : _sleepCallbacks)
     {
-        _callbackSleep();
+        callback();
     }
+
     delay(100);
 
     MDNS.end();
@@ -74,7 +76,7 @@ void SleepService::sleepNow()
     WiFi.disconnect(true);
     delay(500);
 
-    ESP_LOGD(SVK_TAG, "Enabling GPIO wakeup on pin GPIO%d\n", _wakeUpPin);
+    ESP_LOGD("SleepService", "Enabling GPIO wakeup on pin GPIO%d\n", _wakeUpPin);
 
 // special treatment for ESP32-C3 because of the RISC-V architecture
 #ifdef CONFIG_IDF_TARGET_ESP32C3
@@ -105,11 +107,13 @@ void SleepService::sleepNow()
     Serial.println("Good by!");
 #endif
 
-    // Just to be sure
-    delay(100);
-
-    // Hibernate
-    esp_deep_sleep_start();
+    xTaskCreate(
+        [](void *pvParams)
+        {
+            delay(200);
+            esp_deep_sleep_start();
+        },
+        "Sleep task", 4096, nullptr, 10, nullptr);
 }
 
 void SleepService::setWakeUpPin(int pin, bool level, pinTermination termination)

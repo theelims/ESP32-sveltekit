@@ -19,6 +19,7 @@
 #include <PsychicHttp.h>
 #include <SecurityManager.h>
 #include "driver/rtc_io.h"
+#include <vector>
 
 #define SLEEP_SERVICE_PATH "/rest/sleep"
 
@@ -51,7 +52,7 @@ public:
 
     void attachOnSleepCallback(sleepCallback callbackSleep)
     {
-        _callbackSleep = callbackSleep;
+        _sleepCallbacks.push_back(callbackSleep);
     }
 
     void setWakeUpPin(int pin, bool level, pinTermination termination = pinTermination::FLOATING);
@@ -62,5 +63,5 @@ private:
     esp_err_t sleep(PsychicRequest *request);
 
 protected:
-    static sleepCallback _callbackSleep;
+    static std::vector<sleepCallback> _sleepCallbacks;
 };

@@ -64,6 +64,7 @@ export type BrokerSettings = {
 	mqtt_path: string;
 	name: string;
 	unique_id: string;
+	status_topic: string;
 };
 
 export type NTPStatus = {

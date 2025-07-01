@@ -154,30 +154,42 @@ void ESP32SvelteKit::begin()
 #if FT_ENABLED(FT_COREDUMP)
     _coreDump.begin();
 #endif
+
 #if FT_ENABLED(FT_UPLOAD_FIRMWARE)
     _uploadFirmwareService.begin();
 #endif
+
 #if FT_ENABLED(FT_DOWNLOAD_FIRMWARE)
     _downloadFirmwareService.begin();
 #endif
+
 #if FT_ENABLED(FT_NTP)
     _ntpSettingsService.begin();
     _ntpStatus.begin();
 #endif
+
 #if FT_ENABLED(FT_MQTT)
     _mqttSettingsService.begin();
     _mqttStatus.begin();
 #endif
+
 #if FT_ENABLED(FT_SECURITY)
     _authenticationService.begin();
     _securitySettingsService.begin();
 #endif
+
 #if FT_ENABLED(FT_SLEEP)
     _sleepService.begin();
+#if FT_ENABLED(FT_MQTT)
+    _sleepService.attachOnSleepCallback([&]()
+                                        { _mqttSettingsService.disconnect(); });
 #endif
+#endif
+
 #if FT_ENABLED(FT_BATTERY)
     _batteryService.begin();
 #endif
+
 #if FT_ENABLED(FT_ANALYTICS)
     _analyticsService.begin();
 #endif

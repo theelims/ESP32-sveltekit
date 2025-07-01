@@ -46,6 +46,10 @@
 #define FACTORY_MQTT_CLIENT_ID "#{platform}-#{unique_id}"
 #endif
 
+#ifndef FACTORY_MQTT_STATUS_TOPIC
+#define FACTORY_MQTT_STATUS_TOPIC "#{platform}/#{unique_id}/status"
+#endif
+
 #ifndef FACTORY_MQTT_KEEP_ALIVE
 #define FACTORY_MQTT_KEEP_ALIVE 16
 #endif
@@ -81,7 +85,8 @@ public:
     uint16_t keepAlive;
     bool cleanSession;
 
-    static void read(MqttSettings &settings, JsonObject &root)
+    static void
+    read(MqttSettings &settings, JsonObject &root)
     {
         root["enabled"] = settings.enabled;
         root["uri"] = settings.uri;
@@ -117,7 +122,10 @@ public:
     bool isConnected();
     const char *getClientId();
     String getLastError();
+    void setStatusTopic(String statusTopic);
+    String getStatusTopic();
     PsychicMqttClient *getMqttClient();
+    void disconnect();
 
 protected:
     void onConfigUpdated();
@@ -134,6 +142,8 @@ private:
     char *_retainedClientId;
     char *_retainedUsername;
     char *_retainedPassword;
+    char *_retainedWillTopic = nullptr;
+    char *_retainedWillPayload = "offline";
 
     // variable to help manage connection
     bool _reconfigureMqtt;

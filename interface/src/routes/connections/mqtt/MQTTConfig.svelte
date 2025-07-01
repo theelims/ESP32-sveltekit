@@ -33,7 +33,8 @@
 	let formErrors = $state({
 		uid: false,
 		path: false,
-		name: false
+		name: false,
+		status_topic: false
 	});
 
 	async function postBrokerSettings() {
@@ -82,6 +83,14 @@
 			formErrors.path = true;
 		} else {
 			formErrors.path = false;
+		}
+
+		// Validate MQTT Status Topic
+		if (brokerSettings.status_topic.length > 64) {
+			valid = false;
+			formErrors.status_topic = true;
+		} else {
+			formErrors.status_topic = false;
 		}
 
 		// Submit JSON to REST API
@@ -179,6 +188,25 @@
 						<label class="label" for="path">
 							<span class="text-error {formErrors.path ? '' : 'hidden'}"
 								>MQTT path is limited to 64 characters</span
+							>
+						</label>
+					</div>
+					<div>
+						<label class="label" for="status_topic">MQTT Status Topic</label>
+						<input
+							type="text"
+							class="input w-full invalid:border-error invalid:border-2 {formErrors.status_topic
+								? 'border-error border-2'
+								: ''}"
+							bind:value={brokerSettings.status_topic}
+							id="status_topic"
+							min="0"
+							max="64"
+							required
+						/>
+						<label class="label" for="status_topic">
+							<span class="text-error {formErrors.status_topic ? '' : 'hidden'}"
+								>MQTT status topic is limited to 64 characters</span
 							>
 						</label>
 					</div>

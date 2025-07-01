@@ -46,7 +46,25 @@ void FeaturesService::addFeature(String feature, bool enabled)
     newFeature.feature = feature;
     newFeature.enabled = enabled;
 
-    userFeatures.push_back(newFeature);
+    bool featureExists = false;
+
+    // Check if the feature already exists
+    for (auto &existingFeature : userFeatures)
+    {
+        if (existingFeature.feature == feature)
+        {
+            // Update the existing feature
+            existingFeature.enabled = enabled;
+            featureExists = true;
+            break;
+        }
+    }
+
+    if (!featureExists)
+    {
+        // If the feature does not exist, add it
+        userFeatures.push_back(newFeature);
+    }
 
     JsonDocument doc;
     JsonObject root = doc.as<JsonObject>();

@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Change wake-up pin in SleepService during runtime. It is also possible to use the internal pull-up or pull-down resistors now.
 - Get current connection status from ESP32-SvelteKit. Useful for status LED or displays.
 - Battery history graph to gauge battery consumption and device life.
+- Add a status topic (`online` or `offline`) to the MQTT client. It retains its message and sends `offline` as last will and testament, signalling all subscribers when it goes missing.
 - FeatureService sends updates through the event system.
 - WiFiSettingsService can set the WiFi station mode to offline, without deleting the list of networks.
 - Expands menu on selected subitem [#77](https://github.com/theelims/ESP32-sveltekit/pull/77)

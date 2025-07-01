@@ -109,6 +109,7 @@ void updateTask(void *param)
 #endif
         break;
     }
+
     vTaskDelete(NULL);
 }
 
