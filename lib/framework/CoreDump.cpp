@@ -63,7 +63,7 @@ esp_err_t CoreDump::coreDump(PsychicRequest *request)
     httpd_resp_set_status(request->request(), "200 OK");
     PsychicResponse response(request);
     response.setCode(200);
-    response.setContentType("text/plain");
+    response.setContentType("application/octet-stream");
     response.sendHeaders();
     for (size_t offset = 0; offset < coredump_size; offset += chunk_len)
     {
