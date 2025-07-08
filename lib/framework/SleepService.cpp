@@ -44,7 +44,7 @@ void SleepService::begin()
                 _securityManager->wrapRequest(std::bind(&SleepService::sleep, this, std::placeholders::_1),
                                               AuthenticationPredicates::IS_AUTHENTICATED));
 
-    ESP_LOGV("SleepService", "Registered POST endpoint: %s", SLEEP_SERVICE_PATH);
+    ESP_LOGV(SVK_TAG, "Registered POST endpoint: %s", SLEEP_SERVICE_PATH);
 }
 
 esp_err_t SleepService::sleep(PsychicRequest *request)
@@ -60,7 +60,7 @@ void SleepService::sleepNow()
 #ifdef SERIAL_INFO
     Serial.println("Going into deep sleep now");
 #endif
-    ESP_LOGI("SleepService", "Going into deep sleep now");
+    ESP_LOGI(SVK_TAG, "Going into deep sleep now");
 
     // Callback for main code sleep preparation
     for (auto callback : _sleepCallbacks)
@@ -76,10 +76,14 @@ void SleepService::sleepNow()
     WiFi.disconnect(true);
     delay(500);
 
-    ESP_LOGD("SleepService", "Enabling GPIO wakeup on pin GPIO%d\n", _wakeUpPin);
+    // set pin function of _wakeUpPin
+    pinMode(_wakeUpPin, INPUT);
 
-// special treatment for ESP32-C3 because of the RISC-V architecture
-#ifdef CONFIG_IDF_TARGET_ESP32C3
+    ESP_LOGD(SVK_TAG, "Enabling GPIO wakeup on pin GPIO%d with level %d\n", _wakeUpPin, _wakeUpSignal);
+    ESP_LOGD(SVK_TAG, "Current level on GPIO%d: %d\n", _wakeUpPin, digitalRead(_wakeUpPin));
+
+// special treatment for ESP32-C3 / C6 because of the RISC-V architecture
+#ifdef CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6
     esp_deep_sleep_enable_gpio_wakeup(BIT(_wakeUpPin), (esp_deepsleep_gpio_wake_up_mode_t)_wakeUpSignal);
 #else
     esp_sleep_enable_ext1_wakeup(BIT(_wakeUpPin), (esp_sleep_ext1_wakeup_mode_t)_wakeUpSignal);
@@ -110,7 +114,7 @@ void SleepService::sleepNow()
     xTaskCreate(
         [](void *pvParams)
         {
-            delay(200);
+            delay(100);
             esp_deep_sleep_start();
         },
         "Sleep task", 4096, nullptr, 10, nullptr);

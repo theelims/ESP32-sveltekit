@@ -241,8 +241,7 @@ void MqttSettingsService::disconnect()
     if (_mqttClient.connected())
     {
         ESP_LOGI(SVK_TAG, "Disconnecting from MQTT client.");
-        _mqttClient.publish(_retainedWillTopic, 1, true, "offline");
-        delay(100); // give time for the publish to complete
+        _mqttClient.publish(_retainedWillTopic, 1, true, "offline", 0, false);
         _mqttClient.disconnect();
     }
 }

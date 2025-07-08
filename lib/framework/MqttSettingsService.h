@@ -143,7 +143,7 @@ private:
     char *_retainedUsername;
     char *_retainedPassword;
     char *_retainedWillTopic = nullptr;
-    char *_retainedWillPayload = "offline";
+    const char *_retainedWillPayload = "offline";
 
     // variable to help manage connection
     bool _reconfigureMqtt;

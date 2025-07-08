@@ -115,6 +115,11 @@ void FeaturesService::createJSON(JsonObject &root)
 #else
     root["analytics"] = false;
 #endif
+#if FT_ENABLED(FT_COREDUMP)
+    root["coredump"] = true;
+#else
+    root["coredump"] = false;
+#endif
 
 #if FT_ENABLED(EVENT_USE_JSON)
     root["event_use_json"] = true;

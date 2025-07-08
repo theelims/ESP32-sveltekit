@@ -252,7 +252,7 @@
 						<label class="label" for="keepalive">Keep Alive </label>
 						<label
 							for="keepalive"
-							class="input invalid:border-error invalid:border-2 {formErrors.keep_alive
+							class="input w-full invalid:border-error invalid:border-2 {formErrors.keep_alive
 								? 'border-error border-2'
 								: ''}"
 						>
