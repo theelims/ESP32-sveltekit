@@ -9,11 +9,11 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Added `GEMINI.md` to store notes about the repository for the Gemini CLI. We are now using the Gemini CLI for development.
 - Added a build script to create a merged firmware file to use with [ESP Web Tools](https://esphome.github.io/esp-web-tools/)
 - Added compatibility with ESP32-C6
 - Added getIP() function to WiFiSettingsService.
 - Added Arduino Log Colors
-- Added linker optimization `-O3`, saving a few kb flash memory.
 - Possibility to add a loop callback to ESP32-Sveltekit to leverage its loop threat. Meant to include custom services so no separate task is needed for them.
 - Change wake-up pin in SleepService during runtime. It is also possible to use the internal pull-up or pull-down resistors now.
 - Get current connection status from ESP32-SvelteKit. Useful for status LED or displays.
