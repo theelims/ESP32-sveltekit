@@ -3,6 +3,10 @@
         "context7": {
             "command": "npx",
             "args": ["-y", "@upstash/context7-mcp"]
+        },
+        "ai-distiller": {
+            "command": "npx",
+            "args": ["-y", "@janreges/ai-distiller-mcp"]
         }
     }
 }
