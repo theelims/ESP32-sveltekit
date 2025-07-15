@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import type { RSSI } from '../types/models';
+import type { MotorState, RSSI } from '../types/models';
 import type { Battery } from '../types/models';
 import type { DownloadOTA } from '../types/models';
 
@@ -52,9 +52,8 @@ function createTelemetry() {
 				download_ota: { status: data.status, progress: data.progress, error: data.error }
 			}));
 		},
-		setMotorHomed: (data: string) => {
-			const content = JSON.parse(data);
-			update((telemerty_data) => ({ ...telemerty_data, homed: content.homed }));
+		setMotorStatus: (data: MotorState) => {
+			update((telemerty_data) => ({ ...telemerty_data, homed: data.homed, error: data.error }));
 		},
 		setMotorError: (data: string) => {
 			const content = JSON.parse(data);

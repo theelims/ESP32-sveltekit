@@ -155,6 +155,8 @@ export type ControlState = {
 	vibration_override: boolean;
 	vibration_amplitude: number;
 	vibration_frequency: number;
+	go?: boolean;
+	oldStroke?: number;
 };
 
 export type MotorState = {

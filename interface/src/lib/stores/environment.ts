@@ -14,10 +14,15 @@ let environment_data = {
 function createEnvironment() {
 	const { subscribe, set, update } = writable(environment_data);
 
+	function getHeartbeatMode() {
+		return environment_data.heartbeat_mode;
+	}
+
 	return {
 		subscribe,
 		set,
-		update
+		update,
+		getHeartbeatMode
 	};
 }
 

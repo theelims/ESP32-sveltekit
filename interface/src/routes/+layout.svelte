@@ -21,6 +21,7 @@
 	import type { RSSI } from '$lib/types/models';
 	import type { Battery } from '$lib/types/models';
 	import type { DownloadOTA } from '$lib/types/models';
+	import type { MotorState } from '$lib/types/models';
 
 	export let data: LayoutData;
 
@@ -35,12 +36,13 @@
 		);
 
 		addEventListeners();
-
 		fetchEnvironment();
+		control.init();
 	});
 
 	onDestroy(() => {
 		removeEventListeners();
+		control.exit();
 	});
 
 	const addEventListeners = () => {
@@ -53,11 +55,7 @@
 		if ($page.data.features.battery) socket.on('battery', handleBattery);
 		if ($page.data.features.download_firmware) socket.on('otastatus', handleOAT);
 
-		socket.on('motor_homed', handleMotorHomed);
-		socket.on('motor_error', handleMotorError);
-		socket.on('heartbeat', handleHeartbeat);
-
-		socket.on('control', handleControl);
+		socket.on('motor', handleMotorStatus);
 	};
 
 	const removeEventListeners = () => {
@@ -68,10 +66,7 @@
 		socket.off('notification', handleNotification);
 		socket.off('battery', handleBattery);
 		socket.off('otastatus', handleOAT);
-		socket.off('motor_homed', handleMotorHomed);
-		socket.off('motor_error', handleMotorError);
-		socket.off('heartbeat', handleHeartbeat);
-		socket.off('control', handleControl);
+		socket.off('motor', handleMotorStatus);
 	};
 
 	async function validateUser(userdata: userProfile) {
@@ -129,12 +124,7 @@
 
 	const handleOAT = (data: DownloadOTA) => telemetry.setDownloadOTA(data);
 
-	const handleMotorHomed = (data: string) => telemetry.setMotorHomed(data);
-	const handleMotorError = (data: string) => telemetry.setMotorError(data);
-
-	const handleHeartbeat = (data: string) => control.setHeartbeat(data); // ToDo: Add heartbeat event to StrokeEngineSafetyService
-
-	const handleControl = (data: string) => control.setControl(data);
+	const handleMotorStatus = (data: MotorState) => telemetry.setMotorStatus(data);
 
 	async function fetchEnvironment() {
 		try {

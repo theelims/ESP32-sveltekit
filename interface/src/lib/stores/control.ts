@@ -1,3 +1,6 @@
+import { writable } from 'svelte/store';
+import { socket } from './socket';
+import { environment } from './environment';
 import type { ControlState } from '$lib/types/models';
 
 let controlState: ControlState = {
@@ -11,3 +14,73 @@ let controlState: ControlState = {
 	vibration_amplitude: 0.0,
 	vibration_frequency: 0.0
 };
+
+function createControl() {
+	const { subscribe, set, update } = writable(controlState);
+	let heartbeat: boolean = false;
+	let heartbeatTimerId: number;
+	let go: boolean = false;
+	let oldStroke: number = 0.0;
+
+	function init() {
+		socket.on('heartbeat', (data: number) => setHeartbeat(data));
+		socket.on('control', (data: ControlState) => setControl(data));
+		setHeartbeat(environment.getHeartbeatMode());
+	}
+
+	function exit() {
+		clearInterval(heartbeatTimerId);
+		socket.off('heartbeat', (data: number) => setHeartbeat(data));
+		socket.off('control', (data: ControlState) => setControl(data));
+	}
+
+	function setHeartbeat(heartbeat_mode: number) {
+		if (heartbeat_mode > 0) {
+			heartbeat = true;
+			heartbeatTimerId = setInterval(sendControl, 1000);
+		} else {
+			heartbeat = false;
+			clearInterval(heartbeatTimerId);
+		}
+	}
+
+	function setControl(data: ControlState) {
+		oldStroke = controlState.stroke;
+
+		update((controlState) => ({
+			...controlState,
+			command: data.command,
+			depth: data.depth,
+			stroke: data.stroke,
+			rate: data.rate,
+			sensation: data.sensation,
+			pattern: data.pattern,
+			vibration_override: data.vibration_override,
+			vibration_amplitude: data.vibration_amplitude,
+			vibration_frequency: data.vibration_frequency
+		}));
+
+		if (
+			controlState.command.toUpperCase() === 'PLAYPATTERN' ||
+			controlState.command.toUpperCase() === 'STROKESTREAM' ||
+			controlState.command.toUpperCase() === 'POSITIONSTREAM'
+		) {
+			go = true;
+		} else {
+			go = false;
+		}
+	}
+
+	function sendControl() {
+		socket.sendEvent('control', controlState);
+	}
+
+	return {
+		subscribe,
+		init,
+		sendControl,
+		exit
+	};
+}
+
+export const control = createControl();

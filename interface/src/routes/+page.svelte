@@ -1,9 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { notifications } from '$lib/components/toasts/notifications';
-	import { user } from '$lib/stores/user';
+	import { control } from '$lib/stores/control';
 	import { page } from '$app/stores';
-	import { analytics } from '$lib/stores/analytics';
 	import { environment } from '$lib/stores/environment';
 	import { socket } from '$lib/stores/socket';
 	import { Chart, registerables } from 'chart.js';
@@ -18,9 +16,7 @@
 	import MaxOut from '~icons/tabler/arrow-narrow-left';
 	import FullRetract from '~icons/tabler/arrow-bar-to-right';
 	import StrokeStart from '~icons/tabler/arrow-move-left';
-	import { decode } from 'cbor-x/decode';
 	import { daisyColor } from '$lib/DaisyUiHelper';
-	import type { ControlState } from '$lib/types/models';
 
 	export let data: PageData;
 
@@ -30,46 +26,19 @@
 	Chart.register(LuxonAdapter);
 	Chart.register(ChartStreaming);
 
-	let controlState: ControlState = {
-		command: 'STOP',
-		depth: 0.0,
-		stroke: 0.0,
-		rate: 0.0,
-		sensation: 0.0,
-		pattern: '',
-		vibration_override: false,
-		vibration_amplitude: 0.0,
-		vibration_frequency: 0.0
-	};
-
 	let go: boolean = false;
 
 	let positionChartElement: HTMLCanvasElement;
 	let positionChart: Chart;
 
-	let dataSocket: WebSocket;
-	let controlSocket: WebSocket;
-	let unresponsiveTimeoutData: number;
 	let timeSync: number = 0;
 
 	let constSpeed: boolean = false;
 	let oldStroke: number = 0;
 
 	function openDataSocket() {
-		dataSocket = new WebSocket('ws://' + $page.url.host + '/ws/rawPosition');
-		dataSocket.binaryType = 'arraybuffer';
-		console.log(`trying to connect to: ${dataSocket.url}`);
-
-		dataSocket.onopen = () => {
-			console.log(`connection open to: ${dataSocket.url}`);
-		};
-
-		dataSocket.onclose = () => {
-			console.log(`connection closed to: ${dataSocket.url}`);
-		};
-
 		dataSocket.onmessage = (event) => {
-			const data = decode(new Uint8Array(event.data));
+			const data = null;
 
 			if (timeSync == 0) {
 				timeSync = Date.now() - data[0][0];
@@ -86,48 +55,6 @@
 				});
 			}
 		};
-
-		dataSocket.onerror = () => {
-			console.log(`connection error with: ${dataSocket.url}`);
-		};
-	}
-
-	function openControlSocket() {
-		controlSocket = new WebSocket('ws://' + $page.url.host + '/ws/control');
-		console.log(`trying to connect to: ${controlSocket.url}`);
-
-		controlSocket.onopen = () => {
-			console.log(`connection open to: ${controlSocket.url}`);
-		};
-
-		controlSocket.onclose = () => {
-			console.log(`connection closed to: ${controlSocket.url}`);
-		};
-
-		controlSocket.onmessage = (event) => {
-			controlState = JSON.parse(event.data);
-			// if command is STOP (not case sensitive) then go is false (stop the pattern)
-			if (
-				controlState.command.toUpperCase() === 'PLAYPATTERN' ||
-				controlState.command.toUpperCase() === 'STROKESTREAM' ||
-				controlState.command.toUpperCase() === 'POSITIONSTREAM'
-			) {
-				go = true;
-			} else {
-				go = false;
-			}
-
-			oldStroke = controlState.stroke;
-			// console.log(controlState);
-		};
-
-		controlSocket.onerror = () => {
-			console.log(`connection error with: ${controlSocket.url}`);
-		};
-	}
-
-	function sendControl() {
-		controlSocket.send(JSON.stringify(controlState));
 	}
 
 	function controlSession() {
@@ -168,12 +95,8 @@
 		sendControl();
 	}
 
-	let interval: number;
-
 	onDestroy(() => {
-		dataSocket.close();
-		controlSocket.close();
-		clearInterval(interval);
+		socket.off('data');
 	});
 
 	onMount(() => {
@@ -195,7 +118,7 @@
 				}
 			}
 		});
-		openControlSocket();
+
 		if ($page.data.features.data_streaming === true) {
 			openDataSocket();
 
@@ -300,19 +223,7 @@
 				}
 			});
 		}
-		// create a timer to send control messages every 1000ms
-		if ($environment.heartbeat_mode > 0) {
-			// if heartbeat mode is enabled, send control messages every 1000ms
-			interval = setInterval(sendControl, 1000);
-		}
 	});
-
-	$: if ($environment.heartbeat_mode > 0) {
-		// if heartbeat mode is enabled, send control messages every 1000ms
-		interval = setInterval(sendControl, 1000);
-	} else {
-		clearInterval(interval);
-	}
 </script>
 
 {#if $page.data.features.data_streaming === true}

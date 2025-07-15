@@ -23,7 +23,7 @@
  *   - Neopixel-LED
  *   - RS232 modbus communication
  *   - endstop switch
- *   - Motor drivers: Generic stepper and iHSV servo with firmware V6
+ *   - Motor drivers: Generic stepper
  *
  *   V2:
  *   - stepper motor driver
@@ -31,8 +31,7 @@
  *   - RS232 modbus communication
  *   - endstop switch
  *   - current/voltage sensor
- *   - Motor drivers: Generic stepper, iHSV servo with firmware V6
- *                    and OSSM Reference Board V2 with current sensor
+ *   - Motor drivers: Generic stepper and OSSM Reference Board V2 with current sensor
  *
  **/
 

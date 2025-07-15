@@ -177,6 +177,7 @@ void StrokeEngineControlService::onStrokeEngineChanged(String reason)
                newSettings.stroke = _strokeEngine->getParameter(StrokeParameter::STROKE);
                newSettings.rate = _strokeEngine->getParameter(StrokeParameter::RATE);
                newSettings.sensation = _strokeEngine->getParameter(StrokeParameter::SENSATION);
+               newSettings.pattern = _strokeEngine->getCurrentPatternName();
 
                if (newSettings == state)
                {

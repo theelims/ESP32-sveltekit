@@ -144,6 +144,31 @@ This API will provide the information about the environment like maximum travel 
 
 Environment messages are always send with the flag `retain` and QoS = 1 to make it available for all new consumers. Environment messages are sent out whenever it connects to the broker or the topic is reconfigured. Additionally a MQTT client may request an environment JSON by sending a payload with "environment" to the environment topic.
 
+### StrokeEngine Streaming Configuration
+
+sdfsdfsdf
+
+> Defined in `StrokeEngineStreamingConfig.h`
+
+| Method | URL                | Authentication  |
+| ------ | ------------------ | --------------- |
+| GET    | /rest/streamconfig | `NONE_REQUIRED` |
+| POST   | /rest/streamconfig | `NONE_REQUIRED` |
+
+| Parameter | Type   | Info                                                                                                                                      |
+| --------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| source    | string | Select the streaming source: T-Code (`usb`), MultiFunPlayer (`udp`), [Streaming Service](#strokeengine-streaming-write-only) (`stateful`) |
+| motion    | string | How the motion between two points should be interpreted: `piecewise`, `trapezoidal`                                                       |
+
+#### JSON
+
+```JSON
+{
+    "source": "usb",
+    "motion": "piecewise"
+}
+```
+
 ### StrokeEngine Streaming _write-only_
 
 Instead of pattern the motion commands can be provided via this streaming interface, too. Messages are queued up with a queue length of 5. Writing to a full queue will result in the message being discarded. An empty queue will stop the motion. Changing `command` in the [Control API](#strokeengine-control) will erase the queue. That way streaming always starts with a fresh queue. This service is write only. Changes won't propagate to other clients and a GET request will return an empty JSON.
@@ -156,17 +181,17 @@ Instead of pattern the motion commands can be provided via this streaming interf
 | WS     | /ws/streaming   | `NONE_REQUIRED` |
 | MQTT   | -               | N/A             |
 
-| Parameter | Type   | Range      | Info                                                                                       | Failure Mode         |
-| --------- | ------ | ---------- | ------------------------------------------------------------------------------------------ | -------------------- |
-| stroke    | number | 0.0 - 1.0  | relative length of the stroke, mapped to the true stroke length set by the control message | truncated into range |
-| duration  | number | 0.0 - 60.0 | duration of the stroke in seconds                                                          | truncated into range |
+| Parameter | Type   | Range     | Info                                                                                       | Failure Mode         |
+| --------- | ------ | --------- | ------------------------------------------------------------------------------------------ | -------------------- |
+| position  | number | 0.0 - 1.0 | relative length of the stroke, mapped to the true stroke length set by the control message | truncated into range |
+| duration  | number | 1 - 60000 | duration of the stroke in milliseconds (optional)                                          | truncated into range |
 
 #### JSON
 
 ```JSON
 {
-    "stroke": 0.85,
-    "duration": 2.21
+    "position": 0.85,
+    "duration": 2210
 }
 ```
 
