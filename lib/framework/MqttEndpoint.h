@@ -17,11 +17,12 @@
 
 #include <StatefulService.h>
 #include <PsychicMqttClient.h>
+#include <CommitHandler.h>
 
 #define MQTT_ORIGIN_ID "mqtt"
 
 template <class T>
-class MqttEndpoint
+class MqttEndpoint : public CommitHandler
 {
 public:
     MqttEndpoint(JsonStateReader<T> stateReader,
@@ -90,6 +91,18 @@ public:
 
     void publish()
     {
+        // Use CommitHandler's publish method which handles throttling
+        CommitHandler::publish();
+    }
+
+    PsychicMqttClient *getMqttClient()
+    {
+        return _mqttClient;
+    }
+
+protected:
+    virtual void commit() override
+    {
         if (_pubTopic.length() > 0 && _mqttClient->connected())
         {
             // serialize to json doc
@@ -106,12 +119,7 @@ public:
         }
     }
 
-    PsychicMqttClient *getMqttClient()
-    {
-        return _mqttClient;
-    }
-
-protected:
+private:
     StatefulService<T> *_statefulService;
     PsychicMqttClient *_mqttClient;
     JsonStateUpdater<T> _stateUpdater;

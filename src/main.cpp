@@ -16,6 +16,7 @@
 #include <LightMqttSettingsService.h>
 #include <LightStateService.h>
 #include <PsychicHttpServer.h>
+#include <CommitHandler.h>
 
 #define SERIAL_BAUD_RATE 115200
 
@@ -34,6 +35,11 @@ void setup()
 {
     // start serial and filesystem
     Serial.begin(SERIAL_BAUD_RATE);
+
+    // Configure MQTT publish throttling
+    // Set to 5000ms (5 seconds) to throttle MQTT publishes
+    // Set to 0 to disable throttling (immediate publish)
+    CommitHandler::setTimerInterval(5000);
 
     // start ESP32-SvelteKit
     esp32sveltekit.begin();
