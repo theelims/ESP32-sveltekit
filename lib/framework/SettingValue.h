@@ -17,6 +17,10 @@
 
 #include <Arduino.h>
 
+#if ESP_ARDUINO_VERSION_MAJOR == 3
+#include <esp_mac.h>
+#endif
+
 namespace SettingValue
 {
     String format(String value);

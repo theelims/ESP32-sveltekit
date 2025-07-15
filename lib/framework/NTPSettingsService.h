@@ -22,6 +22,10 @@
 #include <time.h>
 #include <lwip/apps/sntp.h>
 
+#ifdef CONFIG_LWIP_TCPIP_CORE_LOCKING
+#include "lwip/priv/tcpip_priv.h"
+#endif
+
 #ifndef FACTORY_NTP_ENABLED
 #define FACTORY_NTP_ENABLED true
 #endif

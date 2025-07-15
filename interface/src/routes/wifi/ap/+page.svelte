@@ -2,7 +2,11 @@
 	import type { PageData } from './$types';
 	import Accesspoint from './Accesspoint.svelte';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 </script>
 
 <div

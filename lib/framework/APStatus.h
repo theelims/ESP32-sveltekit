@@ -32,6 +32,8 @@ public:
 
     void begin();
 
+    bool isActive();
+
 private:
     PsychicHttpServer *_server;
     SecurityManager *_securityManager;

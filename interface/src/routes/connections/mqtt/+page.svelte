@@ -3,7 +3,11 @@
 	import MQTT from './MQTT.svelte';
 	import MqttConfig from './MQTTConfig.svelte';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 </script>
 
 <div

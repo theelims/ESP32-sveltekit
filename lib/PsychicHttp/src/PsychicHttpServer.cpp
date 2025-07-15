@@ -56,8 +56,7 @@ PsychicHttpServer::~PsychicHttpServer()
 
 void PsychicHttpServer::destroy(void *ctx)
 {
-  PsychicHttpServer *temp = (PsychicHttpServer *)ctx;
-  delete temp;
+  // do not release any resource for PsychicHttpServer in order to be able to restart it after stopping
 }
 
 esp_err_t PsychicHttpServer::listen(uint16_t port)
@@ -141,7 +140,8 @@ PsychicEndpoint* PsychicHttpServer::on(const char* uri, http_method method, Psyc
     .method   = method,
     .handler  = PsychicEndpoint::requestCallback,
     .user_ctx = endpoint,
-    .is_websocket = handler->isWebSocket()
+    .is_websocket = handler->isWebSocket(),
+    .supported_subprotocol = handler->getSubprotocol()
   };
   
   // Register endpoint with ESP-IDF server
@@ -186,7 +186,7 @@ PsychicEndpoint* PsychicHttpServer::on(const char* uri, http_method method, Psyc
 void PsychicHttpServer::onNotFound(PsychicHttpRequestCallback fn)
 {
   PsychicWebHandler *handler = new PsychicWebHandler();
-  handler->onRequest(fn);
+  handler->onRequest(fn == nullptr ? PsychicHttpServer::defaultNotFoundHandler : fn);
 
   this->defaultEndpoint->setHandler(handler);
 }
@@ -232,7 +232,7 @@ void PsychicHttpServer::onOpen(PsychicClientCallback handler) {
 
 esp_err_t PsychicHttpServer::openCallback(httpd_handle_t hd, int sockfd)
 {
-  ESP_LOGI(PH_TAG, "New client connected %d", sockfd);
+  ESP_LOGD(PH_TAG, "New client connected %d", sockfd);
 
   //get our global server reference
   PsychicHttpServer *server = (PsychicHttpServer*)httpd_get_global_user_ctx(hd);
@@ -258,7 +258,7 @@ void PsychicHttpServer::onClose(PsychicClientCallback handler) {
 
 void PsychicHttpServer::closeCallback(httpd_handle_t hd, int sockfd)
 {
-  ESP_LOGI(PH_TAG, "Client disconnected %d", sockfd);
+  ESP_LOGD(PH_TAG, "Client disconnected %d", sockfd);
 
   PsychicHttpServer *server = (PsychicHttpServer*)httpd_get_global_user_ctx(hd);
 

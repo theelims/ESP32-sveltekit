@@ -6,22 +6,21 @@
 	import Battery100 from '~icons/tabler/battery-4';
 	import BatteryCharging from '~icons/tabler/battery-charging-2';
 
-	export let charging = false;
-	export let soc = 100;
+	let { charging = false, soc = 100, class: className = '' } = $props();
 </script>
 
 <div class="tooltip tooltip-bottom" data-tip="{soc} %">
 	{#if charging}
-		<BatteryCharging class="{$$props.class || ''} -rotate-90 animate-pulse" />
+		<BatteryCharging class="{className} -rotate-90 animate-pulse" />
 	{:else if soc > 75}
-		<Battery100 class="{$$props.class || ''} -rotate-90" />
+		<Battery100 class="{className} -rotate-90" />
 	{:else if soc > 55}
-		<Battery75 class="{$$props.class || ''} -rotate-90" />
+		<Battery75 class="{className} -rotate-90" />
 	{:else if soc > 30}
-		<Battery50 class="{$$props.class || ''} -rotate-90" />
+		<Battery50 class="{className} -rotate-90" />
 	{:else if soc > 5}
-		<Battery25 class="{$$props.class || ''} -rotate-90" />
+		<Battery25 class="{className} -rotate-90" />
 	{:else}
-		<Battery0 class="{$$props.class || ''} text-error -rotate-90 animate-pulse" />
+		<Battery0 class="{className} text-error -rotate-90 animate-pulse" />
 	{/if}
 </div>

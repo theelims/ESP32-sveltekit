@@ -38,11 +38,13 @@
 #include <SecuritySettingsService.h>
 #include <SleepService.h>
 #include <SystemStatus.h>
+#include <CoreDump.h>
 #include <WiFiScanner.h>
 #include <WiFiSettingsService.h>
 #include <WiFiStatus.h>
 #include <ESPFS.h>
 #include <PsychicHttp.h>
+#include <vector>
 
 #ifdef EMBED_WWW
 #include <WWWData.h>
@@ -64,12 +66,35 @@
 #define ESP32SVELTEKIT_RUNNING_CORE -1
 #endif
 
+#ifndef ESP32SVELTEKIT_LOOP_INTERVAL
+#define ESP32SVELTEKIT_LOOP_INTERVAL 10
+#endif
+
+// define callback function to include into the main loop
+typedef std::function<void()> loopCallback;
+
+// enum for connection status
+enum class ConnectionStatus
+{
+    OFFLINE,
+    AP,
+    AP_CONNECTED,
+    STA,
+    STA_CONNECTED,
+    STA_MQTT
+};
+
 class ESP32SvelteKit
 {
 public:
     ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEndpoints = 115);
 
     void begin();
+
+    ConnectionStatus getConnectionStatus()
+    {
+        return _connectionStatus;
+    }
 
     FS *getFS()
     {
@@ -92,18 +117,18 @@ public:
     }
 
 #if FT_ENABLED(FT_SECURITY)
-    StatefulService<SecuritySettings> *getSecuritySettingsService()
+    SecuritySettingsService *getSecuritySettingsService()
     {
         return &_securitySettingsService;
     }
 #endif
 
-    StatefulService<WiFiSettings> *getWiFiSettingsService()
+    WiFiSettingsService *getWiFiSettingsService()
     {
         return &_wifiSettingsService;
     }
 
-    StatefulService<APSettings> *getAPSettingsService()
+    APSettingsService *getAPSettingsService()
     {
         return &_apSettingsService;
     }
@@ -114,14 +139,14 @@ public:
     }
 
 #if FT_ENABLED(FT_NTP)
-    StatefulService<NTPSettings> *getNTPSettingsService()
+    NTPSettingsService *getNTPSettingsService()
     {
         return &_ntpSettingsService;
     }
 #endif
 
 #if FT_ENABLED(FT_MQTT)
-    StatefulService<MqttSettings> *getMqttSettingsService()
+    MqttSettingsService *getMqttSettingsService()
     {
         return &_mqttSettingsService;
     }
@@ -151,6 +176,11 @@ public:
         return &_featureService;
     }
 
+    RestartService *getRestartService()
+    {
+        return &_restartService;
+    }
+
     void factoryReset()
     {
         _factoryResetService.factoryReset();
@@ -164,6 +194,11 @@ public:
     void recoveryMode()
     {
         _apSettingsService.recoveryMode();
+    }
+
+    void addLoopFunction(loopCallback function)
+    {
+        _loopFunctions.push_back(function);
     }
 
 private:
@@ -204,6 +239,9 @@ private:
 #if FT_ENABLED(FT_ANALYTICS)
     AnalyticsService _analyticsService;
 #endif
+#if FT_ENABLED(FT_COREDUMP)
+    CoreDump _coreDump;
+#endif
     RestartService _restartService;
     FactoryResetService _factoryResetService;
     SystemStatus _systemStatus;
@@ -213,6 +251,11 @@ private:
 protected:
     static void _loopImpl(void *_this) { static_cast<ESP32SvelteKit *>(_this)->_loop(); }
     void _loop();
+
+    std::vector<loopCallback> _loopFunctions;
+
+    // Connectivity status
+    ConnectionStatus _connectionStatus = ConnectionStatus::OFFLINE;
 };
 
 #endif

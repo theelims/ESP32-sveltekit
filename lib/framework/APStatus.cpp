@@ -28,7 +28,7 @@ void APStatus::begin()
                 _securityManager->wrapRequest(std::bind(&APStatus::apStatus, this, std::placeholders::_1),
                                               AuthenticationPredicates::IS_AUTHENTICATED));
 
-    ESP_LOGV("APStatus", "Registered GET endpoint: %s", AP_STATUS_SERVICE_PATH);
+    ESP_LOGV(SVK_TAG, "Registered GET endpoint: %s", AP_STATUS_SERVICE_PATH);
 }
 
 esp_err_t APStatus::apStatus(PsychicRequest *request)
@@ -42,4 +42,9 @@ esp_err_t APStatus::apStatus(PsychicRequest *request)
     root["station_num"] = WiFi.softAPgetStationNum();
 
     return response.send();
+}
+
+bool APStatus::isActive()
+{
+    return _apSettingsService->getAPNetworkStatus() == APNetworkStatus::ACTIVE ? true : false;
 }

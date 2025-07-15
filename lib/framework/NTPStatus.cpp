@@ -26,7 +26,7 @@ void NTPStatus::begin()
                 _securityManager->wrapRequest(std::bind(&NTPStatus::ntpStatus, this, std::placeholders::_1),
                                               AuthenticationPredicates::IS_AUTHENTICATED));
 
-    ESP_LOGV("NTPStatus", "Registered GET endpoint: %s", NTP_STATUS_SERVICE_PATH);
+    ESP_LOGV(SVK_TAG, "Registered GET endpoint: %s", NTP_STATUS_SERVICE_PATH);
 }
 
 /*

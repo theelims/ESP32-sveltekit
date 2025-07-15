@@ -22,7 +22,7 @@
 class JsonUtils
 {
 public:
-    static void readIP(JsonObject &root, const String &key, IPAddress &ip, const String &def)
+    static void readIPStr(JsonObject &root, const String &key, IPAddress &ip, const String &def)
     {
         IPAddress defaultIp = {};
         if (!defaultIp.fromString(def))
@@ -31,6 +31,7 @@ public:
         }
         readIP(root, key, ip, defaultIp);
     }
+
     static void readIP(JsonObject &root, const String &key, IPAddress &ip, const IPAddress &defaultIp = INADDR_NONE)
     {
         if (!root[key].is<String>() || !ip.fromString(root[key].as<String>()))
@@ -38,6 +39,7 @@ public:
             ip = defaultIp;
         }
     }
+
     static void writeIP(JsonObject &root, const String &key, const IPAddress &ip)
     {
         if (IPUtils::isSet(ip))

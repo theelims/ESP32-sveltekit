@@ -14,6 +14,7 @@
 #include <DownloadFirmwareService.h>
 
 extern const uint8_t rootca_crt_bundle_start[] asm("_binary_src_certs_x509_crt_bundle_bin_start");
+extern const uint8_t rootca_crt_bundle_end[] asm("_binary_src_certs_x509_crt_bundle_bin_end");
 
 static EventSocket *_socket = nullptr;
 static int previousProgress = 0;
@@ -36,7 +37,7 @@ void update_progress(int currentBytes, int totalBytes)
         doc["progress"] = progress;
         JsonObject jsonObject = doc.as<JsonObject>();
         _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
-        ESP_LOGV("Download OTA", "HTTP update process at %d of %d bytes... (%d %%)", currentBytes, totalBytes, progress);
+        ESP_LOGV(SVK_TAG, "HTTP update process at %d of %d bytes... (%d %%)", currentBytes, totalBytes, progress);
     }
     previousProgress = progress;
 }
@@ -54,7 +55,13 @@ void update_finished()
 void updateTask(void *param)
 {
     WiFiClientSecure client;
+
+#if ESP_ARDUINO_VERSION_MAJOR == 3
+    client.setCACertBundle(rootca_crt_bundle_start, rootca_crt_bundle_end - rootca_crt_bundle_start);
+#else
     client.setCACertBundle(rootca_crt_bundle_start);
+#endif
+
     client.setTimeout(10);
 
     httpUpdate.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
@@ -78,7 +85,7 @@ void updateTask(void *param)
         jsonObject = doc.as<JsonObject>();
         _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
 
-        ESP_LOGE("Download OTA", "HTTP Update failed with error (%d): %s", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+        ESP_LOGE(SVK_TAG, "HTTP Update failed with error (%d): %s", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
 #ifdef SERIAL_INFO
         Serial.printf("HTTP Update failed with error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
 #endif
@@ -90,18 +97,19 @@ void updateTask(void *param)
         jsonObject = doc.as<JsonObject>();
         _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
 
-        ESP_LOGE("Download OTA", "HTTP Update failed, has same firmware version");
+        ESP_LOGE(SVK_TAG, "HTTP Update failed, has same firmware version");
 #ifdef SERIAL_INFO
         Serial.println("HTTP Update failed, has same firmware version");
 #endif
         break;
     case HTTP_UPDATE_OK:
-        ESP_LOGI("Download OTA", "HTTP Update successful - Restarting");
+        ESP_LOGI(SVK_TAG, "HTTP Update successful - Restarting");
 #ifdef SERIAL_INFO
         Serial.println("HTTP Update successful - Restarting");
 #endif
         break;
     }
+
     vTaskDelete(NULL);
 }
 
@@ -123,7 +131,7 @@ void DownloadFirmwareService::begin()
                     std::bind(&DownloadFirmwareService::downloadUpdate, this, std::placeholders::_1, std::placeholders::_2),
                     AuthenticationPredicates::IS_ADMIN));
 
-    ESP_LOGV("DownloadFirmwareService", "Registered POST endpoint: %s", GITHUB_FIRMWARE_PATH);
+    ESP_LOGV(SVK_TAG, "Registered POST endpoint: %s", GITHUB_FIRMWARE_PATH);
 }
 
 esp_err_t DownloadFirmwareService::downloadUpdate(PsychicRequest *request, JsonVariant &json)
@@ -134,7 +142,7 @@ esp_err_t DownloadFirmwareService::downloadUpdate(PsychicRequest *request, JsonV
     }
 
     String downloadURL = json["download_url"];
-    ESP_LOGI("Download OTA", "Starting OTA from: %s", downloadURL.c_str());
+    ESP_LOGI(SVK_TAG, "Starting OTA from: %s", downloadURL.c_str());
 #ifdef SERIAL_INFO
     Serial.println("Starting OTA from: " + downloadURL);
 #endif
@@ -156,7 +164,7 @@ esp_err_t DownloadFirmwareService::downloadUpdate(PsychicRequest *request, JsonV
             1                           // Have it on application core
             ) != pdPASS)
     {
-        ESP_LOGE("Download OTA", "Couldn't create download OTA task");
+        ESP_LOGE(SVK_TAG, "Couldn't create download OTA task");
         return request->reply(500);
     }
     return request->reply(200);

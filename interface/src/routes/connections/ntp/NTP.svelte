@@ -6,7 +6,7 @@
 	import Collapsible from '$lib/components/Collapsible.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import { user } from '$lib/stores/user';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { notifications } from '$lib/components/toasts/notifications';
 	import { TIME_ZONES } from './timezones';
 	import NTP from '~icons/tabler/clock-check';
@@ -16,15 +16,15 @@
 	import Stopwatch from '~icons/tabler/24-hours';
 	import type { NTPSettings, NTPStatus } from '$lib/types/models';
 
-	let ntpSettings: NTPSettings;
-	let ntpStatus: NTPStatus;
+	let ntpSettings: NTPSettings = $state();
+	let ntpStatus: NTPStatus = $state();
 
 	async function getNTPStatus() {
 		try {
 			const response = await fetch('/rest/ntpStatus', {
 				method: 'GET',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
@@ -40,7 +40,7 @@
 			const response = await fetch('/rest/ntpSettings', {
 				method: 'GET',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
@@ -58,23 +58,23 @@
 	onDestroy(() => clearInterval(interval));
 
 	onMount(() => {
-		if (!$page.data.features.security || $user.admin) {
+		if (!page.data.features.security || $user.admin) {
 			getNTPSettings();
 		}
 	});
 
-	let formField: any;
+	let formField: any = $state();
 
-	let formErrors = {
+	let formErrors = $state({
 		server: false
-	};
+	});
 
 	async function postNTPSettings(data: NTPSettings) {
 		try {
 			const response = await fetch('/rest/ntpSettings', {
 				method: 'POST',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(data)
@@ -143,12 +143,23 @@
 
 		return result;
 	}
+
+	function preventDefault(fn) {
+		return function (event) {
+			event.preventDefault();
+			fn.call(this, event);
+		};
+	}
 </script>
 
 <SettingsCard collapsible={false}>
-	<Clock slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">Network Time</span>
-	<div class="w-full overflow-x-auto">
+	{#snippet icon()}
+		<Clock class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+	{/snippet}
+	{#snippet title()}
+		<span>Network Time</span>
+	{/snippet}
+	<div class="w-full">
 		{#await getNTPStatus()}
 			<Spinner />
 		{:then nothing}
@@ -234,52 +245,49 @@
 		{/await}
 	</div>
 
-	{#if !$page.data.features.security || $user.admin}
-		<Collapsible open={false} class="shadow-lg" on:closed={getNTPSettings}>
-			<span slot="title">Change NTP Settings</span>
+	{#if !page.data.features.security || $user.admin}
+		<Collapsible open={false} class="shadow-lg" icon={null} opened={() => {}} closed={() => {}}>
+			{#snippet title()}
+				<span>Change NTP Settings</span>
+			{/snippet}
 			<form
-				class="form-control w-full"
-				on:submit|preventDefault={handleSubmitNTP}
+				class="fieldset"
+				onsubmit={preventDefault(handleSubmitNTP)}
 				novalidate
 				bind:this={formField}
 			>
-				<label class="label cursor-pointer justify-start gap-4">
+				<label class="label text-base inline-flex cursor-pointer content-end justify-start gap-4">
 					<input
 						type="checkbox"
 						bind:checked={ntpSettings.enabled}
 						class="checkbox checkbox-primary"
-					/>
-					<span class="">Enable NTP</span>
+					/>Enable NTP
 				</label>
-				<label class="label" for="server">
-					<span class="label-text text-md">Server</span>
-				</label>
+
+				<label class="label" for="server">Server</label>
 				<input
 					type="text"
 					min="3"
 					max="64"
-					class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.server
+					class="input w-full invalid:border-error invalid:border-2 {formErrors.server
 						? 'border-error border-2'
 						: ''}"
 					bind:value={ntpSettings.server}
 					id="server"
 					required
 				/>
-				<label class="label" for="subnet">
-					<span class="label-text-alt text-error {formErrors.server ? '' : 'hidden'}"
-						>Must be a valid IPv4 address or URL</span
-					>
-				</label>
-				<label class="label" for="tz">
-					<span class="label-text text-md">Pick Time Zone</span>
-				</label>
-				<select class="select select-bordered" bind:value={ntpSettings.tz_label} id="tz">
+				{#if formErrors.server}
+					<p class="text-error text-sm">Please enter a valid NTP server.</p>
+				{/if}
+
+				<label class="label" for="tz">Pick Time Zone</label>
+				<select class="select w-full" bind:value={ntpSettings.tz_label} id="tz">
 					{#each Object.entries(TIME_ZONES) as [tz_label, tz_format]}
 						<option value={tz_label}>{tz_label}</option>
 					{/each}
 				</select>
 
-				<div class="mt-6 place-self-end">
+				<div class="mt-4 place-self-end">
 					<button class="btn btn-primary" type="submit">Apply Settings</button>
 				</div>
 			</form>

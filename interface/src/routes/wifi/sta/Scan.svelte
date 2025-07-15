@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { closeModal } from 'svelte-modals';
+	import { modals } from 'svelte-modals';
 	import { focusTrap } from 'svelte-focus-trap';
 	import { fly } from 'svelte/transition';
 	import { user } from '$lib/stores/user';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import Network from '~icons/tabler/router';
 	import AP from '~icons/tabler/access-point';
 	import Cancel from '~icons/tabler/x';
@@ -13,8 +13,12 @@
 	import type { NetworkItem } from '$lib/types/models';
 
 	// provided by <Modals />
-	export let isOpen: boolean;
-	export let storeNetwork: any;
+	interface Props {
+		isOpen: boolean;
+		storeNetwork: any;
+	}
+
+	const { isOpen, storeNetwork }: Props = $props();
 
 	const encryptionType = [
 		'Open',
@@ -28,9 +32,9 @@
 		'WAPI PSK'
 	];
 
-	let listOfNetworks: NetworkItem[] = [];
+	let listOfNetworks: NetworkItem[] = $state([]);
 
-	let scanActive = false;
+	let scanActive = $state(false);
 
 	let pollingId: number;
 
@@ -39,7 +43,7 @@
 		const scan = await fetch('/rest/scanNetworks', {
 			method: 'GET',
 			headers: {
-				Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+				Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 				'Content-Type': 'application/json'
 			}
 		});
@@ -53,7 +57,7 @@
 		const response = await fetch('/rest/listNetworks', {
 			method: 'GET',
 			headers: {
-				Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+				Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 				'Content-Type': 'application/json'
 			}
 		});
@@ -91,28 +95,26 @@
 		role="dialog"
 		class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center"
 		transition:fly={{ y: 50 }}
-		on:introstart
-		on:outroend
 		use:focusTrap
 	>
 		<div
 			class="bg-base-100 shadow-secondary/30 rounded-box pointer-events-auto flex max-h-full min-w-fit max-w-md flex-col justify-between p-4 shadow-lg"
 		>
 			<h2 class="text-base-content text-start text-2xl font-bold">Scan Networks</h2>
-			<div class="divider my-2" />
+			<div class="divider my-2"></div>
 			<div class="overflow-y-auto">
 				{#if scanActive}<div class="bg-base-100 flex flex-col items-center justify-center p-6">
 						<AP class="text-secondary h-32 w-32 shrink animate-ping stroke-2" />
 						<p class="mt-8 text-2xl">Scanning ...</p>
 					</div>
 				{:else}
-					<ul class="menu">
+					<ul class="menu w-full">
 						{#each listOfNetworks as network, i}
 							<li>
-								<!-- svelte-ignore a11y-click-events-have-key-events -->
+								<!-- svelte-ignore a11y_click_events_have_key_events -->
 								<div
 									class="bg-base-200 rounded-btn my-1 flex items-center space-x-3 hover:scale-[1.02] active:scale-[0.98]"
-									on:click={() => {
+									onclick={() => {
 										storeNetwork(network.ssid);
 									}}
 								>
@@ -125,7 +127,7 @@
 											Security: {encryptionType[network.encryption_type]}, Channel: {network.channel}
 										</div>
 									</div>
-									<div class="flex-grow" />
+									<div class="grow"></div>
 									<RssiIndicator
 										showDBm={true}
 										rssi_dbm={network.rssi}
@@ -137,18 +139,20 @@
 					</ul>
 				{/if}
 			</div>
-			<div class="divider my-2" />
+			<div class="divider my-2"></div>
 			<div class="flex flex-wrap justify-end gap-2">
 				<button
 					class="btn btn-primary inline-flex flex-none items-center"
 					disabled={scanActive}
-					on:click={scanNetworks}><Reload class="mr-2 h-5 w-5" /><span>Scan again</span></button
+					onclick={scanNetworks}><Reload class="mr-2 h-5 w-5" /><span>Scan again</span></button
 				>
 
-				<div class="flex-grow" />
+				<div class="grow"></div>
 				<button
 					class="btn btn-warning text-warning-content inline-flex flex-none items-center"
-					on:click={closeModal}><Cancel class="mr-2 h-5 w-5" /><span>Cancel</span></button
+					onclick={() => {
+						modals.close();
+					}}><Cancel class="mr-2 h-5 w-5" /><span>Cancel</span></button
 				>
 			</div>
 		</div>

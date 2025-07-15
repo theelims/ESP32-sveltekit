@@ -26,7 +26,7 @@ void RestartService::begin()
                 _securityManager->wrapRequest(std::bind(&RestartService::restart, this, std::placeholders::_1),
                                               AuthenticationPredicates::IS_ADMIN));
 
-    ESP_LOGV("RestartService", "Registered POST endpoint: %s", RESTART_SERVICE_PATH);
+    ESP_LOGV(SVK_TAG, "Registered POST endpoint: %s", RESTART_SERVICE_PATH);
 }
 
 esp_err_t RestartService::restart(PsychicRequest *request)

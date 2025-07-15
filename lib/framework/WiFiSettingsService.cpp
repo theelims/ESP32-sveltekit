@@ -59,6 +59,26 @@ void WiFiSettingsService::reconfigureWiFiConnection()
     // reset last connection attempt to force loop to reconnect immediately
     _lastConnectionAttempt = 0;
 
+    String connectionMode;
+
+    switch (_state.staConnectionMode)
+    {
+    case (u_int8_t)STAConnectionMode::OFFLINE:
+        connectionMode = "OFFLINE";
+        break;
+    case (u_int8_t)STAConnectionMode::PRIORITY:
+        connectionMode = "PRIORITY";
+        break;
+    case (u_int8_t)STAConnectionMode::STRENGTH:
+        connectionMode = "STRENGTH";
+        break;
+    default:
+        connectionMode = "UNKNOWN";
+        break;
+    }
+
+    ESP_LOGI(SVK_TAG, "Reconfiguring WiFi connection to: %s", connectionMode.c_str());
+
     // disconnect and de-configure wifi
     if (WiFi.disconnect(true))
     {
@@ -87,10 +107,19 @@ String WiFiSettingsService::getHostname()
     return _state.hostname;
 }
 
+String WiFiSettingsService::getIP()
+{
+    if (WiFi.isConnected())
+    {
+        return WiFi.localIP().toString();
+    }
+    return "Not connected";
+}
+
 void WiFiSettingsService::manageSTA()
 {
-    // Abort if already connected, or if we have no SSID
-    if (WiFi.isConnected() || _state.wifiSettings.empty())
+    // Abort if already connected, if we have no SSID, or are in offline mode
+    if (WiFi.isConnected() || _state.wifiSettings.empty() || _state.staConnectionMode == (u_int8_t)STAConnectionMode::OFFLINE)
     {
         return;
     }
@@ -117,15 +146,15 @@ void WiFiSettingsService::connectToWiFi()
     int scanResult = WiFi.scanNetworks();
     if (scanResult == WIFI_SCAN_FAILED)
     {
-        ESP_LOGE("WiFiSettingsService", "WiFi scan failed.");
+        ESP_LOGE(SVK_TAG, "WiFi scan failed.");
     }
     else if (scanResult == 0)
     {
-        ESP_LOGW("WiFiSettingsService", "No networks found.");
+        ESP_LOGW(SVK_TAG, "No networks found.");
     }
     else
     {
-        ESP_LOGI("WiFiSettingsService", "%d networks found.", scanResult);
+        ESP_LOGI(SVK_TAG, "%d networks found.", scanResult);
 
         // find the best network to connect
         wifi_settings_t *bestNetwork = NULL;
@@ -140,16 +169,16 @@ void WiFiSettingsService::connectToWiFi()
             int32_t chan_scan;
 
             WiFi.getNetworkInfo(i, ssid_scan, sec_scan, rssi_scan, BSSID_scan, chan_scan);
-            ESP_LOGV("WiFiSettingsService", "SSID: %s, BSSID: " MACSTR ", RSSI: %d dbm, Channel: %d", ssid_scan.c_str(), MAC2STR(BSSID_scan), rssi_scan, chan_scan);
+            ESP_LOGV(SVK_TAG, "SSID: %s, BSSID: " MACSTR ", RSSI: %d dbm, Channel: %d", ssid_scan.c_str(), MAC2STR(BSSID_scan), rssi_scan, chan_scan);
 
             for (auto &network : _state.wifiSettings)
             {
-                if (ssid_scan == network.ssid)
+                if (ssid_scan.equals(network.ssid))
                 { // SSID match
                     if (rssi_scan > bestNetworkDb)
                     { // best network
                         bestNetworkDb = rssi_scan;
-                        ESP_LOGV("WiFiSettingsService", "--> New best network SSID: %s, BSSID: " MACSTR "", ssid_scan.c_str(), MAC2STR(BSSID_scan));
+                        ESP_LOGV(SVK_TAG, "--> New best network SSID: %s, BSSID: " MACSTR "", ssid_scan.c_str(), MAC2STR(BSSID_scan));
                         network.available = true;
                         network.channel = chan_scan;
                         memcpy(network.bssid, BSSID_scan, 6);
@@ -161,32 +190,33 @@ void WiFiSettingsService::connectToWiFi()
                         network.channel = chan_scan;
                         memcpy(network.bssid, BSSID_scan, 6);
                     }
+                    break;
                 }
-                break;
             }
         }
 
         // if configured to prioritize signal strength, use the best network else use the first available network
-        if (_state.priorityBySignalStrength == false)
+        // if (_state.priorityBySignalStrength == false)
+        if (_state.staConnectionMode == (u_int8_t)STAConnectionMode::PRIORITY)
         {
             for (auto &network : _state.wifiSettings)
             {
                 if (network.available == true)
                 {
-                    ESP_LOGI("WiFiSettingsService", "Connecting to first available network: %s", network.ssid.c_str());
+                    ESP_LOGI(SVK_TAG, "Connecting to first available network: %s", network.ssid.c_str());
                     configureNetwork(network);
                     break;
                 }
             }
         }
-        else if (_state.priorityBySignalStrength == true && bestNetwork)
+        else if (_state.staConnectionMode == (u_int8_t)STAConnectionMode::STRENGTH && bestNetwork)
         {
-            ESP_LOGI("WiFiSettingsService", "Connecting to strongest network: %s, BSSID: " MACSTR " ", bestNetwork->ssid.c_str(), MAC2STR(bestNetwork->bssid));
+            ESP_LOGI(SVK_TAG, "Connecting to strongest network: %s, BSSID: " MACSTR " ", bestNetwork->ssid.c_str(), MAC2STR(bestNetwork->bssid));
             configureNetwork(*bestNetwork);
         }
         else // no suitable network to connect
         {
-            ESP_LOGI("WiFiSettingsService", "No known networks found.");
+            ESP_LOGI(SVK_TAG, "No known networks found.");
         }
 
         // delete scan results
@@ -230,6 +260,7 @@ void WiFiSettingsService::onStationModeDisconnected(WiFiEvent_t event, WiFiEvent
 {
     WiFi.disconnect(true);
 }
+
 void WiFiSettingsService::onStationModeStop(WiFiEvent_t event, WiFiEventInfo_t info)
 {
     if (_stopping)

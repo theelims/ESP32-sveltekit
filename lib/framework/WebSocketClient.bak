@@ -54,7 +54,7 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 -----END CERTIFICATE-----
 )EOF";
 
-static const char *wsTAG = "WS_Client";
+static const char *wsSVK_TAG = "WS_Client";
 
 template <class T>
 class WebSocketClient
@@ -101,7 +101,7 @@ public:
         }
         else
         {
-            ESP_LOGE(wsTAG, "Websocket client is not initialized.");
+            ESP_LOGE(wsSVK_TAG, "Websocket client is not initialized.");
         }
     }
 
@@ -132,7 +132,7 @@ public:
 
         // Register event handler
         esp_websocket_register_events(client, WEBSOCKET_EVENT_ANY, &onWSEventStatic, (void *)client);
-        ESP_LOGI(wsTAG, "Websocket Client configured to %s", websocket_cfg.uri);
+        ESP_LOGI(wsSVK_TAG, "Websocket Client configured to %s", websocket_cfg.uri);
     }
 
 protected:
@@ -162,48 +162,48 @@ protected:
         switch (event_id)
         {
         case WEBSOCKET_EVENT_DISCONNECTED:
-            ESP_LOGI(wsTAG, "WEBSOCKET_EVENT_DISCONNECTED");
+            ESP_LOGI(wsSVK_TAG, "WEBSOCKET_EVENT_DISCONNECTED");
             // mark as disconnected
             freshConnected = true;
             break;
         case WEBSOCKET_EVENT_ERROR:
-            ESP_LOGI(wsTAG, "WEBSOCKET_EVENT_ERROR");
+            ESP_LOGI(wsSVK_TAG, "WEBSOCKET_EVENT_ERROR");
             break;
         case WEBSOCKET_EVENT_DATA:
 
             esp_websocket_event_data_t *data = (esp_websocket_event_data_t *)event_data;
 
-            ESP_LOGV(wsTAG, "WEBSOCKET_EVENT_DATA");
-            ESP_LOGV(wsTAG, "Received opcode=%d", data->op_code);
+            ESP_LOGV(wsSVK_TAG, "WEBSOCKET_EVENT_DATA");
+            ESP_LOGV(wsSVK_TAG, "Received opcode=%d", data->op_code);
             if (data->op_code == 0x08 && data->data_len == 2)
             {
-                ESP_LOGW(wsTAG, "Received closed message with code=%d", 256 * data->data_ptr[0] + data->data_ptr[1]);
+                ESP_LOGW(wsSVK_TAG, "Received closed message with code=%d", 256 * data->data_ptr[0] + data->data_ptr[1]);
             }
             else
             {
                 // Filter for Text-Messages
                 if (data->op_code == 0x01)
                 {
-                    ESP_LOGV(wsTAG, "Total payload length=%d, data_len=%d, current payload offset=%d", data->payload_len, data->data_len, data->payload_offset);
-                    ESP_LOGV(wsTAG, "Received=%.*s", data->data_len, (char *)data->data_ptr);
+                    ESP_LOGV(wsSVK_TAG, "Total payload length=%d, data_len=%d, current payload offset=%d", data->payload_len, data->data_len, data->payload_offset);
+                    ESP_LOGV(wsSVK_TAG, "Received=%.*s", data->data_len, (char *)data->data_ptr);
 
                     // Copy the characters from data->data_ptr to c-string
                     char payload[_bufferSize];
                     strncpy(payload, (char *)data->data_ptr, data->data_len);
                     payload[data->data_len] = '\0';
-                    ESP_LOGV(wsTAG, "Payload=%s", payload);
+                    ESP_LOGV(wsSVK_TAG, "Payload=%s", payload);
 
                     // JsonDocument jsonDocument;
                     // DeserializationError error = deserializeJson(jsonDocument, payload);
 
-                    // ESP_LOGE(wsTAG, "deserializeJson() status: %s", error.c_str());
+                    // ESP_LOGE(wsSVK_TAG, "deserializeJson() status: %s", error.c_str());
 
                     /*                     if (!error && jsonDocument.is<JsonObject>())
                                         {
                                             JsonObject jsonObject = jsonDocument.as<JsonObject>();
                                             _statefulService->update(
                                                 jsonObject, _stateUpdater, WEB_SOCKET_CLIENT_ORIGIN);
-                                            ESP_LOGV(wsTAG, "Updated StatefulService");
+                                            ESP_LOGV(wsSVK_TAG, "Updated StatefulService");
                                         } */
                 }
             }
@@ -220,7 +220,7 @@ protected:
             // Workaround for a bug in the WEBSOCKET_EVENT_CONNECTED event handler causing a kernel panic. Revisit with ESP-IDF v5.1
             if (wsClientConnected() && freshConnected)
             {
-                ESP_LOGI(wsTAG, "Websocket Client Connected");
+                ESP_LOGI(wsSVK_TAG, "Websocket Client Connected");
                 transmitData(WEB_SOCKET_ORIGIN);
                 freshConnected = false;
             }
@@ -237,6 +237,6 @@ protected:
         String json_string;
         serializeJson(jsonDocument, json_string);
         esp_websocket_client_send_text(client, json_string.c_str(), json_string.length() + 1, portMAX_DELAY);
-        ESP_LOGI(wsTAG, "Websocket Client Transmission: %s", json_string.c_str());
+        ESP_LOGI(wsSVK_TAG, "Websocket Client Transmission: %s", json_string.c_str());
     }
 };

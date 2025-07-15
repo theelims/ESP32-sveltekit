@@ -156,8 +156,9 @@ def add_app_to_filesystem():
     for current_path, _, files in os.walk(www_path):
         for file in files:
             gzip_file(os.path.join(current_path, file))
-    print("Build LittleFS file system image and upload to ESP32")
-    env.Execute("pio run --target uploadfs")
+    if ("upload" in BUILD_TARGETS):
+        print("Build LittleFS file system image and upload to ESP32")
+        env.Execute("pio run --target uploadfs")
 
 
 print("running: build_interface.py")

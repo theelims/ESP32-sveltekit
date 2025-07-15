@@ -30,7 +30,7 @@ void FactoryResetService::begin()
                 HTTP_POST,
                 _securityManager->wrapRequest(std::bind(&FactoryResetService::handleRequest, this, _1), AuthenticationPredicates::IS_ADMIN));
 
-    ESP_LOGV("FactoryResetService", "Registered POST endpoint: %s", FACTORY_RESET_SERVICE_PATH);
+    ESP_LOGV(SVK_TAG, "Registered POST endpoint: %s", FACTORY_RESET_SERVICE_PATH);
 }
 
 esp_err_t FactoryResetService::handleRequest(PsychicRequest *request)

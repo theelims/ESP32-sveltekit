@@ -61,7 +61,7 @@ public:
                                      std::placeholders::_2));
         _server->on(_webSocketPath.c_str(), &_webSocket);
 
-        ESP_LOGV("WebSocketServer", "Registered WebSocket handler: %s", _webSocketPath.c_str());
+        ESP_LOGV(SVK_TAG, "Registered WebSocket handler: %s", _webSocketPath.c_str());
     }
 
     void onWSOpen(PsychicWebSocketClient *client)
@@ -70,21 +70,21 @@ public:
         // when a client connects, we transmit it's id and the current payload
         transmitId(client);
         transmitData(client, WEB_SOCKET_ORIGIN);
-        ESP_LOGI("WebSocketServer", "ws[%s][%u] connect", client->remoteIP().toString().c_str(), client->socket());
+        ESP_LOGI(SVK_TAG, "ws[%s][%u] connect", client->remoteIP().toString().c_str(), client->socket());
     }
 
     void onWSClose(PsychicWebSocketClient *client)
     {
-        ESP_LOGI("WebSocketServer", "ws[%s][%u] disconnect", client->remoteIP().toString().c_str(), client->socket());
+        ESP_LOGI(SVK_TAG, "ws[%s][%u] disconnect", client->remoteIP().toString().c_str(), client->socket());
     }
 
     esp_err_t onWSFrame(PsychicWebSocketRequest *request, httpd_ws_frame *frame)
     {
-        ESP_LOGV("WebSocketServer", "ws[%s][%u] opcode[%d]", request->client()->remoteIP().toString().c_str(), request->client()->socket(), frame->type);
+        ESP_LOGV(SVK_TAG, "ws[%s][%u] opcode[%d]", request->client()->remoteIP().toString().c_str(), request->client()->socket(), frame->type);
 
         if (frame->type == HTTPD_WS_TYPE_TEXT)
         {
-            ESP_LOGV("WebSocketServer", "ws[%s][%u] request: %s", request->client()->remoteIP().toString().c_str(), request->client()->socket(), (char *)frame->payload);
+            ESP_LOGV(SVK_TAG, "ws[%s][%u] request: %s", request->client()->remoteIP().toString().c_str(), request->client()->socket(), (char *)frame->payload);
 
             JsonDocument jsonDocument;
             DeserializationError error = deserializeJson(jsonDocument, (char *)frame->payload, frame->len);

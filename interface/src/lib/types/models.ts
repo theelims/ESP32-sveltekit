@@ -14,7 +14,7 @@ export type WifiStatus = {
 
 export type WifiSettings = {
 	hostname: string;
-	priority_RSSI: boolean;
+	connection_mode: number;
 	wifi_networks: KnownNetworkItem[];
 };
 
@@ -85,7 +85,9 @@ export type Analytics = {
 	max_alloc_heap: number;
 	psram_size: number;
 	free_psram: number;
+	used_psram: number;
 	free_heap: number;
+	used_heap: number;
 	total_heap: number;
 	min_free_heap: number;
 	core_temp: number;

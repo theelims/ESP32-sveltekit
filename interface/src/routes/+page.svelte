@@ -18,7 +18,11 @@
 	import StrokeStart from '~icons/tabler/arrow-move-left';
 	import { daisyColor } from '$lib/DaisyUiHelper';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	// $: console.log($environment);
 

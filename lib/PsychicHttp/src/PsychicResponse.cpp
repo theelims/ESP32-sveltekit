@@ -13,7 +13,7 @@ PsychicResponse::PsychicResponse(PsychicRequest *request) :
 
 PsychicResponse::~PsychicResponse()
 {
-  //clean up our header variables.  we have to do this since httpd_resp_send doesn't store copies
+  //clean up our header variables.  we have to do this on desctruct since httpd_resp_send doesn't store copies
   for (HTTPHeader header : _headers)
   {
     free(header.field);
@@ -24,7 +24,7 @@ PsychicResponse::~PsychicResponse()
 
 void PsychicResponse::addHeader(const char *field, const char *value)
 {
-  //these get freed during send()
+  //these get freed after send by the destructor
   HTTPHeader header;
   header.field =(char *)malloc(strlen(field)+1);
   header.value = (char *)malloc(strlen(value)+1);
@@ -64,9 +64,6 @@ void PsychicResponse::setCookie(const char *name, const char *value, unsigned lo
   //okay, add it in.
   addHeader("Set-Cookie", output.c_str());
 }
-
-  // time_t now = time(nullptr);
-  // // Set the cookie with the "expires" attribute
 
 void PsychicResponse::setCode(int code)
 {
@@ -128,6 +125,16 @@ void PsychicResponse::sendHeaders()
   //now do our individual headers
   for (HTTPHeader header : _headers)
     httpd_resp_set_hdr(this->_request->request(), header.field, header.value);
+
+  // DO NOT RELEASE HEADERS HERE... released in the PsychicResponse destructor after they have been sent.
+  // httpd_resp_set_hdr just passes on the pointer, but its needed after this call.
+  // clean up our header variables after send
+  // for (HTTPHeader header : _headers)
+  // {
+  //   free(header.field);
+  //   free(header.value);
+  // }
+  // _headers.clear();
 }
 
 esp_err_t PsychicResponse::sendChunk(uint8_t *chunk, size_t chunksize)

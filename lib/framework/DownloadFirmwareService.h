@@ -22,7 +22,7 @@
 #include <PsychicHttp.h>
 #include <SecurityManager.h>
 
-#include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 #include <HTTPUpdate.h>
 // #include <SSLCertBundle.h>
 

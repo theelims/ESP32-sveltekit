@@ -18,6 +18,7 @@ PsychicHttp is a webserver library for ESP32 + Arduino framework which uses the 
 * Websocket support with onOpen, onFrame, and onClose callbacks
 * EventSource / SSE support with onOpen, and onClose callbacks
 * Request filters, including Client vs AP mode (ON_STA_FILTER / ON_AP_FILTER)
+* TemplatePrinter class for dynamic variables at runtime
 
 ## Differences from ESPAsyncWebserver
 
@@ -558,6 +559,193 @@ redirectServer->onNotFound([](PsychicRequest *request) {
 });
 ```
 
+# TemplatePrinter
+
+**This is not specific to PsychicHttp, and it works with any `Print` object. You could for example, template data out to `File`, `Serial`, etc...**.
+
+The template engine is a `Print` interface and can be printed to directly, however,  if you are just templating a few short strings, I'd probably just use `response.printf()` instead. **Its benefit will be seen when templating large inputs such as files.**
+
+One benefit may be **templating a **JSON** file avoiding the need to use ArduinoJson.**
+
+Before closing the underlying `Print`/`Stream` that this writes to, it must be flushed as small amounts of data can be buffered. A convenience method to take care of this is shows in `example 3`.
+
+The header file is not currently added to `PsychicHttp.h` and users will have to add it manually:
+
+```C++
+#include <TemplatePrinter.h>
+```
+ 
+## Template parameter definition:
+
+- Must start and end with a preset delimiter, the default is `%`
+- Can only contain `a-z`, `A-Z`, `0-9`, and `_`
+- Maximum length of 63 characters (buffer is 64 including `null`).
+- A parameter must not be zero length (not including delimiters).
+- Spaces or any other character do not match as a parameter, and will be output as is.
+- Valid examples
+  - `%MY_PARAM%`
+  - `%SOME1%`
+- **Invalid** examples
+  - `%MY PARAM%`
+  - `%SOME1 %`
+  - `%UNFINISHED`
+  - `%%`
+
+## Template processing
+A function or lambda is used to receive the parameter replacement.
+
+```C++
+bool templateHandler(Print &output, const char *param){
+  //...
+}
+
+[](Print &output, const char *param){
+  //...
+}
+```
+
+Parameters:
+- `Print &output` - the underlying `Print`, print the results of templating to this.
+- `const char *param` - a string containing the current parameter.
+
+The handler must return a `bool`.
+- `true`: the parameter was handled, continue as normal.
+- `false`: the input detected as a parameter is not, print literal.
+
+See output in **example 1** regarding the effects of returning `true` or `false`.
+
+## Template input handler
+This is not needed unless using the static convenience function `TemplatePrinter::start()`. See **example 3**.
+
+```C++
+bool inputHandler(TemplatePrinter &printer){
+  //...
+}
+
+[](TemplatePrinter &printer){
+  //...
+}
+```
+
+Parameters:
+- `TemplatePrinter &printer` - The template engine, print your template text to this for processing.
+
+
+## Example 1 - Simple use with `PsychicStreamResponse`:
+This example highlights its most basic usage.
+
+```C++
+
+//  Function to handle parameter requests.
+
+bool templateHandler(Print &output, const char *param){
+
+  if(strcmp(param, "FREE_HEAP") == 0){
+    output.print((double)ESP.getFreeHeap() / 1024.0, 2);
+
+  }else if(strcmp(param, "MIN_FREE_HEAP") == 0){
+    output.print((double)ESP.getMinFreeHeap() / 1024.0, 2);
+
+  }else if(strcmp(param, "MAX_ALLOC_HEAP") == 0){
+    output.print((double)ESP.getMaxAllocHeap() / 1024.0, 2);
+    
+  }else if(strcmp(param, "HEAP_SIZE") == 0){
+    output.print((double)ESP.getHeapSize() / 1024.0, 2);
+  }else{
+    return false;
+  }
+  output.print("Kb");
+  return true;
+}
+
+//  Example serving a request
+server.on("/template", [](PsychicRequest *request) {
+  PsychicStreamResponse response(request, "text/plain");
+
+  response.beginSend();
+  
+  TemplatePrinter printer(response, templateHandler);
+
+  printer.println("My ESP has %FREE_HEAP% left. Its lifetime minimum heap is %MIN_FREE_HEAP%.");
+  printer.println("The maximum allocation size is %MAX_ALLOC_HEAP%, and its total size is %HEAP_SIZE%.");
+  printer.println("This is an unhandled parameter: %UNHANDLED_PARAM% and this is an invalid param %INVALID PARAM%.");
+  printer.println("This line finished with %UNFIN");
+  printer.flush();
+
+  return response.endSend();
+});   
+```
+
+The output for example looks like:
+```
+My ESP has 170.92Kb left. Its lifetime minimum heap is 169.83Kb.
+The maximum allocation size is 107.99Kb, and its total size is 284.19Kb.
+This is an unhandled parameter: %UNHANDLED_PARAM% and this is an invalid param %INVALID PARAM%.
+This line finished with %UNFIN
+```
+
+## Example 2 - Templating a file
+
+```C++
+server.on("/home", [](PsychicRequest *request) {
+  PsychicStreamResponse response(request, "text/html");
+  File file = SD.open("/www/index.html");
+
+  response.beginSend();
+
+  TemplatePrinter printer(response, templateHandler);
+
+  printer.copyFrom(file);
+  printer.flush();
+  file.close();
+
+  return response.endSend();
+}); 
+```
+
+## Example 3 - Using the `TemplatePrinter::start` method.
+This static method allows an RAII approach, allowing you to template a stream, etc... without needing a `flush()`. The function call is laid out as:
+
+```C++
+TemplatePrinter::start(host_stream, template_handler, input_handler);
+```
+
+\*these examples use the `templateHandler` function defined in example 1.
+
+### Serve a file like example 2
+```C++
+server.on("/home", [](PsychicRequest *request) {
+  PsychicStreamResponse response(request, "text/html");
+  File file = SD.open("/www/index.html");
+
+  response.beginSend();
+  TemplatePrinter::start(response, templateHandler, [&file](TemplatePrinter &printer){
+    printer.copyFrom(file);
+  });
+  file.close();
+
+  return response.endSend();
+});
+```
+
+### Template a string like example 1
+```C++
+server.on("/template2", [](PsychicRequest *request) {
+
+  PsychicStreamResponse response(request, "text/plain");
+
+  response.beginSend();
+
+  TemplatePrinter::start(response, templateHandler, [](TemplatePrinter &printer){
+    printer.println("My ESP has %FREE_HEAP% left. Its lifetime minimum heap is %MIN_FREE_HEAP%.");
+    printer.println("The maximum allocation size is %MAX_ALLOC_HEAP%, and its total size is %HEAP_SIZE%.");
+    printer.println("This is an unhandled parameter: %UNHANDLED_PARAM% and this is an invalid param %INVALID PARAM%.");
+  });
+
+  return response.endSend();
+});
+```
+
 # Performance
 
 In order to really see the differences between libraries, I created some basic benchmark firmwares for PsychicHttp, ESPAsyncWebserver, and ArduinoMongoose.  I then ran the loadtest-http.sh and loadtest-websocket.sh scripts against each firmware to get some real numbers on the performance of each server library.  All of the code and results are available in the /benchmark folder.  If you want to see the collated data and graphs, there is a [LibreOffice spreadsheet](/benchmark/comparison.ods).
@@ -589,24 +777,43 @@ ArduinoMongoose is a good alternative, although the latency issues when it gets 
 
 # Roadmap
 
-## v1.1: Event Source + Handlers
-
-* Fix all outstanding issues on Github
-* Another pass over the docs
-  * DefaultHeaders
-  
-
 ## v1.2: ESPAsyncWebserver Parity
 
-* HTTP_ANY support (by abusing httpd_req_handle_err)
-  * Issue: it would log a warning on every request (httpd_uri.c:298)
-  * Issue: req->user_ctx is not passed in. (httpd_uri.c:309)
+
+Change:
+Modify the request handling to bring initail url matching and filtering into PsychicHttpServer itself.
+
+Benefits: 
+* Fix a bug with filter() where endpoint is matched, but filter fails and it doesn't continue matching further endpoints (checks are in different codebases)
+* HTTP_ANY support
+* unlimited endpoints
+  * we would use a List to store endpoints
+  * dont have to pre-declare config.max_uri_handlers;
+* much more flexibility for future
+
+Issues
+* it would log a warning on every request as if its a 404. (httpd_uri.c:298)
+* req->user_ctx is not passed in. (httpd_uri.c:309)
+    * but... user_ctx is something we could store in the psychicendpoint data
   * Websocket support assumes an endpoint with matching url / method (httpd_uri.c:312)
+    * we could copy and bring this code into our own internal request processor
+  * would need to manually maintain more code (~100 lines?) and be more prone to esp-idf http_server updates causing problems.
+
+How to implement
+* set config.max_uri_handlers = 1;
+* possibly do not register any uri_handlers (looks like it would be fastest way to exit httpd_find_uri_handler (httpd_uri.c:94))
+  * looks like 404 is set by default, so should work.
+* modify PsychicEndpoint to store the stuff we would pass to http_server
+* create a new function handleRequest() before PsychicHttpServer::defaultNotFoundHandler to process incoming requests.
+  * bring in code from PsychicHttpServer::notFoundHandler
+  * add new code to loop over endpoints to call match and filter
+* bring code from esp-idf library
 
 * templating system
-* rewrite
 * regex url matching
+* rewrite urls?
 * What else are we missing?
+
 
 ## Longterm Wants
 

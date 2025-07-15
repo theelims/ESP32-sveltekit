@@ -17,6 +17,7 @@
 
 #include <WiFi.h>
 
+#include <ESPmDNS.h>
 #include <PsychicHttp.h>
 #include <SecurityManager.h>
 
@@ -31,9 +32,16 @@ public:
 
     static void restartNow()
     {
-        WiFi.disconnect(true);
-        delay(500);
-        ESP.restart();
+        xTaskCreate(
+            [](void *pvParams) {
+                delay(250);
+                MDNS.end();
+                delay(100);
+                WiFi.disconnect(true);
+                delay(500);
+                ESP.restart();
+            },
+            "Restart task", 4096, nullptr, 10, nullptr);
     }
 
 private:

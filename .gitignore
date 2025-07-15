@@ -11,9 +11,10 @@ node_modules
 /releases
 /src/certs
 /temp
-/build/firmware
+/build
 /lib/framework/WWWData.h
 *WWWData.h
 lib/framework/WWWData.h
 ssl_certs/cacert.pem
 /logs
+.aid

@@ -25,7 +25,7 @@ class PsychicHttpServer
 
   public:
     PsychicHttpServer();
-    ~PsychicHttpServer();
+    virtual ~PsychicHttpServer();
 
     //esp-idf specific stuff
     httpd_handle_t server;

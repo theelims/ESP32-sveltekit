@@ -7,7 +7,8 @@ PsychicHandler::PsychicHandler() :
   _password(""),
   _method(DIGEST_AUTH),
   _realm(""),
-  _authFailMsg("")
+  _authFailMsg(""),
+  _subprotocol("")
   {}
 
 PsychicHandler::~PsychicHandler() {
@@ -24,6 +25,13 @@ PsychicHandler* PsychicHandler::setFilter(PsychicRequestFilterFunction fn) {
 
 bool PsychicHandler::filter(PsychicRequest *request){
   return _filter == NULL || _filter(request);
+}
+
+void PsychicHandler::setSubprotocol(const String& subprotocol) {
+    this->_subprotocol = subprotocol;
+}
+const char* PsychicHandler::getSubprotocol() const {
+    return _subprotocol.c_str();
 }
 
 PsychicHandler* PsychicHandler::setAuthentication(const char *username, const char *password, HTTPAuthMethod method, const char *realm, const char *authFailMsg) {

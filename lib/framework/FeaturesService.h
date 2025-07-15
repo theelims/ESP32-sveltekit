@@ -20,9 +20,11 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
 #include <PsychicHttp.h>
+#include <EventSocket.h>
 #include <vector>
 
 #define FEATURES_SERVICE_PATH "/rest/features"
+#define FEATURES_SERVICE_EVENT "features"
 
 typedef struct
 {
@@ -33,7 +35,7 @@ typedef struct
 class FeaturesService
 {
 public:
-    FeaturesService(PsychicHttpServer *server);
+    FeaturesService(PsychicHttpServer *server, EventSocket *socket);
 
     void begin();
 
@@ -41,7 +43,10 @@ public:
 
 private:
     PsychicHttpServer *_server;
+    EventSocket *_socket;
     std::vector<UserFeature> userFeatures;
+
+    void createJSON(JsonObject &root);
 };
 
 #endif

@@ -34,7 +34,6 @@ size_t ChunkPrinter::write(uint8_t c)
 
 size_t ChunkPrinter::write(const uint8_t *buffer, size_t size)
 {
-  esp_err_t err;
   size_t written = 0;
   
   while (written < size)

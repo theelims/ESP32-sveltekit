@@ -13,8 +13,11 @@
 
 #include <SleepService.h>
 
-// Definition of static member variable
-void (*SleepService::_callbackSleep)() = nullptr;
+// Definition of static member variables
+std::vector<sleepCallback> SleepService::_sleepCallbacks;
+u_int64_t _wakeUpPin = WAKEUP_PIN_NUMBER;
+bool _wakeUpSignal = WAKEUP_SIGNAL;
+pinTermination _wakeUpTermination = pinTermination::FLOATING;
 
 SleepService::SleepService(PsychicHttpServer *server,
                            SecurityManager *securityManager) : _server(server),
@@ -41,7 +44,7 @@ void SleepService::begin()
                 _securityManager->wrapRequest(std::bind(&SleepService::sleep, this, std::placeholders::_1),
                                               AuthenticationPredicates::IS_AUTHENTICATED));
 
-    ESP_LOGV("SleepService", "Registered POST endpoint: %s", SLEEP_SERVICE_PATH);
+    ESP_LOGV(SVK_TAG, "Registered POST endpoint: %s", SLEEP_SERVICE_PATH);
 }
 
 esp_err_t SleepService::sleep(PsychicRequest *request)
@@ -57,12 +60,14 @@ void SleepService::sleepNow()
 #ifdef SERIAL_INFO
     Serial.println("Going into deep sleep now");
 #endif
-    ESP_LOGI("SleepService", "Going into deep sleep now");
+    ESP_LOGI(SVK_TAG, "Going into deep sleep now");
+
     // Callback for main code sleep preparation
-    if (_callbackSleep != nullptr)
+    for (auto callback : _sleepCallbacks)
     {
-        _callbackSleep();
+        callback();
     }
+
     delay(100);
 
     MDNS.end();
@@ -71,24 +76,53 @@ void SleepService::sleepNow()
     WiFi.disconnect(true);
     delay(500);
 
-    // Prepare ESP for sleep
-    uint64_t bitmask = (uint64_t)1 << (WAKEUP_PIN_NUMBER);
+    // set pin function of _wakeUpPin
+    pinMode(_wakeUpPin, INPUT);
 
-// special treatment for ESP32-C3 because of the RISC-V architecture
-#ifdef CONFIG_IDF_TARGET_ESP32C3
-    esp_deep_sleep_enable_gpio_wakeup(bitmask, (esp_deepsleep_gpio_wake_up_mode_t)WAKEUP_SIGNAL);
+    ESP_LOGD(SVK_TAG, "Enabling GPIO wakeup on pin GPIO%d with level %d\n", _wakeUpPin, _wakeUpSignal);
+    ESP_LOGD(SVK_TAG, "Current level on GPIO%d: %d\n", _wakeUpPin, digitalRead(_wakeUpPin));
+
+// special treatment for ESP32-C3 / C6 because of the RISC-V architecture
+#ifdef CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6
+    esp_deep_sleep_enable_gpio_wakeup(BIT(_wakeUpPin), (esp_deepsleep_gpio_wake_up_mode_t)_wakeUpSignal);
 #else
-    esp_sleep_enable_ext1_wakeup(bitmask, (esp_sleep_ext1_wakeup_mode_t)WAKEUP_SIGNAL);
-    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
+    esp_sleep_enable_ext1_wakeup(BIT(_wakeUpPin), (esp_sleep_ext1_wakeup_mode_t)_wakeUpSignal);
+
+    switch (_wakeUpTermination)
+    {
+    case pinTermination::PULL_DOWN:
+        esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
+        rtc_gpio_init((gpio_num_t)_wakeUpPin);
+        rtc_gpio_pullup_dis((gpio_num_t)_wakeUpPin);
+        rtc_gpio_pulldown_en((gpio_num_t)_wakeUpPin);
+        break;
+    case pinTermination::PULL_UP:
+        esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
+        rtc_gpio_init((gpio_num_t)_wakeUpPin);
+        rtc_gpio_pullup_en((gpio_num_t)_wakeUpPin);
+        rtc_gpio_pulldown_dis((gpio_num_t)_wakeUpPin);
+        break;
+    default:
+        esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO);
+    }
 #endif
 
 #ifdef SERIAL_INFO
     Serial.println("Good by!");
 #endif
 
-    // Just to be sure
-    delay(100);
+    xTaskCreate(
+        [](void *pvParams)
+        {
+            delay(100);
+            esp_deep_sleep_start();
+        },
+        "Sleep task", 4096, nullptr, 10, nullptr);
+}
 
-    // Hibernate
-    esp_deep_sleep_start();
+void SleepService::setWakeUpPin(int pin, bool level, pinTermination termination)
+{
+    _wakeUpPin = (u_int64_t)pin;
+    _wakeUpSignal = level;
+    _wakeUpTermination = termination;
 }

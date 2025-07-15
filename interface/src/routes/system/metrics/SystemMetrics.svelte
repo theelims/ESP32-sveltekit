@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
@@ -11,13 +11,16 @@
 
 	Chart.register(...registerables);
 
-	let heapChartElement: HTMLCanvasElement;
+	let heapChartElement: HTMLCanvasElement = $state();
 	let heapChart: Chart;
 
-	let filesystemChartElement: HTMLCanvasElement;
+	let psramChartElement: HTMLCanvasElement = $state();
+	let psramChart: Chart;
+
+	let filesystemChartElement: HTMLCanvasElement = $state();
 	let filesystemChart: Chart;
 
-	let temperatureChartElement: HTMLCanvasElement;
+	let temperatureChartElement: HTMLCanvasElement = $state();
 	let temperatureChart: Chart;
 
 	onMount(() => {
@@ -27,17 +30,17 @@
 				labels: $analytics.uptime,
 				datasets: [
 					{
-						label: 'Free Heap',
-						borderColor: daisyColor('--p'),
-						backgroundColor: daisyColor('--p', 50),
+						label: 'Used',
+						borderColor: daisyColor('--color-primary'),
+						backgroundColor: daisyColor('--color-primary', 50),
 						borderWidth: 2,
-						data: $analytics.free_heap,
+						data: $analytics.used_heap,
 						yAxisID: 'y'
 					},
 					{
-						label: 'Max Alloc Heap',
-						borderColor: daisyColor('--s'),
-						backgroundColor: daisyColor('--s', 50),
+						label: 'Max Alloc',
+						borderColor: daisyColor('--color-secondary'),
+						backgroundColor: daisyColor('--color-secondary', 50),
 						borderWidth: 2,
 						data: $analytics.max_alloc_heap,
 						yAxisID: 'y'
@@ -64,10 +67,10 @@
 				scales: {
 					x: {
 						grid: {
-							color: daisyColor('--bc', 10)
+							color: daisyColor('--color-base-content', 10)
 						},
 						ticks: {
-							color: daisyColor('--bc')
+							color: daisyColor('--color-base-content')
 						},
 						display: false
 					},
@@ -75,8 +78,8 @@
 						type: 'linear',
 						title: {
 							display: true,
-							text: 'Heap [kb]',
-							color: daisyColor('--bc'),
+							text: 'Memory [KB]',
+							color: daisyColor('--color-base-content'),
 							font: {
 								size: 16,
 								weight: 'bold'
@@ -84,12 +87,77 @@
 						},
 						position: 'left',
 						min: 0,
-						max: Math.round($analytics.total_heap[0]),
-						grid: { color: daisyColor('--bc', 10) },
+						max: Math.round(Math.max(...$analytics.total_heap)),
+						grid: { color: daisyColor('--color-base-content', 10) },
 						ticks: {
-							color: daisyColor('--bc')
+							color: daisyColor('--color-base-content')
 						},
-						border: { color: daisyColor('--bc', 10) }
+						border: { color: daisyColor('--color-base-content', 10) }
+					}
+				}
+			}
+		});
+		psramChart = new Chart(psramChartElement, {
+			type: 'line',
+			data: {
+				labels: $analytics.uptime,
+				datasets: [
+					{
+						label: 'Used',
+						borderColor: daisyColor('--color-primary'),
+						backgroundColor: daisyColor('--color-primary', 50),
+						borderWidth: 2,
+						data: $analytics.free_psram,
+						yAxisID: 'y'
+					}
+				]
+			},
+			options: {
+				maintainAspectRatio: false,
+				responsive: true,
+				plugins: {
+					legend: {
+						display: true
+					},
+					tooltip: {
+						mode: 'index',
+						intersect: false
+					}
+				},
+				elements: {
+					point: {
+						radius: 1
+					}
+				},
+				scales: {
+					x: {
+						grid: {
+							color: daisyColor('--color-base-content', 10)
+						},
+						ticks: {
+							color: daisyColor('--color-base-content')
+						},
+						display: false
+					},
+					y: {
+						type: 'linear',
+						title: {
+							display: true,
+							text: 'PSRAM [KB]',
+							color: daisyColor('--color-base-content'),
+							font: {
+								size: 16,
+								weight: 'bold'
+							}
+						},
+						position: 'left',
+						min: 0,
+						max: Math.round(Math.max(...$analytics.psram_size)),
+						grid: { color: daisyColor('--color-base-content', 10) },
+						ticks: {
+							color: daisyColor('--color-base-content')
+						},
+						border: { color: daisyColor('--color-base-content', 10) }
 					}
 				}
 			}
@@ -100,9 +168,9 @@
 				labels: $analytics.uptime,
 				datasets: [
 					{
-						label: 'File System Used',
-						borderColor: daisyColor('--p'),
-						backgroundColor: daisyColor('--p', 50),
+						label: 'Used',
+						borderColor: daisyColor('--color-primary'),
+						backgroundColor: daisyColor('--color-primary', 50),
 						borderWidth: 2,
 						data: $analytics.fs_used,
 						yAxisID: 'y'
@@ -129,10 +197,10 @@
 				scales: {
 					x: {
 						grid: {
-							color: daisyColor('--bc', 10)
+							color: daisyColor('--color-base-content', 10)
 						},
 						ticks: {
-							color: daisyColor('--bc')
+							color: daisyColor('--color-base-content')
 						},
 						display: false
 					},
@@ -140,8 +208,8 @@
 						type: 'linear',
 						title: {
 							display: true,
-							text: 'File System [kb]',
-							color: daisyColor('--bc'),
+							text: 'File System [KB]',
+							color: daisyColor('--color-base-content'),
 							font: {
 								size: 16,
 								weight: 'bold'
@@ -149,12 +217,12 @@
 						},
 						position: 'left',
 						min: 0,
-						max: Math.round($analytics.fs_total[0]),
-						grid: { color: daisyColor('--bc', 10) },
+						max: Math.round(Math.max(...$analytics.fs_total)),
+						grid: { color: daisyColor('--color-base-content', 10) },
 						ticks: {
-							color: daisyColor('--bc')
+							color: daisyColor('--color-base-content')
 						},
-						border: { color: daisyColor('--bc', 10) }
+						border: { color: daisyColor('--color-base-content', 10) }
 					}
 				}
 			}
@@ -166,8 +234,8 @@
 				datasets: [
 					{
 						label: 'Core Temperature',
-						borderColor: daisyColor('--p'),
-						backgroundColor: daisyColor('--p', 50),
+						borderColor: daisyColor('--color-primary'),
+						backgroundColor: daisyColor('--color-primary', 50),
 						borderWidth: 2,
 						data: $analytics.core_temp,
 						yAxisID: 'y'
@@ -194,10 +262,10 @@
 				scales: {
 					x: {
 						grid: {
-							color: daisyColor('--bc', 10)
+							color: daisyColor('--color-base-content', 10)
 						},
 						ticks: {
-							color: daisyColor('--bc')
+							color: daisyColor('--color-base-content')
 						},
 						display: false
 					},
@@ -206,7 +274,7 @@
 						title: {
 							display: true,
 							text: 'Core Temperature [°C]',
-							color: daisyColor('--bc'),
+							color: daisyColor('--color-base-content'),
 							font: {
 								size: 16,
 								weight: 'bold'
@@ -215,11 +283,11 @@
 						position: 'left',
 						suggestedMin: 20,
 						suggestedMax: 100,
-						grid: { color: daisyColor('--bc', 10) },
+						grid: { color: daisyColor('--color-base-content', 10) },
 						ticks: {
-							color: daisyColor('--bc')
+							color: daisyColor('--color-base-content')
 						},
-						border: { color: daisyColor('--bc', 10) }
+						border: { color: daisyColor('--color-base-content', 10) }
 					}
 				}
 			}
@@ -231,13 +299,22 @@
 
 	function updateData() {
 		heapChart.data.labels = $analytics.uptime;
-		heapChart.data.datasets[0].data = $analytics.free_heap;
+		heapChart.data.datasets[0].data = $analytics.used_heap;
 		heapChart.data.datasets[1].data = $analytics.max_alloc_heap;
 		heapChart.update('none');
+		heapChart.options.scales.y.max = Math.round(Math.max(...$analytics.total_heap));
+
+		if (Math.max(...$analytics.psram_size)) {
+			psramChart.data.labels = $analytics.uptime;
+			psramChart.data.datasets[0].data = $analytics.used_psram;
+			psramChart.update('none');
+			psramChart.options.scales.y.max = Math.round(Math.max(...$analytics.psram_size));
+		}
 
 		filesystemChart.data.labels = $analytics.uptime;
 		filesystemChart.data.datasets[0].data = $analytics.fs_used;
 		filesystemChart.update('none');
+		filesystemChart.options.scales.y.max = Math.round(Math.max(...$analytics.fs_total));
 
 		temperatureChart.data.labels = $analytics.uptime;
 		temperatureChart.data.datasets[0].data = $analytics.core_temp;
@@ -273,15 +350,37 @@
 </script>
 
 <SettingsCard collapsible={false}>
-	<Metrics slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">System Metrics</span>
+	{#snippet icon()}
+		<Metrics class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+	{/snippet}
+	{#snippet title()}
+		<span>System Metrics</span>
+	{/snippet}
 
 	<div class="w-full overflow-x-auto">
 		<div
 			class="flex w-full flex-col space-y-1 h-60"
 			transition:slide|local={{ duration: 300, easing: cubicOut }}
 		>
-			<canvas bind:this={heapChartElement} />
+			<canvas bind:this={heapChartElement}></canvas>
+		</div>
+	</div>
+	{#if Math.max(...$analytics.psram_size)}
+		<div class="w-full overflow-x-auto">
+			<div
+				class="flex w-full flex-col space-y-1 h-60"
+				transition:slide|local={{ duration: 300, easing: cubicOut }}
+			>
+				<canvas bind:this={psramChartElement}></canvas>
+			</div>
+		</div>
+	{/if}
+	<div class="w-full overflow-x-auto">
+		<div
+			class="flex w-full flex-col space-y-1 h-52"
+			transition:slide|local={{ duration: 300, easing: cubicOut }}
+		>
+			<canvas bind:this={filesystemChartElement}></canvas>
 		</div>
 	</div>
 	<div class="w-full overflow-x-auto">
@@ -289,15 +388,7 @@
 			class="flex w-full flex-col space-y-1 h-52"
 			transition:slide|local={{ duration: 300, easing: cubicOut }}
 		>
-			<canvas bind:this={filesystemChartElement} />
-		</div>
-	</div>
-	<div class="w-full overflow-x-auto">
-		<div
-			class="flex w-full flex-col space-y-1 h-52"
-			transition:slide|local={{ duration: 300, easing: cubicOut }}
-		>
-			<canvas bind:this={temperatureChartElement} />
+			<canvas bind:this={temperatureChartElement}></canvas>
 		</div>
 	</div>
 </SettingsCard>

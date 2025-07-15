@@ -39,7 +39,7 @@ void UploadFirmwareService::begin()
     uploadHandler->onClose(std::bind(&UploadFirmwareService::handleEarlyDisconnect, this)); // gets called if client disconnects
     _server->on(UPLOAD_FIRMWARE_PATH, HTTP_POST, uploadHandler);
 
-    ESP_LOGV("UploadFirmwareService", "Registered POST endpoint: %s", UPLOAD_FIRMWARE_PATH);
+    ESP_LOGV(SVK_TAG, "Registered POST endpoint: %s", UPLOAD_FIRMWARE_PATH);
 }
 
 esp_err_t UploadFirmwareService::handleUpload(PsychicRequest *request,

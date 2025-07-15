@@ -18,6 +18,8 @@
 
 #include <PsychicHttp.h>
 #include <SecurityManager.h>
+#include "driver/rtc_io.h"
+#include <vector>
 
 #define SLEEP_SERVICE_PATH "/rest/sleep"
 
@@ -29,6 +31,16 @@
 #define WAKEUP_SIGNAL 0
 #endif
 
+enum class pinTermination
+{
+    FLOATING,
+    PULL_UP,
+    PULL_DOWN
+};
+
+// typdef for sleep service callback
+typedef std::function<void()> sleepCallback;
+
 class SleepService
 {
 public:
@@ -38,10 +50,12 @@ public:
 
     static void sleepNow();
 
-    void attachOnSleepCallback(void (*callbackSleep)())
+    void attachOnSleepCallback(sleepCallback callbackSleep)
     {
-        _callbackSleep = callbackSleep;
+        _sleepCallbacks.push_back(callbackSleep);
     }
+
+    void setWakeUpPin(int pin, bool level, pinTermination termination = pinTermination::FLOATING);
 
 private:
     PsychicHttpServer *_server;
@@ -49,5 +63,5 @@ private:
     esp_err_t sleep(PsychicRequest *request);
 
 protected:
-    static void (*_callbackSleep)();
+    static std::vector<sleepCallback> _sleepCallbacks;
 };

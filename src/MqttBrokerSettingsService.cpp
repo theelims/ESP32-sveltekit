@@ -23,10 +23,23 @@ MqttBrokerSettingsService::MqttBrokerSettingsService(PsychicHttpServer *server, 
                                                                                                                                           AuthenticationPredicates::IS_AUTHENTICATED),
                                                                                                                             _fsPersistence(MqttBrokerSettings::read, MqttBrokerSettings::update, this, fs, MQTT_BROKER_SETTINGS_FILE)
 {
+    // configure settings service update handler to update LED state
+    addUpdateHandler([&](const String &originId)
+                     { onConfigUpdated(); },
+                     false);
 }
 
 void MqttBrokerSettingsService::begin()
 {
     _httpEndpoint.begin();
     _fsPersistence.readFromFS();
+}
+
+void LightMqttSettingsService::onConfigUpdated()
+{
+    // Notify the MQTT client about the updated configuration
+    _mqttSettingsService->setStatusTopic(_state.stateTopic);
+
+    // Optionally, you can also log or handle the updated configuration here
+    ESP_LOGI(LIGHT_TAG, "MQTT Configuration updated");
 }

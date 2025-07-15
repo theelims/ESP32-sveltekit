@@ -5,7 +5,7 @@
 	import InputPassword from '$lib/components/InputPassword.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import { user } from '$lib/stores/user';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { notifications } from '$lib/components/toasts/notifications';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import Collapsible from '$lib/components/Collapsible.svelte';
@@ -13,17 +13,17 @@
 	import Client from '~icons/tabler/robot';
 	import type { MQTTSettings, MQTTStatus } from '$lib/types/models';
 
-	let mqttSettings: MQTTSettings;
-	let mqttStatus: MQTTStatus;
+	let mqttSettings: MQTTSettings = $state();
+	let mqttStatus: MQTTStatus = $state();
 
-	let formField: any;
+	let formField: any = $state();
 
 	async function getMQTTStatus() {
 		try {
 			const response = await fetch('/rest/mqttStatus', {
 				method: 'GET',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
@@ -39,7 +39,7 @@
 			const response = await fetch('/rest/mqttSettings', {
 				method: 'GET',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
@@ -57,24 +57,24 @@
 	onDestroy(() => clearInterval(interval));
 
 	onMount(() => {
-		if (!$page.data.features.security || $user.admin) {
+		if (!page.data.features.security || $user.admin) {
 			getMQTTSettings();
 		}
 	});
 
-	let formErrors = {
+	let formErrors = $state({
 		host: false,
 		port: false,
 		keep_alive: false,
 		topic_length: false
-	};
+	});
 
 	async function postMQTTSettings(data: MQTTSettings) {
 		try {
 			const response = await fetch('/rest/mqttSettings', {
 				method: 'POST',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(data)
@@ -120,12 +120,23 @@
 			//alert('Form Valid');
 		}
 	}
+
+	function preventDefault(fn) {
+		return function (event) {
+			event.preventDefault();
+			fn.call(this, event);
+		};
+	}
 </script>
 
 <SettingsCard collapsible={false}>
-	<MQTT slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">MQTT</span>
-	<div class="w-full overflow-x-auto">
+	{#snippet icon()}
+		<MQTT class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+	{/snippet}
+	{#snippet title()}
+		<span>MQTT</span>
+	{/snippet}
+	<div class="w-full">
 		{#await getMQTTStatus()}
 			<Spinner />
 		{:then nothing}
@@ -174,30 +185,36 @@
 		{/await}
 	</div>
 
-	{#if !$page.data.features.security || $user.admin}
-		<Collapsible open={false} class="shadow-lg" on:closed={getMQTTSettings}>
-			<span slot="title">Change MQTT Settings</span>
+	{#if !page.data.features.security || $user.admin}
+		<Collapsible open={false} class="shadow-lg" icon={null} opened={() => {}} closed={() => {}}>
+			{#snippet title()}
+				<span>Change MQTT Settings</span>
+			{/snippet}
 
-			<form on:submit|preventDefault={handleSubmitMQTT} novalidate bind:this={formField}>
-				<div class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2">
+			<form
+				onsubmit={preventDefault(handleSubmitMQTT)}
+				novalidate
+				bind:this={formField}
+				class="fieldset"
+			>
+				<div class="grid w-full grid-cols-1 content-center gap-x-4 gap-y-2 sm:grid-cols-2">
 					<!-- Enable -->
-					<label class="label inline-flex cursor-pointer content-end justify-start gap-4">
+					<label class="label inline-flex cursor-pointer content-end justify-start gap-4 text-base">
 						<input
 							type="checkbox"
 							bind:checked={mqttSettings.enabled}
 							class="checkbox checkbox-primary"
 						/>
-						<span>Enable MQTT</span>
+						Enable MQTT
 					</label>
-					<div class="hidden sm:block" />
+
+					<div class="hidden sm:block"></div>
 					<!-- URI -->
 					<div class="sm:col-span-2">
-						<label class="label" for="host">
-							<span class="label-text text-md">URI</span>
-						</label>
+						<label class="label" for="host">URI</label>
 						<input
 							type="text"
-							class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.host
+							class="input w-full invalid:border-error invalid:border-2 {formErrors.host
 								? 'border-error border-2'
 								: ''}"
 							bind:value={mqttSettings.uri}
@@ -207,79 +224,68 @@
 							required
 						/>
 						<label class="label" for="host">
-							<span class="label-text-alt text-error {formErrors.host ? '' : 'hidden'}"
-								>Must be a valid URI</span
-							>
+							<span class=" text-error {formErrors.host ? '' : 'hidden'}">Must be a valid URI</span>
 						</label>
 					</div>
 					<!-- Username -->
 					<div>
-						<label class="label" for="user">
-							<span class="label-text text-md">Username</span>
-						</label>
-						<input
-							type="text"
-							class="input input-bordered w-full"
-							bind:value={mqttSettings.username}
-							id="user"
-						/>
+						<label class="label" for="user">Username </label>
+						<input type="text" class="input w-full" bind:value={mqttSettings.username} id="user" />
 					</div>
 					<!-- Password -->
 					<div>
-						<label class="label" for="pwd">
-							<span class="label-text text-md">Password</span>
-						</label>
+						<label class="label" for="pwd">Password </label>
 						<InputPassword bind:value={mqttSettings.password} id="pwd" />
 					</div>
 					<!-- Client ID -->
 					<div>
-						<label class="label" for="clientid">
-							<span class="label-text text-md">Client ID</span>
-						</label>
+						<label class="label" for="clientid">Client ID </label>
 						<input
 							type="text"
-							class="input input-bordered w-full"
+							class="input w-full"
 							bind:value={mqttSettings.client_id}
 							id="clientid"
 						/>
 					</div>
 					<!-- Keep Alive -->
 					<div>
-						<label class="label" for="keepalive">
-							<span class="label-text text-md">Keep Alive</span>
-						</label>
-						<label for="keepalive" class="input-group">
+						<label class="label" for="keepalive">Keep Alive </label>
+						<label
+							for="keepalive"
+							class="input w-full invalid:border-error invalid:border-2 {formErrors.keep_alive
+								? 'border-error border-2'
+								: ''}"
+						>
 							<input
 								type="number"
 								min="1"
 								max="600"
-								class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.keep_alive
-									? 'border-error border-2'
-									: ''}"
+								class=""
 								bind:value={mqttSettings.keep_alive}
 								id="keepalive"
 								required
 							/>
-							<span>Seconds</span>
+							<span class="label">Seconds</span>
 						</label>
-						<label for="keepalive" class="label"
-							><span class="label-text-alt text-error {formErrors.keep_alive ? '' : 'hidden'}"
+						<label for="keepalive" class=""
+							><span class=" text-error {formErrors.keep_alive ? '' : 'hidden'}"
 								>Must be between 1 and 600 seconds</span
 							></label
 						>
 					</div>
 					<!-- Clean Session -->
-					<label class="label inline-flex cursor-pointer content-end justify-start gap-4">
+					<label
+						class="label inline-flex cursor-pointer content-end justify-start gap-4 text-base mt-2"
+					>
 						<input
 							type="checkbox"
 							bind:checked={mqttSettings.clean_session}
 							class="checkbox checkbox-primary"
-						/>
-						<span class="">Clean Session?</span>
+						/>Clean Session?
 					</label>
 				</div>
-				<div class="divider mb-2 mt-0" />
-				<div class="mx-4 flex flex-wrap justify-end gap-2">
+				<div class="divider mb-2 mt-0"></div>
+				<div class="flex flex-wrap justify-end gap-2">
 					<button class="btn btn-primary" type="submit">Apply Settings</button>
 				</div>
 			</form>

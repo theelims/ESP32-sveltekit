@@ -39,7 +39,7 @@ void AuthenticationService::begin()
         }
         return request->reply(401); });
 
-    ESP_LOGV("AuthenticationService", "Registered POST endpoint: %s", SIGN_IN_PATH);
+    ESP_LOGV(SVK_TAG, "Registered POST endpoint: %s", SIGN_IN_PATH);
 
     // Verifies that the request supplied a valid JWT
     _server->on(VERIFY_AUTHORIZATION_PATH, HTTP_GET, [this](PsychicRequest *request)
@@ -47,7 +47,7 @@ void AuthenticationService::begin()
         Authentication authentication = _securityManager->authenticateRequest(request);
         return request->reply(authentication.authenticated ? 200 : 401); });
 
-    ESP_LOGV("AuthenticationService", "Registered GET endpoint: %s", VERIFY_AUTHORIZATION_PATH);
+    ESP_LOGV(SVK_TAG, "Registered GET endpoint: %s", VERIFY_AUTHORIZATION_PATH);
 }
 
 #endif // end FT_ENABLED(FT_SECURITY)

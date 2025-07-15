@@ -2,12 +2,12 @@
 	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { openModal, closeModal } from 'svelte-modals';
+	import { modals } from 'svelte-modals';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import { user } from '$lib/stores/user';
 	import type { userProfile } from '$lib/stores/user';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { notifications } from '$lib/components/toasts/notifications';
 	import InputPassword from '$lib/components/InputPassword.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
@@ -23,7 +23,11 @@
 	import Cancel from '~icons/tabler/x';
 	import Check from '~icons/tabler/check';
 
-	export let data: PageData;
+	interface Props {
+		data: PageData;
+	}
+
+	let { data }: Props = $props();
 
 	type userSetting = {
 		username: string;
@@ -36,14 +40,14 @@
 		users: userSetting[];
 	};
 
-	let securitySettings: SecuritySettings;
+	let securitySettings: SecuritySettings = $state();
 
 	async function getSecuritySettings() {
 		try {
 			const response = await fetch('/rest/securitySettings', {
 				method: 'GET',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
@@ -59,7 +63,7 @@
 			const response = await fetch('/rest/securitySettings', {
 				method: 'POST',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(data)
@@ -99,7 +103,7 @@
 	}
 
 	function confirmDelete(index: number) {
-		openModal(ConfirmDialog, {
+		modals.open(ConfirmDialog, {
 			title: 'Confirm Delete User',
 			message:
 				'Are you sure you want to delete the user "' +
@@ -112,30 +116,30 @@
 			onConfirm: () => {
 				securitySettings.users.splice(index, 1);
 				securitySettings = securitySettings;
-				closeModal();
+				modals.close();
 				postSecuritySettings(securitySettings);
 			}
 		});
 	}
 
 	function handleEdit(index: number) {
-		openModal(EditUser, {
+		modals.open(EditUser, {
 			title: 'Edit User',
 			user: { ...securitySettings.users[index] }, // Shallow Copy
 			onSaveUser: (editedUser: userSetting) => {
 				securitySettings.users[index] = editedUser;
-				closeModal();
+				modals.close();
 				postSecuritySettings(securitySettings);
 			}
 		});
 	}
 
 	function handleNewUser() {
-		openModal(EditUser, {
+		modals.open(EditUser, {
 			title: 'Add User',
 			onSaveUser: (newUser: userSetting) => {
 				securitySettings.users = [...securitySettings.users, newUser];
-				closeModal();
+				modals.close();
 				postSecuritySettings(securitySettings);
 			}
 		});
@@ -149,15 +153,19 @@
      sm:mx-8 sm:my-8"
 	>
 		<SettingsCard collapsible={false}>
-			<Users slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-			<span slot="title">Manage Users</span>
+			{#snippet icon()}
+				<Users class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+			{/snippet}
+			{#snippet title()}
+				<span>Manage Users</span>
+			{/snippet}
 			{#await getSecuritySettings()}
 				<Spinner />
 			{:then nothing}
 				<div class="relative w-full overflow-visible">
 					<button
 						class="btn btn-primary text-primary-content btn-md absolute -top-14 right-0"
-						on:click={handleNewUser}
+						onclick={handleNewUser}
 					>
 						<AddUser class="h-6 w-6" /></button
 					>
@@ -184,13 +192,13 @@
 											<span class="my-auto inline-flex flex-row space-x-2">
 												<button
 													class="btn btn-ghost btn-circle btn-xs"
-													on:click={() => handleEdit(index)}
+													onclick={() => handleEdit(index)}
 												>
 													<Edit class="h-6 w-6" /></button
 												>
 												<button
 													class="btn btn-ghost btn-circle btn-xs"
-													on:click={() => confirmDelete(index)}
+													onclick={() => confirmDelete(index)}
 												>
 													<Delete class="text-error h-6 w-6" />
 												</button>
@@ -202,22 +210,20 @@
 						</table>
 					</div>
 				</div>
-				<div class="divider mb-0" />
+				<div class="divider mb-0"></div>
 
 				<span class="pb-2 text-xl font-medium">Security Settings</span>
 				<div class="alert alert-warning shadow-lg">
-					<Warning class="h-6 w-6 flex-shrink-0" />
+					<Warning class="h-6 w-6 shrink-0" />
 					<span
 						>The JWT secret is used to sign authentication tokens. If you modify the JWT Secret, all
 						users will be signed out.</span
 					>
 				</div>
-				<label class="label" for="secret">
-					<span class="label-text text-md">JWT Secret</span>
-				</label>
+				<label class="label" for="secret">JWT Secret</label>
 				<InputPassword bind:value={securitySettings.jwt_secret} id="secret" />
 				<div class="mt-6 flex justify-end">
-					<button class="btn btn-primary" on:click={() => postSecuritySettings(securitySettings)}
+					<button class="btn btn-primary" onclick={() => postSecuritySettings(securitySettings)}
 						>Apply Settings</button
 					>
 				</div>
