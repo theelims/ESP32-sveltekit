@@ -210,6 +210,8 @@ void MqttSettingsService::configureMqtt()
         _mqttClient.setWill(_retainedWillTopic, 1, true, _retainedWillPayload);
         _mqttClient.setCleanSession(_state.cleanSession);
         _mqttClient.connect();
+
+        MqttCommitHandler::setTimerInterval(_state.messageIntervalMs);
     }
 }
 
@@ -237,6 +239,9 @@ String MqttSettingsService::getStatusTopic()
 
 void MqttSettingsService::disconnect()
 {
+    // disable MQTT message commit timer, if disconnected
+    MqttCommitHandler::setTimerInterval(0);
+
     // disconnect if currently connected
     if (_mqttClient.connected())
     {

@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
 - Expands menu on selected subitem [#77](https://github.com/theelims/ESP32-sveltekit/pull/77)
 - Refactor System Status and Metrics, added PSRAM [#79](https://github.com/theelims/ESP32-sveltekit/pull/79)
 - Add /rest/coreDump endpoint [#87](https://github.com/theelims/ESP32-sveltekit/pull/87)
+- Rate limiting for MQTT publish messages. Can be configured as factory setting or at runtime. `0` will disable the rate limiting.
 - Added build flag `-D TELEPLOT_TASKS` to plot task heap high water mark with teleplot. You can include this in your tasks as well:
 
 ```cpp

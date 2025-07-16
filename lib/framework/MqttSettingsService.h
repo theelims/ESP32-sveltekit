@@ -21,6 +21,7 @@
 #include <PsychicMqttClient.h>
 #include <SettingValue.h>
 #include <WiFi.h>
+#include <MqttEndpoint.h>
 
 #ifndef FACTORY_MQTT_ENABLED
 #define FACTORY_MQTT_ENABLED false
@@ -62,6 +63,10 @@
 #define FACTORY_MQTT_MAX_TOPIC_LENGTH 128
 #endif
 
+#ifndef FACTORY_MQTT_MIN_MESSAGE_INTERVAL_MS
+#define FACTORY_MQTT_MIN_MESSAGE_INTERVAL_MS 500
+#endif
+
 #define MQTT_SETTINGS_FILE "/config/mqttSettings.json"
 #define MQTT_SETTINGS_SERVICE_PATH "/rest/mqttSettings"
 
@@ -85,6 +90,9 @@ public:
     uint16_t keepAlive;
     bool cleanSession;
 
+    // Publish rate limiting
+    uint32_t messageIntervalMs;
+
     static void
     read(MqttSettings &settings, JsonObject &root)
     {
@@ -95,6 +103,7 @@ public:
         root["client_id"] = settings.clientId;
         root["keep_alive"] = settings.keepAlive;
         root["clean_session"] = settings.cleanSession;
+        root["message_interval_ms"] = settings.messageIntervalMs;
     }
 
     static StateUpdateResult update(JsonObject &root, MqttSettings &settings)
@@ -106,6 +115,7 @@ public:
         settings.clientId = root["client_id"] | SettingValue::format(FACTORY_MQTT_CLIENT_ID);
         settings.keepAlive = root["keep_alive"] | FACTORY_MQTT_KEEP_ALIVE;
         settings.cleanSession = root["clean_session"] | FACTORY_MQTT_CLEAN_SESSION;
+        settings.messageIntervalMs = root["message_interval_ms"] | FACTORY_MQTT_MIN_MESSAGE_INTERVAL_MS;
         return StateUpdateResult::CHANGED;
     }
 };

@@ -146,4 +146,5 @@ export type MQTTSettings = {
 	client_id: string;
 	keep_alive: number;
 	clean_session: boolean;
+	message_interval_ms: number;
 };
