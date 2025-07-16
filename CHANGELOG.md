@@ -61,6 +61,10 @@ All notable changes to this project will be documented in this file.
 - Fixed mixup pull up and pull down when configuring wake up pin in SleepService.cpp
 - Wifi: Multiple edits bug resolved [#79](https://github.com/theelims/ESP32-sveltekit/pull/79)
 
+### Removed
+
+- Removed async workers in PsychicHttp, as these were not used, but caused linker errors.
+
 ### Migration Guide
 
 #### PIO Arduino & ESP-IDF 5
