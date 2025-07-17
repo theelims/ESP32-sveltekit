@@ -86,12 +86,14 @@ public:
                  PsychicMqttClient *mqttClient,
                  const String &pubTopic = "",
                  const String &subTopic = "",
+                 int QoS = 0,
                  bool retain = false) : _stateReader(stateReader),
                                         _stateUpdater(stateUpdater),
                                         _statefulService(statefulService),
                                         _mqttClient(mqttClient),
                                         _pubTopic(pubTopic),
                                         _subTopic(subTopic),
+                                        _qos(QoS),
                                         _retain(retain),
                                         _pendingCommit(false)
 
@@ -162,7 +164,7 @@ public:
             serializeJson(json, payload);
 
             // publish the payload
-            _mqttClient->publish(_pubTopic.c_str(), 0, _retain, payload.c_str(), 0, false);
+            _mqttClient->publish(_pubTopic.c_str(), _qos, _retain, payload.c_str(), 0, false);
         }
         _pendingCommit = false;
     }
@@ -188,6 +190,7 @@ protected:
     JsonStateReader<T> _stateReader;
     String _subTopic;
     String _pubTopic;
+    int _qos;
     bool _retain;
     bool _pendingCommit;
 
