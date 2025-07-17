@@ -162,7 +162,7 @@ public:
             serializeJson(json, payload);
 
             // publish the payload
-            _mqttClient->publish(_pubTopic.c_str(), 1, _retain, payload.c_str());
+            _mqttClient->publish(_pubTopic.c_str(), 0, _retain, payload.c_str(), 0, false);
         }
         _pendingCommit = false;
     }
