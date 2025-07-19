@@ -25,21 +25,17 @@ The main control API to control LUST-motion. Starts and stops the motion, change
 | ------ | ------------- | ------------------ |
 | GET    | /rest/control | `NONE_REQUIRED`    |
 | POST   | /rest/control | `NONE_REQUIRED`    |
-| WS     | /ws/control   | `NONE_REQUIRED`    |
 | EVENT  | `control`     | `IS_AUTHENTICATED` |
 | MQTT   | -             | N/A                |
 
-| Parameter           | Type    | Range            | Info                                                                                                                   | Failure Mode         |
-| ------------------- | ------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| command             | string  | {command}        | Controls the machine like start a pattern, activate streaming or stop it. Commands are not case sensitive              | STOP                 |
-| depth               | number  | 0.0 - `travel`   | maximum depth of the motion                                                                                            | truncated into range |
-| stroke              | number  | 0.0 - `travel`   | length of the stroke                                                                                                   | truncated into range |
-| rate                | number  | 0.0 - `max_rate` | rate in strokes per minute                                                                                             | truncated into range |
-| sensation           | number  | -100.0 - +100.0  | affects the feeling of a pattern                                                                                       | truncated into range |
-| pattern             | string  | -                | name of a pattern in the pattern array returned by [StrokeEngine Environment API](#strokeengine-environment-read-only) | ignored              |
-| vibration_override  | boolean | true / false     | overrides the vibration overlay with these parameters. Vibration commands from pattern or streaming will be ignored    | false                |
-| vibration_amplitude | number  | 0.0 - 5.0        | amplitude of a vibration overlay, 0.0 == off                                                                           | truncated into range |
-| vibration_frequency | number  | 10.0 - 50.0      | frequency in HZ of the vibration overlay                                                                               | truncated into range |
+| Parameter | Type   | Range            | Info                                                                                                                   | Failure Mode         |
+| --------- | ------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| command   | string | {command}        | Controls the machine like start a pattern, activate streaming or stop it. Commands are not case sensitive              | STOP                 |
+| depth     | number | 0.0 - `travel`   | maximum depth of the motion                                                                                            | truncated into range |
+| stroke    | number | 0.0 - `travel`   | length of the stroke                                                                                                   | truncated into range |
+| rate      | number | 0.0 - `max_rate` | rate in strokes per minute                                                                                             | truncated into range |
+| sensation | number | -100.0 - +100.0  | affects the feeling of a pattern                                                                                       | truncated into range |
+| pattern   | string | -                | name of a pattern in the pattern array returned by [StrokeEngine Environment API](#strokeengine-environment-read-only) | ignored              |
 
 |    Command    | Description                                                                                                                                                                                |
 | :-----------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -59,10 +55,7 @@ The main control API to control LUST-motion. Starts and stops the motion, change
     "stroke": 80.5,
     "rate": 30.0,
     "sensation": 0.0,
-    "pattern": "Deeper",
-    "vibration_override": false,
-    "vibration_amplitude": 0.0,
-    "vibration_frequency": 25.0
+    "pattern": "Deeper"
 }
 ```
 
@@ -178,8 +171,6 @@ Instead of pattern the motion commands can be provided via this streaming interf
 | Method | URL             | Authentication  |
 | ------ | --------------- | --------------- |
 | POST   | /rest/streaming | `NONE_REQUIRED` |
-| WS     | /ws/streaming   | `NONE_REQUIRED` |
-| MQTT   | -               | N/A             |
 
 | Parameter | Type   | Range     | Info                                                                                       | Failure Mode         |
 | --------- | ------ | --------- | ------------------------------------------------------------------------------------------ | -------------------- |
@@ -206,27 +197,27 @@ This REST endpoint configures the motor driver and important parameters during r
 | GET    | /rest/motorConfig | `IS_ADMIN`     |
 | POST   | /rest/motorConfig | `IS_ADMIN`     |
 
-| Parameter          | Type             | Info                                                                                                               |
-| ------------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------ |
-| driver             | string           | must match one of the available motor drivers `VIRTUAL`, `GENERIC_STEPPER`, `OSSM_REF_BOARD_V2` or `IHSV_SERVO_V6` |
-| driver_list        | array of strings | A list of all available motor drivers for this particular build / board                                            |
-| steps_per_rev      | number           | How many steps the motor turns per revolution                                                                      |
-| max_rpm            | number           | Maximum RPM of the motor                                                                                           |
-| max_acceleration   | number           | Maximum acceleration in [mm/s²]                                                                                    |
-| pulley_teeth       | number           | Number of teeth on the pulley assuming a GT2 belt                                                                  |
-| invert_direction   | boolean          | can be used to change the direction of the machine                                                                 |
-| measure_travel     | boolean          | if set to `true` will initiate a measurement, if it is within the capabilities of the driver                       |
-| home               | boolean          | if set to `true` it will initiate a homing cycle                                                                   |
-| travel             | number           | The mechanical travel from one endstop to the other                                                                |
-| keepout            | number           | Soft endstop distance from hard endstop away. In mm on both sides                                                  |
-| sensorless_trigger | number           | Trigger value for sensorless homing in % of rated torque or rated current                                          |
+| Parameter          | Type             | Info                                                                                            |
+| ------------------ | ---------------- | ----------------------------------------------------------------------------------------------- |
+| driver             | string           | must match one of the available motor drivers `VIRTUAL`, `GENERIC_STEPPER`, `OSSM_REF_BOARD_V2` |
+| driver_list        | array of strings | A list of all available motor drivers for this particular build / board                         |
+| steps_per_rev      | number           | How many steps the motor turns per revolution                                                   |
+| max_rpm            | number           | Maximum RPM of the motor                                                                        |
+| max_acceleration   | number           | Maximum acceleration in [mm/s²]                                                                 |
+| pulley_teeth       | number           | Number of teeth on the pulley assuming a GT2 belt                                               |
+| invert_direction   | boolean          | can be used to change the direction of the machine                                              |
+| measure_travel     | boolean          | if set to `true` will initiate a measurement, if it is within the capabilities of the driver    |
+| home               | boolean          | if set to `true` it will initiate a homing cycle                                                |
+| travel             | number           | The mechanical travel from one endstop to the other                                             |
+| keepout            | number           | Soft endstop distance from hard endstop away. In mm on both sides                               |
+| sensorless_trigger | number           | Trigger value for sensorless homing in % of rated torque or rated current                       |
 
 #### JSON
 
 ```JSON
 {
-    "driver": "IHSV_SERVO_V6",
-    "driver_list": ["VIRTUAL", "GENERIC_STEPPER", "OSSM_REF_BOARD_V2", "IHSV_SERVO_V6"],
+    "driver": "OSSM_REF_BOARD_V2",
+    "driver_list": ["VIRTUAL", "GENERIC_STEPPER", "OSSM_REF_BOARD_V2"],
     "steps_per_rev": 2000,
     "max_rpm": 3000,
     "max_acceleration": 100000,
@@ -240,9 +231,9 @@ This REST endpoint configures the motor driver and important parameters during r
 }
 ```
 
-## Websocket Raw Data Streaming
+## Raw Data Streaming
 
-> Defined in `WebSocketRawDataStreaming.h`
+> Defined in `RawDataStreaming.h`
 
 A constant stream of position, velocity and other parameters are available through the event socket. These contain an array of several data points for a given time slot. Typically 5 data points are aggregated into one message to reduce the message rate. This can be used as a direct user feedback of what is happening with the machine.
 
