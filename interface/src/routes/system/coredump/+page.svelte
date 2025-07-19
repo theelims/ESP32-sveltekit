@@ -6,8 +6,8 @@
 	import CoreDump from '~icons/tabler/bug';
 	import Info from '~icons/tabler/info-circle';
 
-	let coreDumpBlob: Blob | null = null;
-	let errorMessage: string | null = null;
+	let coreDumpBlob: Blob | null = $state(null);
+	let errorMessage: string | null = $state(null);
 
 	onMount(async () => {
 		try {
@@ -61,7 +61,7 @@
 			>
 		</div>
 		{#if coreDumpBlob}
-			<button class="btn btn-primary mt-4" on:click={downloadCoreDump}>
+			<button class="btn btn-primary mt-4" onclick={downloadCoreDump}>
 				Download Core Dump (coredump.bin)
 			</button>
 		{:else if errorMessage}

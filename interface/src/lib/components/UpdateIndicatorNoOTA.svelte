@@ -6,10 +6,14 @@
 	import { compareVersions } from 'compare-versions';
 	import { onMount } from 'svelte';
 
-	export let update = false;
+	interface Props {
+		update?: boolean;
+	}
 
-	let firmwareVersion: string;
-	let firmwareTagLink: string;
+	let { update = $bindable(false) }: Props = $props();
+
+	let firmwareVersion: string = $state();
+	let firmwareTagLink: string = $state();
 
 	async function getGithubAPI() {
 		try {

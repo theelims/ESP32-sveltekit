@@ -2,7 +2,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { openModal, closeModal } from 'svelte-modals';
 	import { user } from '$lib/stores/user';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { notifications } from '$lib/components/toasts/notifications';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
@@ -33,7 +33,7 @@
 		sensorless_trigger: number;
 	};
 
-	let motorConfig: MotorConfig = {
+	let motorConfig: MotorConfig = $state({
 		driver: 'VIRTUAL',
 		driver_list: [],
 		steps_per_rev: 0,
@@ -46,14 +46,14 @@
 		travel: 0,
 		keepout: 0,
 		sensorless_trigger: 0
-	};
+	});
 
 	async function getMotorConfig() {
 		try {
 			const response = await fetch('/rest/motorConfig', {
 				method: 'GET',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
@@ -70,7 +70,7 @@
 			const response = await fetch('/rest/motorConfig', {
 				method: 'POST',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(motorConfig)
@@ -87,9 +87,9 @@
 		}
 	}
 
-	let formField: any;
+	let formField: any = $state();
 
-	let formErrors = {
+	let formErrors = $state({
 		steps_per_rev: false,
 		max_rpm: false,
 		pulley_teeth: false,
@@ -97,7 +97,7 @@
 		travel: false,
 		keepout: false,
 		sensorless_trigger: false
-	};
+	});
 
 	function handleSubmitMotorConfig() {
 		let valid = true;
@@ -226,18 +226,29 @@
 			}
 		});
 	}
+
+	function preventDefault(fn) {
+		return function (event) {
+			event.preventDefault();
+			fn.call(this, event);
+		};
+	}
 </script>
 
-{#if !$page.data.features.security || $user.admin}
+{#if !page.data.features.security || $user.admin}
 	<SettingsCard collapsible={false}>
-		<Config slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-		<span slot="title">Motor Configuration</span>
+		{#snippet icon()}
+			<Config class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+		{/snippet}
+		{#snippet title()}
+			<span>Motor Configuration</span>
+		{/snippet}
 
 		<div class="w-full overflow-x-auto">
 			{#await getMotorConfig()}
 				<Spinner />
 			{:then}
-				<form on:submit|preventDefault={handleSubmitMotorConfig} novalidate bind:this={formField}>
+				<form onsubmit={preventDefault(handleSubmitMotorConfig)} novalidate bind:this={formField}>
 					<div
 						class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2"
 						transition:slide|local={{ duration: 300, easing: cubicOut }}
@@ -395,7 +406,7 @@
 						<div class="flex flex-col justify-center sm:pt-5 pt-0">
 							<button
 								class="btn btn-primary inline-flex items-center"
-								on:click={confirmMeasure}
+								onclick={confirmMeasure}
 								type="button"
 								disabled={!(
 									motorConfig.driver === 'IHSV_SERVO_V6' ||
@@ -456,12 +467,12 @@
 							>
 						</div>
 					</div>
-					<div class="divider mb-2 mt-0" />
+					<div class="divider mb-2 mt-0"></div>
 					<div class="mx-4 flex flex-wrap justify-end gap-2 mb-1">
 						<button
 							class="btn btn-primary inline-flex items-center"
 							type="button"
-							on:click={confirmHome}><Home class="mr-2 h-5 w-5" /><span>Home</span></button
+							onclick={confirmHome}><Home class="mr-2 h-5 w-5" /><span>Home</span></button
 						>
 
 						<button class="btn btn-secondary inline-flex items-center" type="submit"

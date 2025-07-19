@@ -2,7 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { user } from '$lib/stores/user';
 	import { environment } from '$lib/stores/environment';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { notifications } from '$lib/components/toasts/notifications';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import Safety from '~icons/tabler/lock-square-rounded';
@@ -19,14 +19,14 @@
 		ease_in_speed: number;
 	};
 
-	let safetySettings: SafetyState = {
+	let safetySettings: SafetyState = $state({
 		depth_limit: 0,
 		stroke_limit: 0,
 		rate_limit: 0,
 		velocity_limit: 0,
 		heartbeat_mode: 0,
 		ease_in_speed: 0
-	};
+	});
 
 	// $: console.log(safetySettings);
 
@@ -35,7 +35,7 @@
 			const response = await fetch('/rest/safety', {
 				method: 'GET',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
@@ -58,7 +58,7 @@
 			const response = await fetch('/rest/safety', {
 				method: 'POST',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify(safetySettings)
@@ -91,8 +91,12 @@
 </script>
 
 <SettingsCard collapsible={false}>
-	<Safety slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">Safety Settings</span>
+	{#snippet icon()}
+		<Safety  class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+	{/snippet}
+	{#snippet title()}
+		<span >Safety Settings</span>
+	{/snippet}
 	<div class="w-full">
 		<h1 class="text-xl font-semibold">Range Limit</h1>
 		<div class="alert my-2 shadow-lg bg-base-100">
@@ -144,7 +148,7 @@
 				<span class="label-text-alt">{safetySettings.rate_limit} FPM</span>
 			</label>
 		</div>
-		<div class="divider" />
+		<div class="divider"></div>
 		<h1 class="text-xl font-semibold">Velocity Limit</h1>
 		<div class="alert my-2 shadow-lg bg-base-100">
 			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
@@ -189,7 +193,7 @@
 				<span class="label-text-alt">{safetySettings.ease_in_speed} mm/s</span>
 			</label>
 		</div>
-		<div class="divider" />
+		<div class="divider"></div>
 		<h1 class="text-xl font-semibold">Heartbeat Mode</h1>
 		<div class="alert my-2 shadow-lg bg-base-100">
 			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
@@ -207,7 +211,7 @@
 			<label class="inline-flex font-bold m-2 space-x-4">
 				<input
 					checked={safetySettings.heartbeat_mode === 0}
-					on:change={onChange}
+					onchange={onChange}
 					type="radio"
 					name="mode"
 					value="0"
@@ -217,7 +221,7 @@
 			<label class="inline-flex font-bold m-2 space-x-4">
 				<input
 					checked={safetySettings.heartbeat_mode === 1}
-					on:change={onChange}
+					onchange={onChange}
 					type="radio"
 					name="mode"
 					value="1"
@@ -227,7 +231,7 @@
 			<label class="inline-flex font-bold m-2 space-x-4">
 				<input
 					checked={safetySettings.heartbeat_mode === 2}
-					on:change={onChange}
+					onchange={onChange}
 					type="radio"
 					name="mode"
 					value="2"
@@ -235,9 +239,9 @@
 				/> <span>Last</span>
 			</label>
 		</div>
-		<div class="divider mb-2 mt-0" />
+		<div class="divider mb-2 mt-0"></div>
 		<div class="mx-4 flex flex-wrap justify-end gap-2">
-			<button class="btn btn-primary" on:click={postSafetySettings}>Apply Settings</button>
+			<button class="btn btn-primary" onclick={postSafetySettings}>Apply Settings</button>
 		</div>
 	</div>
 </SettingsCard>

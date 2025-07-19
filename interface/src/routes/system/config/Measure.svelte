@@ -8,14 +8,18 @@
 	import Cancel from '~icons/tabler/x';
 	import { onMount, onDestroy } from 'svelte';
 
-	// provided by <Modals />
-	export let isOpen: boolean;
-	export let onClose: any;
+	interface Props {
+		// provided by <Modals />
+		isOpen: boolean;
+		onClose: any;
+	}
 
-	let measureActive = true;
+	let { isOpen, onClose }: Props = $props();
 
-	let travel = 0;
-	let keepout = 0;
+	let measureActive = $state(true);
+
+	let travel = $state(0);
+	let keepout = $state(0);
 
 	const interval = setInterval(async () => {
 		pollingResults();
@@ -52,15 +56,13 @@
 		role="dialog"
 		class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center"
 		transition:fly={{ y: 50 }}
-		on:introstart
-		on:outroend
 		use:focusTrap
 	>
 		<div
 			class="bg-base-100 shadow-secondary/30 rounded-box pointer-events-auto flex max-h-full min-w-fit max-w-md flex-col justify-between p-4 shadow-lg"
 		>
 			<h2 class="text-base-content text-start text-2xl font-bold w-72">Measure Rail Length</h2>
-			<div class="divider my-2" />
+			<div class="divider my-2"></div>
 			<div class="overflow-y-auto">
 				{#if measureActive}<div class="bg-base-100 flex flex-col items-center justify-center p-6">
 						<Measure class="text-secondary h-32 w-32 shrink animate-ping stroke-2" />
@@ -73,11 +75,11 @@
 					</div>
 				{/if}
 			</div>
-			<div class="divider my-2" />
+			<div class="divider my-2"></div>
 			<div class="flex flex-wrap justify-end gap-2">
 				<button
 					class="btn btn-warning text-warning-content inline-flex flex-none items-center"
-					on:click={onClose}><Cancel class="mr-2 h-5 w-5" /><span>Close</span></button
+					onclick={onClose}><Cancel class="mr-2 h-5 w-5" /><span>Close</span></button
 				>
 			</div>
 		</div>

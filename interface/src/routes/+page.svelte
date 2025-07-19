@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { control } from '$lib/stores/control';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { environment } from '$lib/stores/environment';
 	import { socket } from '$lib/stores/socket';
 	import { Chart, registerables } from 'chart.js';
@@ -123,7 +123,7 @@
 			}
 		});
 
-		if ($page.data.features.data_streaming === true) {
+		if (page.data.features.data_streaming === true) {
 			openDataSocket();
 
 			positionChart = new Chart(positionChartElement, {
@@ -132,7 +132,7 @@
 					datasets: [
 						{
 							// Position
-							borderColor: daisyColor('--p'),
+							borderColor: daisyColor('--color-primary'),
 							fill: false,
 							pointRadius: 0,
 							data: [],
@@ -140,8 +140,8 @@
 						},
 						{
 							// Speed
-							backgroundColor: daisyColor('--s', 20),
-							borderColor: daisyColor('--s'),
+							backgroundColor: daisyColor('--color-secondary', 20),
+							borderColor: daisyColor('--color-secondary'),
 							fill: true,
 							pointRadius: 0,
 							data: [],
@@ -175,16 +175,16 @@
 						x: {
 							type: 'realtime',
 							grid: {
-								color: daisyColor('--bc', 10)
+								color: daisyColor('--color-base-content', 10)
 							},
-							ticks: { color: daisyColor('--bc') }
+							ticks: { color: daisyColor('--color-base-content') }
 						},
 						y: {
 							type: 'linear',
 							title: {
 								display: true,
 								text: 'Position [mm]',
-								color: daisyColor('--p'),
+								color: daisyColor('--color-primary'),
 								font: {
 									size: 16,
 									weight: 'bold'
@@ -193,19 +193,19 @@
 							position: 'left',
 							min: 0,
 							max: 150,
-							grid: { color: daisyColor('--bc', 10) },
+							grid: { color: daisyColor('--color-base-content', 10) },
 							ticks: {
 								stepSize: 150 / 6,
-								color: daisyColor('--bc')
+								color: daisyColor('--color-base-content')
 							},
-							border: { color: daisyColor('--bc', 10) }
+							border: { color: daisyColor('--color-base-content', 10) }
 						},
 						y1: {
 							type: 'linear',
 							title: {
 								display: true,
 								text: 'Speed [mm/s]',
-								color: daisyColor('--s'),
+								color: daisyColor('--color-secondary'),
 								font: {
 									size: 16,
 									weight: 'bold'
@@ -216,12 +216,12 @@
 							suggestedMax: 150,
 							ticks: {
 								stepSize: 150 / 3,
-								color: daisyColor('--bc')
+								color: daisyColor('--color-base-content')
 							},
 							grid: {
 								drawOnChartArea: false // only want the grid lines for one axis to show up
 							},
-							border: { color: daisyColor('--bc', 10) }
+							border: { color: daisyColor('--color-base-content', 10) }
 						}
 					}
 				}
@@ -230,10 +230,10 @@
 	});
 </script>
 
-{#if $page.data.features.data_streaming === true}
+{#if page.data.features.data_streaming === true}
 	<div class="card bg-base-200 shadow-md shadow-primary/50 mt-3 mx-auto w-11/12">
 		<div class="relative h-72 md:h-96 w-full p-2">
-			<canvas bind:this={positionChartElement} />
+			<canvas bind:this={positionChartElement}></canvas>
 		</div>
 	</div>
 {/if}
@@ -245,7 +245,7 @@
 			min="0"
 			max={$environment.depth}
 			bind:value={controlState.depth}
-			on:change={() => {
+			onchange={() => {
 				sendControl();
 			}}
 			class="range range-primary range-xs"
@@ -261,7 +261,7 @@
 			min="0"
 			max={$environment.depth}
 			bind:value={controlState.stroke}
-			on:change={() => {
+			onchange={() => {
 				controlSpeed();
 			}}
 			class="range range-primary range-xs"
@@ -277,7 +277,7 @@
 			min="0"
 			max={$environment.max_rate}
 			bind:value={controlState.rate}
-			on:change={() => {
+			onchange={() => {
 				sendControl();
 			}}
 			class="range range-primary range-xs"
@@ -293,7 +293,7 @@
 			min="-100"
 			max="100"
 			bind:value={controlState.sensation}
-			on:change={() => {
+			onchange={() => {
 				sendControl();
 			}}
 			class="range range-primary range-xs"
@@ -307,7 +307,7 @@
 	<div class="m-4 flex flex-wrap gap-6 justify-between">
 		<button
 			class="btn btn-primary inline-flex items-center sm:w-32 w-full"
-			on:click={controlSession}
+			onclick={controlSession}
 		>
 			{#if go === false}
 				<Start class="mr-2 h-5 w-5" /><span>Start</span>
@@ -318,7 +318,7 @@
 		<select
 			class="select select-primary grow sm:grow-0 sm:w-64"
 			bind:value={controlState.pattern}
-			on:change={sendControl}
+			onchange={sendControl}
 		>
 			{#each $environment.patterns as pattern}
 				<option>{pattern}</option>
@@ -326,7 +326,7 @@
 		</select>
 
 		<div class="grow inline-flex flex-nowrap items-center justify-items-end">
-			<div class="grow h-full" />
+			<div class="grow h-full"></div>
 			<div
 				class="tooltip tooltip-left justify-items-end"
 				data-tip={constSpeed ? 'Keep velocity constant' : 'Keep pace constant'}
@@ -342,15 +342,13 @@
 		</div>
 	</div>
 	<div class="join join-vertical sm:join-horizontal mx-4 mb-4">
-		<button class="btn btn-primary join-item grow inline-flex items-center" on:click={commandDepth}
+		<button class="btn btn-primary join-item grow inline-flex items-center" onclick={commandDepth}
 			><MaxOut class="mr-2 h-5 w-5" /><span>Maximum Out</span></button
 		>
-		<button class="btn btn-primary join-item grow inline-flex items-center" on:click={commandStroke}
+		<button class="btn btn-primary join-item grow inline-flex items-center" onclick={commandStroke}
 			><StrokeStart class="mr-2 h-5 w-5" /><span>Stroke Start</span></button
 		>
-		<button
-			class="btn btn-primary join-item grow inline-flex items-center"
-			on:click={commandRetract}
+		<button class="btn btn-primary join-item grow inline-flex items-center" onclick={commandRetract}
 			><FullRetract class="mr-2 h-5 w-5" /><span>Full Retract</span></button
 		>
 	</div>
