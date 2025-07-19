@@ -100,7 +100,7 @@
 	<div class="w-full">
 		<h1 class="text-xl font-semibold">Range Limit</h1>
 		<div class="alert my-2 shadow-lg bg-base-100">
-			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
+			<Info class="h-6 w-6 shrink-0 stroke-current" />
 			<span
 				>This limits the range of the input parameters <b>Depth</b>, <b>Stroke</b> and <b>Speed</b>.
 				These safety limits can't be overruled and the machine will constrain all inputs to these
@@ -151,7 +151,7 @@
 		<div class="divider"></div>
 		<h1 class="text-xl font-semibold">Velocity Limit</h1>
 		<div class="alert my-2 shadow-lg bg-base-100">
-			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
+			<Info class="h-6 w-6 shrink-0 stroke-current" />
 			<span
 				>Limits the maximum velocity of the machine. This is an additional safety feature to prevent
 				injuries due to sudden fast and unexpected movements. Especially when remote controlled this
@@ -173,7 +173,7 @@
 			</label>
 		</div>
 		<div class="alert my-2 shadow-lg bg-base-100">
-			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
+			<Info class="h-6 w-6 shrink-0 stroke-current" />
 			<span
 				>Changing parameters may result in sudden very fast movements that could come at a surprise.
 				To mitigate this effect the <b>Ease In Speed</b> limits how fast a change in <b>Depth</b> or
@@ -196,7 +196,7 @@
 		<div class="divider"></div>
 		<h1 class="text-xl font-semibold">Heartbeat Mode</h1>
 		<div class="alert my-2 shadow-lg bg-base-100">
-			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
+			<Info class="h-6 w-6 shrink-0 stroke-current" />
 			<span
 				>Heartbeat mode is a safety feature that will stop the machine if the heartbeat signal is
 				lost. This is useful if the machine is controlled via a remote API and the connection is

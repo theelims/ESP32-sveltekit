@@ -248,7 +248,12 @@
 			{#await getMotorConfig()}
 				<Spinner />
 			{:then}
-				<form onsubmit={preventDefault(handleSubmitMotorConfig)} novalidate bind:this={formField}>
+				<form
+					class="fieldset"
+					onsubmit={preventDefault(handleSubmitMotorConfig)}
+					novalidate
+					bind:this={formField}
+				>
 					<div
 						class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2"
 						transition:slide|local={{ duration: 300, easing: cubicOut }}
@@ -288,7 +293,7 @@
 									min="800"
 									max="51200"
 									step="100"
-									class="join-item input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.steps_per_rev
+									class="join-item input w-full invalid:border-error w-full invalid:border-2 {formErrors.steps_per_rev
 										? 'border-error border-2'
 										: ''}"
 									bind:value={motorConfig.steps_per_rev}
@@ -313,7 +318,7 @@
 									min="10"
 									max="100"
 									step="1"
-									class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.pulley_teeth
+									class="input w-full invalid:border-error w-full invalid:border-2 {formErrors.pulley_teeth
 										? 'border-error border-2'
 										: ''}"
 									bind:value={motorConfig.pulley_teeth}
@@ -338,7 +343,7 @@
 									min="0"
 									max="10000"
 									step="10"
-									class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.max_rpm
+									class="input w-full invalid:border-error w-full invalid:border-2 {formErrors.max_rpm
 										? 'border-error border-2'
 										: ''}"
 									bind:value={motorConfig.max_rpm}
@@ -363,7 +368,7 @@
 									min="100"
 									max="1000000"
 									step="100"
-									class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.max_acceleration
+									class="input w-full invalid:border-error w-full invalid:border-2 {formErrors.max_acceleration
 										? 'border-error border-2'
 										: ''}"
 									bind:value={motorConfig.max_acceleration}
@@ -388,7 +393,7 @@
 									type="number"
 									min="100"
 									max="1000"
-									class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.travel
+									class="input w-full invalid:border-error w-full invalid:border-2 {formErrors.travel
 										? 'border-error border-2'
 										: ''}"
 									bind:value={motorConfig.travel}
@@ -408,10 +413,7 @@
 								class="btn btn-primary inline-flex items-center"
 								onclick={confirmMeasure}
 								type="button"
-								disabled={!(
-									motorConfig.driver === 'IHSV_SERVO_V6' ||
-									motorConfig.driver === 'OSSM_REF_BOARD_V2'
-								)}
+								disabled={!(motorConfig.driver === 'OSSM_REF_BOARD_V2')}
 							>
 								<Measure class="mr-2 h-5 w-5" />
 								<span>Measure Travel</span>
@@ -428,7 +430,7 @@
 									min="0"
 									max="20"
 									step="0.1"
-									class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.keepout
+									class="input w-full invalid:border-error w-full invalid:border-2 {formErrors.keepout
 										? 'border-error border-2'
 										: ''}"
 									bind:value={motorConfig.keepout}
@@ -453,7 +455,7 @@
 									min="0"
 									max="100"
 									step="1"
-									class="input input-bordered w-full"
+									class="input w-full"
 									bind:value={motorConfig.sensorless_trigger}
 									id="sensorless_trigger"
 								/>

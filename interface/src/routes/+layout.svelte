@@ -49,7 +49,7 @@
 		addEventListeners();
 		fetchEnvironment();
 		control.init();
-	});
+	};
 
 	onDestroy(() => {
 		removeEventListeners();
@@ -66,7 +66,7 @@
 		if (page.data.features.battery) socket.on('battery', handleBattery);
 		if (page.data.features.download_firmware) socket.on('otastatus', handleOAT);
 
-        socket.on('motor', handleMotorStatus);
+		socket.on('motor', handleMotorStatus);
 	};
 
 	const removeEventListeners = () => {

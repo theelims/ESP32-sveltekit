@@ -139,7 +139,7 @@
 						</label>
 						<input
 							type="text"
-							class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.control
+							class="input w-full invalid:border-error w-full invalid:border-2 {formErrors.control
 								? 'border-error border-2'
 								: ''}"
 							bind:value={brokerSettings.control_topic}
@@ -160,7 +160,7 @@
 						</label>
 						<input
 							type="text"
-							class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.environment
+							class="input w-full invalid:border-error w-full invalid:border-2 {formErrors.environment
 								? 'border-error border-2'
 								: ''}"
 							bind:value={brokerSettings.environment_topic}
@@ -181,7 +181,7 @@
 						</label>
 						<input
 							type="text"
-							class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.streaming
+							class="input w-full invalid:border-error w-full invalid:border-2 {formErrors.streaming
 								? 'border-error border-2'
 								: ''}"
 							bind:value={brokerSettings.streaming_topic}
