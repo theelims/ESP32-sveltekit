@@ -15,12 +15,17 @@
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
  **/
 
+#include <ESP32SvelteKit.h>
 #include <HttpEndpoint.h>
 #include <FSPersistence.h>
-#include <SettingValue.h>
+#include <MqttSettingsService.h>
 
 #define MQTT_BROKER_SETTINGS_FILE "/config/brokerSettings.json"
 #define MQTT_BROKER_SETTINGS_PATH "/rest/brokerSettings"
+
+#ifndef FACTORY_MQTT_STATUS_TOPIC
+#define FACTORY_MQTT_STATUS_TOPIC "openlust/motion/status"
+#endif // end FACTORY_MQTT_STATUS_TOPIC
 
 class MqttBrokerSettings
 {
@@ -28,12 +33,14 @@ public:
     String controlTopic;
     String environmentTopic;
     String streamingTopic;
+    String stateTopic;
 
     static void read(MqttBrokerSettings &settings, JsonObject &root)
     {
         root["control_topic"] = settings.controlTopic;
         root["environment_topic"] = settings.environmentTopic;
         root["streaming_topic"] = settings.streamingTopic;
+        root["status_topic"] = settings.stateTopic;
     }
 
     static StateUpdateResult update(JsonObject &root, MqttBrokerSettings &settings)
@@ -41,6 +48,7 @@ public:
         settings.controlTopic = root["control_topic"] | SettingValue::format("lust-motion/#{unique_id}/control");
         settings.environmentTopic = root["environment_topic"] | SettingValue::format("lust-motion/#{unique_id}/environment");
         settings.streamingTopic = root["streaming_topic"] | SettingValue::format("lust-motion/#{unique_id}/streaming");
+        settings.stateTopic = root["status_topic"] | SettingValue::format(FACTORY_MQTT_STATUS_TOPIC);
         return StateUpdateResult::CHANGED;
     }
 };
@@ -48,12 +56,14 @@ public:
 class MqttBrokerSettingsService : public StatefulService<MqttBrokerSettings>
 {
 public:
-    MqttBrokerSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager);
+    MqttBrokerSettingsService(PsychicHttpServer *server, ESP32SvelteKit *sveltekit);
     void begin();
+    void onConfigUpdated();
 
 private:
     HttpEndpoint<MqttBrokerSettings> _httpEndpoint;
     FSPersistence<MqttBrokerSettings> _fsPersistence;
+    MqttSettingsService *_mqttSettingsService;
 };
 
 #endif // end MqttBrokerSettingsService_h

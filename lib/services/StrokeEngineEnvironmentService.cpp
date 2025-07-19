@@ -10,17 +10,15 @@
 #include <StrokeEngineEnvironmentService.h>
 
 StrokeEngineEnvironmentService::StrokeEngineEnvironmentService(StrokeEngine *strokeEngine,
-                                                               PsychicHttpServer *server,
+                                                               ESP32SvelteKit *sveltekit,
                                                                MotorConfigurationService *motorConfigurationService,
                                                                StrokeEngineSafetyService *strokeEngineSafetyService,
-                                                               SecurityManager *securityManager,
-                                                               PsychicMqttClient *mqttClient,
                                                                MqttBrokerSettingsService *mqttBrokerSettingsService) : _strokeEngine(strokeEngine),
                                                                                                                        _motorConfigurationService(motorConfigurationService),
                                                                                                                        _strokeEngineSafetyService(strokeEngineSafetyService),
-                                                                                                                       _server(server),
-                                                                                                                       _securityManager(securityManager),
-                                                                                                                       _mqttClient(mqttClient),
+                                                                                                                       _server(sveltekit->getServer()),
+                                                                                                                       _securityManager(sveltekit->getSecurityManager()),
+                                                                                                                       _mqttClient(sveltekit->getMqttClient()),
                                                                                                                        _mqttBrokerSettingsService(mqttBrokerSettingsService)
 {
 }

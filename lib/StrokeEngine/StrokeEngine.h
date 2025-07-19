@@ -39,14 +39,6 @@
 #define MOTION_FACTORY_PATTERN "PoundingTeasing"
 #endif
 
-#ifndef MOTION_FACTORY_VIBRATION_AMPLITUDE
-#define MOTION_FACTORY_VIBRATION_AMPLITUDE 0.0
-#endif
-
-#ifndef MOTION_FACTORY_VIBRATION_FREQUENCY
-#define MOTION_FACTORY_VIBRATION_FREQUENCY 30.0
-#endif
-
 #ifndef MOTION_FACTORY_EASE_IN_VELOCITY
 #define MOTION_FACTORY_EASE_IN_VELOCITY 20.0
 #endif
@@ -85,7 +77,7 @@ enum class StrokeLimit
   RATE,
 
   // VELOCITY - Range 0.0 to 2000.0 mm/s
-  // Limits the speed a regular motion can reach. Vibrations are not affected.
+  // Limits the speed a regular motion can reach.
   VELOCITY,
 
   // DEPTH - Range is constrained by motionBounds from MotorInterface

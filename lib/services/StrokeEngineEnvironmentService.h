@@ -8,6 +8,7 @@
  *   the terms of the MIT license. See the LICENSE file for details.
  **/
 
+#include <ESP32SvelteKit.h>
 #include <ArduinoJson.h>
 #include <PsychicHttp.h>
 #include <PsychicMqttClient.h>
@@ -31,11 +32,9 @@ class StrokeEngineEnvironmentService
 {
 public:
     StrokeEngineEnvironmentService(StrokeEngine *strokeEngine,
-                                   PsychicHttpServer *server,
+                                   ESP32SvelteKit *sveltekit,
                                    MotorConfigurationService *motorConfigurationService,
                                    StrokeEngineSafetyService *strokeEngineSafetyService,
-                                   SecurityManager *securityManager,
-                                   PsychicMqttClient *mqttClient,
                                    MqttBrokerSettingsService *mqttBrokerSettingsService);
 
     void begin();

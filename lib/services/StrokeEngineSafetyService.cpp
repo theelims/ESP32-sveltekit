@@ -10,21 +10,18 @@
 #include <StrokeEngineSafetyService.h>
 
 StrokeEngineSafetyService::StrokeEngineSafetyService(StrokeEngine *stroker,
-                                                     PsychicHttpServer *server,
-                                                     FS *fs,
-                                                     SecurityManager *securityManager,
-                                                     StrokeEngineControlService *strokeEngineControlService,
-                                                     EventSocket *socket) : _strokeEngine(stroker),
-                                                                            _httpEndpoint(StrokeEngineSafety::read,
-                                                                                          StrokeEngineSafety::update,
-                                                                                          this,
-                                                                                          server,
-                                                                                          SAFETY_CONFIG_PATH,
-                                                                                          securityManager,
-                                                                                          AuthenticationPredicates::NONE_REQUIRED),
-                                                                            _fsPersistence(StrokeEngineSafety::read, StrokeEngineSafety::update, this, fs, SAFETY_CONFIG_FILE),
-                                                                            _strokeEngineControlService(strokeEngineControlService),
-                                                                            _socket(socket)
+                                                     ESP32SvelteKit *sveltekit,
+                                                     StrokeEngineControlService *strokeEngineControlService) : _strokeEngine(stroker),
+                                                                                                               _httpEndpoint(StrokeEngineSafety::read,
+                                                                                                                             StrokeEngineSafety::update,
+                                                                                                                             this,
+                                                                                                                             sveltekit->getServer(),
+                                                                                                                             SAFETY_CONFIG_PATH,
+                                                                                                                             sveltekit->getSecurityManager(),
+                                                                                                                             AuthenticationPredicates::NONE_REQUIRED),
+                                                                                                               _fsPersistence(StrokeEngineSafety::read, StrokeEngineSafety::update, this, sveltekit->getFS(), SAFETY_CONFIG_FILE),
+                                                                                                               _strokeEngineControlService(strokeEngineControlService),
+                                                                                                               _socket(sveltekit->getSocket())
 {
     // configure settings service update handler to update state
     addUpdateHandler([&](const String &originId)

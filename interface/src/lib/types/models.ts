@@ -64,6 +64,7 @@ export type BrokerSettings = {
 	control_topic: string;
 	environment_topic: string;
 	streaming_topic: string;
+	status_topic: string;
 };
 
 export type NTPStatus = {
@@ -154,9 +155,6 @@ export type ControlState = {
 	rate: number;
 	sensation: number;
 	pattern: string;
-	vibration_override: boolean;
-	vibration_amplitude: number;
-	vibration_frequency: number;
 	go?: boolean;
 	oldStroke?: number;
 };

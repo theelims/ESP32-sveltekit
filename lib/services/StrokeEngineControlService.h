@@ -9,6 +9,7 @@
  *   the terms of the MIT license. See the LICENSE file for details.
  **/
 
+#include <ESP32SvelteKit.h>
 #include <PsychicHttp.h>
 #include <PsychicMqttClient.h>
 #include <MqttEndpoint.h>
@@ -22,7 +23,7 @@
 #include <HeartbeatWatchdog.h>
 
 #ifdef OSSM_REF
-#include <boards/OSSMReferenceBoard.h>
+#include <OSSMReferenceBoard.h>
 // else throw compile error
 #else
 #error "No board defined"
@@ -133,10 +134,7 @@ class StrokeEngineControlService : public StatefulService<StrokeEngineControl>
 {
 public:
     StrokeEngineControlService(StrokeEngine *strokeEngine,
-                               PsychicHttpServer *server,
-                               EventSocket *socket,
-                               SecurityManager *securityManager,
-                               PsychicMqttClient *mqttClient,
+                               ESP32SvelteKit *sveltekit,
                                MqttBrokerSettingsService *mqttBrokerSettingsService);
 
     void begin();
@@ -146,9 +144,7 @@ public:
 private:
     HttpEndpoint<StrokeEngineControl> _httpEndpoint;
     MqttEndpoint<StrokeEngineControl> _mqttEndpoint;
-    WebSocketServer<StrokeEngineControl> _webSocketServer;
     EventEndpoint<StrokeEngineControl> _eventEndpoint;
-    // WebSocketClient<StrokeEngineControl> _webSocketClient;
     PsychicMqttClient *_mqttClient;
     StrokeEngine *_strokeEngine;
     MqttBrokerSettingsService *_mqttBrokerSettingsService;

@@ -15,38 +15,24 @@
 #include <StrokeEngineControlService.h>
 
 StrokeEngineControlService::StrokeEngineControlService(StrokeEngine *strokeEngine,
-                                                       PsychicHttpServer *server,
-                                                       EventSocket *socket,
-                                                       SecurityManager *securityManager,
-                                                       PsychicMqttClient *mqttClient,
+                                                       ESP32SvelteKit *sveltekit,
                                                        MqttBrokerSettingsService *mqttBrokerSettingsService) : _strokeEngine(strokeEngine),
                                                                                                                _httpEndpoint(StrokeEngineControl::read,
                                                                                                                              StrokeEngineControl::update,
                                                                                                                              this,
-                                                                                                                             server,
+                                                                                                                             sveltekit->getServer(),
                                                                                                                              SE_CONTROL_SETTINGS_ENDPOINT_PATH,
-                                                                                                                             securityManager,
+                                                                                                                             sveltekit->getSecurityManager(),
                                                                                                                              AuthenticationPredicates::IS_AUTHENTICATED),
-                                                                                                               _mqttEndpoint(StrokeEngineControl::read, StrokeEngineControl::update, this, mqttClient),
-                                                                                                               _webSocketServer(StrokeEngineControl::read,
-                                                                                                                                StrokeEngineControl::update,
-                                                                                                                                this,
-                                                                                                                                server,
-                                                                                                                                SE_CONTROL_SETTINGS_SOCKET_PATH,
-                                                                                                                                securityManager,
-                                                                                                                                AuthenticationPredicates::IS_AUTHENTICATED),
+                                                                                                               _mqttEndpoint(StrokeEngineControl::read, StrokeEngineControl::update, this, sveltekit->getMqttClient()),
                                                                                                                _eventEndpoint(StrokeEngineControl::read,
                                                                                                                               StrokeEngineControl::update,
                                                                                                                               this,
-                                                                                                                              socket,
+                                                                                                                              sveltekit->getSocket(),
                                                                                                                               SE_CONTROL_SETTINGS_EVENT),
-                                                                                                               _mqttClient(mqttClient),
+                                                                                                               _mqttClient(sveltekit->getMqttClient()),
                                                                                                                _mqttBrokerSettingsService(mqttBrokerSettingsService),
                                                                                                                _heartbeatWatchdog(1200)
-/*  _webSocketClient(StrokeEngineControl::read,
-StrokeEngineControl::update,
-this,
-SE_CONTROL_SETTINGS_SOCKET_PATH)*/
 {
     // configure settings service update handler to update state
     addUpdateHandler([&](const String &originId)
@@ -57,7 +43,6 @@ SE_CONTROL_SETTINGS_SOCKET_PATH)*/
 void StrokeEngineControlService::begin()
 {
     _httpEndpoint.begin();
-    _webSocketServer.begin();
     _eventEndpoint.begin();
 
     String controlTopic;

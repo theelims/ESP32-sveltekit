@@ -9,6 +9,7 @@
  *   the terms of the MIT license. See the LICENSE file for details.
  **/
 
+#include <ESP32SvelteKit.h>
 #include <HttpEndpoint.h>
 #include <StrokeEngine.h>
 #include <StrokeEngineControlService.h>
@@ -63,11 +64,8 @@ class StrokeEngineSafetyService : public StatefulService<StrokeEngineSafety>
 {
 public:
     StrokeEngineSafetyService(StrokeEngine *stroker,
-                              PsychicHttpServer *server,
-                              FS *fs,
-                              SecurityManager *securityManager,
-                              StrokeEngineControlService *strokeEngineControlService,
-                              EventSocket *socket);
+                              ESP32SvelteKit *sveltekit,
+                              StrokeEngineControlService *strokeEngineControlService);
 
     void begin();
 

@@ -37,35 +37,23 @@ PsychicHttpServer server;
 ESP32SvelteKit esp32sveltekit(&server, 130);
 
 MqttBrokerSettingsService mqttBrokerSettingsService = MqttBrokerSettingsService(&server,
-                                                                                esp32sveltekit.getFS(),
-                                                                                esp32sveltekit.getSecurityManager());
+                                                                                &esp32sveltekit);
 
 StrokeEngineControlService strokeEngineControlService = StrokeEngineControlService(&Stroker,
-                                                                                   &server,
-                                                                                   esp32sveltekit.getSocket(),
-                                                                                   esp32sveltekit.getSecurityManager(),
-                                                                                   esp32sveltekit.getMqttClient(),
+                                                                                   &esp32sveltekit,
                                                                                    &mqttBrokerSettingsService);
 
 MotorConfigurationService motorConfigurationService = MotorConfigurationService(&Stroker,
-                                                                                &server,
-                                                                                esp32sveltekit.getFS(),
-                                                                                esp32sveltekit.getSecurityManager(),
-                                                                                esp32sveltekit.getNotificationService());
+                                                                                &esp32sveltekit);
 
 StrokeEngineSafetyService strokeEngineSafetyService = StrokeEngineSafetyService(&Stroker,
-                                                                                &server,
-                                                                                esp32sveltekit.getFS(),
-                                                                                esp32sveltekit.getSecurityManager(),
-                                                                                &strokeEngineControlService,
-                                                                                esp32sveltekit.getSocket());
+                                                                                &esp32sveltekit,
+                                                                                &strokeEngineControlService);
 
 StrokeEngineEnvironmentService strokeEngineEnvironmentService = StrokeEngineEnvironmentService(&Stroker,
-                                                                                               &server,
+                                                                                               &esp32sveltekit,
                                                                                                &motorConfigurationService,
                                                                                                &strokeEngineSafetyService,
-                                                                                               esp32sveltekit.getSecurityManager(),
-                                                                                               esp32sveltekit.getMqttClient(),
                                                                                                &mqttBrokerSettingsService);
 
 DataStreamer dataStream = DataStreamer(esp32sveltekit.getSocket(), &Stroker);

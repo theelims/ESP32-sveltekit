@@ -9,6 +9,7 @@
  *   the terms of the MIT license. See the LICENSE file for details.
  **/
 
+#include <ESP32SvelteKit.h>
 #include <HttpEndpoint.h>
 #include <FSPersistence.h>
 #include <StrokeEngine.h>
@@ -20,7 +21,7 @@
 #include <OSSMRefBoardV2.h>
 
 #ifdef OSSM_REF
-#include <boards/OSSMReferenceBoard.h>
+#include <OSSMReferenceBoard.h>
 // else throw compile error
 #else
 #error "No board defined"
@@ -173,7 +174,7 @@ public:
 class MotorConfigurationService : public StatefulService<MotorConfiguration>
 {
 public:
-    MotorConfigurationService(StrokeEngine *strokeEngine, PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, NotificationService *notification);
+    MotorConfigurationService(StrokeEngine *strokeEngine, ESP32SvelteKit *sveltekit);
     void begin();
 
     String getDriverName();
