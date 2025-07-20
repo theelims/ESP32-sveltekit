@@ -10,7 +10,6 @@
  **/
 
 #include <ESP32SvelteKit.h>
-#include <ESPmDNS.h>
 #include <PsychicHttpServer.h>
 #include <StrokeEngine.h>
 #include <MqttBrokerSettingsService.h>

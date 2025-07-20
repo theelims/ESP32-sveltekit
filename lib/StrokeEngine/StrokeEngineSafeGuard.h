@@ -12,7 +12,7 @@
 #ifndef STROKE_ENGINE_SAFE_GUARD_H
 #define STROKE_ENGINE_SAFE_GUARD_H
 
-#include <StrokeEnginePattern.h>
+#include <Pattern.h>
 #include <patternMath.h>
 #include <StrokeEngineMotor.h>
 
