@@ -6,7 +6,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2024 theelims
+ *   Copyright (C) 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -180,6 +180,14 @@ void ESP32SvelteKit::begin()
 
 #if FT_ENABLED(FT_SLEEP)
     _sleepService.begin();
+    _sleepService.attachOnSleepCallback([&]()
+                                        {   ESP_LOGI(SVK_TAG, "Attempting to stop server");
+                                            for (auto client : _server->getClientList())
+                                            {
+                                                client->close();
+                                            }
+                                            vTaskDelete(_loopTaskHandle);
+                                            ESP_LOGI(SVK_TAG, "Server stopped"); });
 #if FT_ENABLED(FT_MQTT)
     _sleepService.attachOnSleepCallback([&]()
                                         { _mqttSettingsService.disconnect(); });
@@ -202,7 +210,7 @@ void ESP32SvelteKit::begin()
         4096,                       // Stack size (bytes)
         this,                       // Pass reference to this class instance
         (tskIDLE_PRIORITY + 2),     // task priority
-        NULL,                       // Task handle
+        &_loopTaskHandle,           // Task handle
         ESP32SVELTEKIT_RUNNING_CORE // Pin to application core
     );
 }
