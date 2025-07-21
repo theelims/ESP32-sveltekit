@@ -9,7 +9,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 - 2024 theelims
+ *   Copyright (C) 2023 - 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -30,39 +30,39 @@ typedef std::function<void(const String &originId)> SubscribeCallback;
 class EventSocket
 {
 public:
-  EventSocket(PsychicHttpServer *server, SecurityManager *_securityManager, AuthenticationPredicate authenticationPredicate = AuthenticationPredicates::IS_AUTHENTICATED);
+    EventSocket(PsychicHttpServer *server, SecurityManager *_securityManager, AuthenticationPredicate authenticationPredicate = AuthenticationPredicates::IS_AUTHENTICATED);
 
-  void begin();
+    void begin();
 
-  void registerEvent(String event);
+    void registerEvent(String event);
 
-  void onEvent(String event, EventCallback callback);
+    void onEvent(String event, EventCallback callback);
 
-  void onSubscribe(String event, SubscribeCallback callback);
+    void onSubscribe(String event, SubscribeCallback callback);
 
-  void emitEvent(String event, JsonObject &jsonObject, const char *originId = "", bool onlyToSameOrigin = false);
-  // if onlyToSameOrigin == true, the message will be sent to the originId only, otherwise it will be broadcasted to all clients except the originId
+    void emitEvent(String event, JsonObject &jsonObject, const char *originId = "", bool onlyToSameOrigin = false);
+    // if onlyToSameOrigin == true, the message will be sent to the originId only, otherwise it will be broadcasted to all clients except the originId
 
-  unsigned int getConnectedClients();
+    unsigned int getConnectedClients();
 
 private:
-  PsychicHttpServer *_server;
-  PsychicWebSocketHandler _socket;
-  SecurityManager *_securityManager;
-  AuthenticationPredicate _authenticationPredicate;
+    PsychicHttpServer *_server;
+    PsychicWebSocketHandler _socket;
+    SecurityManager *_securityManager;
+    AuthenticationPredicate _authenticationPredicate;
 
-  std::vector<String> events;
-  std::map<String, std::list<int>> client_subscriptions;
-  std::map<String, std::list<EventCallback>> event_callbacks;
-  std::map<String, std::list<SubscribeCallback>> subscribe_callbacks;
-  void handleEventCallbacks(String event, JsonObject &jsonObject, int originId);
-  void handleSubscribeCallbacks(String event, const String &originId);
+    std::vector<String> events;
+    std::map<String, std::list<int>> client_subscriptions;
+    std::map<String, std::list<EventCallback>> event_callbacks;
+    std::map<String, std::list<SubscribeCallback>> subscribe_callbacks;
+    void handleEventCallbacks(String event, JsonObject &jsonObject, int originId);
+    void handleSubscribeCallbacks(String event, const String &originId);
 
-  bool isEventValid(String event);
+    bool isEventValid(String event);
 
-  void onWSOpen(PsychicWebSocketClient *client);
-  void onWSClose(PsychicWebSocketClient *client);
-  esp_err_t onFrame(PsychicWebSocketRequest *request, httpd_ws_frame *frame);
+    void onWSOpen(PsychicWebSocketClient *client);
+    void onWSClose(PsychicWebSocketClient *client);
+    esp_err_t onFrame(PsychicWebSocketRequest *request, httpd_ws_frame *frame);
 };
 
 #endif

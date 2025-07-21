@@ -106,7 +106,7 @@
 					title: 'Configuration',
 					icon: Config,
 					href: '/system/config',
-					feature: !$page.data.features.security || $user.admin,
+					feature: !page.data.features.security || $user.admin,
 					active: false
 				},
 				{

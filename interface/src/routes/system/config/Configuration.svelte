@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { openModal, closeModal } from 'svelte-modals';
+	import { modals } from 'svelte-modals';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/state';
 	import { notifications } from '$lib/components/toasts/notifications';
@@ -167,7 +167,7 @@
 
 		// Submit JSON to REST API
 		if (valid) {
-			openModal(ConfirmDialog, {
+			modals.open(ConfirmDialog, {
 				title: 'Confirm Restart',
 				message: 'Changing the motor configuration will restart the device. Proceed?',
 				labels: {
@@ -175,7 +175,7 @@
 					confirm: { label: 'Save & Restart', icon: Refresh }
 				},
 				onConfirm: () => {
-					closeModal();
+					modals.close();
 					motorConfig.home = false;
 					motorConfig.measure_travel = false;
 					postMotorConfig();
@@ -185,7 +185,7 @@
 	}
 
 	function confirmHome() {
-		openModal(ConfirmDialog, {
+		modals.open(ConfirmDialog, {
 			title: 'Confirm Homing',
 			message: 'Are you sure you want to home the device?',
 			labels: {
@@ -193,7 +193,7 @@
 				confirm: { label: 'Home', icon: Home }
 			},
 			onConfirm: () => {
-				closeModal();
+				modals.close();
 				motorConfig.home = true;
 				postMotorConfig();
 			}
@@ -201,7 +201,7 @@
 	}
 
 	/* 	function confirmMeasure() {
-		openModal(ConfirmDialog, {
+		modals.open(ConfirmDialog, {
 			title: 'Confirm Measure Rail Length',
 			message: 'Are you sure you want to measure the rail length?',
 			labels: {
@@ -209,7 +209,7 @@
 				confirm: { label: 'Measure', icon: Measure }
 			},
 			onConfirm: () => {
-				closeModal();
+				modals.close();
 				motorConfig.measure_travel = true;
 				postMotorConfig();
 			}
@@ -219,9 +219,9 @@
 	function confirmMeasure() {
 		motorConfig.measure_travel = true;
 		postMotorConfig();
-		openModal(MeasureTravel, {
+		modals.open(MeasureTravel, {
 			onClose: () => {
-				closeModal();
+				modals.close();
 				getMotorConfig();
 			}
 		});

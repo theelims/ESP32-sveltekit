@@ -9,10 +9,7 @@ let controlState: ControlState = {
 	stroke: 0.0,
 	rate: 0.0,
 	sensation: 0.0,
-	pattern: '',
-	vibration_override: false,
-	vibration_amplitude: 0.0,
-	vibration_frequency: 0.0
+	pattern: ''
 };
 
 function createControl() {
@@ -54,10 +51,7 @@ function createControl() {
 			stroke: data.stroke,
 			rate: data.rate,
 			sensation: data.sensation,
-			pattern: data.pattern,
-			vibration_override: data.vibration_override,
-			vibration_amplitude: data.vibration_amplitude,
-			vibration_frequency: data.vibration_frequency
+			pattern: data.pattern
 		}));
 
 		if (

@@ -3,7 +3,7 @@
  *
  *   https://github.com/openlust/LUST-motion
  *
- *   Copyright (C) 2024 theelims
+ *   Copyright (C) 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the MIT license. See the LICENSE file for details.
@@ -18,6 +18,7 @@
 #include <StrokeEngineEnvironmentService.h>
 #include <StrokeEngineSafetyService.h>
 #include <RawDataStreaming.h>
+#include <StatusMonitor.h>
 
 #define SERIAL_BAUD_RATE 115200
 
@@ -56,6 +57,8 @@ StrokeEngineEnvironmentService strokeEngineEnvironmentService = StrokeEngineEnvi
                                                                                                &mqttBrokerSettingsService);
 
 DataStreamer dataStream = DataStreamer(esp32sveltekit.getSocket(), &Stroker);
+
+StatusMonitor statusMonitor = StatusMonitor(&esp32sveltekit);
 
 /*#################################################################################################
 ##
@@ -102,6 +105,7 @@ void setup()
 
     // start ESP32-SvelteKit
     esp32sveltekit.begin();
+    statusMonitor.begin();
 
     // start mDNS
     MDNS.addService("LUST-Service", "tcp", 80);

@@ -5,9 +5,9 @@
 #   https://github.com/theelims/ESP32-sveltekit
 #
 #   Copyright (C) 2018 - 2023 rjwats
-#   Copyright (C) 2023 - 2024 theelims
+#   Copyright (C) 2023 - 2025 theelims
 #   Copyright (C) 2023 Maxtrium B.V. [ code available under dual license ]
-#   Copyright (C) 2024 runeharlyk
+#   Copyright (C) 2025 runeharlyk
 #
 #   All Rights Reserved. This software may be modified and distributed under
 #   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -71,21 +71,17 @@ def get_package_manager():
         return "pnpm"
     if exists(os.path.join(interface_dir, "yarn.lock")):
         return "yarn"
-    if exists(os.path.join(interface_dir, "package-lock.json")):
+    else:
         return "npm"
 
 
 def build_webapp():
-    if package_manager := get_package_manager():
-        print(f"Building interface with {package_manager}")
-        os.chdir(interface_dir)
-        env.Execute(f"{package_manager} install")
-        env.Execute(f"{package_manager} run build")
-        os.chdir("..")
-    else:
-        raise Exception(
-            "No lock-file found. Please install dependencies for interface (eg. npm install)"
-        )
+    package_manager = get_package_manager()
+    print(f"Building interface with {package_manager}")
+    os.chdir(interface_dir)
+    env.Execute(f"{package_manager} install")
+    env.Execute(f"{package_manager} run build")
+    os.chdir("..")
 
 
 def embed_webapp():

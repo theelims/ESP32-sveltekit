@@ -3,7 +3,7 @@
 /**
  *   LUST-motion
  *
- *   Copyright (C) 2024 theelims
+ *   Copyright (C) 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the MIT license. See the LICENSE file for details.
@@ -53,7 +53,7 @@ public:
         settings.strokeLimit = root["stroke_limit"] | -1.0;
         settings.velocityLimit = root["velocity_limit"] | MOTION_MAX_VELOCITY;
         settings.rateLimit = root["rate_limit"] | MOTION_MAX_RATE;
-        settings.heartbeatMode = root["heartbeat_mode"] | WatchdogMode::WATCHDOG_MODE_ANY;
+        settings.heartbeatMode = root["heartbeat_mode"] | WatchdogMode::WATCHDOG_MODE_NONE;
         settings.easeInSpeed = root["ease_in_speed"] | MOTION_FACTORY_EASE_IN_SPEED;
 
         return StateUpdateResult::CHANGED;

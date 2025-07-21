@@ -3,7 +3,7 @@
 /**
  *   LUST-motion
  *
- *   Copyright (C) 2024 theelims
+ *   Copyright (C) 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the MIT license. See the LICENSE file for details.
@@ -65,11 +65,6 @@
 #define VOLT_PER_MILLIVOLT 4.0e-2       // ADC conversion factor voltage reading: 40mV per V
 #define MAX_AMPERE 5.0                  // maximum range current sensor in Ampere
 #define MAX_VOLTAGE 40.0                // maximum range voltage sensor in Volt
-
-// Neopixel properties
-#define NEOPIXEL_COUNT 1                           // number of neopixel LEDs
-#define NEOPIXEL_METHODE NeoEsp32Rmt0Ws2812xMethod // NeoPixelBus method for neopixel
-#define NEOPIXEL_COLOR_ORDER NeoGrbFeature         // NeoPixelBus color order for neopixel
 
 // Available motor drivers - VIRTUAL driver is enabled by default
 #define DRIVER_GENERIC_STEPPER   // Generic stepper driver with endstop switch

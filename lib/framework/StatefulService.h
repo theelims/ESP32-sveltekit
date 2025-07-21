@@ -9,7 +9,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 - 2024 theelims
+ *   Copyright (C) 2023 - 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -47,7 +47,7 @@ typedef struct StateUpdateHandlerInfo
     update_handler_id_t _id;
     StateUpdateCallback _cb;
     bool _allowRemove;
-    StateUpdateHandlerInfo(StateUpdateCallback cb, bool allowRemove) : _id(++currentUpdatedHandlerId), _cb(cb), _allowRemove(allowRemove){};
+    StateUpdateHandlerInfo(StateUpdateCallback cb, bool allowRemove) : _id(++currentUpdatedHandlerId), _cb(cb), _allowRemove(allowRemove) {};
 } StateUpdateHandlerInfo_t;
 
 typedef struct StateHookHandlerInfo
@@ -56,7 +56,7 @@ typedef struct StateHookHandlerInfo
     hook_handler_id_t _id;
     StateHookCallback _cb;
     bool _allowRemove;
-    StateHookHandlerInfo(StateHookCallback cb, bool allowRemove) : _id(++currentHookHandlerId), _cb(cb), _allowRemove(allowRemove){};
+    StateHookHandlerInfo(StateHookCallback cb, bool allowRemove) : _id(++currentHookHandlerId), _cb(cb), _allowRemove(allowRemove) {};
 } StateHookHandlerInfo_t;
 
 template <class T>

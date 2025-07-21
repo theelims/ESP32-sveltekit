@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { closeModal } from 'svelte-modals';
+	import { modals } from 'svelte-modals';
 	import { focusTrap } from 'svelte-focus-trap';
 	import { fly } from 'svelte/transition';
 	import { user } from '$lib/stores/user';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import Measure from '~icons/tabler/ruler-measure';
 	import Cancel from '~icons/tabler/x';
 	import { onMount, onDestroy } from 'svelte';
@@ -31,7 +31,7 @@
 		const response = await fetch('/rest/motorConfig', {
 			method: 'GET',
 			headers: {
-				Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+				Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 				'Content-Type': 'application/json'
 			}
 		});

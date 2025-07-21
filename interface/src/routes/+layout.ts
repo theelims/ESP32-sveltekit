@@ -11,7 +11,7 @@ export const load = (async ({ fetch }) => {
 		features: item,
 		title: 'LUST-motion',
 		github: 'openlust/LUST-motion',
-		copyright: '2024 theelims',
+		copyright: '2025 theelims',
 		appName: 'LUST-motion'
 	};
 }) satisfies LayoutLoad;

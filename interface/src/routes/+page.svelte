@@ -24,8 +24,6 @@
 
 	let { data }: Props = $props();
 
-	// $: console.log($environment);
-
 	Chart.register(...registerables);
 	Chart.register(LuxonAdapter);
 	Chart.register(ChartStreaming);
@@ -40,63 +38,42 @@
 	let constSpeed: boolean = false;
 	let oldStroke: number = 0;
 
-	function openDataSocket() {
-		dataSocket.onmessage = (event) => {
-			const data = null;
-
-			if (timeSync == 0) {
-				timeSync = Date.now() - data[0][0];
-			}
-
-			for (let i = 0; i < data.length; i++) {
-				positionChart.data.datasets[0].data.push({
-					x: timeSync + data[i][0],
-					y: data[i][1]
-				});
-				positionChart.data.datasets[1].data.push({
-					x: timeSync + data[i][0],
-					y: data[i][2]
-				});
-			}
-		};
-	}
-
 	function controlSession() {
 		if (go === true) {
-			controlState.command = 'STOP';
+			$control.command = 'STOP';
 			go = false;
 		} else {
-			controlState.command = 'playpattern';
+			$control.command = 'playpattern';
 			go = true;
 		}
-		sendControl();
+		control.sendControl();
 	}
 
 	function controlSpeed() {
 		if (constSpeed === true) {
 			// adjust speed when stroke changes
-			controlState.rate = (oldStroke / controlState.stroke) * controlState.rate;
+			$control.rate = (oldStroke / $control.stroke) * $control.rate;
 		}
-		oldStroke = controlState.stroke;
-		sendControl();
+		oldStroke = $control.stroke;
+		control.sendControl();
 	}
 
 	function commandDepth() {
 		go = false;
-		controlState.command = 'depth';
-		sendControl();
+		$control.command = 'depth';
+		control.sendControl();
 	}
 
 	function commandStroke() {
 		go = false;
-		controlState.command = 'stroke';
-		sendControl();
+		$control.command = 'stroke';
+		control.sendControl();
 	}
 
 	function commandRetract() {
 		go = false;
-		controlState.command = 'retract';
-		sendControl();
+		$control.command = 'retract';
+		control.sendControl();
 	}
 
 	onDestroy(() => {
@@ -124,8 +101,6 @@
 		});
 
 		if (page.data.features.data_streaming === true) {
-			openDataSocket();
-
 			positionChart = new Chart(positionChartElement, {
 				type: 'line',
 				data: {
@@ -244,15 +219,15 @@
 			type="range"
 			min="0"
 			max={$environment.depth}
-			bind:value={controlState.depth}
+			bind:value={$control.depth}
 			onchange={() => {
-				sendControl();
+				control.sendControl();
 			}}
 			class="range range-primary range-xs"
 		/>
 		<label class="label mt-0 pt-0">
 			<span class="label-text"><b>Depth</b></span>
-			<span class="label-text-alt">{Math.round(controlState.depth)} mm</span>
+			<span class="label-text-alt">{Math.round($control.depth)} mm</span>
 		</label>
 	</div>
 	<div class="mt-4 mx-4">
@@ -260,7 +235,7 @@
 			type="range"
 			min="0"
 			max={$environment.depth}
-			bind:value={controlState.stroke}
+			bind:value={$control.stroke}
 			onchange={() => {
 				controlSpeed();
 			}}
@@ -268,7 +243,7 @@
 		/>
 		<label class="label mt-0 pt-0">
 			<span class="label-text"><b>Stroke</b></span>
-			<span class="label-text-alt">{Math.round(controlState.stroke)} mm</span>
+			<span class="label-text-alt">{Math.round($control.stroke)} mm</span>
 		</label>
 	</div>
 	<div class="mt-4 mx-4">
@@ -276,15 +251,15 @@
 			type="range"
 			min="0"
 			max={$environment.max_rate}
-			bind:value={controlState.rate}
+			bind:value={$control.rate}
 			onchange={() => {
-				sendControl();
+				control.sendControl();
 			}}
 			class="range range-primary range-xs"
 		/>
 		<label class="label mt-0 pt-0">
 			<span class="label-text"><b>Speed</b></span>
-			<span class="label-text-alt">{Math.round(controlState.rate * 1e1) / 1e1} FPM</span>
+			<span class="label-text-alt">{Math.round($control.rate * 1e1) / 1e1} FPM</span>
 		</label>
 	</div>
 	<div class="mt-4 mx-4">
@@ -292,15 +267,15 @@
 			type="range"
 			min="-100"
 			max="100"
-			bind:value={controlState.sensation}
+			bind:value={$control.sensation}
 			onchange={() => {
-				sendControl();
+				control.sendControl();
 			}}
 			class="range range-primary range-xs"
 		/>
 		<label class="label mt-0 pt-0">
 			<span class="label-text"><b>Sensation</b></span>
-			<span class="label-text-alt">{Math.round(controlState.sensation)}</span>
+			<span class="label-text-alt">{Math.round($control.sensation)}</span>
 		</label>
 	</div>
 
@@ -317,8 +292,10 @@
 		</button>
 		<select
 			class="select select-primary grow sm:grow-0 sm:w-64"
-			bind:value={controlState.pattern}
-			onchange={sendControl}
+			bind:value={$control.pattern}
+			onchange={() => {
+				control.sendControl();
+			}}
 		>
 			{#each $environment.patterns as pattern}
 				<option>{pattern}</option>

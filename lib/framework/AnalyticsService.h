@@ -7,7 +7,7 @@
  *   with responsive Sveltekit front-end built with TailwindCSS and DaisyUI.
  *   https://github.com/theelims/ESP32-sveltekit
  *
- *   Copyright (C) 2023 - 2024 theelims
+ *   Copyright (C) 2023 - 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -47,7 +47,8 @@ public:
             doc["fs_used"] = ESPFS.usedBytes();
             doc["fs_total"] = ESPFS.totalBytes();
             doc["core_temp"] = temperatureRead();
-            if (psramFound()) {
+            if (psramFound())
+            {
                 doc["free_psram"] = ESP.getFreePsram();
                 doc["used_psram"] = ESP.getPsramSize() - ESP.getFreePsram();
                 doc["psram_size"] = ESP.getPsramSize();
