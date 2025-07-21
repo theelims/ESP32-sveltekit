@@ -13,7 +13,7 @@
  **/
 #include <vector>
 #include <MqttEndpoint.h>
-#include <MqttBrokerSettingsService.h>
+#include <MqttSettingsService.h>
 
 std::vector<MqttCommitHandler *> MqttCommitHandler::_instances;
 TimerHandle_t MqttCommitHandler::_sendTimer = nullptr;
