@@ -71,21 +71,17 @@ def get_package_manager():
         return "pnpm"
     if exists(os.path.join(interface_dir, "yarn.lock")):
         return "yarn"
-    if exists(os.path.join(interface_dir, "package-lock.json")):
+    else:
         return "npm"
 
 
 def build_webapp():
-    if package_manager := get_package_manager():
-        print(f"Building interface with {package_manager}")
-        os.chdir(interface_dir)
-        env.Execute(f"{package_manager} install")
-        env.Execute(f"{package_manager} run build")
-        os.chdir("..")
-    else:
-        raise Exception(
-            "No lock-file found. Please install dependencies for interface (eg. npm install)"
-        )
+    package_manager = get_package_manager()
+    print(f"Building interface with {package_manager}")
+    os.chdir(interface_dir)
+    env.Execute(f"{package_manager} install")
+    env.Execute(f"{package_manager} run build")
+    os.chdir("..")
 
 
 def embed_webapp():

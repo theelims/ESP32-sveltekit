@@ -49,11 +49,11 @@ All notable changes to this project will be documented in this file.
 - Changed platform to [PIO Arduino](https://github.com/pioarduino/platform-espressif32) using Arduino 3 Core. Also upgrades ESP-IDF to v5.
 - ESPD_LOGx: replace first argument with TAG and define TAG as 🐼 [#85](https://github.com/theelims/ESP32-sveltekit/pull/85)
 - Replace rtc_get_reset_reason(0) with esp_reset_reason() [#86](https://github.com/theelims/ESP32-sveltekit/pull/86)
+- Default build_interface.py script to npm, if no lock file is found.
 
 ### Fixed
 
 - Ensure thread safety for client subscriptions [#58](https://github.com/theelims/ESP32-sveltekit/pull/58)
-- Isolate non-returning functions in new tasks [#62](https://github.com/theelims/ESP32-sveltekit/pull/62)
 - Deferred websocket event connection to after user validation & login [#72](https://github.com/theelims/ESP32-sveltekit/pull/72)
 - Wrong return type battery service
 - Wrong return types in various getService functions.

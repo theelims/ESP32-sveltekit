@@ -6,14 +6,14 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 - 2024 theelims
+ *   Copyright (C) 2023 - 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
  **/
 #include <vector>
 #include <MqttEndpoint.h>
-#include <MqttBrokerSettingsService.h>
+#include <MqttSettingsService.h>
 
 std::vector<MqttCommitHandler *> MqttCommitHandler::_instances;
 TimerHandle_t MqttCommitHandler::_sendTimer = nullptr;
