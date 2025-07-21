@@ -214,7 +214,7 @@
 {/if}
 
 <div class="card bg-base-200 shadow-md shadow-primary/50 mt-3 mb-1.5 mx-auto w-11/12">
-	<div class="mt-4 mx-4">
+	<div class="mt-4 mx-4 flex-col justify-around">
 		<input
 			type="range"
 			min="0"
@@ -223,14 +223,14 @@
 			onchange={() => {
 				control.sendControl();
 			}}
-			class="range range-primary range-xs"
+			class="range range-primary range-xs w-full"
 		/>
-		<label class="label mt-0 pt-0">
-			<span class="label-text"><b>Depth</b></span>
-			<span class="label-text-alt">{Math.round($control.depth)} mm</span>
-		</label>
+		<div class="inline-flex mt-1 justify-between w-full">
+			<span class="text-base-content"><b>Depth</b></span>
+			<span class="text-base-content">{Math.round($control.depth)} mm</span>
+		</div>
 	</div>
-	<div class="mt-4 mx-4">
+	<div class="mt-4 mx-4 flex-col justify-around">
 		<input
 			type="range"
 			min="0"
@@ -239,14 +239,14 @@
 			onchange={() => {
 				controlSpeed();
 			}}
-			class="range range-primary range-xs"
+			class="range range-primary range-xs w-full"
 		/>
-		<label class="label mt-0 pt-0">
-			<span class="label-text"><b>Stroke</b></span>
-			<span class="label-text-alt">{Math.round($control.stroke)} mm</span>
-		</label>
+		<div class="inline-flex mt-1 justify-between w-full">
+			<span class="text-base-content"><b>Stroke</b></span>
+			<span class="text-base-content">{Math.round($control.stroke)} mm</span>
+		</div>
 	</div>
-	<div class="mt-4 mx-4">
+	<div class="mt-4 mx-4 flex-col justify-around">
 		<input
 			type="range"
 			min="0"
@@ -255,14 +255,14 @@
 			onchange={() => {
 				control.sendControl();
 			}}
-			class="range range-primary range-xs"
+			class="range range-primary range-xs w-full"
 		/>
-		<label class="label mt-0 pt-0">
-			<span class="label-text"><b>Speed</b></span>
-			<span class="label-text-alt">{Math.round($control.rate * 1e1) / 1e1} FPM</span>
-		</label>
+		<div class="inline-flex mt-1 justify-between w-full">
+			<span class="text-base-content"><b>Speed</b></span>
+			<span class="text-base-content">{Math.round($control.rate * 1e1) / 1e1} FPM</span>
+		</div>
 	</div>
-	<div class="mt-4 mx-4">
+	<div class="mt-4 mx-4 flex-col justify-around">
 		<input
 			type="range"
 			min="-100"
@@ -271,12 +271,12 @@
 			onchange={() => {
 				control.sendControl();
 			}}
-			class="range range-primary range-xs"
+			class="range range-primary range-xs w-full"
 		/>
-		<label class="label mt-0 pt-0">
-			<span class="label-text"><b>Sensation</b></span>
-			<span class="label-text-alt">{Math.round($control.sensation)}</span>
-		</label>
+		<div class="inline-flex mt-1 justify-between w-full">
+			<span class="text-base-content"><b>Sensation</b></span>
+			<span class="text-base-content">{Math.round($control.sensation)}</span>
+		</div>
 	</div>
 
 	<div class="m-4 flex flex-wrap gap-6 justify-between">
@@ -291,7 +291,7 @@
 			{/if}
 		</button>
 		<select
-			class="select select-primary grow sm:grow-0 sm:w-64"
+			class="select select-primary grow sm:grow-0 sm:w-64 w-max"
 			bind:value={$control.pattern}
 			onchange={() => {
 				control.sendControl();

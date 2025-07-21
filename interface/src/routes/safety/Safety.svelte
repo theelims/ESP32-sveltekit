@@ -92,10 +92,10 @@
 
 <SettingsCard collapsible={false}>
 	{#snippet icon()}
-		<Safety  class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+		<Safety class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	{/snippet}
 	{#snippet title()}
-		<span >Safety Settings</span>
+		<span>Safety Settings</span>
 	{/snippet}
 	<div class="w-full">
 		<h1 class="text-xl font-semibold">Range Limit</h1>
@@ -109,44 +109,44 @@
 			</span>
 		</div>
 
-		<div class="mt-4 mx-4">
+		<div class="mt-4 mx-4 flex-col justify-around">
 			<input
 				type="range"
 				min="0"
 				max={$environment.depth}
 				bind:value={safetySettings.depth_limit}
-				class="range range-primary range-xs"
+				class="range range-primary range-xs w-full"
 			/>
-			<label class="label mt-0 pt-0">
-				<span class="label-text"><b>Depth</b></span>
-				<span class="label-text-alt">{safetySettings.depth_limit} mm</span>
-			</label>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-base-content"><b>Depth</b></span>
+				<span class="text-base-content">{safetySettings.depth_limit} mm</span>
+			</div>
 		</div>
-		<div class="mt-4 mx-4">
+		<div class="mt-4 mx-4 flex-col justify-around">
 			<input
 				type="range"
 				min="0"
 				max={$environment.depth}
 				bind:value={safetySettings.stroke_limit}
-				class="range range-primary range-xs"
+				class="range range-primary range-xs w-full"
 			/>
-			<label class="label mt-0 pt-0">
-				<span class="label-text"><b>Stroke</b></span>
-				<span class="label-text-alt">{safetySettings.stroke_limit} mm</span>
-			</label>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-base-content"><b>Stroke</b></span>
+				<span class="text-base-content">{safetySettings.stroke_limit} mm</span>
+			</div>
 		</div>
-		<div class="mt-4 mx-4">
+		<div class="mt-4 mx-4 flex-col justify-around">
 			<input
 				type="range"
 				min="0"
 				max={$environment.max_rate}
 				bind:value={safetySettings.rate_limit}
-				class="range range-primary range-xs"
+				class="range range-primary range-xs w-full"
 			/>
-			<label class="label mt-0 pt-0">
-				<span class="label-text"><b>Speed</b></span>
-				<span class="label-text-alt">{safetySettings.rate_limit} FPM</span>
-			</label>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-base-content"><b>Speed</b></span>
+				<span class="text-base-content">{safetySettings.rate_limit} FPM</span>
+			</div>
 		</div>
 		<div class="divider"></div>
 		<h1 class="text-xl font-semibold">Velocity Limit</h1>
@@ -159,18 +159,18 @@
 				abilities.
 			</span>
 		</div>
-		<div class="mt-4 mx-4">
+		<div class="mt-4 mx-4 flex-col justify-around">
 			<input
 				type="range"
 				min="0"
 				max={$environment.max_velocity}
 				bind:value={safetySettings.velocity_limit}
-				class="range range-primary range-xs"
+				class="range range-primary range-xs w-full"
 			/>
-			<label class="label mt-0 pt-0">
-				<span class="label-text"><b>Velocity Limit</b></span>
-				<span class="label-text-alt">{safetySettings.velocity_limit} mm/s</span>
-			</label>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-base-content"><b>Velocity Limit</b></span>
+				<span class="text-base-content">{safetySettings.velocity_limit} mm/s</span>
+			</div>
 		</div>
 		<div class="alert my-2 shadow-lg bg-base-100">
 			<Info class="h-6 w-6 shrink-0 stroke-current" />
@@ -180,18 +180,18 @@
 				<b>Stroke</b> is applied to the individual strokes.
 			</span>
 		</div>
-		<div class="mt-4 mx-4">
+		<div class="mt-4 mx-4 flex-col justify-around">
 			<input
 				type="range"
 				min="0"
 				max="30.0"
 				bind:value={safetySettings.ease_in_speed}
-				class="range range-primary range-xs"
+				class="range range-primary range-xs w-full"
 			/>
-			<label class="label mt-0 pt-0">
-				<span class="label-text"><b>Ease In Speed</b></span>
-				<span class="label-text-alt">{safetySettings.ease_in_speed} mm/s</span>
-			</label>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-base-content"><b>Ease In Speed</b></span>
+				<span class="text-base-content">{safetySettings.ease_in_speed} mm/s</span>
+			</div>
 		</div>
 		<div class="divider"></div>
 		<h1 class="text-xl font-semibold">Heartbeat Mode</h1>

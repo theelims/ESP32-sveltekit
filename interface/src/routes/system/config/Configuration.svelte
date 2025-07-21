@@ -255,160 +255,162 @@
 					bind:this={formField}
 				>
 					<div
-						class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2"
+						class="grid w-full grid-cols-1 content-center gap-x-4 gap-y-2 px-2 sm:grid-cols-2"
 						transition:slide|local={{ duration: 300, easing: cubicOut }}
 					>
 						<!-- Driver -->
 						<div>
-							<label class="label" for="driver">
-								<span class="label-text text-md">Driver</span>
+							<label class="label" for="driver">Driver </label>
+							<label for="driver" class="select w-full">
+								<select class="" bind:value={motorConfig.driver} id="driver">
+									{#each motorConfig.driver_list as driver}
+										<option value={driver}>{driver}</option>
+									{/each}
+								</select>
 							</label>
-							<select
-								class="select select-bordered w-full max-w-xs"
-								bind:value={motorConfig.driver}
-								id="driver"
-							>
-								{#each motorConfig.driver_list as driver}
-									<option value={driver}>{driver}</option>
-								{/each}
-							</select>
 						</div>
 						<!-- Invert Direction-->
-						<label class="label inline-flex cursor-pointer content-end justify-start gap-4">
+						<label
+							class="label inline-flex cursor-pointer content-end justify-start gap-4 text-base pt-1 sm:mt-4"
+						>
 							<input
 								type="checkbox"
 								bind:checked={motorConfig.invert_direction}
-								class="checkbox checkbox-primary mt-2 sm:-mb-8 sm:mt-0"
+								class="checkbox checkbox-primary"
 							/>
-							<span class="mt-2 sm:-mb-8 sm:mt-0">Invert Direction</span>
+							Invert Direction
 						</label>
 						<!-- Steps per Revolution -->
 						<div>
-							<label class="label" for="steps_pee_rev">
-								<span class="label-text text-md">Steps per Revolution</span>
-							</label>
-							<span class="input-group">
+							<label class="label" for="steps_pee_rev">Steps per Revolution </label>
+							<label
+								for="steps_pee_rev"
+								class="input w-full invalid:border-error invalid:border-2 {formErrors.steps_per_rev
+									? 'border-error border-2'
+									: ''}"
+							>
 								<input
 									type="number"
 									min="800"
 									max="51200"
 									step="100"
-									class="join-item input w-full invalid:border-error w-full invalid:border-2 {formErrors.steps_per_rev
-										? 'border-error border-2'
-										: ''}"
+									class=""
 									bind:value={motorConfig.steps_per_rev}
 									id="steps_per_rev"
 								/>
-								<span>Steps/Rev</span>
-							</span>
+								<span class="label">Steps/Rev</span>
+							</label>
 							<label for="steps_per_rev" class="label"
-								><span class="label-text-alt text-error {formErrors.steps_per_rev ? '' : 'hidden'}"
+								><span class="text-error {formErrors.steps_per_rev ? '' : 'hidden'}"
 									>Must be between 800 and 51200</span
 								></label
 							>
 						</div>
 						<!-- Pulley Teeth -->
 						<div>
-							<label class="label" for="pulley_teeth">
-								<span class="label-text text-md">Pulley Teeth</span>
-							</label>
-							<span class="input-group">
+							<label class="label" for="pulley_teeth">Pulley Teeth </label>
+							<label
+								for="pulley_teeth"
+								class="input w-full invalid:border-error invalid:border-2 {formErrors.pulley_teeth
+									? 'border-error border-2'
+									: ''}"
+							>
 								<input
 									type="number"
 									min="10"
 									max="100"
 									step="1"
-									class="input w-full invalid:border-error w-full invalid:border-2 {formErrors.pulley_teeth
-										? 'border-error border-2'
-										: ''}"
+									class=""
 									bind:value={motorConfig.pulley_teeth}
 									id="pulley_teeth"
 								/>
-								<span>Teeth</span>
-							</span>
+								<span class="label">Teeth</span>
+							</label>
 							<label for="pulley_teeth" class="label"
-								><span class="label-text-alt text-error {formErrors.pulley_teeth ? '' : 'hidden'}"
+								><span class="text-error {formErrors.pulley_teeth ? '' : 'hidden'}"
 									>Must be between 10 and 100</span
 								></label
 							>
 						</div>
 						<!-- Max RPM -->
 						<div>
-							<label class="label" for="max_rpm">
-								<span class="label-text text-md">Maximum RPM</span>
-							</label>
-							<span class="input-group">
+							<label class="label" for="max_rpm">Maximum RPM </label>
+							<label
+								for="max_rpm"
+								class="input w-full invalid:border-error invalid:border-2 {formErrors.max_rpm
+									? 'border-error border-2'
+									: ''}"
+							>
 								<input
 									type="number"
 									min="0"
 									max="10000"
 									step="10"
-									class="input w-full invalid:border-error w-full invalid:border-2 {formErrors.max_rpm
-										? 'border-error border-2'
-										: ''}"
+									class=""
 									bind:value={motorConfig.max_rpm}
 									id="max_rpm"
 								/>
-								<span>RPM</span>
-							</span>
+								<span class="label">RPM</span>
+							</label>
 							<label for="max_rpm" class="label"
-								><span class="label-text-alt text-error {formErrors.max_rpm ? '' : 'hidden'}"
+								><span class="text-error {formErrors.max_rpm ? '' : 'hidden'}"
 									>Must be between 0 RPM and 10000 RPM</span
 								></label
 							>
 						</div>
 						<!-- Max Acceleration -->
 						<div>
-							<label class="label" for="max_acceleration">
-								<span class="label-text text-md">Maximum Acceleration</span>
-							</label>
-							<span class="input-group">
+							<label class="label" for="max_acceleration">Maximum Acceleration </label>
+							<label
+								for="max_acceleration"
+								class="input w-full invalid:border-error invalid:border-2 {formErrors.max_acceleration
+									? 'border-error border-2'
+									: ''}"
+							>
 								<input
 									type="number"
 									min="100"
 									max="1000000"
 									step="100"
-									class="input w-full invalid:border-error w-full invalid:border-2 {formErrors.max_acceleration
-										? 'border-error border-2'
-										: ''}"
+									class=""
 									bind:value={motorConfig.max_acceleration}
 									id="max_acceleration"
 								/>
-								<span>mm/s²</span>
-							</span>
+								<span class="label">mm/s²</span>
+							</label>
 							<label for="max_acceleration" class="label"
-								><span
-									class="label-text-alt text-error {formErrors.max_acceleration ? '' : 'hidden'}"
+								><span class="text-error {formErrors.max_acceleration ? '' : 'hidden'}"
 									>Must be between 100 mm/s² and 1000000 mm/s²</span
 								></label
 							>
 						</div>
 						<!-- Travel -->
 						<div>
-							<label class="label" for="travel">
-								<span class="label-text text-md">Mechanical Travel</span>
-							</label>
-							<span class="input-group">
+							<label class="label" for="travel">Mechanical Travel </label>
+							<label
+								for="travel"
+								class="input w-full invalid:border-error invalid:border-2 {formErrors.travel
+									? 'border-error border-2'
+									: ''}"
+							>
 								<input
 									type="number"
 									min="100"
 									max="1000"
-									class="input w-full invalid:border-error w-full invalid:border-2 {formErrors.travel
-										? 'border-error border-2'
-										: ''}"
+									class=""
 									bind:value={motorConfig.travel}
 									id="travel"
 								/>
-								<span>mm</span>
-							</span>
+								<span class="label">mm</span>
+							</label>
 							<label for="travel" class="label"
-								><span class="label-text-alt text-error {formErrors.travel ? '' : 'hidden'}"
+								><span class="text-error {formErrors.travel ? '' : 'hidden'}"
 									>Must be between 100 mm and 1000 mm</span
 								></label
 							>
 						</div>
 						<!-- Measure Travel -->
-						<div class="flex flex-col justify-center sm:pt-5 pt-0">
+						<div class="flex flex-col justify-center sm:pt-4 pt-1">
 							<button
 								class="btn btn-primary inline-flex items-center"
 								onclick={confirmMeasure}
@@ -421,49 +423,47 @@
 						</div>
 						<!-- Keepout -->
 						<div>
-							<label class="label" for="keepout">
-								<span class="label-text text-md">Keep Away from End Stops</span>
-							</label>
-							<span class="input-group">
+							<label class="label" for="keepout">Keep Away from End Stops </label>
+							<label
+								for="keepout"
+								class="input w-full invalid:border-error invalid:border-2 {formErrors.keepout
+									? 'border-error border-2'
+									: ''}"
+							>
 								<input
 									type="number"
 									min="0"
 									max="20"
 									step="0.1"
-									class="input w-full invalid:border-error w-full invalid:border-2 {formErrors.keepout
-										? 'border-error border-2'
-										: ''}"
+									class=""
 									bind:value={motorConfig.keepout}
 									id="keepout"
 								/>
-								<span>mm</span>
-							</span>
+								<span class="label">mm</span>
+							</label>
 							<label for="keepout" class="label"
-								><span class="label-text-alt text-error {formErrors.keepout ? '' : 'hidden'}"
+								><span class="text-error {formErrors.keepout ? '' : 'hidden'}"
 									>Must be between 0 mm and 10 mm</span
 								></label
 							>
 						</div>
 						<!-- Sensorless Trigger -->
 						<div>
-							<label class="label" for="sensorless_trigger">
-								<span class="label-text text-md">Sensorless Trigger</span>
-							</label>
-							<span class="input-group">
+							<label class="label" for="sensorless_trigger">Sensorless Trigger Threshold </label>
+							<label for="sensorless_trigger" class="input w-full">
 								<input
 									type="number"
 									min="0"
 									max="100"
 									step="1"
-									class="input w-full"
+									class=""
 									bind:value={motorConfig.sensorless_trigger}
 									id="sensorless_trigger"
 								/>
-								<span>%</span>
-							</span>
+								<span class="label">%</span>
+							</label>
 							<label for="sensorless_trigger" class="label"
-								><span
-									class="label-text-alt text-error {formErrors.sensorless_trigger ? '' : 'hidden'}"
+								><span class="text-error {formErrors.sensorless_trigger ? '' : 'hidden'}"
 									>Must be between 0% and 100%</span
 								></label
 							>
