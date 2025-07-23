@@ -81,15 +81,11 @@ public:
     float rate;
     float sensation;
     String pattern;
-    bool vibrationOverride;
-    float vibrationAmplitude;
-    float vibrationFrequency;
 
     bool operator==(const StrokeEngineControl &settings) const
     {
         return command == settings.command && depth == settings.depth && stroke == settings.stroke &&
-               rate == settings.rate && sensation == settings.sensation && pattern == settings.pattern &&
-               vibrationOverride == settings.vibrationOverride && vibrationAmplitude == settings.vibrationAmplitude && vibrationFrequency == settings.vibrationFrequency;
+               rate == settings.rate && sensation == settings.sensation && pattern == settings.pattern;
     }
 
     static void read(StrokeEngineControl &settings, JsonObject &root)
@@ -100,9 +96,6 @@ public:
         root["rate"] = settings.rate;
         root["sensation"] = settings.sensation;
         root["pattern"] = settings.pattern;
-        root["vibration_override"] = settings.vibrationOverride;
-        root["vibration_amplitude"] = settings.vibrationAmplitude;
-        root["vibration_speed"] = settings.vibrationFrequency;
     }
 
     static StateUpdateResult update(JsonObject &root, StrokeEngineControl &settings)
@@ -115,9 +108,6 @@ public:
         newSettings.rate = root["rate"];
         newSettings.sensation = root["sensation"];
         newSettings.pattern = root["pattern"].as<String>();
-        newSettings.vibrationOverride = root["vibration_override"] | false;
-        newSettings.vibrationAmplitude = root["vibration_amplitude"];
-        newSettings.vibrationFrequency = root["vibration_frequency"];
 
         if (newSettings == settings)
         {
@@ -139,8 +129,6 @@ public:
 
     void begin();
 
-    void setHeartbeatMode(WatchdogMode mode);
-
 private:
     HttpEndpoint<StrokeEngineControl> _httpEndpoint;
     MqttEndpoint<StrokeEngineControl> _mqttEndpoint;
@@ -148,11 +136,8 @@ private:
     PsychicMqttClient *_mqttClient;
     StrokeEngine *_strokeEngine;
     MqttBrokerSettingsService *_mqttBrokerSettingsService;
-    HeartbeatWatchdog _heartbeatWatchdog;
 
     void onConfigUpdated(String originId);
 
     void onStrokeEngineChanged(String reason);
-
-    void watchdogTriggered(String originId);
 };

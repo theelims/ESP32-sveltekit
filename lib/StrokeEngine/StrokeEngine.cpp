@@ -327,6 +327,41 @@ String StrokeEngine::getPatternName(int index)
     }
 }
 
+void StrokeEngine::onSafeState(StrokeEngineSafeStateCallback callback)
+{
+    _onSafeStateCallbacks.push_back(callback);
+}
+
+bool StrokeEngine::safeState(bool safestate)
+{
+    if (safestate != _safestate)
+    {
+        ESP_LOGW("StrokeEngine", "Safe state changed to %d", safestate);
+        if (safestate)
+        {
+            runCommand(StrokeCommand::STOP);
+            _safestate = true;
+        }
+        else
+        {
+            _safestate = false;
+        }
+
+        // notify all callbacks
+        for (auto &callback : _onSafeStateCallbacks)
+        {
+            callback(_safestate);
+        }
+    }
+    ESP_LOGI("StrokeEngine", "Safe state is %d", _safestate);
+    return _safestate;
+}
+
+bool StrokeEngine::getSafeState()
+{
+    return _safestate;
+}
+
 void StrokeEngine::onNotify(StrokeEngineNotifyCallback callback)
 {
     _onNotifyCallbacks.push_back(callback);

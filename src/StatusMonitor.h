@@ -35,7 +35,7 @@ public:
     {
         if (millis() - _lastUpdate > STATUS_UPDATE_INTERVAL)
         {
-            FastLED.setBrightness(128);
+            FastLED.setBrightness(64);
 
             switch (_esp32sveltekit->getConnectionStatus())
             {

@@ -17,21 +17,7 @@
 	import Save from '~icons/tabler/device-floppy';
 	import { goto } from '$app/navigation';
 	import MeasureTravel from './Measure.svelte';
-
-	type MotorConfig = {
-		driver: string;
-		driver_list: string[];
-		steps_per_rev: number;
-		max_rpm: number;
-		max_acceleration: number;
-		pulley_teeth: number;
-		invert_direction: boolean;
-		measure_travel: boolean;
-		home: boolean;
-		travel: number;
-		keepout: number;
-		sensorless_trigger: number;
-	};
+	import type { MotorConfig } from '$lib/types/models';
 
 	let motorConfig: MotorConfig = $state({
 		driver: 'VIRTUAL',
@@ -104,7 +90,7 @@
 
 		// Validate if steps per revolution is a number and within the right range
 		let steps_pre_rev = Number(motorConfig.steps_per_rev);
-		if (800 <= steps_pre_rev && steps_pre_rev <= 51200) {
+		if (400 <= steps_pre_rev && steps_pre_rev <= 51200) {
 			formErrors.steps_per_rev = false;
 		} else {
 			formErrors.steps_per_rev = true;
@@ -291,7 +277,7 @@
 							>
 								<input
 									type="number"
-									min="800"
+									min="400"
 									max="51200"
 									step="100"
 									class=""

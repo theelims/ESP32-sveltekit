@@ -34,6 +34,8 @@ public:
     String environmentTopic;
     String streamingTopic;
     String stateTopic;
+    String safeStateTopicPub;
+    String safeStateTopicSub;
 
     static void read(MqttBrokerSettings &settings, JsonObject &root)
     {
@@ -41,6 +43,8 @@ public:
         root["environment_topic"] = settings.environmentTopic;
         root["streaming_topic"] = settings.streamingTopic;
         root["status_topic"] = settings.stateTopic;
+        root["safestate_topic_pub"] = settings.safeStateTopicPub;
+        root["safestate_topic_sub"] = settings.safeStateTopicSub;
     }
 
     static StateUpdateResult update(JsonObject &root, MqttBrokerSettings &settings)
@@ -49,6 +53,9 @@ public:
         settings.environmentTopic = root["environment_topic"] | SettingValue::format("lust-motion/#{unique_id}/environment");
         settings.streamingTopic = root["streaming_topic"] | SettingValue::format("lust-motion/#{unique_id}/streaming");
         settings.stateTopic = root["status_topic"] | SettingValue::format(FACTORY_MQTT_STATUS_TOPIC);
+        settings.safeStateTopicPub = root["safestate_topic_pub"] | SettingValue::format("lust-motion/#{unique_id}/safestate/sub");
+        settings.safeStateTopicSub = root["safestate_topic_sub"] | SettingValue::format("lust-motion/#{unique_id}/safestate/pub");
+
         return StateUpdateResult::CHANGED;
     }
 };

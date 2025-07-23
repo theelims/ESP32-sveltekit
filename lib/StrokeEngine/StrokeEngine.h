@@ -126,6 +126,7 @@ enum class StrokeCommand
 };
 
 typedef std::function<void(String message)> StrokeEngineNotifyCallback;
+typedef std::function<void(bool safestate)> StrokeEngineSafeStateCallback;
 
 /**************************************************************************/
 /*!
@@ -285,8 +286,36 @@ public:
     /**************************************************************************/
     bool isActive() { return _active; }
 
+    /**************************************************************************/
+    /*!
+      @brief  Enter a safestate and stop any motion until cleared.
+      @param safestate TRUE to enter a safestate, FALSE to allow motion.
+      @return TRUE if a safestate persists, FALSE if output is allowed.
+    */
+    /**************************************************************************/
+    bool safeState(bool safestate = true);
+
+    /**************************************************************************/
+    /*!
+      @brief  Returns wether StrokeEngine is in a safe state.
+      @return TRUE if a safestate persists, FALSE if output is allowed.
+    */
+    /**************************************************************************/
+    bool getSafeState();
+
+    /**************************************************************************/
+    /*!
+      @brief  Registers a callback that will be called when the StrokeEngine
+              changes the safe state.
+      @param callback Function pointer to a function that takes a Bool as
+                      argument.
+    */
+    /**************************************************************************/
+    void onSafeState(StrokeEngineSafeStateCallback callback);
+
 protected:
     bool _active = false;
+    bool _safestate = false;
     MotorInterface *_motor;
     StrokeEngineSafeGuard _safeGuard; // all setting & makeSafe calls must be made within the scope of a taken _parameterMutex
     StrokeCommand _command = StrokeCommand::STOP;
@@ -309,6 +338,7 @@ protected:
     void _stroking();
     TaskHandle_t _taskStrokingHandle = NULL;
 
+    std::vector<StrokeEngineSafeStateCallback> _onSafeStateCallbacks;
     std::vector<StrokeEngineNotifyCallback> _onNotifyCallbacks;
     void _notify(String message);
 };

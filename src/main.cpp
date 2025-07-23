@@ -17,6 +17,7 @@
 #include <MotorConfigurationService.h>
 #include <StrokeEngineEnvironmentService.h>
 #include <StrokeEngineSafetyService.h>
+#include <SafeStateService.h>
 #include <RawDataStreaming.h>
 #include <StatusMonitor.h>
 
@@ -46,9 +47,14 @@ StrokeEngineControlService strokeEngineControlService = StrokeEngineControlServi
 MotorConfigurationService motorConfigurationService = MotorConfigurationService(&Stroker,
                                                                                 &esp32sveltekit);
 
+SafeStateService safeStateService = SafeStateService(&Stroker,
+                                                     &server,
+                                                     &esp32sveltekit,
+                                                     &mqttBrokerSettingsService);
+
 StrokeEngineSafetyService strokeEngineSafetyService = StrokeEngineSafetyService(&Stroker,
                                                                                 &esp32sveltekit,
-                                                                                &strokeEngineControlService);
+                                                                                &safeStateService);
 
 StrokeEngineEnvironmentService strokeEngineEnvironmentService = StrokeEngineEnvironmentService(&Stroker,
                                                                                                &esp32sveltekit,
@@ -56,7 +62,7 @@ StrokeEngineEnvironmentService strokeEngineEnvironmentService = StrokeEngineEnvi
                                                                                                &strokeEngineSafetyService,
                                                                                                &mqttBrokerSettingsService);
 
-DataStreamer dataStream = DataStreamer(esp32sveltekit.getSocket(), &Stroker);
+DataStreamer dataStream = DataStreamer(&esp32sveltekit, &Stroker);
 
 StatusMonitor statusMonitor = StatusMonitor(&esp32sveltekit);
 
@@ -113,9 +119,6 @@ void setup()
     MDNS.addServiceTxt("LUST-Service", "tcp", "DeviceID", SettingValue::format("LUST-motion-#{unique_id}"));
     MDNS.addServiceTxt("LUST-Service", "tcp", "Service", "LUST-motion");
 
-    // Add features to ESP32-SvelteKit
-    esp32sveltekit.getFeatureService()->addFeature("data_streaming", true);
-
     // Start motor control service
     motorConfigurationService.begin();
 
@@ -133,6 +136,13 @@ void setup()
 
     // Start the stroke engine environment service
     strokeEngineEnvironmentService.begin();
+
+    // Start the safe state & watchdog service
+    safeStateService.begin();
+
+    // Add loop callbacks to ESP32-SvelteKit
+    esp32sveltekit.addLoopFunction([]()
+                                   { statusMonitor.loop(); });
 }
 
 void loop()

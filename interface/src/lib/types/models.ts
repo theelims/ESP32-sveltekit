@@ -164,3 +164,37 @@ export type MotorState = {
 	homed: boolean;
 	error: boolean;
 };
+
+export type MotorConfig = {
+	driver: string;
+	driver_list: string[];
+	steps_per_rev: number;
+	max_rpm: number;
+	max_acceleration: number;
+	pulley_teeth: number;
+	invert_direction: boolean;
+	measure_travel: boolean;
+	home: boolean;
+	travel: number;
+	keepout: number;
+	sensorless_trigger: number;
+};
+
+export type SafeState = {
+	safestate: boolean;
+};
+
+export type HeartbeatMode = {
+	heartbeat: number;
+};
+
+export type Environment = {
+	depth: number;
+	max_rate: number;
+	max_velocity: number;
+	heartbeat_mode: number;
+	patterns: string[];
+	max_current: number;
+	max_voltage: number;
+	motor: string;
+};

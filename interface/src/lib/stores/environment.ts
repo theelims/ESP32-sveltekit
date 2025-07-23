@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
+import type { Environment } from '$lib/types/models';
 
-let environment_data = {
+let environment_data: Environment = {
 	depth: 150,
 	max_rate: 240,
 	max_velocity: 2000,

@@ -11,17 +11,17 @@
 
 StrokeEngineSafetyService::StrokeEngineSafetyService(StrokeEngine *stroker,
                                                      ESP32SvelteKit *sveltekit,
-                                                     StrokeEngineControlService *strokeEngineControlService) : _strokeEngine(stroker),
-                                                                                                               _httpEndpoint(StrokeEngineSafety::read,
-                                                                                                                             StrokeEngineSafety::update,
-                                                                                                                             this,
-                                                                                                                             sveltekit->getServer(),
-                                                                                                                             SAFETY_CONFIG_PATH,
-                                                                                                                             sveltekit->getSecurityManager(),
-                                                                                                                             AuthenticationPredicates::NONE_REQUIRED),
-                                                                                                               _fsPersistence(StrokeEngineSafety::read, StrokeEngineSafety::update, this, sveltekit->getFS(), SAFETY_CONFIG_FILE),
-                                                                                                               _strokeEngineControlService(strokeEngineControlService),
-                                                                                                               _socket(sveltekit->getSocket())
+                                                     SafeStateService *safeStateService) : _strokeEngine(stroker),
+                                                                                           _httpEndpoint(StrokeEngineSafety::read,
+                                                                                                         StrokeEngineSafety::update,
+                                                                                                         this,
+                                                                                                         sveltekit->getServer(),
+                                                                                                         SAFETY_CONFIG_PATH,
+                                                                                                         sveltekit->getSecurityManager(),
+                                                                                                         AuthenticationPredicates::NONE_REQUIRED),
+                                                                                           _fsPersistence(StrokeEngineSafety::read, StrokeEngineSafety::update, this, sveltekit->getFS(), SAFETY_CONFIG_FILE),
+                                                                                           _safeStateService(safeStateService),
+                                                                                           _socket(sveltekit->getSocket())
 {
     // configure settings service update handler to update state
     addUpdateHandler([&](const String &originId)
@@ -97,7 +97,7 @@ void StrokeEngineSafetyService::onConfigUpdated(String originId)
     // _strokeEngine->setEaseInSpeed(_state.easeInSpeed);
 
     // update stroke engine control service
-    _strokeEngineControlService->setHeartbeatMode(_state.heartbeatMode);
+    _safeStateService->setHeartbeatMode(_state.heartbeatMode);
     JsonDocument doc;
     JsonObject root = doc.to<JsonObject>();
     root["mode"] = _state.heartbeatMode;

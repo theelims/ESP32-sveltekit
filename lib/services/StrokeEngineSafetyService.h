@@ -12,7 +12,7 @@
 #include <ESP32SvelteKit.h>
 #include <HttpEndpoint.h>
 #include <StrokeEngine.h>
-#include <StrokeEngineControlService.h>
+#include <SafeStateService.h>
 #include <HeartbeatWatchdog.h>
 #include <EventSocket.h>
 
@@ -65,7 +65,7 @@ class StrokeEngineSafetyService : public StatefulService<StrokeEngineSafety>
 public:
     StrokeEngineSafetyService(StrokeEngine *stroker,
                               ESP32SvelteKit *sveltekit,
-                              StrokeEngineControlService *strokeEngineControlService);
+                              SafeStateService *safeStateService);
 
     void begin();
 
@@ -73,7 +73,7 @@ private:
     HttpEndpoint<StrokeEngineSafety> _httpEndpoint;
     FSPersistence<StrokeEngineSafety> _fsPersistence;
     EventSocket *_socket;
-    StrokeEngineControlService *_strokeEngineControlService;
+    SafeStateService *_safeStateService;
     StrokeEngine *_strokeEngine;
 
     void onConfigUpdated(String originId);

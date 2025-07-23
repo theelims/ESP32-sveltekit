@@ -31,8 +31,7 @@ StrokeEngineControlService::StrokeEngineControlService(StrokeEngine *strokeEngin
                                                                                                                               sveltekit->getSocket(),
                                                                                                                               SE_CONTROL_SETTINGS_EVENT),
                                                                                                                _mqttClient(sveltekit->getMqttClient()),
-                                                                                                               _mqttBrokerSettingsService(mqttBrokerSettingsService),
-                                                                                                               _heartbeatWatchdog(1200)
+                                                                                                               _mqttBrokerSettingsService(mqttBrokerSettingsService)
 {
     // configure settings service update handler to update state
     addUpdateHandler([&](const String &originId)
@@ -56,20 +55,6 @@ void StrokeEngineControlService::begin()
     _state.rate = _strokeEngine->getParameter(StrokeParameter::RATE);
     _state.sensation = _strokeEngine->getParameter(StrokeParameter::SENSATION);
     _state.pattern = _strokeEngine->getCurrentPatternName();
-    _state.vibrationOverride = false;
-    _state.vibrationAmplitude = MOTION_FACTORY_VIBRATION_AMPLITUDE;
-    _state.vibrationFrequency = MOTION_FACTORY_VIBRATION_FREQUENCY;
-
-    // configure hook for watchdog
-    addHookHandler([&](const String &originId, StateUpdateResult &result)
-                   { 
-                        // trigger watchdog if originId is not "Watchdog" or "onConfigUpdated"
-                        if (originId != "Watchdog" && originId != "onConfigUpdated")
-                            _heartbeatWatchdog.heartbeat(originId); },
-                   false);
-
-    _heartbeatWatchdog.onWatchdog([&](const String &originId)
-                                  { watchdogTriggered(originId); });
 
     _strokeEngine->onNotify(std::bind(&StrokeEngineControlService::onStrokeEngineChanged, this, std::placeholders::_1));
 }
@@ -175,18 +160,4 @@ void StrokeEngineControlService::onStrokeEngineChanged(String reason)
                }
                return StateUpdateResult::ERROR; },
            "StrokeEngine");
-}
-
-void StrokeEngineControlService::setHeartbeatMode(WatchdogMode mode)
-{
-    _heartbeatWatchdog.setWatchdogMode(mode);
-}
-
-void StrokeEngineControlService::watchdogTriggered(String originId)
-{
-    ESP_LOGW("StrokeEngineControlService", "Watchdog triggered [%s]- Stopping StrokeEngine", originId.c_str());
-    _state.command = "STOP";
-    update([&](StrokeEngineControl &state)
-           { return StateUpdateResult::CHANGED; },
-           "Watchdog");
 }

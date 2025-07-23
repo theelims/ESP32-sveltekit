@@ -4,10 +4,10 @@
 	import { user } from '$lib/stores/user';
 	import { telemetry } from '$lib/stores/telemetry';
 	import { analytics } from '$lib/stores/analytics';
-	import { control } from '$lib/stores/control';
 	import { batteryHistory } from '$lib/stores/battery';
 	import { socket } from '$lib/stores/socket';
 	import { environment } from '$lib/stores/environment';
+	import { safeStateHeartbeat } from '$lib/stores/safestate';
 	import type { userProfile } from '$lib/stores/user';
 	import { page } from '$app/state';
 	import { Modals, modals } from 'svelte-modals';
@@ -18,11 +18,12 @@
 	import Menu from './menu.svelte';
 	import Statusbar from './statusbar.svelte';
 	import Login from './login.svelte';
-	import type { Analytics } from '$lib/types/models';
+	import type { Analytics, HeartbeatMode } from '$lib/types/models';
 	import type { RSSI } from '$lib/types/models';
 	import type { Battery } from '$lib/types/models';
 	import type { DownloadOTA } from '$lib/types/models';
 	import type { MotorState } from '$lib/types/models';
+	import type { SafeState } from '$lib/types/models';
 
 	interface Props {
 		data: LayoutData;
@@ -48,12 +49,10 @@
 		);
 		addEventListeners();
 		fetchEnvironment();
-		control.init();
 	};
 
 	onDestroy(() => {
 		removeEventListeners();
-		control.exit();
 	});
 
 	const addEventListeners = () => {
@@ -65,8 +64,9 @@
 		if (page.data.features.analytics) socket.on('analytics', handleAnalytics);
 		if (page.data.features.battery) socket.on('battery', handleBattery);
 		if (page.data.features.download_firmware) socket.on('otastatus', handleOAT);
-
+		socket.on('safestate', handleSafeState);
 		socket.on('motor', handleMotorStatus);
+		socket.on('heartbeat', handleHeartbeatStatus);
 	};
 
 	const removeEventListeners = () => {
@@ -77,7 +77,9 @@
 		socket.off('notification', handleNotification);
 		socket.off('battery', handleBattery);
 		socket.off('otastatus', handleOAT);
+		socket.off('safestate', handleSafeState);
 		socket.off('motor', handleMotorStatus);
+		socket.off('heartbeat', handleHeartbeatStatus);
 	};
 
 	async function validateUser(userdata: userProfile) {
@@ -138,6 +140,16 @@
 
 	const handleOAT = (data: DownloadOTA) => telemetry.setDownloadOTA(data);
 
+	const handleSafeState = (data: SafeState) => safeStateHeartbeat.updateSafeState(data);
+
+	const handleHeartbeatStatus = (data: HeartbeatMode) => {
+		if (data.heartbeat === 0) {
+			safeStateHeartbeat.stopHeartbeat();
+		} else {
+			safeStateHeartbeat.startHeartbeat();
+		}
+	};
+
 	const handleMotorStatus = (data: MotorState) => telemetry.setMotorStatus(data);
 
 	async function fetchEnvironment() {
@@ -145,7 +157,7 @@
 			const response = await fetch('/rest/environment', {
 				method: 'GET',
 				headers: {
-					Authorization: page.data.features.security ? 'Bearer ' + user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				}
 			});
@@ -166,7 +178,7 @@
 	<title>{page.data.title}</title>
 </svelte:head>
 
-{#if page.data.features.security && user.bearer_token === ''}
+{#if page.data.features.security && $user.bearer_token === ''}
 	<Login on:signIn={initSocket} />
 {:else}
 	<div class="drawer lg:drawer-open">
