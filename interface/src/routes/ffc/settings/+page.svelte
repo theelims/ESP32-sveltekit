@@ -464,7 +464,7 @@
 									class="toggle toggle-primary"
 									bind:checked={settings.monitorFans}
 								/>
-								<span class="ml-1">Alert if the fans' RPM is too low.</span>
+								<span class="ml-1">Alert if the fans' RPMs are too low.</span>
 							</label>
 						</div>
 						<!--Monitor Temperature -->
