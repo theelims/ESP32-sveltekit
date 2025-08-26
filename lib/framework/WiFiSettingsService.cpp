@@ -186,8 +186,7 @@ void WiFiSettingsService::connectToWiFi()
             }
         }
 
-        // if configured to prioritize signal strength, use the best network else use the first available network
-        // if (_state.priorityBySignalStrength == false)
+        // Connection mode PRIORITY: connect to the first available network
         if (_state.staConnectionMode == (u_int8_t)STAConnectionMode::PRIORITY)
         {
             for (auto &network : _state.wifiSettings)
@@ -200,14 +199,27 @@ void WiFiSettingsService::connectToWiFi()
                 }
             }
         }
-        else if (_state.staConnectionMode == (u_int8_t)STAConnectionMode::STRENGTH && bestNetwork)
+        // Connection mode STRENGTH: connect to the strongest network
+        else if (_state.staConnectionMode == (u_int8_t)STAConnectionMode::STRENGTH)
         {
-            ESP_LOGI("WiFiSettingsService", "Connecting to strongest network: %s, BSSID: " MACSTR " ", bestNetwork->ssid.c_str(), MAC2STR(bestNetwork->bssid));
-            configureNetwork(*bestNetwork);
+            if (bestNetwork) {
+                ESP_LOGI("WiFiSettingsService", "Connecting to strongest network: %s, BSSID: " MACSTR " ", bestNetwork->ssid.c_str(), MAC2STR(bestNetwork->bssid));
+                configureNetwork(*bestNetwork);
+            }
+            else
+            {
+                ESP_LOGI("WiFiSettingsService", "No suitable network found.");
+            }
         }
-        else // no suitable network to connect
+        // Connection mode OFFLINE: do not connect to any network
+        else if (_state.staConnectionMode == (u_int8_t)STAConnectionMode::OFFLINE)
         {
-            ESP_LOGI("WiFiSettingsService", "No known networks found.");
+            ESP_LOGI("WiFiSettingsService", "WiFi connection mode is OFFLINE, not connecting to any network.");
+        }
+        // Connection mode is unknown: do not connect to any network
+        else
+        {
+            ESP_LOGE("WiFiSettingsService", "Unknown connection mode, not connecting to any network.");
         }
 
         // delete scan results

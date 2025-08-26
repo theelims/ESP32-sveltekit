@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import { modals } from 'svelte-modals';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
@@ -8,9 +8,9 @@
 	import { notifications } from '$lib/components/toasts/notifications';
 	import DragDropList, { VerticalDropZone, reorder, type DropEvent } from 'svelte-dnd-list';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
-	import InputPassword from '$lib/components/InputPassword.svelte';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import ScanNetworks from './Scan.svelte';
+	import EditNetwork from './EditNetwork.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import AP from '~icons/tabler/access-point';
 	import Router from '~icons/tabler/router';
@@ -27,44 +27,43 @@
 	import Add from '~icons/tabler/circle-plus';
 	import Edit from '~icons/tabler/pencil';
 	import Delete from '~icons/tabler/trash';
+	import Grip from '~icons/tabler/grip-horizontal';
 	import Cancel from '~icons/tabler/x';
 	import Check from '~icons/tabler/check';
+	import Save from '~icons/tabler/device-floppy';
+	import Info from '~icons/tabler/info-circle';
 	import InfoDialog from '$lib/components/InfoDialog.svelte';
 	import type { KnownNetworkItem, WifiSettings, WifiStatus } from '$lib/types/models';
+	import Collapsible from '$lib/components/Collapsible.svelte';
 
-	let static_ip_config = $state(false);
-
-	let networkEditable: KnownNetworkItem = $state({
+	let wifiStatus: WifiStatus = $state({
+		status: 0,
 		ssid: '',
-		password: '',
-		static_ip_config: false,
-		local_ip: undefined,
-		subnet_mask: undefined,
-		gateway_ip: undefined,
-		dns_ip_1: undefined,
-		dns_ip_2: undefined
+		local_ip: '',
+		ip_address: '',
+		mac_address: '',
+		rssi: 0,
+		bssid: '',
+		channel: 0,
+		gateway_ip: '',
+		subnet_mask: '',
+		dns_ip_1: '',
+		dns_ip_2: '',
+		connected: false
 	});
 
-	let newNetwork: boolean = $state(true);
-	let showNetworkEditor: boolean = $state(false);
+	let wifiSettings: WifiSettings = $state({
+		hostname: '',
+		connection_mode: 1,
+		wifi_networks: [] as KnownNetworkItem[]
+	});
 
-	let wifiStatus: WifiStatus = $state();
-	let wifiSettings: WifiSettings = $state();
-
-	let dndNetworkList: KnownNetworkItem[] = $state([]);
+	// Stringify to recognize changes
+	let strWifiSettings: string = $state(JSON.stringify(wifiSettings));
+	// Recognize changes in settings
+	let isSettingsDirty: boolean = $derived(JSON.stringify(wifiSettings) !== strWifiSettings);
 
 	let showWifiDetails = $state(false);
-
-	let formField: any = $state();
-
-	let formErrors = $state({
-		ssid: false,
-		local_ip: false,
-		gateway_ip: false,
-		subnet_mask: false,
-		dns_1: false,
-		dns_2: false
-	});
 
 	let formErrorhostname = $state(false);
 
@@ -79,7 +78,7 @@
 		},
 		{
 			id: 2,
-			text: `Priority`
+			text: `Priority (Sequence)`
 		}
 	];
 
@@ -96,7 +95,6 @@
 		} catch (error) {
 			console.error('Error:', error);
 		}
-		return wifiStatus;
 	}
 
 	async function getWifiSettings() {
@@ -109,11 +107,31 @@
 				}
 			});
 			wifiSettings = await response.json();
+			strWifiSettings = JSON.stringify(wifiSettings); // Store the recently loaded settings in a string variable
 		} catch (error) {
 			console.error('Error:', error);
 		}
-		dndNetworkList = wifiSettings.wifi_networks;
-		return wifiSettings;
+	}
+
+	async function postWiFiSettings() {
+		try {
+			const response = await fetch('/rest/wifiSettings', {
+				method: 'POST',
+				headers: {
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(wifiSettings)
+			});
+			if (response.status == 200) {
+				notifications.success('Wi-Fi settings updated.', 3000);
+				wifiSettings = await response.json();
+			} else {
+				notifications.error('Failed to update Wi-Fi settings.', 5000);
+			}
+		} catch (error) {
+			console.error('Error:', error);
+		}
 	}
 
 	const interval = setInterval(async () => {
@@ -122,171 +140,80 @@
 
 	onDestroy(() => clearInterval(interval));
 
-	async function postWiFiSettings(data: WifiSettings) {
-		try {
-			const response = await fetch('/rest/wifiSettings', {
-				method: 'POST',
-				headers: {
-					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(data)
-			});
-			if (response.status == 200) {
-				notifications.success('Wi-Fi settings updated.', 3000);
-				wifiSettings = await response.json();
-			} else {
-				notifications.error('User not authorized.', 3000);
-			}
-		} catch (error) {
-			console.error('Error:', error);
-		}
-	}
-
-	function validateHostName() {
+	function checkHostname() {
 		if (wifiSettings.hostname.length < 3 || wifiSettings.hostname.length > 32) {
 			formErrorhostname = true;
 		} else {
 			formErrorhostname = false;
-			// Update global wifiSettings object
-			wifiSettings.wifi_networks = dndNetworkList;
-			// Post to REST API
-			postWiFiSettings(wifiSettings);
 		}
+
+		return !formErrorhostname;
 	}
 
-	function validateWiFiForm() {
-		let valid = true;
-
-		// Validate SSID
-		if (networkEditable.ssid.length < 3 || networkEditable.ssid.length > 32) {
-			valid = false;
-			formErrors.ssid = true;
-		} else {
-			formErrors.ssid = false;
-		}
-
-		networkEditable.static_ip_config = static_ip_config;
-
-		if (static_ip_config) {
-			// RegEx for IPv4
-			const regexExp =
-				/\b(?:(?:2(?:[0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9])\.){3}(?:(?:2([0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9]))\b/;
-
-			// Validate gateway IP
-			if (!regexExp.test(networkEditable.gateway_ip!)) {
-				valid = false;
-				formErrors.gateway_ip = true;
-			} else {
-				formErrors.gateway_ip = false;
-			}
-
-			// Validate Subnet Mask
-			if (!regexExp.test(networkEditable.subnet_mask!)) {
-				valid = false;
-				formErrors.subnet_mask = true;
-			} else {
-				formErrors.subnet_mask = false;
-			}
-
-			// Validate local IP
-			if (!regexExp.test(networkEditable.local_ip!)) {
-				valid = false;
-				formErrors.local_ip = true;
-			} else {
-				formErrors.local_ip = false;
-			}
-
-			// Validate DNS 1
-			if (!regexExp.test(networkEditable.dns_ip_1!)) {
-				valid = false;
-				formErrors.dns_1 = true;
-			} else {
-				formErrors.dns_1 = false;
-			}
-
-			// Validate DNS 2
-			if (!regexExp.test(networkEditable.dns_ip_2!)) {
-				valid = false;
-				formErrors.dns_2 = true;
-			} else {
-				formErrors.dns_2 = false;
-			}
-		} else {
-			formErrors.local_ip = false;
-			formErrors.subnet_mask = false;
-			formErrors.gateway_ip = false;
-			formErrors.dns_1 = false;
-			formErrors.dns_2 = false;
-		}
-		// Submit JSON to REST API
-		if (valid) {
-			if (newNetwork) {
-				dndNetworkList.push(networkEditable);
-			} else {
-				dndNetworkList.splice(dndNetworkList.indexOf(networkEditable), 1, networkEditable);
-			}
-			addNetwork();
-			dndNetworkList = [...dndNetworkList]; //Trigger reactivity
-			showNetworkEditor = false;
+	function applyWifiSettings() {
+		if (checkHostname()) {
+			postWiFiSettings();
 		}
 	}
 
 	function scanForNetworks() {
 		modals.open(ScanNetworks, {
-			storeNetwork: (network: string) => {
-				addNetwork();
-				networkEditable.ssid = network;
-				showNetworkEditor = true;
+			storeNetwork: (ssid: string) => {
+				console.log('Storing network:', ssid);
+				modals.close();
+				handleNewNetwork(ssid);
+			}
+		});
+	}
+
+	function handleNewNetwork(ssid?: string) {
+		modals.open(EditNetwork, {
+			title: 'Add network',
+			networkEditable: {
+				ssid: ssid || '',
+				password: '',
+				static_ip_config: false,
+				local_ip: undefined,
+				subnet_mask: undefined,
+				gateway_ip: undefined,
+				dns_ip_1: undefined,
+				dns_ip_2: undefined
+			},
+			onSaveNetwork: async (newNetwork: KnownNetworkItem) => {
+				wifiSettings.wifi_networks = [...wifiSettings.wifi_networks, newNetwork];
 				modals.close();
 			}
 		});
 	}
 
-	function addNetwork() {
-		newNetwork = true;
-		networkEditable = {
-			ssid: '',
-			password: '',
-			static_ip_config: false,
-			local_ip: undefined,
-			subnet_mask: undefined,
-			gateway_ip: undefined,
-			dns_ip_1: undefined,
-			dns_ip_2: undefined
-		};
-	}
-
 	function handleEdit(index: number) {
-		newNetwork = false;
-		showNetworkEditor = true;
-		networkEditable = dndNetworkList[index];
+		modals.open(EditNetwork, {
+			title: 'Edit network',
+			networkEditable: $state.snapshot(wifiSettings.wifi_networks[index]), // Deep copy
+			onSaveNetwork: async (editedNetwork: KnownNetworkItem) => {
+				wifiSettings.wifi_networks[index] = editedNetwork;
+				modals.close();
+			}
+		});
 	}
 
 	function confirmDelete(index: number) {
 		modals.open(ConfirmDialog, {
-			title: 'Delete Network',
-			message: 'Are you sure you want to delete this network?',
+			title: 'Delete Network?',
+			message: `Are you sure you want to delete network \'${wifiSettings.wifi_networks[index].ssid}\'?`,
 			labels: {
 				cancel: { label: 'Cancel', icon: Cancel },
 				confirm: { label: 'Delete', icon: Delete }
 			},
 			onConfirm: () => {
-				// Check if network is currently been edited and delete as well
-				if (dndNetworkList[index].ssid === networkEditable.ssid) {
-					addNetwork();
-				}
-				// Remove network from array
-				dndNetworkList.splice(index, 1);
-				dndNetworkList = [...dndNetworkList]; //Trigger reactivity
-				showNetworkEditor = false;
+				wifiSettings.wifi_networks.splice(index, 1);
 				modals.close();
 			}
 		});
 	}
 
-	function checkNetworkList() {
-		if (dndNetworkList.length >= 5) {
+	function isNetworkListTooLong() {
+		if (wifiSettings.wifi_networks.length >= 5) {
 			modals.open(InfoDialog, {
 				title: 'Reached Maximum Networks',
 				message:
@@ -296,9 +223,9 @@
 					modals.close();
 				}
 			});
-			return false;
-		} else {
 			return true;
+		} else {
+			return false;
 		}
 	}
 
@@ -307,24 +234,16 @@
 			return;
 		}
 
-		dndNetworkList = reorder(dndNetworkList, from.index, to.index);
-		console.log(dndNetworkList);
-	}
-
-    function preventDefault(fn) {
-		return function (event) {
-			event.preventDefault();
-			fn.call(this, event);
-		};
+		wifiSettings.wifi_networks = reorder(wifiSettings.wifi_networks, from.index, to.index);
 	}
 </script>
 
 <SettingsCard collapsible={false}>
 	{#snippet icon()}
-		<Router  class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+		<Router class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	{/snippet}
 	{#snippet title()}
-		<span >WiFi Connection</span>
+		<span>WiFi Connection</span>
 	{/snippet}
 	<div class="w-full overflow-x-auto">
 		{#await getWifiStatus()}
@@ -474,317 +393,155 @@
 			{/if}
 		{/await}
 	</div>
-
 	{#if !page.data.features.security || $user.admin}
-		<div class="bg-base-200 shadow-lg relative grid w-full max-w-2xl self-center overflow-hidden">
-			<div class="h-16 flex w-full items-center justify-between space-x-3 p-0 text-xl font-medium">
-				Saved Networks
-			</div>
+		<Collapsible open={true} class="shadow-lg" isDirty={isSettingsDirty}>
+			{#snippet icon()}
+				<Router class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+			{/snippet}
+			{#snippet title()}
+				<span>WiFi Settings</span>
+			{/snippet}
 			{#await getWifiSettings()}
 				<Spinner />
 			{:then nothing}
-				<div class="relative w-full overflow-visible">
-					<button
-						class="btn btn-primary text-primary-content btn-md absolute -top-14 right-16"
-						onclick={() => {
-							if (checkNetworkList()) {
-								addNetwork();
-								showNetworkEditor = true;
-							}
-						}}
-					>
-						<Add class="h-6 w-6" /></button
-					>
-					<button
-						class="btn btn-primary text-primary-content btn-md absolute -top-14 right-0"
-						onclick={() => {
-							if (checkNetworkList()) {
-								scanForNetworks();
-								showNetworkEditor = true;
-							}
-						}}
-					>
-						<Scan class="h-6 w-6" /></button
-					>
+				<div class="grid w-full grid-cols-1 content-center gap-x-4 sm:grid-cols-2">
+					<div>
+						<label class="label" for="hostname">
+							<span class="label-text text-md">Host Name (mDNS)</span>
+						</label>
+						<input
+							type="text"
+							min="3"
+							max="32"
+							class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrorhostname
+								? 'border-error border-2'
+								: ''}"
+							bind:value={wifiSettings.hostname}
+							id="hostname"
+							required
+						/>
+						{#if formErrorhostname}
+							<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
+								<label for="hostname" class="label">
+									<span class="label-text-alt text-error">
+										Host name must be between 3 and 32 characters long.
+									</span>
+								</label>
+							</div>
+						{/if}
+					</div>
 
-					<div
-						class="overflow-x-auto space-y-1"
-						transition:slide|local={{ duration: 300, easing: cubicOut }}
+					<div>
+						<label class="label" for="apmode">
+							<span class="label-text">WiFi Connection Mode</span>
+						</label>
+						<select class="select" id="apmode" bind:value={wifiSettings.connection_mode}>
+							{#each connectionMode as mode}
+								<option value={mode.id}>
+									{mode.text}
+								</option>
+							{/each}
+						</select>
+					</div>
+				</div>
+
+				<div class="divider mt-2 mb-0"></div>
+
+				<div class="flex justify-end w-full gap-x-2">
+					<button
+						class="btn btn-primary text-primary-content btn-md"
+						onclick={() => {
+							handleNewNetwork();
+						}}
 					>
+						<Add class="h-6 w-6" />
+					</button>
+					<button
+						class="btn btn-primary text-primary-content btn-md"
+						onclick={() => {
+							if (!isNetworkListTooLong()) {
+								scanForNetworks();
+							}
+						}}
+					>
+						<Scan class="h-6 w-6" />
+					</button>
+				</div>
+
+				<div
+					class="overflow-x-auto space-y-1"
+					transition:slide|local={{ duration: 300, easing: cubicOut }}
+				>
+					{#if wifiSettings.wifi_networks.length === 0}
+						<div class="text-center text-base-content/50 mt-2">
+							No WiFi networks configured yet.<br />
+							Scan for available networks or add one manually.
+						</div>
+					{:else}
 						<DragDropList
 							id="networks"
 							type={VerticalDropZone}
 							itemSize={60}
-							itemCount={dndNetworkList.length}
+							itemCount={wifiSettings.wifi_networks.length}
 							on:drop={onDrop}
-							
 						>
-							{#snippet children({ index })}
-														<!-- svelte-ignore a11y_click_events_have_key_events -->
+							{#snippet children({ index }: { index: number })}
+								<!-- svelte-ignore a11y_click_events_have_key_events -->
 								<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+									<Grip class="h-6 w-6 text-base-content/30 cursor-grab" />
 									<div class="mask mask-hexagon bg-primary h-auto w-10 shrink-0">
 										<Router class="text-primary-content h-auto w-full scale-75" />
 									</div>
 									<div>
-										<div class="font-bold">{dndNetworkList[index].ssid}</div>
+										<div class="font-bold">{wifiSettings.wifi_networks[index].ssid}</div>
 									</div>
-									{#if !page.data.features.security || $user.admin}
-										<div class="grow"></div>
-										<div class="space-x-0 px-0 mx-0">
-											<button
-												class="btn btn-ghost btn-sm"
-												onclick={() => {
-													handleEdit(index);
-												}}
-											>
-												<Edit class="h-6 w-6" /></button
-											>
-											<button
-												class="btn btn-ghost btn-sm"
-												onclick={() => {
-													confirmDelete(index);
-												}}
-											>
-												<Delete class="text-error h-6 w-6" />
-											</button>
-										</div>
-									{/if}
-								</div>
-																				{/snippet}
-												</DragDropList>
-					</div>
-				</div>
-
-				<div class="divider mb-0"></div>
-				<div
-					class="flex flex-col gap-2 p-0"
-					transition:slide|local={{ duration: 300, easing: cubicOut }}
-				>
-					<form
-						class=""
-						onsubmit={preventDefault(validateWiFiForm)}
-						novalidate
-						bind:this={formField}
-					>
-						<div class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2">
-							<div>
-								<label class="label" for="channel">
-									<span class="label-text text-md">Host Name</span>
-								</label>
-								<input
-									type="text"
-									min="1"
-									max="32"
-									class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrorhostname
-										? 'border-error border-2'
-										: ''}"
-									bind:value={wifiSettings.hostname}
-									id="channel"
-									required
-								/>
-								<label class="label" for="channel">
-									<span class="label-text-alt text-error {formErrorhostname ? '' : 'hidden'}"
-										>Host name must be between 2 and 32 characters long</span
-									>
-								</label>
-							</div>
-
-							<div>
-								<label class="label" for="apmode">
-									<span class="label-text">WiFi Connection Mode</span>
-								</label>
-								<select
-									class="select"
-									id="apmode"
-									bind:value={wifiSettings.connection_mode}
-								>
-									{#each connectionMode as mode}
-										<option value={mode.id}>
-											{mode.text}
-										</option>
-									{/each}
-								</select>
-							</div>
-						</div>
-
-						{#if showNetworkEditor}
-							<div class="divider my-0"></div>
-							<div
-								class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2"
-								transition:slide|local={{ duration: 300, easing: cubicOut }}
-							>
-								<div>
-									<label class="label" for="ssid">
-										<span class="label-text text-md">SSID</span>
-									</label>
-									<input
-										type="text"
-										class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.ssid
-											? 'border-error border-2'
-											: ''}"
-										bind:value={networkEditable.ssid}
-										id="ssid"
-										min="2"
-										max="32"
-										required
-									/>
-									<label class="label" for="ssid">
-										<span class="label-text-alt text-error {formErrors.ssid ? '' : 'hidden'}"
-											>SSID must be between 3 and 32 characters long</span
+									<div class="grow"></div>
+									<div class="space-x-0 px-0 mx-0">
+										<button
+											class="btn btn-ghost btn-sm"
+											onclick={() => {
+												handleEdit(index);
+											}}
 										>
-									</label>
-								</div>
-								<div>
-									<label class="label" for="pwd">
-										<span class="label-text text-md">Password</span>
-									</label>
-									<InputPassword bind:value={networkEditable.password} id="pwd" />
-								</div>
-								<label
-									class="label inline-flex cursor-pointer content-end justify-start gap-4 mt-2 sm:mb-4"
-								>
-									<input
-										type="checkbox"
-										bind:checked={static_ip_config}
-										class="checkbox checkbox-primary sm:-mb-5"
-									/>
-									<span class="sm:-mb-5">Static IP Config?</span>
-								</label>
-							</div>
-							{#if static_ip_config}
-								<div
-									class="grid w-full grid-cols-1 content-center gap-x-4 px-4 sm:grid-cols-2"
-									transition:slide|local={{ duration: 300, easing: cubicOut }}
-								>
-									<div>
-										<label class="label" for="localIP">
-											<span class="label-text text-md">Local IP</span>
-										</label>
-										<input
-											type="text"
-											class="input input-bordered w-full {formErrors.local_ip
-												? 'border-error border-2'
-												: ''}"
-											minlength="7"
-											maxlength="15"
-											size="15"
-											bind:value={networkEditable.local_ip}
-											id="localIP"
-											required
-										/>
-										<label class="label" for="localIP">
-											<span class="label-text-alt text-error {formErrors.local_ip ? '' : 'hidden'}"
-												>Must be a valid IPv4 address</span
-											>
-										</label>
-									</div>
-
-									<div>
-										<label class="label" for="gateway">
-											<span class="label-text text-md">Gateway IP</span>
-										</label>
-										<input
-											type="text"
-											class="input input-bordered w-full {formErrors.gateway_ip
-												? 'border-error border-2'
-												: ''}"
-											minlength="7"
-											maxlength="15"
-											size="15"
-											bind:value={networkEditable.gateway_ip}
-											id="gateway"
-											required
-										/>
-										<label class="label" for="gateway">
-											<span
-												class="label-text-alt text-error {formErrors.gateway_ip ? '' : 'hidden'}"
-												>Must be a valid IPv4 address</span
-											>
-										</label>
-									</div>
-									<div>
-										<label class="label" for="subnet">
-											<span class="label-text text-md">Subnet Mask</span>
-										</label>
-										<input
-											type="text"
-											class="input input-bordered w-full {formErrors.subnet_mask
-												? 'border-error border-2'
-												: ''}"
-											minlength="7"
-											maxlength="15"
-											size="15"
-											bind:value={networkEditable.subnet_mask}
-											id="subnet"
-											required
-										/>
-										<label class="label" for="subnet">
-											<span
-												class="label-text-alt text-error {formErrors.subnet_mask ? '' : 'hidden'}"
-												>Must be a valid IPv4 address</span
-											>
-										</label>
-									</div>
-									<div>
-										<label class="label" for="gateway">
-											<span class="label-text text-md">DNS 1</span>
-										</label>
-										<input
-											type="text"
-											class="input input-bordered w-full {formErrors.dns_1
-												? 'border-error border-2'
-												: ''}"
-											minlength="7"
-											maxlength="15"
-											size="15"
-											bind:value={networkEditable.dns_ip_1}
-											id="gateway"
-											required
-										/>
-										<label class="label" for="gateway">
-											<span class="label-text-alt text-error {formErrors.dns_1 ? '' : 'hidden'}"
-												>Must be a valid IPv4 address</span
-											>
-										</label>
-									</div>
-									<div>
-										<label class="label" for="subnet">
-											<span class="label-text text-md">DNS 2</span>
-										</label>
-										<input
-											type="text"
-											class="input input-bordered w-full {formErrors.dns_2
-												? 'border-error border-2'
-												: ''}"
-											minlength="7"
-											maxlength="15"
-											size="15"
-											bind:value={networkEditable.dns_ip_2}
-											id="subnet"
-											required
-										/>
-										<label class="label" for="subnet">
-											<span class="label-text-alt text-error {formErrors.dns_2 ? '' : 'hidden'}"
-												>Must be a valid IPv4 address</span
-											>
-										</label>
+											<Edit class="h-6 w-6" /></button
+										>
+										<button
+											class="btn btn-ghost btn-sm"
+											onclick={() => {
+												confirmDelete(index);
+											}}
+										>
+											<Delete class="text-error h-6 w-6" />
+										</button>
 									</div>
 								</div>
-							{/if}
-						{/if}
-
-						<div class="divider mb-2 mt-0"></div>
-						<div class="mx-4 mb-4 flex flex-wrap justify-end gap-2">
-							<button class="btn btn-primary" type="submit" disabled={!showNetworkEditor}
-								>{newNetwork ? 'Add Network' : 'Update Network'}</button
-							>
-							<button class="btn btn-primary" type="button" onclick={validateHostName}
-								>Apply Settings</button
-							>
+							{/snippet}
+						</DragDropList>
+					{/if}
+				</div>
+				{#if wifiSettings.connection_mode === 2 && wifiSettings.wifi_networks.length > 1}
+					<div class="w-full" transition:slide|local={{ duration: 300, easing: cubicOut }}>
+						<div role="alert" class="alert bg-base-300 mt-2">
+							<Info class="h-6 w-6" />
+							<div>Move the networks into the preferred order.</div>
 						</div>
-					</form>
+					</div>
+				{/if}
+
+				<div class="divider mt-2 mb-0"></div>
+
+				<div class="flex flex-wrap justify-end mb-4">
+					<button
+						class="btn btn-primary"
+						type="button"
+						disabled={!isSettingsDirty}
+						onclick={applyWifiSettings}
+					>
+						<Save class="mr-2 h-5 w-5" />
+						<span>Apply Settings</span>
+					</button>
 				</div>
 			{/await}
-		</div>
+		</Collapsible>
 	{/if}
 </SettingsCard>
