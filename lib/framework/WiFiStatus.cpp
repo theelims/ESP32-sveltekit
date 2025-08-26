@@ -6,7 +6,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 - 2024 theelims
+ *   Copyright (C) 2023 - 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -27,7 +27,7 @@ void WiFiStatus::begin()
                 _securityManager->wrapRequest(std::bind(&WiFiStatus::wifiStatus, this, std::placeholders::_1),
                                               AuthenticationPredicates::IS_AUTHENTICATED));
 
-    ESP_LOGV("WiFiStatus", "Registered GET endpoint: %s", WIFI_STATUS_SERVICE_PATH);
+    ESP_LOGV(SVK_TAG, "Registered GET endpoint: %s", WIFI_STATUS_SERVICE_PATH);
 
     WiFi.onEvent(onStationModeConnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_CONNECTED);
     WiFi.onEvent(onStationModeDisconnected, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
@@ -36,7 +36,7 @@ void WiFiStatus::begin()
 
 void WiFiStatus::onStationModeConnected(WiFiEvent_t event, WiFiEventInfo_t info)
 {
-    ESP_LOGI("WiFiStatus", "WiFi Connected.");
+    ESP_LOGI(SVK_TAG, "WiFi Connected.");
 
 #ifdef SERIAL_INFO
     Serial.println("WiFi Connected.");
@@ -45,7 +45,7 @@ void WiFiStatus::onStationModeConnected(WiFiEvent_t event, WiFiEventInfo_t info)
 
 void WiFiStatus::onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info)
 {
-    ESP_LOGI("WiFiStatus", "WiFi Disconnected. Reason code=%d", info.wifi_sta_disconnected.reason);
+    ESP_LOGI(SVK_TAG, "WiFi Disconnected. Reason code=%d", info.wifi_sta_disconnected.reason);
 
 #ifdef SERIAL_INFO
     Serial.print("WiFi Disconnected. Reason code=");
@@ -55,7 +55,7 @@ void WiFiStatus::onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t in
 
 void WiFiStatus::onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
 {
-    ESP_LOGI("WiFiStatus", "WiFi Got IP. localIP=%s, hostName=%s", WiFi.localIP().toString().c_str(), WiFi.getHostname());
+    ESP_LOGI(SVK_TAG, "WiFi Got IP. localIP=%s, hostName=%s", WiFi.localIP().toString().c_str(), WiFi.getHostname());
 #ifdef SERIAL_INFO
     Serial.printf("WiFi Got IP. localIP=%s, hostName=%s\r\n", WiFi.localIP().toString().c_str(), WiFi.getHostname());
 #endif

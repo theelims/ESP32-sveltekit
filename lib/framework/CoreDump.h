@@ -1,5 +1,5 @@
-#ifndef FactoryResetService_h
-#define FactoryResetService_h
+#ifndef CoreDump_h
+#define CoreDump_h
 
 /**
  *   ESP32 SvelteKit
@@ -15,30 +15,25 @@
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
  **/
 
-#include <WiFi.h>
-
+#include <ArduinoJson.h>
+#include <ESPFS.h>
 #include <PsychicHttp.h>
 #include <SecurityManager.h>
-#include <RestartService.h>
-#include <FS.h>
+#include <WiFi.h>
 
-#define FS_CONFIG_DIRECTORY "/config"
-#define FACTORY_RESET_SERVICE_PATH "/rest/factoryReset"
+#define CORE_DUMP_SERVICE_PATH "/rest/coreDump"
 
-class FactoryResetService
+class CoreDump
 {
-    FS *fs;
-
 public:
-    FactoryResetService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager);
+    CoreDump(PsychicHttpServer *server, SecurityManager *securityManager);
 
     void begin();
-    void factoryReset();
 
 private:
     PsychicHttpServer *_server;
     SecurityManager *_securityManager;
-    esp_err_t handleRequest(PsychicRequest *request);
+    esp_err_t coreDump(PsychicRequest *request);
 };
 
-#endif // end FactoryResetService_h
+#endif // end CoreDump_h

@@ -6,7 +6,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 - 2024 theelims
+ *   Copyright (C) 2023 - 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -14,7 +14,11 @@
 
 #include <MqttSettingsService.h>
 
+/**
+ * Load the root certificate bundle embedded by the build process
+ */
 extern const uint8_t rootca_crt_bundle_start[] asm("_binary_src_certs_x509_crt_bundle_bin_start");
+extern const uint8_t rootca_crt_bundle_end[] asm("_binary_src_certs_x509_crt_bundle_bin_end");
 
 /**
  * Retains a copy of the cstr provided in the pointer provided using dynamic allocation.
@@ -52,11 +56,17 @@ MqttSettingsService::MqttSettingsService(PsychicHttpServer *server,
                                                                              _mqttClient(),
                                                                              _lastError("None")
 {
+    String status_topic = SettingValue::format(FACTORY_MQTT_STATUS_TOPIC);
+    retainCstr(status_topic.c_str(), &_retainedWillTopic);
     addUpdateHandler([&](const String &originId)
                      { onConfigUpdated(); },
                      false);
 
+#if ESP_ARDUINO_VERSION_MAJOR == 3
+    _mqttClient.setCACertBundle(rootca_crt_bundle_start, rootca_crt_bundle_end - rootca_crt_bundle_start);
+#else
     _mqttClient.setCACertBundle(rootca_crt_bundle_start);
+#endif
 }
 
 MqttSettingsService::~MqttSettingsService()
@@ -125,16 +135,18 @@ void MqttSettingsService::onMqttConnect(bool sessionPresent)
     String uri = _mqttClient.getMqttConfig()->uri;
 #endif
 
-    ESP_LOGI("MQTT", "Connected to MQTT: %s", uri.c_str());
+    ESP_LOGI(SVK_TAG, "Connected to MQTT: %s", uri.c_str());
 #ifdef SERIAL_INFO
     Serial.printf("Connected to MQTT: %s\n", uri.c_str());
 #endif
     _lastError = "None";
+    // publish status message
+    _mqttClient.publish(_retainedWillTopic, 1, true, "online");
 }
 
 void MqttSettingsService::onMqttDisconnect(bool sessionPresent)
 {
-    ESP_LOGI("MQTT", "Disconnected from MQTT.");
+    ESP_LOGI(SVK_TAG, "Disconnected from MQTT.");
 #ifdef SERIAL_INFO
     Serial.println("Disconnected from MQTT.");
 #endif
@@ -145,7 +157,7 @@ void MqttSettingsService::onMqttError(esp_mqtt_error_codes_t error)
     if (error.error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT)
     {
         _lastError = strerror(error.esp_transport_sock_errno);
-        ESP_LOGE("MQTT", "MQTT TCP error: %s", _lastError.c_str());
+        ESP_LOGE(SVK_TAG, "MQTT TCP error: %s", _lastError.c_str());
     }
 }
 
@@ -158,7 +170,7 @@ void MqttSettingsService::onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t 
 {
     if (_state.enabled)
     {
-        ESP_LOGI("MQTT", "WiFi connection established, starting MQTT client.");
+        ESP_LOGI(SVK_TAG, "WiFi connection established, starting MQTT client.");
         onConfigUpdated();
     }
 }
@@ -167,15 +179,14 @@ void MqttSettingsService::onStationModeDisconnected(WiFiEvent_t event, WiFiEvent
 {
     if (_state.enabled)
     {
-        ESP_LOGI("MQTT", "WiFi connection dropped, stopping MQTT client.");
+        ESP_LOGI(SVK_TAG, "WiFi connection dropped, stopping MQTT client.");
         onConfigUpdated();
     }
 }
 
 void MqttSettingsService::configureMqtt()
 {
-    // disconnect if currently connected
-    _mqttClient.disconnect();
+    disconnect();
 
     // only connect if WiFi is connected and MQTT is enabled
     if (_state.enabled && WiFi.isConnected())
@@ -196,7 +207,46 @@ void MqttSettingsService::configureMqtt()
         }
         _mqttClient.setClientId(retainCstr(_state.clientId.c_str(), &_retainedClientId));
         _mqttClient.setKeepAlive(_state.keepAlive);
+        _mqttClient.setWill(_retainedWillTopic, 1, true, _retainedWillPayload);
         _mqttClient.setCleanSession(_state.cleanSession);
         _mqttClient.connect();
+
+        MqttCommitHandler::setTimerInterval(_state.messageIntervalMs);
+    }
+}
+
+void MqttSettingsService::setStatusTopic(String statusTopic)
+{
+    // check if the status topic is different from the current one
+    if (statusTopic.equals(_retainedWillTopic))
+    {
+        return; // no change
+    }
+
+    // copy the new status topic to the retained pointer
+    retainCstr(statusTopic.c_str(), &_retainedWillTopic);
+
+    // update the state
+    _reconfigureMqtt = true; // mark for reconfiguration
+
+    ESP_LOGI(SVK_TAG, "Status topic updated to: %s", _retainedWillTopic);
+}
+
+String MqttSettingsService::getStatusTopic()
+{
+    return String(_retainedWillTopic);
+}
+
+void MqttSettingsService::disconnect()
+{
+    // disable MQTT message commit timer, if disconnected
+    MqttCommitHandler::setTimerInterval(0);
+
+    // disconnect if currently connected
+    if (_mqttClient.connected())
+    {
+        ESP_LOGI(SVK_TAG, "Disconnecting from MQTT client.");
+        _mqttClient.publish(_retainedWillTopic, 1, true, "offline", 0, false);
+        _mqttClient.disconnect();
     }
 }

@@ -70,7 +70,7 @@ public:
                             return response.send();
                         },
                         _authenticationPredicate));
-        ESP_LOGV("HttpEndpoint", "Registered GET endpoint: %s", _servicePath);
+        ESP_LOGV(SVK_TAG, "Registered GET endpoint: %s", _servicePath);
 
         // POST
         _server->on(_servicePath,
@@ -105,7 +105,7 @@ public:
                         },
                         _authenticationPredicate));
 
-        ESP_LOGV("HttpEndpoint", "Registered POST endpoint: %s", _servicePath);
+        ESP_LOGV(SVK_TAG, "Registered POST endpoint: %s", _servicePath);
     }
 };
 

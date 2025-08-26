@@ -64,6 +64,7 @@ export type BrokerSettings = {
 	mqtt_path: string;
 	name: string;
 	unique_id: string;
+	status_topic: string;
 };
 
 export type GatewayMQTTSettings = {
@@ -89,7 +90,9 @@ export type Analytics = {
 	max_alloc_heap: number;
 	psram_size: number;
 	free_psram: number;
+	used_psram: number;
 	free_heap: number;
+	used_heap: number;
 	total_heap: number;
 	min_free_heap: number;
 	core_temp: number;
@@ -147,6 +150,7 @@ export type MQTTSettings = {
 	client_id: string;
 	keep_alive: number;
 	clean_session: boolean;
+	message_interval_ms: number;
 };
 
 export type Sensor = {

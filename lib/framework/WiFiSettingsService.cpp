@@ -6,7 +6,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 - 2024 theelims
+ *   Copyright (C) 2023 - 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -77,7 +77,7 @@ void WiFiSettingsService::reconfigureWiFiConnection()
         break;
     }
 
-    ESP_LOGI("WiFiSettingsService", "Reconfiguring WiFi connection to: %s", connectionMode.c_str());
+    ESP_LOGI(SVK_TAG, "Reconfiguring WiFi connection to: %s", connectionMode.c_str());
 
     // disconnect and de-configure wifi
     if (WiFi.disconnect(true))
@@ -105,6 +105,15 @@ void WiFiSettingsService::loop()
 String WiFiSettingsService::getHostname()
 {
     return _state.hostname;
+}
+
+String WiFiSettingsService::getIP()
+{
+    if (WiFi.isConnected())
+    {
+        return WiFi.localIP().toString();
+    }
+    return "Not connected";
 }
 
 void WiFiSettingsService::manageSTA()
@@ -137,15 +146,15 @@ void WiFiSettingsService::connectToWiFi()
     int scanResult = WiFi.scanNetworks();
     if (scanResult == WIFI_SCAN_FAILED)
     {
-        ESP_LOGE("WiFiSettingsService", "WiFi scan failed.");
+        ESP_LOGE(SVK_TAG, "WiFi scan failed.");
     }
     else if (scanResult == 0)
     {
-        ESP_LOGW("WiFiSettingsService", "No networks found.");
+        ESP_LOGW(SVK_TAG, "No networks found.");
     }
     else
     {
-        ESP_LOGI("WiFiSettingsService", "%d networks found.", scanResult);
+        ESP_LOGI(SVK_TAG, "%d networks found.", scanResult);
 
         // find the best network to connect
         wifi_settings_t *bestNetwork = NULL;
@@ -160,7 +169,7 @@ void WiFiSettingsService::connectToWiFi()
             int32_t chan_scan;
 
             WiFi.getNetworkInfo(i, ssid_scan, sec_scan, rssi_scan, BSSID_scan, chan_scan);
-            ESP_LOGV("WiFiSettingsService", "SSID: %s, BSSID: " MACSTR ", RSSI: %d dbm, Channel: %d", ssid_scan.c_str(), MAC2STR(BSSID_scan), rssi_scan, chan_scan);
+            ESP_LOGV(SVK_TAG, "SSID: %s, BSSID: " MACSTR ", RSSI: %d dbm, Channel: %d", ssid_scan.c_str(), MAC2STR(BSSID_scan), rssi_scan, chan_scan);
 
             for (auto &network : _state.wifiSettings)
             {
@@ -169,7 +178,7 @@ void WiFiSettingsService::connectToWiFi()
                     if (rssi_scan > bestNetworkDb)
                     { // best network
                         bestNetworkDb = rssi_scan;
-                        ESP_LOGV("WiFiSettingsService", "--> New best network SSID: %s, BSSID: " MACSTR "", ssid_scan.c_str(), MAC2STR(BSSID_scan));
+                        ESP_LOGV(SVK_TAG, "--> New best network SSID: %s, BSSID: " MACSTR "", ssid_scan.c_str(), MAC2STR(BSSID_scan));
                         network.available = true;
                         network.channel = chan_scan;
                         memcpy(network.bssid, BSSID_scan, 6);
@@ -193,7 +202,7 @@ void WiFiSettingsService::connectToWiFi()
             {
                 if (network.available == true)
                 {
-                    ESP_LOGI("WiFiSettingsService", "Connecting to first available network: %s", network.ssid.c_str());
+                    ESP_LOGI(SVK_TAG, "Connecting to first available network: %s", network.ssid.c_str());
                     configureNetwork(network);
                     break;
                 }
@@ -203,23 +212,23 @@ void WiFiSettingsService::connectToWiFi()
         else if (_state.staConnectionMode == (u_int8_t)STAConnectionMode::STRENGTH)
         {
             if (bestNetwork) {
-                ESP_LOGI("WiFiSettingsService", "Connecting to strongest network: %s, BSSID: " MACSTR " ", bestNetwork->ssid.c_str(), MAC2STR(bestNetwork->bssid));
+                ESP_LOGI(SVK_TAG, "Connecting to strongest network: %s, BSSID: " MACSTR " ", bestNetwork->ssid.c_str(), MAC2STR(bestNetwork->bssid));
                 configureNetwork(*bestNetwork);
             }
             else
             {
-                ESP_LOGI("WiFiSettingsService", "No suitable network found.");
+                ESP_LOGI(SVK_TAG, "No suitable network found.");
             }
         }
         // Connection mode OFFLINE: do not connect to any network
         else if (_state.staConnectionMode == (u_int8_t)STAConnectionMode::OFFLINE)
         {
-            ESP_LOGI("WiFiSettingsService", "WiFi connection mode is OFFLINE, not connecting to any network.");
+            ESP_LOGI(SVK_TAG, "WiFi connection mode is OFFLINE, not connecting to any network.");
         }
         // Connection mode is unknown: do not connect to any network
         else
         {
-            ESP_LOGE("WiFiSettingsService", "Unknown connection mode, not connecting to any network.");
+            ESP_LOGE(SVK_TAG, "Unknown connection mode, not connecting to any network.");
         }
 
         // delete scan results

@@ -9,7 +9,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 - 2024 theelims
+ *   Copyright (C) 2023 - 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -21,6 +21,7 @@
 #include <PsychicMqttClient.h>
 #include <SettingValue.h>
 #include <WiFi.h>
+#include <MqttEndpoint.h>
 
 #ifndef FACTORY_MQTT_ENABLED
 #define FACTORY_MQTT_ENABLED false
@@ -46,6 +47,10 @@
 #define FACTORY_MQTT_CLIENT_ID "#{platform}-#{unique_id}"
 #endif
 
+#ifndef FACTORY_MQTT_STATUS_TOPIC
+#define FACTORY_MQTT_STATUS_TOPIC "#{platform}/#{unique_id}/status"
+#endif
+
 #ifndef FACTORY_MQTT_KEEP_ALIVE
 #define FACTORY_MQTT_KEEP_ALIVE 16
 #endif
@@ -56,6 +61,10 @@
 
 #ifndef FACTORY_MQTT_MAX_TOPIC_LENGTH
 #define FACTORY_MQTT_MAX_TOPIC_LENGTH 128
+#endif
+
+#ifndef FACTORY_MQTT_MIN_MESSAGE_INTERVAL_MS
+#define FACTORY_MQTT_MIN_MESSAGE_INTERVAL_MS 500
 #endif
 
 #define MQTT_SETTINGS_FILE "/config/mqttSettings.json"
@@ -81,7 +90,11 @@ public:
     uint16_t keepAlive;
     bool cleanSession;
 
-    static void read(MqttSettings &settings, JsonObject &root)
+    // Publish rate limiting
+    uint32_t messageIntervalMs;
+
+    static void
+    read(MqttSettings &settings, JsonObject &root)
     {
         root["enabled"] = settings.enabled;
         root["uri"] = settings.uri;
@@ -90,6 +103,7 @@ public:
         root["client_id"] = settings.clientId;
         root["keep_alive"] = settings.keepAlive;
         root["clean_session"] = settings.cleanSession;
+        root["message_interval_ms"] = settings.messageIntervalMs;
     }
 
     static StateUpdateResult update(JsonObject &root, MqttSettings &settings)
@@ -101,6 +115,7 @@ public:
         settings.clientId = root["client_id"] | SettingValue::format(FACTORY_MQTT_CLIENT_ID);
         settings.keepAlive = root["keep_alive"] | FACTORY_MQTT_KEEP_ALIVE;
         settings.cleanSession = root["clean_session"] | FACTORY_MQTT_CLEAN_SESSION;
+        settings.messageIntervalMs = root["message_interval_ms"] | FACTORY_MQTT_MIN_MESSAGE_INTERVAL_MS;
         return StateUpdateResult::CHANGED;
     }
 };
@@ -117,7 +132,10 @@ public:
     bool isConnected();
     const char *getClientId();
     String getLastError();
+    void setStatusTopic(String statusTopic);
+    String getStatusTopic();
     PsychicMqttClient *getMqttClient();
+    void disconnect();
 
 protected:
     void onConfigUpdated();
@@ -134,6 +152,8 @@ private:
     char *_retainedClientId;
     char *_retainedUsername;
     char *_retainedPassword;
+    char *_retainedWillTopic = nullptr;
+    const char *_retainedWillPayload = "offline";
 
     // variable to help manage connection
     bool _reconfigureMqtt;

@@ -6,7 +6,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 - 2024 theelims
+ *   Copyright (C) 2023 - 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -46,53 +46,69 @@ String verbosePrintResetReason(int reason)
 {
     switch (reason)
     {
-    case 1:
-        return ("Vbat power on reset");
+    case ESP_RST_UNKNOWN:
+        return ("Reset reason can not be determined");
         break;
-    case 3:
-        return ("Software reset digital core");
+    case ESP_RST_POWERON:
+        return ("Reset due to power-on event");
         break;
-    case 4:
-        return ("Legacy watch dog reset digital core");
+    case ESP_RST_EXT:
+        return ("Reset by external pin (not applicable for ESP32)");
         break;
-    case 5:
-        return ("Deep Sleep reset digital core");
+    case ESP_RST_SW:
+        return ("Software reset via esp_restart");
         break;
-    case 6:
-        return ("Reset by SLC module, reset digital core");
+    case ESP_RST_PANIC:
+        return ("Software reset due to exception/panic");
         break;
-    case 7:
-        return ("Timer Group0 Watch dog reset digital core");
+    case ESP_RST_INT_WDT:
+        return ("Reset (software or hardware) due to interrupt watchdog");
         break;
-    case 8:
-        return ("Timer Group1 Watch dog reset digital core");
+    case ESP_RST_TASK_WDT:
+        return ("Reset due to task watchdog");
         break;
-    case 9:
-        return ("RTC Watch dog Reset digital core");
+    case ESP_RST_WDT:
+        return ("Reset due to other watchdogs");
         break;
-    case 10:
-        return ("Intrusion tested to reset CPU");
+    case ESP_RST_DEEPSLEEP:
+        return ("Reset after exiting deep sleep mode");
         break;
-    case 11:
-        return ("Time Group reset CPU");
+    case ESP_RST_BROWNOUT:
+        return ("Brownout reset (software or hardware)");
         break;
-    case 12:
-        return ("Software reset CPU");
+    case ESP_RST_SDIO:
+        return ("Reset over SDIO");
         break;
-    case 13:
-        return ("RTC Watch dog Reset CPU");
+#ifdef ESP_RST_USB
+    case ESP_RST_USB:
+        return ("Reset by USB peripheral");
         break;
-    case 14:
-        return ("for APP CPU, reseted by PRO CPU");
+#endif
+#ifdef ESP_RST_JSVK_TAG
+    case ESP_RST_JSVK_TAG:
+        return ("Reset by JSVK_TAG");
         break;
-    case 15:
-        return ("Reset when the vdd voltage is not stable");
+#endif
+#ifdef ESP_RST_EFUSE
+    case ESP_RST_EFUSE:
+        return ("Reset due to efuse error");
         break;
-    case 16:
-        return ("RTC Watch dog reset digital core and rtc module");
+#endif
+#ifdef ESP_RST_PWR_GLITCH
+    case ESP_RST_PWR_GLITCH:
+        return ("Reset due to power glitch detected");
         break;
+#endif
+#ifdef ESP_RST_CPU_LOCKUP
+    case ESP_RST_CPU_LOCKUP:
+        return ("Reset due to CPU lock up (double exception)");
+        break;
+#endif
     default:
-        return ("NO_MEAN");
+        char buffer[50];
+        snprintf(buffer, sizeof(buffer), "Unknown reset reason (%d)", reason);
+        return String(buffer);
+        break;
     }
 }
 
@@ -109,7 +125,7 @@ void SystemStatus::begin()
                 _securityManager->wrapRequest(std::bind(&SystemStatus::systemStatus, this, std::placeholders::_1),
                                               AuthenticationPredicates::IS_AUTHENTICATED));
 
-    ESP_LOGV("SystemStatus", "Registered GET endpoint: %s", SYSTEM_STATUS_SERVICE_PATH);
+    ESP_LOGV(SVK_TAG, "Registered GET endpoint: %s", SYSTEM_STATUS_SERVICE_PATH);
 }
 
 esp_err_t SystemStatus::systemStatus(PsychicRequest *request)
@@ -120,13 +136,19 @@ esp_err_t SystemStatus::systemStatus(PsychicRequest *request)
     root["esp_platform"] = ESP_PLATFORM;
     root["firmware_version"] = APP_VERSION;
     root["max_alloc_heap"] = ESP.getMaxAllocHeap();
-    root["psram_size"] = ESP.getPsramSize();
-    root["free_psram"] = ESP.getFreePsram();
+    if (psramFound())
+    {
+        root["free_psram"] = ESP.getFreePsram();
+        root["used_psram"] = ESP.getPsramSize() - ESP.getFreePsram();
+        root["psram_size"] = ESP.getPsramSize();
+    }
     root["cpu_freq_mhz"] = ESP.getCpuFreqMHz();
     root["cpu_type"] = ESP.getChipModel();
     root["cpu_rev"] = ESP.getChipRevision();
     root["cpu_cores"] = ESP.getChipCores();
     root["free_heap"] = ESP.getFreeHeap();
+    root["used_heap"] = ESP.getHeapSize() - ESP.getFreeHeap();
+    root["total_heap"] = ESP.getHeapSize();
     root["min_free_heap"] = ESP.getMinFreeHeap();
     root["sketch_size"] = ESP.getSketchSize();
     root["free_sketch_space"] = ESP.getFreeSketchSpace();
@@ -137,7 +159,7 @@ esp_err_t SystemStatus::systemStatus(PsychicRequest *request)
     root["fs_total"] = ESPFS.totalBytes();
     root["fs_used"] = ESPFS.usedBytes();
     root["core_temp"] = temperatureRead();
-    root["cpu_reset_reason"] = verbosePrintResetReason(rtc_get_reset_reason(0));
+    root["cpu_reset_reason"] = verbosePrintResetReason(esp_reset_reason());
     root["uptime"] = millis() / 1000;
 
     return response.send();

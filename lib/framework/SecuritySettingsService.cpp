@@ -6,7 +6,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 - 2024 theelims
+ *   Copyright (C) 2023 - 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -33,7 +33,7 @@ void SecuritySettingsService::begin()
                 wrapRequest(std::bind(&SecuritySettingsService::generateToken, this, std::placeholders::_1),
                             AuthenticationPredicates::IS_ADMIN));
 
-    ESP_LOGV("SecuritySettingsService", "Registered GET endpoint: %s", GENERATE_TOKEN_PATH);
+    ESP_LOGV(SVK_TAG, "Registered GET endpoint: %s", GENERATE_TOKEN_PATH);
 
     _httpEndpoint.begin();
     _fsPersistence.readFromFS();
@@ -46,7 +46,7 @@ Authentication SecuritySettingsService::authenticateRequest(PsychicRequest *requ
     if (request->hasHeader(AUTHORIZATION_HEADER))
     {
         auto value = request->header(AUTHORIZATION_HEADER);
-        // ESP_LOGV("SecuritySettingsService", "Authorization header: %s", value.c_str());
+        // ESP_LOGV(SVK_TAG, "Authorization header: %s", value.c_str());
         if (value.startsWith(AUTHORIZATION_HEADER_PREFIX))
         {
             value = value.substring(AUTHORIZATION_HEADER_PREFIX_LEN);
@@ -56,7 +56,7 @@ Authentication SecuritySettingsService::authenticateRequest(PsychicRequest *requ
     else if (request->hasParam(ACCESS_TOKEN_PARAMATER))
     {
         String value = request->getParam(ACCESS_TOKEN_PARAMATER)->value();
-        // ESP_LOGV("SecuritySettingsService", "Access token parameter: %s", value.c_str());
+        // ESP_LOGV(SVK_TAG, "Access token parameter: %s", value.c_str());
         return authenticateJWT(value);
     }
     return Authentication();
@@ -124,8 +124,8 @@ PsychicRequestFilterFunction SecuritySettingsService::filterRequest(Authenticati
 {
     return [this, predicate](PsychicRequest *request)
     {
-        // ESP_LOGV("SecuritySettingsService", "Authenticating filter request: %s", request->uri().c_str());
-        // ESP_LOGV("SecuritySettingsService", "Request Method: %s", request->methodStr().c_str());
+        // ESP_LOGV(SVK_TAG, "Authenticating filter request: %s", request->uri().c_str());
+        // ESP_LOGV(SVK_TAG, "Request Method: %s", request->methodStr().c_str());
 
         // TODO: This is a hack to allow bogus websocket filter requests to pass through
         // This is a temporary fix until the PsychicHttp websocket handler is fixed to not send a bogus filter request
@@ -133,7 +133,7 @@ PsychicRequestFilterFunction SecuritySettingsService::filterRequest(Authenticati
         // Check if we have a bogus filter request and return true
         if (request->uri().isEmpty() && request->method() == HTTP_DELETE)
         {
-            // ESP_LOGV("SecuritySettingsService", "Bogus filter request - allowing");
+            // ESP_LOGV(SVK_TAG, "Bogus filter request - allowing");
             return true;
         }
         else
@@ -141,7 +141,7 @@ PsychicRequestFilterFunction SecuritySettingsService::filterRequest(Authenticati
 
         Authentication authentication = authenticateRequest(request);
         bool result = predicate(authentication);
-        // ESP_LOGV("SecuritySettingsService", "Filter Request %s", result ? "allowed" : "denied");
+        // ESP_LOGV(SVK_TAG, "Filter Request %s", result ? "allowed" : "denied");
         return result;
     };
 }
@@ -203,7 +203,7 @@ PsychicRequestFilterFunction SecuritySettingsService::filterRequest(Authenticati
 {
     return [this, predicate](PsychicRequest *request)
     {
-        // ESP_LOGV("SecuritySettingsService", "Security disabled - all requests are allowed");
+        // ESP_LOGV(SVK_TAG, "Security disabled - all requests are allowed");
         return true;
     };
 }

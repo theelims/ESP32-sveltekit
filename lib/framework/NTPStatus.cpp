@@ -6,7 +6,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 - 2024 theelims
+ *   Copyright (C) 2023 - 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -26,7 +26,7 @@ void NTPStatus::begin()
                 _securityManager->wrapRequest(std::bind(&NTPStatus::ntpStatus, this, std::placeholders::_1),
                                               AuthenticationPredicates::IS_AUTHENTICATED));
 
-    ESP_LOGV("NTPStatus", "Registered GET endpoint: %s", NTP_STATUS_SERVICE_PATH);
+    ESP_LOGV(SVK_TAG, "Registered GET endpoint: %s", NTP_STATUS_SERVICE_PATH);
 }
 
 /*

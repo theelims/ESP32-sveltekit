@@ -9,7 +9,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 - 2024 theelims
+ *   Copyright (C) 2023 - 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -38,6 +38,7 @@
 #include <SecuritySettingsService.h>
 #include <SleepService.h>
 #include <SystemStatus.h>
+#include <CoreDump.h>
 #include <WiFiScanner.h>
 #include <WiFiSettingsService.h>
 #include <WiFiStatus.h>
@@ -202,6 +203,7 @@ public:
 
 private:
     PsychicHttpServer *_server;
+    TaskHandle_t _loopTaskHandle;
     unsigned int _numberEndpoints;
     FeaturesService _featureService;
     SecuritySettingsService _securitySettingsService;
@@ -237,6 +239,9 @@ private:
 #endif
 #if FT_ENABLED(FT_ANALYTICS)
     AnalyticsService _analyticsService;
+#endif
+#if FT_ENABLED(FT_COREDUMP)
+    CoreDump _coreDump;
 #endif
     RestartService _restartService;
     FactoryResetService _factoryResetService;

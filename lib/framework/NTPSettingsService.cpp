@@ -6,7 +6,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 - 2024 theelims
+ *   Copyright (C) 2023 - 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -41,7 +41,7 @@ void NTPSettingsService::begin()
                     std::bind(&NTPSettingsService::configureTime, this, std::placeholders::_1, std::placeholders::_2),
                     AuthenticationPredicates::IS_ADMIN));
 
-    ESP_LOGV("NTPSettingsService", "Registered POST endpoint: %s", TIME_PATH);
+    ESP_LOGV(SVK_TAG, "Registered POST endpoint: %s", TIME_PATH);
 
     _fsPersistence.readFromFS();
     configureNTP();

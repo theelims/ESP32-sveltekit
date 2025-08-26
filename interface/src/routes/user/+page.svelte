@@ -15,7 +15,7 @@
 	import EditUser from './EditUser.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import Delete from '~icons/tabler/trash';
-	import AddGeneric from '~icons/tabler/circle-plus';
+	import AddUser from '~icons/tabler/user-plus';
 	import Edit from '~icons/tabler/pencil';
 	import Admin from '~icons/tabler/key';
 	import Users from '~icons/tabler/users';
@@ -154,11 +154,11 @@
 	>
 		<SettingsCard collapsible={false}>
 			{#snippet icon()}
-						<Users  class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-					{/snippet}
+				<Users class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+			{/snippet}
 			{#snippet title()}
-						<span >Manage Users</span>
-					{/snippet}
+				<span>Manage Users</span>
+			{/snippet}
 			{#await getSecuritySettings()}
 				<Spinner />
 			{:then nothing}
@@ -167,7 +167,7 @@
 						class="btn btn-primary text-primary-content btn-md absolute -top-14 right-0"
 						onclick={handleNewUser}
 					>
-						<AddGeneric class="h-6 w-6" /></button
+						<AddUser class="h-6 w-6" /></button
 					>
 
 					<div class="overflow-x-auto" transition:slide|local={{ duration: 300, easing: cubicOut }}>
@@ -220,9 +220,7 @@
 						users will be signed out.</span
 					>
 				</div>
-				<label class="label" for="secret">
-					<span class="label-text text-md">JWT Secret</span>
-				</label>
+				<label class="label" for="secret">JWT Secret</label>
 				<InputPassword bind:value={securitySettings.jwt_secret} id="secret" />
 				<div class="mt-6 flex justify-end">
 					<button class="btn btn-primary" onclick={() => postSecuritySettings(securitySettings)}

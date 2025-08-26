@@ -6,7 +6,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 - 2024 theelims
+ *   Copyright (C) 2023 - 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -27,14 +27,14 @@ void WiFiScanner::begin()
                 _securityManager->wrapRequest(std::bind(&WiFiScanner::scanNetworks, this, std::placeholders::_1),
                                               AuthenticationPredicates::IS_ADMIN));
 
-    ESP_LOGV("WiFiScanner", "Registered GET endpoint: %s", SCAN_NETWORKS_SERVICE_PATH);
+    ESP_LOGV(SVK_TAG, "Registered GET endpoint: %s", SCAN_NETWORKS_SERVICE_PATH);
 
     _server->on(LIST_NETWORKS_SERVICE_PATH,
                 HTTP_GET,
                 _securityManager->wrapRequest(std::bind(&WiFiScanner::listNetworks, this, std::placeholders::_1),
                                               AuthenticationPredicates::IS_ADMIN));
 
-    ESP_LOGV("WiFiScanner", "Registered GET endpoint: %s", LIST_NETWORKS_SERVICE_PATH);
+    ESP_LOGV(SVK_TAG, "Registered GET endpoint: %s", LIST_NETWORKS_SERVICE_PATH);
 }
 
 esp_err_t WiFiScanner::scanNetworks(PsychicRequest *request)

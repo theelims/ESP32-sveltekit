@@ -6,7 +6,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2024 theelims
+ *   Copyright (C) 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -53,13 +53,16 @@ ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEnd
 #endif
                                                                                           _restartService(server, &_securitySettingsService),
                                                                                           _factoryResetService(server, &ESPFS, &_securitySettingsService),
+#if FT_ENABLED(FT_COREDUMP)
+                                                                                          _coreDump(server, &_securitySettingsService),
+#endif
                                                                                           _systemStatus(server, &_securitySettingsService)
 {
 }
 
 void ESP32SvelteKit::begin()
 {
-    ESP_LOGV("ESP32SvelteKit", "Loading settings from files system");
+    ESP_LOGV(SVK_TAG, "Loading settings from files system");
     ESPFS.begin(true);
 
     _wifiSettingsService.initWiFi();
@@ -71,7 +74,7 @@ void ESP32SvelteKit::begin()
 
 #ifdef EMBED_WWW
     // Serve static resources from PROGMEM
-    ESP_LOGV("ESP32SvelteKit", "Registering routes from PROGMEM static resources");
+    ESP_LOGV(SVK_TAG, "Registering routes from PROGMEM static resources");
     WWWData::registerRoutes(
         [&](const String &uri, const String &contentType, const uint8_t *content, size_t len)
         {
@@ -98,7 +101,7 @@ void ESP32SvelteKit::begin()
         });
 #else
     // Serve static resources from /www/
-    ESP_LOGV("ESP32SvelteKit", "Registering routes from FS /www/ static resources");
+    ESP_LOGV(SVK_TAG, "Registering routes from FS /www/ static resources");
     _server->serveStatic("/_app/", ESPFS, "/www/_app/");
     _server->serveStatic("/favicon.png", ESPFS, "/www/favicon.png");
     //  Serving all other get requests with "/www/index.htm"
@@ -118,13 +121,13 @@ void ESP32SvelteKit::begin()
 #endif
 
 #if defined(ENABLE_CORS)
-    ESP_LOGV("ESP32SvelteKit", "Enabling CORS headers");
+    ESP_LOGV(SVK_TAG, "Enabling CORS headers");
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", CORS_ORIGIN);
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers", "Accept, Content-Type, Authorization");
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Credentials", "true");
 #endif
 
-    ESP_LOGV("ESP32SvelteKit", "Starting MDNS");
+    ESP_LOGV(SVK_TAG, "Starting MDNS");
     MDNS.begin(_wifiSettingsService.getHostname().c_str());
     MDNS.setInstanceName(_appName);
     MDNS.addService("http", "tcp", 80);
@@ -148,43 +151,66 @@ void ESP32SvelteKit::begin()
     _wifiScanner.begin();
     _wifiStatus.begin();
 
+#if FT_ENABLED(FT_COREDUMP)
+    _coreDump.begin();
+#endif
+
 #if FT_ENABLED(FT_UPLOAD_FIRMWARE)
     _uploadFirmwareService.begin();
 #endif
+
 #if FT_ENABLED(FT_DOWNLOAD_FIRMWARE)
     _downloadFirmwareService.begin();
 #endif
+
 #if FT_ENABLED(FT_NTP)
     _ntpSettingsService.begin();
     _ntpStatus.begin();
 #endif
+
 #if FT_ENABLED(FT_MQTT)
     _mqttSettingsService.begin();
     _mqttStatus.begin();
 #endif
+
 #if FT_ENABLED(FT_SECURITY)
     _authenticationService.begin();
     _securitySettingsService.begin();
 #endif
+
 #if FT_ENABLED(FT_SLEEP)
     _sleepService.begin();
+    _sleepService.attachOnSleepCallback([&]()
+                                        {   ESP_LOGI(SVK_TAG, "Attempting to stop server");
+                                            for (auto client : _server->getClientList())
+                                            {
+                                                client->close();
+                                            }
+                                            vTaskDelete(_loopTaskHandle);
+                                            ESP_LOGI(SVK_TAG, "Server stopped"); });
+#if FT_ENABLED(FT_MQTT)
+    _sleepService.attachOnSleepCallback([&]()
+                                        { _mqttSettingsService.disconnect(); });
 #endif
+#endif
+
 #if FT_ENABLED(FT_BATTERY)
     _batteryService.begin();
 #endif
+
 #if FT_ENABLED(FT_ANALYTICS)
     _analyticsService.begin();
 #endif
 
     // Start the loop task
-    ESP_LOGV("ESP32SvelteKit", "Starting loop task");
+    ESP_LOGV(SVK_TAG, "Starting loop task");
     xTaskCreatePinnedToCore(
         this->_loopImpl,            // Function that should be called
         "ESP32 SvelteKit Loop",     // Name of the task (for debugging)
         4096,                       // Stack size (bytes)
         this,                       // Pass reference to this class instance
         (tskIDLE_PRIORITY + 2),     // task priority
-        NULL,                       // Task handle
+        &_loopTaskHandle,           // Task handle
         ESP32SVELTEKIT_RUNNING_CORE // Pin to application core
     );
 }

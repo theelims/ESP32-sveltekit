@@ -1,7 +1,7 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 @plugin "daisyui" {
     themes: corporate --default, business --prefersdark;
-  }
+}
 
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,
@@ -19,85 +19,4 @@
   ::file-selector-button {
     border-color: var(--color-gray-200, currentcolor);
   }
-}
-
-div.genius-packet {
-    @apply my-1;
-}
-
-div.genius-packet > div.meta-data-container {
-    @apply flex items-center justify-start gap-2 text-sm py-1;
-}
-
-div.genius-packet > div.meta-data-container > div.meta-data {
-    @apply text-center rounded-box font-light h-min py-[2px] px-1 bg-slate-300;
-}
-
-/* Packet type field */
-div.genius-packet > div.meta-data-container > div.type-comissioning {
-    @apply bg-amber-500 font-normal;
-}
-
-div.genius-packet > div.meta-data-container > div.type-unknown {
-    @apply bg-slate-800 text-white font-normal;
-}
-
-div.genius-packet > div.packet-data-container {
-    @apply flex items-start justify-start gap-1 text-sm py-1;
-}
-
-div.genius-packet > div.packet-data-container > div > div {
-    @apply text-center rounded-box font-light h-min py-[2px] px-1 bg-base-100;
-}
-
-div.genius-packet > div.packet-data-container > div > div.packet-data-1 {
-    @apply font-medium;
-}
-
-div.genius-packet > div.packet-data-container > div[data-type=counter] > div.packet-data-1 {
-    @apply bg-stone-400;
-}
-
-div.genius-packet > div.packet-data-container > div[data-type=counter] > div {
-    @apply bg-stone-300;
-}
-
-div.genius-packet > div.packet-data-container > div[data-type=serialnumber-radiomodule] > div.packet-data-1 {
-    @apply bg-cyan-400;
-}
-
-div.genius-packet > div.packet-data-container > div[data-type=serialnumber-radiomodule] > div {
-    @apply bg-cyan-200;
-}
-
-div.genius-packet > div.packet-data-container > div[data-type=serialnumber-radiomodule-unknown] > div.packet-data-1 {
-    @apply bg-red-400;
-}
-
-div.genius-packet > div.packet-data-container > div[data-type=serialnumber-radiomodule-unknown] > div {
-    @apply bg-red-200;
-}
-
-div.genius-packet > div.packet-data-container > div[data-type=line] > div.packet-data-1 {
-    @apply bg-amber-400;
-}
-
-div.genius-packet > div.packet-data-container > div[data-type=line] > div {
-    @apply bg-amber-200;
-}
-
-div.genius-packet > div.packet-data-container > div[data-type=hops] > div.packet-data-1 {
-    @apply bg-purple-400;
-}
-
-div.genius-packet > div.packet-data-container > div[data-type=hops] > div {
-    @apply bg-purple-300;
-}
-
-div.genius-packet > div.packet-data-container > div[data-type=time] > div.packet-data-1 {
-    @apply bg-emerald-400;
-}
-
-div.genius-packet > div.packet-data-container > div[data-type=time] > div {
-    @apply bg-emerald-200;
 }

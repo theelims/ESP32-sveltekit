@@ -108,7 +108,7 @@
 						<p class="mt-8 text-2xl">Scanning ...</p>
 					</div>
 				{:else}
-					<ul class="menu">
+					<ul class="menu w-full">
 						{#each listOfNetworks as network, i}
 							<li>
 								<!-- svelte-ignore a11y_click_events_have_key_events -->

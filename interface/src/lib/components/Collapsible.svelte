@@ -30,13 +30,9 @@
 	function openCollapsible() {
 		open = !open;
 		if (open) {
-			if (opened) {
-				opened();
-			}
+			opened();
 		} else {
-			if (closed) {
-				closed();
-			}
+			closed();
 		}
 	}
 </script>

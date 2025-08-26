@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from '../$types';
 	import MQTT from './MQTT.svelte';
+	import MqttConfig from './MQTTConfig.svelte';
 
 	interface Props {
 		data: PageData;
@@ -14,4 +15,5 @@
      sm:mx-8 sm:my-8"
 >
 	<MQTT />
+	<MqttConfig />
 </div>

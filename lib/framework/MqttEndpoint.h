@@ -9,7 +9,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 - 2024 theelims
+ *   Copyright (C) 2023 - 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -17,11 +17,67 @@
 
 #include <StatefulService.h>
 #include <PsychicMqttClient.h>
+#include <SecurityManager.h>
+#include <vector>
 
 #define MQTT_ORIGIN_ID "mqtt"
 
+// Commit interface, needed to ensure that the MqttEndpoint can be used in a commit pattern without template
+class MqttCommitHandler
+{
+public:
+    MqttCommitHandler()
+    {
+        if (_instances.size() == 0)
+        {
+            _sendTimer = xTimerCreate("MqttSendTimer",
+                                      pdMS_TO_TICKS(500),
+                                      pdTRUE,
+                                      nullptr,
+                                      commitPending);
+            setTimerInterval(_timerIntervalMs);
+        }
+        _instances.push_back(this);
+    }
+    virtual void commit() {};
+    virtual ~MqttCommitHandler() = default;
+    static void setTimerInterval(uint32_t intervalMs)
+    {
+        _timerIntervalMs = intervalMs;
+        if (_sendTimer)
+        {
+            if (intervalMs == 0)
+            {
+                xTimerStop(_sendTimer, 0); // Disable timer (no throttling)
+            }
+            else
+            {
+                xTimerChangePeriod(_sendTimer, pdMS_TO_TICKS(intervalMs), 0); // Update interval
+                xTimerStart(_sendTimer, 0);
+            }
+        }
+    }
+    static uint32_t getTimerInterval()
+    {
+        return _timerIntervalMs;
+    }
+
+protected:
+    static std::vector<MqttCommitHandler *> _instances;
+    static void commitPending(TimerHandle_t xTimer)
+    {
+        ESP_LOGV(SVK_TAG, "Publishing pending MQTT messages");
+        for (auto instance : _instances)
+        {
+            instance->commit();
+        }
+    }
+    static TimerHandle_t _sendTimer;
+    static uint32_t _timerIntervalMs;
+};
+
 template <class T>
-class MqttEndpoint
+class MqttEndpoint : public MqttCommitHandler
 {
 public:
     MqttEndpoint(JsonStateReader<T> stateReader,
@@ -30,13 +86,16 @@ public:
                  PsychicMqttClient *mqttClient,
                  const String &pubTopic = "",
                  const String &subTopic = "",
+                 int QoS = 0,
                  bool retain = false) : _stateReader(stateReader),
                                         _stateUpdater(stateUpdater),
                                         _statefulService(statefulService),
                                         _mqttClient(mqttClient),
                                         _pubTopic(pubTopic),
                                         _subTopic(subTopic),
-                                        _retain(retain)
+                                        _qos(QoS),
+                                        _retain(retain),
+                                        _pendingCommit(false)
 
     {
         _statefulService->addUpdateHandler([&](const String &originId)
@@ -54,7 +113,6 @@ public:
                                          std::placeholders::_5));
     }
 
-public:
     void configureTopics(const String &pubTopic, const String &subTopic)
     {
         setSubTopic(subTopic);
@@ -88,8 +146,12 @@ public:
         publish();
     }
 
-    void publish()
+    void commit() override
     {
+        if (!_pendingCommit)
+        {
+            return; // nothing to do
+        }
         if (_pubTopic.length() > 0 && _mqttClient->connected())
         {
             // serialize to json doc
@@ -102,7 +164,17 @@ public:
             serializeJson(json, payload);
 
             // publish the payload
-            _mqttClient->publish(_pubTopic.c_str(), 0, _retain, payload.c_str());
+            _mqttClient->publish(_pubTopic.c_str(), _qos, _retain, payload.c_str(), 0, false);
+        }
+        _pendingCommit = false;
+    }
+
+    void publish()
+    {
+        _pendingCommit = true;
+        if (MqttCommitHandler::getTimerInterval() == 0)
+        {
+            commit(); // No throttling—send immediately
         }
     }
 
@@ -118,7 +190,9 @@ protected:
     JsonStateReader<T> _stateReader;
     String _subTopic;
     String _pubTopic;
+    int _qos;
     bool _retain;
+    bool _pendingCommit;
 
     void onMqttMessage(char *topic,
                        char *payload,

@@ -1,6 +1,3 @@
-#ifndef IPUtils_h
-#define IPUtils_h
-
 /**
  *   ESP32 SvelteKit
  *
@@ -14,22 +11,10 @@
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
  **/
+#include <vector>
+#include <MqttEndpoint.h>
+#include <MqttSettingsService.h>
 
-#include <IPAddress.h>
-
-const IPAddress IP_NOT_SET = IPAddress(INADDR_NONE);
-
-class IPUtils
-{
-public:
-    static bool isSet(const IPAddress &ip)
-    {
-        return ip != IP_NOT_SET;
-    }
-    static bool isNotSet(const IPAddress &ip)
-    {
-        return ip == IP_NOT_SET;
-    }
-};
-
-#endif // end IPUtils_h
+std::vector<MqttCommitHandler *> MqttCommitHandler::_instances;
+TimerHandle_t MqttCommitHandler::_sendTimer = nullptr;
+uint32_t MqttCommitHandler::_timerIntervalMs = FACTORY_MQTT_MIN_MESSAGE_INTERVAL_MS; // default

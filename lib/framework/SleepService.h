@@ -7,7 +7,7 @@
  *   with responsive Sveltekit front-end built with TailwindCSS and DaisyUI.
  *   https://github.com/theelims/ESP32-sveltekit
  *
- *   Copyright (C) 2023 - 2024 theelims
+ *   Copyright (C) 2023 - 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -19,6 +19,8 @@
 #include <PsychicHttp.h>
 #include <SecurityManager.h>
 #include "driver/rtc_io.h"
+#include <vector>
+#include <ranges>
 
 #define SLEEP_SERVICE_PATH "/rest/sleep"
 
@@ -51,7 +53,7 @@ public:
 
     void attachOnSleepCallback(sleepCallback callbackSleep)
     {
-        _callbackSleep = callbackSleep;
+        _sleepCallbacks.push_back(callbackSleep);
     }
 
     void setWakeUpPin(int pin, bool level, pinTermination termination = pinTermination::FLOATING);
@@ -62,5 +64,5 @@ private:
     esp_err_t sleep(PsychicRequest *request);
 
 protected:
-    static sleepCallback _callbackSleep;
+    static std::vector<sleepCallback> _sleepCallbacks;
 };
