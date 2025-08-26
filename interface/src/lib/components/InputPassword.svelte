@@ -7,7 +7,8 @@
 		id?: string;
 	}
 
-	let { value = $bindable(''), id = '' }: Props = $props();
+	let { value = $bindable('') as string, id = '' as string }: Props = $props();
+
 	function handleInput(e: any) {
 		value = e.target.value;
 	}
