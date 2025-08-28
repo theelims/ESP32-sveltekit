@@ -19,7 +19,7 @@ function createWebSocket() {
 	}
 
 	function disconnect(reason: SocketEvent, event?: Event) {
-		console.log('disconnect', reason, event);
+		//console.log('disconnect', reason, event);
 		ws.close();
 		set(false);
 		clearTimeout(unresponsiveTimeoutId);
@@ -29,7 +29,7 @@ function createWebSocket() {
 	}
 
 	function connect() {
-		console.log('connect');
+		//console.log('connect');
 		ws = new WebSocket(socketUrl);
 		ws.binaryType = 'arraybuffer';
 		ws.onopen = (ev) => {

@@ -2,15 +2,37 @@
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import Down from '~icons/tabler/chevron-down';
+	import Alert from '~icons/tabler/alert-hexagon';
 
-	let { icon, title, children, opened, closed, open = false, class: className = '' } = $props();
+	interface Props {
+		open?: boolean;
+		opened?: any;
+		closed?: any;
+		collapsible?: boolean;
+		icon?: import('svelte').Snippet;
+		title?: import('svelte').Snippet;
+		children?: import('svelte').Snippet;
+		class?: string;
+		isDirty?: boolean;
+	}
+
+	let {
+		open = $bindable(false),
+		opened,
+		closed,
+		icon,
+		title,
+		children,
+		class: className = '',
+		isDirty = false
+	}: Props = $props();
 
 	function openCollapsible() {
 		open = !open;
 		if (open) {
-			opened();
+			if (opened) opened();
 		} else {
-			closed();
+			if (closed) closed();
 		}
 	}
 </script>

@@ -8,7 +8,7 @@
 	// provided by <Modals />
 
 	interface Props {
-		isOpen: boolean;
+		isOpen?: boolean;
 		title: string;
 		message: string;
 		onConfirm: any;
@@ -47,12 +47,12 @@
 					class="btn btn-primary inline-flex items-center"
 					onclick={() => {
 						modals.close();
-					}}><labels.cancel.icon class="mr-2 h-5 w-5" /><span>{labels?.cancel.label}</span></button
+					}}><labels.cancel.icon class="h-5 w-5" /><span>{labels?.cancel.label}</span></button
 				>
 				<button
 					class="btn btn-warning text-warning-content inline-flex items-center"
 					onclick={onConfirm}
-					><SvelteComponent class="mr-2 h-5 w-5" /><span>{labels?.confirm.label}</span></button
+					><SvelteComponent class="h-5 w-5" /><span>{labels?.confirm.label}</span></button
 				>
 			</div>
 		</div>
