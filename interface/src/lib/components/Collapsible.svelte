@@ -30,9 +30,9 @@
 	function openCollapsible() {
 		open = !open;
 		if (open) {
-			opened();
+			if (opened) opened();
 		} else {
-			closed();
+			if (closed) closed();
 		}
 	}
 </script>
@@ -46,8 +46,8 @@
 			{@render icon?.()}
 			{@render title?.()}
 			{#if isDirty}
-				<div data-tip="There are unsaved changes." class="tooltip tooltip-bottom tooltip-error">
-					<Alert class="text-error lex-shrink-0 ml-2 h-6 w-6 self-end" />
+				<div data-tip="There are unsaved changes." class="tooltip tooltip-right tooltip-error">
+					<Alert class="text-error lex-shrink-0 ml-2 h-6 w-6 self-end cursor-help" />
 				</div>
 			{/if}
 		</span>
