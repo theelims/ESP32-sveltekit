@@ -19,8 +19,8 @@
 	import MQTT from '~icons/tabler/topology-star-3';
 	import NTP from '~icons/tabler/clock-check';
 	import Metrics from '~icons/tabler/report-analytics';
+	import Bug from '~icons/tabler/bug';
 	import Alarm from '~icons/tabler/bell';
-	import Message from '~icons/tabler/message';
 	import { page } from '$app/state';
 	import { user } from '$lib/stores/user';
 
@@ -139,6 +139,12 @@
 					icon: Metrics,
 					href: '/system/metrics',
 					feature: page.data.features.analytics
+				},
+				{
+					title: 'Core Dump',
+					icon: Bug,
+					href: '/system/coredump',
+					feature: page.data.features.coredump
 				},
 				{
 					title: 'Firmware Update',
