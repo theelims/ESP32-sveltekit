@@ -34,6 +34,9 @@
 	// Create helper variable to achieve reactivity
 	let staticIPConfig = $state(networkEditable.static_ip_config);
 
+	// Use this to directly access the form's DOM element
+	let formField: any = $state();
+
 	let formErrors = $state({
 		ssid: false,
 		local_ip: false,
@@ -132,18 +135,17 @@
 			<h2 class="text-base-content text-start text-2xl font-bold">{title}</h2>
 			<div class="divider my-2"></div>
 			<form
-				class="form-control text-base-content mb-1 w-full"
+				class="fieldset"
 				onsubmit={preventDefault(validateNetworkSettings)}
 				novalidate
+				bind:this={formField}
 			>
 				<div
 					class="grid w-full grid-cols-1 content-center gap-4 px-4 sm:grid-cols-2"
 					transition:slide|local={{ duration: 300, easing: cubicOut }}
 				>
 					<div>
-						<label class="label" for="ssid">
-							<span class="label-text text-md">SSID</span>
-						</label>
+						<label class="label" for="ssid">SSID</label>
 						<input
 							type="text"
 							class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.ssid
@@ -158,7 +160,7 @@
 						{#if formErrors.ssid}
 							<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
 								<label for="ssid" class="label">
-									<span class="label-text-alt text-error">
+									<span class="text-error">
 										SSID must be between 3 and 32 characters long.
 									</span>
 								</label>
@@ -166,9 +168,7 @@
 						{/if}
 					</div>
 					<div>
-						<label class="label" for="pwd">
-							<span class="label-text text-md">Password</span>
-						</label>
+						<label class="label" for="pwd">Password</label>
 						<InputPassword bind:value={networkEditable.password} id="pwd" />
 					</div>
 					<label
@@ -189,9 +189,7 @@
 						transition:slide|local={{ duration: 300, easing: cubicOut }}
 					>
 						<div>
-							<label class="label" for="localIP">
-								<span class="label-text text-md">Local IP</span>
-							</label>
+							<label class="label" for="localIP">Local IP</label>
 							<input
 								type="text"
 								class="input input-bordered w-full {formErrors.local_ip
@@ -207,7 +205,7 @@
 							{#if formErrors.local_ip}
 								<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
 									<label for="localIP" class="label">
-										<span class="label-text-alt text-error">
+										<span class="text-error">
 											Local IP must be a valid IPv4 address.
 										</span>
 									</label>
@@ -216,9 +214,7 @@
 						</div>
 
 						<div>
-							<label class="label" for="gateway">
-								<span class="label-text text-md">Gateway IP</span>
-							</label>
+							<label class="label" for="gateway">Gateway IP</label>
 							<input
 								type="text"
 								class="input input-bordered w-full {formErrors.gateway_ip
@@ -234,7 +230,7 @@
 							{#if formErrors.gateway_ip}
 								<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
 									<label for="gateway" class="label">
-										<span class="label-text-alt text-error">
+										<span class="text-error">
 											Gateway IP must be a valid IPv4 address.
 										</span>
 									</label>
@@ -242,9 +238,7 @@
 							{/if}
 						</div>
 						<div>
-							<label class="label" for="subnet">
-								<span class="label-text text-md">Subnet Mask</span>
-							</label>
+							<label class="label" for="subnet">Subnet Mask</label>
 							<input
 								type="text"
 								class="input input-bordered w-full {formErrors.subnet_mask
@@ -260,7 +254,7 @@
 							{#if formErrors.subnet_mask}
 								<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
 									<label for="subnet" class="label">
-										<span class="label-text-alt text-error">
+										<span class="text-error">
 											Subnet Mask must be a valid IPv4 subnet mask.
 										</span>
 									</label>
@@ -268,9 +262,7 @@
 							{/if}
 						</div>
 						<div>
-							<label class="label" for="dns_1">
-								<span class="label-text text-md">DNS 1</span>
-							</label>
+							<label class="label" for="dns_1">DNS 1</label>
 							<input
 								type="text"
 								class="input input-bordered w-full {formErrors.dns_1
@@ -286,7 +278,7 @@
 							{#if formErrors.dns_1}
 								<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
 									<label for="dns_1" class="label">
-										<span class="label-text-alt text-error">
+										<span class="text-error">
 											DNS 1 must be a valid IPv4 address.
 										</span>
 									</label>
@@ -294,9 +286,7 @@
 							{/if}
 						</div>
 						<div>
-							<label class="label" for="dns_2">
-								<span class="label-text text-md">DNS 2</span>
-							</label>
+							<label class="label" for="dns_2">DNS 2</label>
 							<input
 								type="text"
 								class="input input-bordered w-full {formErrors.dns_2
@@ -312,7 +302,7 @@
 							{#if formErrors.dns_2}
 								<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
 									<label for="dns_2" class="label">
-										<span class="label-text-alt text-error">
+										<span class="text-error">
 											DNS 2 must be a valid IPv4 address.
 										</span>
 									</label>

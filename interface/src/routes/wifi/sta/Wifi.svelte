@@ -8,12 +8,16 @@
 	import { notifications } from '$lib/components/toasts/notifications';
 	import DragDropList, { VerticalDropZone, reorder, type DropEvent } from 'svelte-dnd-list';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
+	import Collapsible from '$lib/components/Collapsible.svelte';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
+	import InfoDialog from '$lib/components/InfoDialog.svelte';
+	import type { KnownNetworkItem, WifiSettings, WifiStatus } from '$lib/types/models';
 	import ScanNetworks from './Scan.svelte';
 	import EditNetwork from './EditNetwork.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import AP from '~icons/tabler/access-point';
 	import Router from '~icons/tabler/router';
+	import Settings from '~icons/tabler/settings';
 	import MAC from '~icons/tabler/dna-2';
 	import Home from '~icons/tabler/home';
 	import WiFi from '~icons/tabler/wifi';
@@ -32,9 +36,6 @@
 	import Check from '~icons/tabler/check';
 	import Save from '~icons/tabler/device-floppy';
 	import Info from '~icons/tabler/info-circle';
-	import InfoDialog from '$lib/components/InfoDialog.svelte';
-	import type { KnownNetworkItem, WifiSettings, WifiStatus } from '$lib/types/models';
-	import Collapsible from '$lib/components/Collapsible.svelte';
 
 	let wifiStatus: WifiStatus = $state({
 		status: 0,
@@ -59,6 +60,7 @@
 	});
 
 	// Stringify to recognize changes
+	// svelte-ignore state_referenced_locally
 	let strWifiSettings: string = $state(JSON.stringify(wifiSettings));
 	// Recognize changes in settings
 	let isSettingsDirty: boolean = $derived(JSON.stringify(wifiSettings) !== strWifiSettings);
@@ -81,6 +83,9 @@
 			text: `Priority (Sequence)`
 		}
 	];
+
+	// Use this to directly access the form's DOM element
+	let formField: any = $state();
 
 	async function getWifiStatus() {
 		try {
@@ -236,6 +241,11 @@
 
 		wifiSettings.wifi_networks = reorder(wifiSettings.wifi_networks, from.index, to.index);
 	}
+
+	async function getWifiData() {
+		await getWifiStatus();
+		await getWifiSettings();
+	}
 </script>
 
 <SettingsCard collapsible={false}>
@@ -245,10 +255,10 @@
 	{#snippet title()}
 		<span>WiFi Connection</span>
 	{/snippet}
-	<div class="w-full overflow-x-auto">
-		{#await getWifiStatus()}
-			<Spinner />
-		{:then nothing}
+	{#await getWifiData()}
+		<Spinner />
+	{:then nothing}
+		<div class="w-full overflow-x-auto">
 			<div
 				class="flex w-full flex-col space-y-1"
 				transition:slide|local={{ duration: 300, easing: cubicOut }}
@@ -391,57 +401,52 @@
 					</div>
 				</div>
 			{/if}
-		{/await}
-	</div>
-	{#if !page.data.features.security || $user.admin}
-		<Collapsible open={true} class="shadow-lg" isDirty={isSettingsDirty}>
-			{#snippet icon()}
-				<Router class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-			{/snippet}
-			{#snippet title()}
-				<span>WiFi Settings</span>
-			{/snippet}
-			{#await getWifiSettings()}
-				<Spinner />
-			{:then nothing}
-				<div class="grid w-full grid-cols-1 content-center gap-x-4 sm:grid-cols-2">
-					<div>
-						<label class="label" for="hostname">
-							<span class="label-text text-md">Host Name (mDNS)</span>
-						</label>
-						<input
-							type="text"
-							min="3"
-							max="32"
-							class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrorhostname
-								? 'border-error border-2'
-								: ''}"
-							bind:value={wifiSettings.hostname}
-							id="hostname"
-							required
-						/>
-						{#if formErrorhostname}
-							<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
-								<label for="hostname" class="label">
-									<span class="label-text-alt text-error">
-										Host name must be between 3 and 32 characters long.
-									</span>
-								</label>
-							</div>
-						{/if}
-					</div>
+		</div>
 
-					<div>
-						<label class="label" for="apmode">
-							<span class="label-text">WiFi Connection Mode</span>
-						</label>
-						<select class="select" id="apmode" bind:value={wifiSettings.connection_mode}>
-							{#each connectionMode as mode}
-								<option value={mode.id}>
-									{mode.text}
-								</option>
-							{/each}
-						</select>
+		{#if !page.data.features.security || $user.admin}
+			<Collapsible open={true} class="shadow-lg" isDirty={isSettingsDirty}>
+				{#snippet icon()}
+					<Settings class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+				{/snippet}
+				{#snippet title()}
+					<span>Settings & Networks</span>
+				{/snippet}
+				<div class="fieldset">
+					<div class="grid w-full grid-cols-1 content-center gap-4 sm:grid-cols-2">
+						<div>
+							<label class="label" for="hostname">Host Name (mDNS)</label>
+							<input
+								type="text"
+								min="3"
+								max="32"
+								class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrorhostname
+									? 'border-error border-2'
+									: ''}"
+								bind:value={wifiSettings.hostname}
+								id="hostname"
+								required
+							/>
+							{#if formErrorhostname}
+								<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
+									<label for="hostname" class="label">
+										<span class="text-error">
+											Host name must be between 3 and 32 characters long.
+										</span>
+									</label>
+								</div>
+							{/if}
+						</div>
+
+						<div>
+							<label class="label" for="apmode">WiFi Connection Mode</label>
+							<select class="select w-full" id="apmode" bind:value={wifiSettings.connection_mode}>
+								{#each connectionMode as mode}
+									<option value={mode.id}>
+										{mode.text}
+									</option>
+								{/each}
+							</select>
+						</div>
 					</div>
 				</div>
 
@@ -523,7 +528,7 @@
 					<div class="w-full" transition:slide|local={{ duration: 300, easing: cubicOut }}>
 						<div role="alert" class="alert bg-base-300 mt-2">
 							<Info class="h-6 w-6" />
-							<div>Move the networks into the preferred order.</div>
+							<div>Arrange the networks according to their priority (most important first).</div>
 						</div>
 					</div>
 				{/if}
@@ -541,7 +546,7 @@
 						<span>Apply Settings</span>
 					</button>
 				</div>
-			{/await}
-		</Collapsible>
-	{/if}
+			</Collapsible>
+		{/if}
+	{/await}
 </SettingsCard>
