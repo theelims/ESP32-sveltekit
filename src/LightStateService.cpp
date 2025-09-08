@@ -14,6 +14,8 @@
 
 #include <LightStateService.h>
 
+#define GPIO_PIN_CH2      2     // CH2 Control GPIO
+
 LightStateService::LightStateService(PsychicHttpServer *server,
                                      ESP32SvelteKit *sveltekit,
                                      LightMqttSettingsService *lightMqttSettingsService) : _httpEndpoint(LightState::read,
@@ -43,7 +45,7 @@ LightStateService::LightStateService(PsychicHttpServer *server,
                                                                                            _lightMqttSettingsService(lightMqttSettingsService)
 {
     // configure led to be output
-    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(GPIO_PIN_CH2, OUTPUT);
 
     // configure MQTT callback
     _mqttClient->onConnect(std::bind(&LightStateService::registerConfig, this));
@@ -69,7 +71,7 @@ void LightStateService::begin()
 
 void LightStateService::onConfigUpdated()
 {
-    digitalWrite(LED_BUILTIN, _state.ledOn ? 1 : 0);
+    digitalWrite(GPIO_PIN_CH2, _state.ledOn ? 1 : 0);
 }
 
 void LightStateService::registerConfig()
