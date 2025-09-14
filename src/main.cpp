@@ -16,6 +16,7 @@
 #include <LightMqttSettingsService.h>
 #include <LightStateService.h>
 #include <PsychicHttpServer.h>
+#include <StatusMonitor.h>
 
 #define SERIAL_BAUD_RATE 115200
 
@@ -30,6 +31,7 @@ LightStateService lightStateService = LightStateService(&server,
                                                         &esp32sveltekit,
                                                         &lightMqttSettingsService);
 
+StatusMonitor statusMonitor = StatusMonitor(&esp32sveltekit);
 void setup()
 {
     // start serial and filesystem
@@ -37,11 +39,16 @@ void setup()
 
     // start ESP32-SvelteKit
     esp32sveltekit.begin();
+    statusMonitor.begin();
 
     // load the initial light settings
     lightStateService.begin();
     // start the light service
     lightMqttSettingsService.begin();
+
+    // Add loop callbacks to ESP32-SvelteKit
+    esp32sveltekit.addLoopFunction([]()
+                                   { statusMonitor.loop(); });
 }
 
 void loop()
