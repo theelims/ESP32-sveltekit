@@ -107,7 +107,7 @@
 						borderColor: daisyColor('--color-primary'),
 						backgroundColor: daisyColor('--color-primary', 50),
 						borderWidth: 2,
-						data: $analytics.used_psram,
+						data: $analytics.free_psram,
 						yAxisID: 'y'
 					}
 				]
