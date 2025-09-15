@@ -18,7 +18,7 @@
 	let {
 		isOpen,
 		title,
-		networkEditable = {
+		networkEditable: _networkEditable = {
 			ssid: '',
 			password: '',
 			static_ip_config: false,
@@ -30,6 +30,10 @@
 		} as KnownNetworkItem,
 		onSaveNetwork
 	}: Props = $props();
+
+	// Make passed object reactive to prevent Svelte warning 'binding_property_non_reactive'
+	// https://github.com/sveltejs/svelte/issues/12320
+	let networkEditable = $state(_networkEditable);
 
 	// Create helper variable to achieve reactivity
 	let staticIPConfig = $state(networkEditable.static_ip_config);
