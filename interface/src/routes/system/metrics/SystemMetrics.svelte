@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
-	import { page } from '$app/state';
+	import { onMount } from 'svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
@@ -11,17 +10,20 @@
 
 	Chart.register(...registerables);
 
-	let heapChartElement: HTMLCanvasElement = $state();
+	let heapChartElement: HTMLCanvasElement | undefined = $state();
 	let heapChart: Chart;
 
-	let psramChartElement: HTMLCanvasElement = $state();
+	let psramChartElement: HTMLCanvasElement | undefined = $state();
 	let psramChart: Chart;
 
-	let filesystemChartElement: HTMLCanvasElement = $state();
+	let filesystemChartElement: HTMLCanvasElement | undefined = $state();
 	let filesystemChart: Chart;
 
-	let temperatureChartElement: HTMLCanvasElement = $state();
+	let temperatureChartElement: HTMLCanvasElement | undefined = $state();
 	let temperatureChart: Chart;
+
+	// Check if PSRAM data is available
+	let hasPsramData = $derived(Math.max(...$analytics.psram_size) > 0);
 
 	onMount(() => {
 		heapChart = new Chart(heapChartElement, {
@@ -97,7 +99,10 @@
 				}
 			}
 		});
-		psramChart = new Chart(psramChartElement, {
+		
+		// Only create PSRAM chart if PSRAM data is available
+		if (hasPsramData) {
+			psramChart = new Chart(psramChartElement, {
 			type: 'line',
 			data: {
 				labels: $analytics.uptime,
@@ -162,6 +167,8 @@
 				}
 			}
 		});
+		}
+		
 		filesystemChart = new Chart(filesystemChartElement, {
 			type: 'line',
 			data: {
@@ -304,7 +311,7 @@
 		heapChart.update('none');
 		heapChart.options.scales.y.max = Math.round(Math.max(...$analytics.total_heap));
 
-		if (Math.max(...$analytics.psram_size)) {
+		if (hasPsramData) {
 			psramChart.data.labels = $analytics.uptime;
 			psramChart.data.datasets[0].data = $analytics.used_psram;
 			psramChart.update('none');
@@ -365,7 +372,7 @@
 			<canvas bind:this={heapChartElement}></canvas>
 		</div>
 	</div>
-	{#if Math.max(...$analytics.psram_size)}
+	{#if hasPsramData}
 		<div class="w-full overflow-x-auto">
 			<div
 				class="flex w-full flex-col space-y-1 h-60"
