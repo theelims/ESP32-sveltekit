@@ -22,10 +22,12 @@ WiFiSettingsService::WiFiSettingsService(PsychicHttpServer *server,
                                                                 _httpEndpoint(WiFiSettings::read, WiFiSettings::update, this, server, WIFI_SETTINGS_SERVICE_PATH, securityManager,
                                                                               AuthenticationPredicates::IS_ADMIN),
                                                                 _fsPersistence(WiFiSettings::read, WiFiSettings::update, this, fs, WIFI_SETTINGS_FILE), _lastConnectionAttempt(0),
+                                                                _delayedReconnectTime(0),
+                                                                _delayedReconnectPending(false),
                                                                 _socket(socket)
 {
     addUpdateHandler([&](const String &originId)
-                     { reconfigureWiFiConnection(); },
+                     { delayedReconnect(); },
                      false);
 }
 
@@ -50,8 +52,22 @@ void WiFiSettingsService::initWiFi()
 void WiFiSettingsService::begin()
 {
     _socket->registerEvent(EVENT_RSSI);
+    _socket->registerEvent(EVENT_RECONNECT);
 
     _httpEndpoint.begin();
+}
+
+void WiFiSettingsService::delayedReconnect()
+{
+    _delayedReconnectTime = millis() + DELAYED_RECONNECT_MS;
+    _delayedReconnectPending = true;
+    ESP_LOGI(SVK_TAG, "Delayed WiFi reconnection scheduled in %d ms", DELAYED_RECONNECT_MS);
+
+    // Emit event to notify clients of impending reconnection
+    JsonDocument doc;
+    doc["delay_ms"] = DELAYED_RECONNECT_MS;
+    JsonObject jsonObject = doc.as<JsonObject>();
+    _socket->emitEvent(EVENT_RECONNECT, jsonObject);
 }
 
 void WiFiSettingsService::reconfigureWiFiConnection()
@@ -89,6 +105,15 @@ void WiFiSettingsService::reconfigureWiFiConnection()
 void WiFiSettingsService::loop()
 {
     unsigned long currentMillis = millis();
+
+    // Handle delayed reconnection
+    if (_delayedReconnectPending && currentMillis >= _delayedReconnectTime)
+    {
+        _delayedReconnectPending = false;
+        ESP_LOGI(SVK_TAG, "Executing delayed WiFi reconnection");
+        reconfigureWiFiConnection();
+    }
+
     if (!_lastConnectionAttempt || (unsigned long)(currentMillis - _lastConnectionAttempt) >= WIFI_RECONNECTION_DELAY)
     {
         _lastConnectionAttempt = currentMillis;
@@ -211,7 +236,8 @@ void WiFiSettingsService::connectToWiFi()
         // Connection mode STRENGTH: connect to the strongest network
         else if (_state.staConnectionMode == (u_int8_t)STAConnectionMode::STRENGTH)
         {
-            if (bestNetwork) {
+            if (bestNetwork)
+            {
                 ESP_LOGI(SVK_TAG, "Connecting to strongest network: %s, BSSID: " MACSTR " ", bestNetwork->ssid.c_str(), MAC2STR(bestNetwork->bssid));
                 configureNetwork(*bestNetwork);
             }

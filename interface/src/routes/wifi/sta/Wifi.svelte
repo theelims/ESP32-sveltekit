@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
+	import { socket } from '$lib/stores/socket';
 	import { modals } from 'svelte-modals';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
@@ -36,6 +37,10 @@
 	import Check from '~icons/tabler/check';
 	import Save from '~icons/tabler/device-floppy';
 	import Info from '~icons/tabler/info-circle';
+
+	type WifiReconnectEvent = {
+		delay_ms: number;
+	};
 
 	let wifiStatus: WifiStatus = $state({
 		status: 0,
@@ -84,9 +89,6 @@
 		}
 	];
 
-	// Use this to directly access the form's DOM element
-	let formField: any = $state();
-
 	async function getWifiStatus() {
 		try {
 			const response = await fetch('/rest/wifiStatus', {
@@ -131,6 +133,7 @@
 			if (response.status == 200) {
 				notifications.success('Wi-Fi settings updated.', 3000);
 				wifiSettings = await response.json();
+				strWifiSettings = JSON.stringify(wifiSettings); // Store the recently loaded settings in a string variable
 			} else {
 				notifications.error('Failed to update Wi-Fi settings.', 5000);
 			}
@@ -143,7 +146,19 @@
 		getWifiStatus();
 	}, 5000);
 
-	onDestroy(() => clearInterval(interval));
+	onMount(() => {
+		socket.on<WifiReconnectEvent>('reconnect', (data) => {
+			notifications.warning(
+				`Impending reconnection, as new Wifi settings will be applied in ${Math.round(data.delay_ms / 1000)} seconds.`,
+				5000
+			);
+		});
+	});
+
+	onDestroy(() => {
+		clearInterval(interval);
+		socket.off('reconnect');
+	});
 
 	function checkHostname() {
 		if (wifiSettings.hostname.length < 3 || wifiSettings.hostname.length > 32) {
