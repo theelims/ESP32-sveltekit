@@ -149,7 +149,7 @@
 	onMount(() => {
 		socket.on<WifiReconnectEvent>('reconnect', (data) => {
 			notifications.warning(
-				`Impending reconnection, as new Wifi settings will be applied in ${Math.round(data.delay_ms / 1000)} seconds.`,
+				`Reconnecting shortly as new WiFi settings will be applied in ${Math.round(data.delay_ms / 1000)} seconds.`,
 				5000
 			);
 		});
