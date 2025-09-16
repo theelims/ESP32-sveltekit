@@ -8,7 +8,7 @@
 	import * as LuxonAdapter from 'chartjs-adapter-luxon';
 	import Battery from '~icons/tabler/battery-automotive';
 	import { daisyColor } from '$lib/DaisyUiHelper';
-	import { batteryHistory } from '$lib/stores/battery';
+	import { energyHistory } from '$lib/stores/energy';
 
 	Chart.register(...registerables);
 	Chart.register(LuxonAdapter);
@@ -20,14 +20,14 @@
 		heapChart = new Chart(heapChartElement, {
 			type: 'line',
 			data: {
-				labels: $batteryHistory.timestamp,
+				labels: $energyHistory.timestamp,
 				datasets: [
 					{
-						label: 'SOC',
+						label: 'SOC [%]',
 						borderColor: daisyColor('--color-primary'),
 						backgroundColor: daisyColor('--color-primary', 50),
 						borderWidth: 2,
-						data: $batteryHistory.soc,
+						data: $energyHistory.soc,
 						yAxisID: 'y1'
 					},
 					{
@@ -35,7 +35,7 @@
 						borderColor: daisyColor('--color-secondary', 25),
 						backgroundColor: daisyColor('--color-secondary', 25),
 						borderWidth: 0,
-						data: $batteryHistory.charging,
+						data: $energyHistory.charging,
 						fill: true,
 						stepped: true,
 						yAxisID: 'y2'
@@ -74,7 +74,7 @@
 						type: 'linear',
 						title: {
 							display: true,
-							text: 'State of Charge [%]',
+							text: 'Energy',
 							color: daisyColor('--color-base-content'),
 							font: {
 								size: 16,
@@ -107,9 +107,9 @@
 	});
 
 	function updateData() {
-		heapChart.data.labels = $batteryHistory.timestamp;
-		heapChart.data.datasets[0].data = $batteryHistory.soc;
-		heapChart.data.datasets[1].data = $batteryHistory.charging;
+		heapChart.data.labels = $energyHistory.timestamp;
+		heapChart.data.datasets[0].data = $energyHistory.soc;
+		heapChart.data.datasets[1].data = $energyHistory.charging;
 		heapChart.update('none');
 	}
 
@@ -146,7 +146,7 @@
 		<Battery class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	{/snippet}
 	{#snippet title()}
-		<span>Battery History</span>
+		<span>Energy History</span>
 	{/snippet}
 
 	<div class="w-full overflow-x-auto">

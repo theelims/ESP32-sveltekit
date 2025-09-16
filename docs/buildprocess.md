@@ -39,7 +39,7 @@ Customize the settings as you see fit. A value of 0 will disable the specified f
   -D FT_UPLOAD_FIRMWARE=1
   -D FT_DOWNLOAD_FIRMWARE=1
   -D FT_SLEEP=1
-  -D FT_BATTERY=1
+  -D FT_ENERGY=1
 ```
 
 | Flag                 | Description                                                                                                                                                                                                              |
@@ -50,7 +50,7 @@ Customize the settings as you see fit. A value of 0 will disable the specified f
 | FT_UPLOAD_FIRMWARE   | Controls whether the manual upload firmware feature is enabled. Disable this if you won't be manually uploading firmware.                                                                                                |
 | FT_DOWNLOAD_FIRMWARE | Controls whether the firmware download feature is enabled. Disable this if you won't firmware pulled from a server.                                                                                                      |
 | FT_SLEEP             | Controls whether the deep sleep feature is enabled. Disable this if your device is not battery operated or you don't need to place it in deep sleep to save energy.                                                      |
-| FT_BATTERY           | Controls whether the battery state of charge shall be reported to the clients. Disable this if your device is not battery operated.                                                                                      |
+| FT_ENERGY           | Controls whether the energy features are enabled. battery state of charge shall be reported to the clients. Disable this if your device is not battery operated.                                                                                      |
 
 In addition custom features might be added or removed at runtime. See [Custom Features](statefulservice.md#custom-features) on how to use this in your application.
 

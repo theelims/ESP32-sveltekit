@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import SystemMetrics from './SystemMetrics.svelte';
-	import BatteryMetrics from './BatteryMetrics.svelte';
+	import EnergyMetrics from './EnergyMetrics.svelte';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -12,7 +12,7 @@
 
 	let { data }: Props = $props();
 
-	if (!page.data.features.analytics && !page.data.features.battery) {
+	if (!page.data.features.analytics && !page.data.features.energy) {
 		goto('/');
 	}
 </script>
@@ -24,7 +24,7 @@
 	{#if page.data.features.analytics}
 		<SystemMetrics />
 	{/if}
-	{#if page.data.features.battery}
-		<BatteryMetrics />
+	{#if page.data.features.energy}
+		<EnergyMetrics />
 	{/if}
 </div>

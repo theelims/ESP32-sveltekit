@@ -24,7 +24,7 @@
 #include <APSettingsService.h>
 #include <APStatus.h>
 #include <AuthenticationService.h>
-#include <BatteryService.h>
+#include <EnergyService.h>
 #include <FactoryResetService.h>
 #include <DownloadFirmwareService.h>
 #include <EventSocket.h>
@@ -164,10 +164,10 @@ public:
     }
 #endif
 
-#if FT_ENABLED(FT_BATTERY)
-    BatteryService *getBatteryService()
+#if FT_ENABLED(FT_ENERGY)
+    EnergyService *getEnergyService()
     {
-        return &_batteryService;
+        return &_energyService;
     }
 #endif
 
@@ -234,8 +234,8 @@ private:
 #if FT_ENABLED(FT_SLEEP)
     SleepService _sleepService;
 #endif
-#if FT_ENABLED(FT_BATTERY)
-    BatteryService _batteryService;
+#if FT_ENABLED(FT_ENERGY)
+    EnergyService _energyService;
 #endif
 #if FT_ENABLED(FT_ANALYTICS)
     AnalyticsService _analyticsService;

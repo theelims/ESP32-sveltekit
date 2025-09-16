@@ -16,12 +16,12 @@
 #include <EventSocket.h>
 #include <JsonUtils.h>
 
-#define EVENT_BATTERY "battery"
+#define EVENT_ENERGY "energy"
 
-class BatteryService
+class EnergyService
 {
 public:
-    BatteryService(EventSocket *socket);
+    EnergyService(EventSocket *socket);
 
     void begin();
 
@@ -38,5 +38,5 @@ private:
     int _lastSOC = 100;
     boolean _isCharging = false;
 
-    void batteryEvent();
+    void energyEvent();
 };

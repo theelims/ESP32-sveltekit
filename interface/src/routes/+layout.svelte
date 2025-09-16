@@ -4,7 +4,7 @@
 	import { user } from '$lib/stores/user';
 	import { telemetry } from '$lib/stores/telemetry';
 	import { analytics } from '$lib/stores/analytics';
-	import { batteryHistory } from '$lib/stores/battery';
+	import { energyHistory } from '$lib/stores/energy';
 	import { socket } from '$lib/stores/socket';
 	import type { userProfile } from '$lib/stores/user';
 	import { page } from '$app/state';
@@ -18,7 +18,7 @@
 	import Login from './login.svelte';
 	import type { Analytics } from '$lib/types/models';
 	import type { RSSI } from '$lib/types/models';
-	import type { Battery } from '$lib/types/models';
+	import type { Energy } from '$lib/types/models';
 	import type { DownloadOTA } from '$lib/types/models';
 
 	interface Props {
@@ -57,7 +57,7 @@
 		socket.on('rssi', handleNetworkStatus);
 		socket.on('notification', handleNotification);
 		if (page.data.features.analytics) socket.on('analytics', handleAnalytics);
-		if (page.data.features.battery) socket.on('battery', handleBattery);
+		if (page.data.features.energy) socket.on('energy', handleEnergy);
 		if (page.data.features.download_firmware) socket.on('otastatus', handleOAT);
 	};
 
@@ -67,7 +67,7 @@
 		socket.off('close', handleClose);
 		socket.off('rssi', handleNetworkStatus);
 		socket.off('notification', handleNotification);
-		socket.off('battery', handleBattery);
+		socket.off('energy', handleEnergy);
 		socket.off('otastatus', handleOAT);
 	};
 
@@ -122,9 +122,9 @@
 
 	const handleNetworkStatus = (data: RSSI) => telemetry.setRSSI(data);
 
-	const handleBattery = (data: Battery) => {
-		telemetry.setBattery(data);
-		batteryHistory.addData(data);
+	const handleEnergy = (data: Energy) => {
+		telemetry.setEnergy(data);
+		energyHistory.addData(data);
 	};
 
 	const handleOAT = (data: DownloadOTA) => telemetry.setDownloadOTA(data);

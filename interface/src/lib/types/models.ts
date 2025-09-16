@@ -102,7 +102,7 @@ export type RSSI = {
 	ssid: string;
 };
 
-export type Battery = {
+export type Energy = {
 	soc: number;
 	charging: boolean;
 };

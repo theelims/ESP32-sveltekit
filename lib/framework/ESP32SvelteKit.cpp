@@ -45,8 +45,8 @@ ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEnd
 #if FT_ENABLED(FT_SLEEP)
                                                                                           _sleepService(server, &_securitySettingsService),
 #endif
-#if FT_ENABLED(FT_BATTERY)
-                                                                                          _batteryService(&_socket),
+#if FT_ENABLED(FT_ENERGY)
+                                                                                          _energyService(&_socket),
 #endif
 #if FT_ENABLED(FT_ANALYTICS)
                                                                                           _analyticsService(&_socket),
@@ -194,8 +194,8 @@ void ESP32SvelteKit::begin()
 #endif
 #endif
 
-#if FT_ENABLED(FT_BATTERY)
-    _batteryService.begin();
+#if FT_ENABLED(FT_ENERGY)
+    _energyService.begin();
 #endif
 
 #if FT_ENABLED(FT_ANALYTICS)

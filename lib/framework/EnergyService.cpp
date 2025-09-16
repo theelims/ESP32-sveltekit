@@ -11,44 +11,44 @@
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
  **/
 
-#include <BatteryService.h>
+#include <EnergyService.h>
 
-BatteryService::BatteryService(EventSocket *socket) : _socket(socket)
+EnergyService::EnergyService(EventSocket *socket) : _socket(socket)
 {
 }
 
-void BatteryService::updateSOC(float stateOfCharge)
+void EnergyService::updateSOC(float stateOfCharge)
 {
     _lastSOC = (int)round(stateOfCharge);
-    batteryEvent();
+    energyEvent();
 }
 
-void BatteryService::setCharging(boolean isCharging)
+void EnergyService::setCharging(boolean isCharging)
 {
     _isCharging = isCharging;
-    batteryEvent();
+    energyEvent();
 }
 
-boolean BatteryService::isCharging()
+boolean EnergyService::isCharging()
 {
     return _isCharging;
 }
 
-int BatteryService::getSOC()
+int EnergyService::getSOC()
 {
     return _lastSOC;
 }
 
-void BatteryService::begin()
+void EnergyService::begin()
 {
-    _socket->registerEvent(EVENT_BATTERY);
+    _socket->registerEvent(EVENT_ENERGY);
 }
 
-void BatteryService::batteryEvent()
+void EnergyService::energyEvent()
 {
     JsonDocument doc;
     doc["soc"] = _lastSOC;
     doc["charging"] = _isCharging;
     JsonObject jsonObject = doc.as<JsonObject>();
-    _socket->emitEvent(EVENT_BATTERY, jsonObject);
+    _socket->emitEvent(EVENT_ENERGY, jsonObject);
 }

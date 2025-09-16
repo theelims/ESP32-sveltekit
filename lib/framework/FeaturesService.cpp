@@ -105,10 +105,10 @@ void FeaturesService::createJSON(JsonObject &root)
 #else
     root["sleep"] = false;
 #endif
-#if FT_ENABLED(FT_BATTERY)
-    root["battery"] = true;
+#if FT_ENABLED(FT_ENERGY)
+    root["energy"] = true;
 #else
-    root["battery"] = false;
+    root["energy"] = false;
 #endif
 #if FT_ENABLED(FT_ANALYTICS)
     root["analytics"] = true;
