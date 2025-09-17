@@ -46,7 +46,7 @@
 
 	let menuItems = $state([
 		{
-			title: 'Demo App',
+			title: 'Control Panel',
 			icon: Control,
 			href: '/demo',
 			feature: true
