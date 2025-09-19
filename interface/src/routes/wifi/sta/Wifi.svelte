@@ -7,7 +7,9 @@
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/state';
 	import { notifications } from '$lib/components/toasts/notifications';
-	import DragDropList, { VerticalDropZone, reorder, type DropEvent } from 'svelte-dnd-list';
+	//import DragDropList, { VerticalDropZone, reorder, type DropEvent } from 'svelte-dnd-list';
+	import DraggableList from '$lib/components/DraggableList.svelte';
+
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import Collapsible from '$lib/components/Collapsible.svelte';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
@@ -249,12 +251,16 @@
 		}
 	}
 
-	function onDrop({ detail: { from, to } }: CustomEvent<DropEvent>) {
-		if (!to || from === to) {
-			return;
-		}
+	// function onDrop({ detail: { from, to } }: CustomEvent<DropEvent>) {
+	// 	if (!to || from === to) {
+	// 		return;
+	// 	}
 
-		wifiSettings.wifi_networks = reorder(wifiSettings.wifi_networks, from.index, to.index);
+	// 	wifiSettings.wifi_networks = reorder(wifiSettings.wifi_networks, from.index, to.index);
+	// }
+
+	function handleNetworkReorder(reorderedNetworks: KnownNetworkItem[]) {
+		wifiSettings.wifi_networks = reorderedNetworks;
 	}
 
 	async function getWifiData() {
@@ -498,14 +504,12 @@
 							Scan for available networks or add one manually.
 						</div>
 					{:else}
-						<DragDropList
-							id="networks"
-							type={VerticalDropZone}
-							itemSize={60}
-							itemCount={wifiSettings.wifi_networks.length}
-							on:drop={onDrop}
+						<DraggableList 
+							items={wifiSettings.wifi_networks}
+							onReorder={handleNetworkReorder}
+							class="space-y-2"
 						>
-							{#snippet children({ index }: { index: number })}
+							{#snippet children({ item: network, index }: { item: any, index: number })}
 								<!-- svelte-ignore a11y_click_events_have_key_events -->
 								<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
 									<Grip class="h-6 w-6 text-base-content/30 cursor-grab" />
@@ -513,14 +517,20 @@
 										<Router class="text-primary-content h-auto w-full scale-75" />
 									</div>
 									<div>
-										<div class="font-bold">{wifiSettings.wifi_networks[index].ssid}</div>
+										<div class="font-bold">{network.ssid}</div>
 									</div>
+									{#if network.static_ip_config}
+										<div class="badge badge-sm badge-secondary opacity-75">Static</div>
+									{:else}
+										<div class="badge badge-sm badge-outline badge-secondary opacity-75">DHCP</div>
+									{/if}
 									<div class="grow"></div>
 									<div class="space-x-0 px-0 mx-0">
 										<button
 											class="btn btn-ghost btn-sm"
 											onclick={() => {
-												handleEdit(index);
+												const actualIndex = wifiSettings.wifi_networks.findIndex(n => n.ssid === network.ssid);
+												handleEdit(actualIndex);
 											}}
 										>
 											<Edit class="h-6 w-6" /></button
@@ -528,7 +538,8 @@
 										<button
 											class="btn btn-ghost btn-sm"
 											onclick={() => {
-												confirmDelete(index);
+												const actualIndex = wifiSettings.wifi_networks.findIndex(n => n.ssid === network.ssid);
+												confirmDelete(actualIndex);
 											}}
 										>
 											<Delete class="text-error h-6 w-6" />
@@ -536,7 +547,7 @@
 									</div>
 								</div>
 							{/snippet}
-						</DragDropList>
+						</DraggableList>
 					{/if}
 				</div>
 				{#if wifiSettings.connection_mode === 2 && wifiSettings.wifi_networks.length > 1}
