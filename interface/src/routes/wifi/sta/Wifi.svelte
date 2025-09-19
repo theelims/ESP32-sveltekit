@@ -494,22 +494,19 @@
 					</button>
 				</div>
 
-				<div
-					class="overflow-x-auto space-y-1"
-					transition:slide|local={{ duration: 300, easing: cubicOut }}
-				>
+				<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
 					{#if wifiSettings.wifi_networks.length === 0}
 						<div class="text-center text-base-content/50 mt-2">
 							No WiFi networks configured yet.<br />
 							Scan for available networks or add one manually.
 						</div>
 					{:else}
-						<DraggableList 
+						<DraggableList
 							items={wifiSettings.wifi_networks}
 							onReorder={handleNetworkReorder}
 							class="space-y-2"
 						>
-							{#snippet children({ item: network, index }: { item: any, index: number })}
+							{#snippet children({ item: network, index }: { item: any; index: number })}
 								<!-- svelte-ignore a11y_click_events_have_key_events -->
 								<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
 									<Grip class="h-6 w-6 text-base-content/30 cursor-grab" />
@@ -529,7 +526,9 @@
 										<button
 											class="btn btn-ghost btn-sm"
 											onclick={() => {
-												const actualIndex = wifiSettings.wifi_networks.findIndex(n => n.ssid === network.ssid);
+												const actualIndex = wifiSettings.wifi_networks.findIndex(
+													(n) => n.ssid === network.ssid
+												);
 												handleEdit(actualIndex);
 											}}
 										>
@@ -538,7 +537,9 @@
 										<button
 											class="btn btn-ghost btn-sm"
 											onclick={() => {
-												const actualIndex = wifiSettings.wifi_networks.findIndex(n => n.ssid === network.ssid);
+												const actualIndex = wifiSettings.wifi_networks.findIndex(
+													(n) => n.ssid === network.ssid
+												);
 												confirmDelete(actualIndex);
 											}}
 										>
