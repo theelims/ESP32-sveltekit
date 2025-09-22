@@ -9,9 +9,9 @@ export const load = (async ({ fetch }) => {
 	const item = await result.json();
 	return {
 		features: item,
-		title: 'ESP32-SwitchActuator',
+		title: 'ESP32-SvelteKit',
 		github: 'theelims/ESP32-sveltekit',
-		copyright: '2025 M-Tech',
-		appName: 'ESP32 SwitchActuator'
+		copyright: '2025 theelims',
+		appName: 'ESP32 SvelteKit'
 	};
 }) satisfies LayoutLoad;
