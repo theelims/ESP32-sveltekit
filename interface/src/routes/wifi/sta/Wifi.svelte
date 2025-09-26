@@ -7,9 +7,7 @@
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/state';
 	import { notifications } from '$lib/components/toasts/notifications';
-	//import DragDropList, { VerticalDropZone, reorder, type DropEvent } from 'svelte-dnd-list';
 	import DraggableList from '$lib/components/DraggableList.svelte';
-
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import Collapsible from '$lib/components/Collapsible.svelte';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
@@ -250,14 +248,6 @@
 			return false;
 		}
 	}
-
-	// function onDrop({ detail: { from, to } }: CustomEvent<DropEvent>) {
-	// 	if (!to || from === to) {
-	// 		return;
-	// 	}
-
-	// 	wifiSettings.wifi_networks = reorder(wifiSettings.wifi_networks, from.index, to.index);
-	// }
 
 	function handleNetworkReorder(reorderedNetworks: KnownNetworkItem[]) {
 		wifiSettings.wifi_networks = reorderedNetworks;
