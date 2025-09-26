@@ -37,10 +37,15 @@
 	}
 
 	function handleFinalizeSort(e: any) {
-		// Remove the temporary IDs and update the original array only on finalize
+		// Remove only temporary IDs, preserve original device IDs
 		const reorderedItems = e.detail.items.map((item: any) => {
-			const { id, ...itemWithoutId } = item;
-			return itemWithoutId;
+			// If this is a temporary ID we added (string starting with 'dnd-item-'), remove it
+			if (typeof item.id === 'string' && item.id.startsWith('dnd-item-')) {
+				const { id, ...itemWithoutTempId } = item;
+				return itemWithoutTempId;
+			}
+			// Otherwise, keep the item as-is (preserving original numeric IDs)
+			return item;
 		});
 
 		// Call the parent's reorder handler
