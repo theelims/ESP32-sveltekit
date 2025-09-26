@@ -101,11 +101,14 @@ function createWebSocket() {
 		on: <T>(event: string, listener: (data: T) => void): (() => void) => {
 			let eventListeners = listeners.get(event);
 			if (!eventListeners) {
-				if (!socketEvents.includes(event as SocketEvent)) {
-					sendEvent('subscribe', event);
-				}
 				eventListeners = new Set();
 				listeners.set(event, eventListeners);
+				
+				// Only send subscription if WebSocket is open and it's not a socket event
+				if (!socketEvents.includes(event as SocketEvent) && 
+					ws && ws.readyState === WebSocket.OPEN) {
+					sendEvent('subscribe', event);
+				}
 			}
 			eventListeners.add(listener as (data: any) => void);
 
