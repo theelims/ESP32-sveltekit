@@ -8,6 +8,7 @@
 #   Copyright (C) 2023 - 2024 theelims
 #   Copyright (C) 2023 Maxtrium B.V. [ code available under dual license ]
 #   Copyright (C) 2024 runeharlyk
+#   Copyright (C) 2025 hmbacher
 #
 #   All Rights Reserved. This software may be modified and distributed under
 #   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -16,10 +17,19 @@ from pathlib import Path
 from shutil import copytree, rmtree, copyfileobj
 from os.path import exists, getmtime
 import os
+import sys
 import gzip
 import mimetypes
 import glob
 from datetime import datetime
+
+# Import shared prebuild utilities
+from prebuild_utils import is_build_task
+
+# Check if this script should run
+if not is_build_task(['build', 'upload', 'buildfs', 'erase_upload']):
+    # Skip script execution for all other tasks
+    sys.exit(0)
 
 Import("env")
 
