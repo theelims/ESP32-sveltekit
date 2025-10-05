@@ -26,6 +26,7 @@ from prebuild_utils import is_build_task
 # Check if this script should run
 if not is_build_task(['build', 'upload', 'buildfs', 'erase_upload']):
     # Skip script execution for all other tasks
+    print("Skipping certificate bundle generation for non-build task.")
     sys.exit(0)
 
 Import("env")
