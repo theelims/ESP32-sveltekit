@@ -16,7 +16,7 @@
 extern const uint8_t rootca_crt_bundle_start[] asm("_binary_src_certs_x509_crt_bundle_bin_start");
 extern const uint8_t rootca_crt_bundle_end[] asm("_binary_src_certs_x509_crt_bundle_bin_end");
 
-static EventSocket *_socket = nullptr;
+static EventSocket *_socket2 = nullptr;
 static int previousProgress = 0;
 JsonDocument doc;
 
@@ -25,7 +25,7 @@ void update_started()
     String output;
     doc["status"] = "preparing";
     JsonObject jsonObject = doc.as<JsonObject>();
-    _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
+    _socket2->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
 }
 
 void update_progress(int currentBytes, int totalBytes)
@@ -36,7 +36,7 @@ void update_progress(int currentBytes, int totalBytes)
     {
         doc["progress"] = progress;
         JsonObject jsonObject = doc.as<JsonObject>();
-        _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
+        _socket2->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
         ESP_LOGV(SVK_TAG, "HTTP update process at %d of %d bytes... (%d %%)", currentBytes, totalBytes, progress);
     }
     previousProgress = progress;
@@ -46,7 +46,7 @@ void update_finished()
 {
     doc["status"] = "finished";
     JsonObject jsonObject = doc.as<JsonObject>();
-    _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
+    _socket2->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
 
     // delay to allow the event to be sent out
     vTaskDelay(100 / portTICK_PERIOD_MS);
@@ -83,7 +83,7 @@ void updateTask(void *param)
         doc["status"] = "error";
         doc["error"] = httpUpdate.getLastErrorString().c_str();
         jsonObject = doc.as<JsonObject>();
-        _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
+        _socket2->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
 
         ESP_LOGE(SVK_TAG, "HTTP Update failed with error (%d): %s", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
 #ifdef SERIAL_INFO
@@ -95,7 +95,7 @@ void updateTask(void *param)
         doc["status"] = "error";
         doc["error"] = "Update failed, has same firmware version";
         jsonObject = doc.as<JsonObject>();
-        _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
+        _socket2->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
 
         ESP_LOGE(SVK_TAG, "HTTP Update failed, has same firmware version");
 #ifdef SERIAL_INFO
@@ -153,6 +153,8 @@ esp_err_t DownloadFirmwareService::downloadUpdate(PsychicRequest *request, JsonV
 
     JsonObject jsonObject = doc.as<JsonObject>();
     _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
+
+    _socket2 = _socket;
 
     if (xTaskCreatePinnedToCore(
             &updateTask,                // Function that should be called
