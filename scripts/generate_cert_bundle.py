@@ -32,7 +32,8 @@ except ImportError:
 
 ca_bundle_bin_file = 'x509_crt_bundle.bin'
 mozilla_cacert_url = 'https://curl.se/ca/cacert.pem'
-adafruit_cacert_url = 'https://raw.githubusercontent.com/adafruit/certificates/main/data/roots.pem'
+adafruit_filtered_cacert_url = 'https://raw.githubusercontent.com/adafruit/certificates/main/data/roots-filtered.pem'
+adafruit_full_cacert_url = 'https://raw.githubusercontent.com/adafruit/certificates/main/data/roots-full.pem'
 certs_dir = Path("./ssl_certs")
 binary_dir = Path("./src/certs")
 
@@ -42,7 +43,9 @@ def download_cacert_file(source):
     if source == "mozilla":
         response = requests.get(mozilla_cacert_url)
     elif source == "adafruit":
-        response = requests.get(adafruit_cacert_url)
+        response = requests.get(adafruit_filtered_cacert_url)
+    elif source == "adafruit-full":
+        response = requests.get(adafruit_full_cacert_url)
     else:
         raise InputError('Invalid certificate source')
 

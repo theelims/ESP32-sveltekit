@@ -162,7 +162,7 @@ board_build.embed_files = src/certs/x509_crt_bundle.bin
 board_ssl_cert_source = adafruit
 ```
 
-The script will download a public certificate store from Mozilla (`board_ssl_cert_source = mozilla`) or a repository curated by Adafruit (`board_ssl_cert_source = adafruit`), builds a binary containing all certs and embeds this into the firmware. This will add ~65kb to the firmware image. Should you only need a few known certificates you can place their `*.pem` or `*.der` files in the [ssl_certs](https://github.com/theelims/ESP32-sveltekit/blob/main/ssl_certs) folder and change `board_ssl_cert_source = folder`. Then only these certificates will be included in the store. This is especially useful, if you only need to connect to know servers and need to shave some kb off the firmware image:
+The script will download a public certificate store from Mozilla (`board_ssl_cert_source = mozilla`) or a repository curated by Adafruit (`board_ssl_cert_source = adafruit`) or (`board_ssl_cert_source = adafruit-full`), builds a binary containing all certs and embeds this into the firmware. This will add ~65kb to the firmware image. Should you only need a few known certificates you can place their `*.pem` or `*.der` files in the [ssl_certs](https://github.com/theelims/ESP32-sveltekit/blob/main/ssl_certs) folder and change `board_ssl_cert_source = folder`. Then only these certificates will be included in the store. This is especially useful, if you only need to connect to know servers and need to shave some kb off the firmware image:
 
 !!! info
 
