@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import type { RSSI } from '../types/models';
-import type { Battery } from '../types/models';
+import type { Energy } from '../types/models';
 import type { DownloadOTA } from '../types/models';
 
 let telemetry_data = {
@@ -9,7 +9,7 @@ let telemetry_data = {
 		ssid: '',
 		disconnected: true
 	},
-	battery: {
+	energy: {
 		soc: 100,
 		charging: false
 	},
@@ -38,10 +38,10 @@ function createTelemetry() {
 				}));
 			}
 		},
-		setBattery: (data: Battery) => {
+		setEnergy: (data: Energy) => {
 			update((telemetry_data) => ({
 				...telemetry_data,
-				battery: { soc: data.soc, charging: data.charging }
+				energy: { soc: data.soc, charging: data.charging }
 			}));
 		},
 		setDownloadOTA: (data: DownloadOTA) => {

@@ -47,9 +47,9 @@
 #define FT_SLEEP 0
 #endif
 
-// ESP32 battery state off by default
-#ifndef FT_BATTERY
-#define FT_BATTERY 0
+// ESP32 energy state off by default
+#ifndef FT_ENERGY
+#define FT_ENERGY 0
 #endif
 
 // ESP32 analytics on by default

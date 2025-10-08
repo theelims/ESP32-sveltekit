@@ -9,7 +9,7 @@
 	import Power from '~icons/tabler/power';
 	import Cancel from '~icons/tabler/x';
 	import RssiIndicator from '$lib/components/RSSIIndicator.svelte';
-	import BatteryIndicator from '$lib/components/BatteryIndicator.svelte';
+	import EnergyIndicator from '$lib/components/EnergyIndicator.svelte';
 	import UpdateIndicator from '$lib/components/UpdateIndicator.svelte';
 
 	async function postSleep() {
@@ -61,11 +61,11 @@
 		{/if}
 	</div>
 
-	{#if page.data.features.battery}
+	{#if page.data.features.energy}
 		<div class="flex-none">
-			<BatteryIndicator
-				charging={$telemetry.battery.charging}
-				soc={$telemetry.battery.soc}
+			<EnergyIndicator
+				charging={$telemetry.energy.charging}
+				soc={$telemetry.energy.soc}
 				class="inline-block h-7 w-7"
 			/>
 		</div>

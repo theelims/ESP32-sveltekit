@@ -436,7 +436,7 @@ The framework supplies access to various features via getter functions:
 | getMqttClient()              | Provides direct access to the MQTT client instance |
 | getNotificationEvents()      | Lets you send push notifications to all clients    |
 | getSleepService()            | Send the ESP32 into deep sleep                     |
-| getBatteryService()          | Update battery information on the client           |
+| getEnergyService()           | Update energy information on the client           |
 
 The core features use the [StatefulService.h](https://github.com/theelims/ESP32-sveltekit/blob/main/lib/framework/StatefulService.h) class and therefore you can change settings or observe changes to settings through the read/update API.
 
@@ -541,13 +541,13 @@ Also the code can initiate the power down deep sleep sequence by calling:
 esp32sveltekit.getSleepService()->sleepNow();
 ```
 
-### Battery State of Charge
+### Energy and Battery State of Charge
 
-A small helper class let's you update the battery icon in the status bar. This is useful if you have a battery operated IoT device. It must be enabled in [features.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/features.ini). It uses the [Event Socket](#event-socket) and exposes two functions that can be used to update the clients.
+A small helper class let's you update the energy icon in the status bar. This is useful if you have a battery operated IoT device. It must be enabled in [features.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/features.ini). It uses the [Event Socket](#event-socket) and exposes two functions that can be used to update the clients.
 
 ```cpp
-esp32sveltekit.getBatteryService()->updateSOC(float stateOfCharge); // update state of charge in percent (0 - 100%)
-esp32sveltekit.getBatteryService()->setCharging(boolean isCharging); // notify the client that the device is charging
+esp32sveltekit.getEnergyService()->updateSOC(float stateOfCharge); // update state of charge in percent (0 - 100%)
+esp32sveltekit.getEnergyService()->setCharging(boolean isCharging); // notify the client that the device is charging
 ```
 
 ### ESP32-SvelteKit Connection Status

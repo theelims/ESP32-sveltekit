@@ -21,7 +21,7 @@ The project is structured into three main parts:
 
 - **`src/`**: Contains the core C++ application code for the ESP32. This includes services for MQTT, light state management, and the main application entry point (`main.cpp`).
 - **`lib/`**: Houses the C++ libraries and dependencies. This is further divided into:
-  - **`framework/`**: A comprehensive set of services and utilities for ESP32 development, including WiFi management (AP, STA, Scanner, Status), MQTT (Settings, Status), NTP (Settings, Status), Security (Authentication, JWT), Firmware Update (Upload, Download), System Status, Sleep, Battery, Analytics, and Core Dump. It also contains core components like `StatefulService`, `HttpEndpoint`, `EventSocket`, `FSPersistence`, and `WebSocketServer`.
+  - **`framework/`**: A comprehensive set of services and utilities for ESP32 development, including WiFi management (AP, STA, Scanner, Status), MQTT (Settings, Status), NTP (Settings, Status), Security (Authentication, JWT), Firmware Update (Upload, Download), System Status, Sleep, Energy, Analytics, and Core Dump. It also contains core components like `StatefulService`, `HttpEndpoint`, `EventSocket`, `FSPersistence`, and `WebSocketServer`.
   - **`PsychicHttp/`**: A custom HTTP server library for ESP32, providing functionalities for handling HTTP requests, responses, web sockets, and file serving.
 - **`interface/`**: This directory holds the SvelteKit frontend application. It's a modern web UI built with SvelteKit, TailwindCSS, and DaisyUI. Key subdirectories include:
   - **`src/`**: Contains the Svelte components, stores (for state management), and routes for the different pages of the web interface.
