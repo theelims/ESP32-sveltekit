@@ -33,7 +33,7 @@ esp_err_t PsychicStreamResponse::beginSend()
     return ESP_OK;
 
   //Buffer to hold ChunkPrinter and stream buffer. Using placement new will keep us at a single allocation.
-  _buffer = (uint8_t*)malloc(STREAM_CHUNK_SIZE + sizeof(ChunkPrinter));
+  _buffer = (uint8_t*)heap_caps_malloc_prefer(STREAM_CHUNK_SIZE + sizeof(ChunkPrinter), 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_INTERNAL);
   
   if(!_buffer)
   {
@@ -59,7 +59,7 @@ esp_err_t PsychicStreamResponse::endSend()
   {
     _printer->~ChunkPrinter(); //flushed on destruct
     err = finishChunking();
-    free(_buffer);
+    heap_caps_free(_buffer);
     _buffer = NULL;
   }
   return err;
