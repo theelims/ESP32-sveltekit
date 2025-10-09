@@ -172,8 +172,8 @@ esp_err_t PsychicWebSocketHandler::handleRequest(PsychicRequest *request)
   //ESP_LOGD(PH_TAG, "frame len is %d", ws_pkt.len);
   if (ws_pkt.len) {
     /* ws_pkt.len + 1 is for NULL termination as we are expecting a string */
-    buf = (uint8_t*) calloc(1, ws_pkt.len + 1);
-    if (buf == NULL) {
+    buf = (uint8_t*)heap_caps_calloc_prefer(1, ws_pkt.len + 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_INTERNAL);
+     if (buf == NULL) {
       ESP_LOGE(PH_TAG, "Failed to calloc memory for buf");
       return ESP_ERR_NO_MEM;
     }
@@ -182,7 +182,7 @@ esp_err_t PsychicWebSocketHandler::handleRequest(PsychicRequest *request)
     ret = httpd_ws_recv_frame(wsRequest.request(), &ws_pkt, ws_pkt.len);
     if (ret != ESP_OK) {
       ESP_LOGE(PH_TAG, "httpd_ws_recv_frame failed with %s", esp_err_to_name(ret));
-      free(buf);
+      heap_caps_free(buf);
       return ret;
     }
     //ESP_LOGD(PH_TAG, "Got packet with message: %s", ws_pkt.payload);
@@ -204,7 +204,7 @@ esp_err_t PsychicWebSocketHandler::handleRequest(PsychicRequest *request)
     //   httpd_ws_get_fd_info(request->server()->server, httpd_req_to_sockfd(request->request())));
 
   //dont forget to release our buffer memory
-  free(buf);
+  heap_caps_free(buf);
 
   return ret;
 }
