@@ -154,7 +154,7 @@
 		class="rounded-box mb-4 flex items-center hover:scale-[1.02] active:scale-[0.98]"
 		onclick={() => setActiveMenuItem('')}
 	>
-		<img src={logo} alt="Logo" class="h-12 w-12" />
+		<img src={logo} alt="Logo" class="max-h-12 max-w-12 h-auto w-auto object-contain" />
 		<h1 class="px-4 text-2xl font-bold">{page.data.appName}</h1>
 	</a>
 	<ul class="menu w-full rounded-box menu-vertical flex-nowrap overflow-y-auto">

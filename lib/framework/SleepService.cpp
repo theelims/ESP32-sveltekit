@@ -80,7 +80,7 @@ void SleepService::sleepNow()
     ESP_LOGD(SVK_TAG, "Current level on GPIO%d: %d\n", _wakeUpPin, digitalRead(_wakeUpPin));
 
 // special treatment for ESP32-C3 / C6 because of the RISC-V architecture
-#ifdef CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6
+#if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6)
     esp_deep_sleep_enable_gpio_wakeup(BIT(_wakeUpPin), (esp_deepsleep_gpio_wake_up_mode_t)_wakeUpSignal);
 #else
     esp_sleep_enable_ext1_wakeup(BIT(_wakeUpPin), (esp_sleep_ext1_wakeup_mode_t)_wakeUpSignal);

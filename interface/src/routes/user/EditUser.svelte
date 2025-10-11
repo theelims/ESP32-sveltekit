@@ -19,12 +19,16 @@
 		isOpen,
 		title,
 		onSaveUser,
-		user = $bindable({
+		user: _user = {
 			username: '',
 			password: '',
 			admin: false
-		})
+		}
 	}: Props = $props();
+
+	// Make passed object reactive to prevent Svelte warning 'binding_property_non_reactive'
+	// https://github.com/sveltejs/svelte/issues/12320
+	let user = $state(_user);
 
 	let errorUsername = $state(false);
 

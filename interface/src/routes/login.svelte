@@ -58,7 +58,11 @@
 		in:fly={{ delay: 200, y: 100, duration: 500 }}
 		out:fade={{ duration: 200 }}
 	>
-		<figure class="bg-base-200"><img src={logo} alt="Logo" class="h-auto w-48 lg:w-64" /></figure>
+		<figure class="bg-base-200 p-4">
+			<div class="image-container">
+				<img src={logo} alt="Logo" class="responsive-image" />
+			</div>
+		</figure>
 		<div class="card-body w-80">
 			<h2 class="card-title text-2xl">Login</h2>
 			<form class="fieldset w-full max-w-xs">
@@ -82,6 +86,22 @@
 </div>
 
 <style>
+	.image-container {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	
+	.responsive-image {
+		max-width: 100%;
+		max-height: 100%;
+		width: auto;
+		height: auto;
+		object-fit: contain;
+	}
+	
 	.failure {
 		animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 		transform: translate3d(0, 0, 0);

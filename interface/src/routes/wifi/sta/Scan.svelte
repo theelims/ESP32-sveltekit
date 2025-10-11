@@ -113,6 +113,8 @@
 							<li>
 								<!-- svelte-ignore a11y_click_events_have_key_events -->
 								<div
+									role="button"
+									tabindex={i}
 									class="bg-base-200 rounded-btn my-1 flex items-center space-x-3 hover:scale-[1.02] active:scale-[0.98]"
 									onclick={() => {
 										storeNetwork(network.ssid);
