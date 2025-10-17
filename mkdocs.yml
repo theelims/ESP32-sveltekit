@@ -78,6 +78,8 @@ extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/theelims/
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/MTn9mVUG5n
   consent:
     title: Cookie consent
     description: >-

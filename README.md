@@ -49,6 +49,8 @@ The code runs on many variants of the ESP32 chip family. From the plain old ESP3
 
 [https://theelims.github.io/ESP32-sveltekit/](https://theelims.github.io/ESP32-sveltekit/)
 
+## Join our [Discord](https://discord.gg/MTn9mVUG5n)
+
 ## Libraries Used
 
 - [SvelteKit](https://kit.svelte.dev/)

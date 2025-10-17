@@ -25,7 +25,7 @@
 
 	const github = { href: 'https://github.com/' + page.data.github, active: true };
 
-	const discord = { href: '.', active: false };
+	const discord = { href: 'https://discord.gg/MTn9mVUG5n', active: true };
 
 	type menuItem = {
 		title: string;
