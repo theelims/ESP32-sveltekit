@@ -32,7 +32,7 @@ PsychicRequest::~PsychicRequest()
 {
     // temorary user object
     if (_tempObject != NULL)
-        free(_tempObject);
+        heap_caps_free(_tempObject);
 
     // our web parameters
     for (auto *param : _params)
@@ -132,7 +132,7 @@ esp_err_t PsychicRequest::loadBody()
 
     size_t remaining = this->_req->content_len;
     size_t actuallyReceived = 0;
-    char *buf = (char *)malloc(remaining + 1);
+    char* buf = (char*)heap_caps_malloc_prefer(remaining + 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_INTERNAL);
     if (buf == NULL)
     {
         ESP_LOGE(PH_TAG, "Failed to allocate memory for body");
@@ -160,7 +160,7 @@ esp_err_t PsychicRequest::loadBody()
 
     buf[actuallyReceived] = '\0';
     this->_body = String(buf);
-    free(buf);
+    heap_caps_free(buf);
     return err;
 }
 
