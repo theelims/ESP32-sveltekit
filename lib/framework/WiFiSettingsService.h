@@ -48,8 +48,10 @@
 
 #define WIFI_RECONNECTION_DELAY 1000 * 30
 #define RSSI_EVENT_DELAY 500
+#define DELAYED_RECONNECT_MS 5000
 
 #define EVENT_RSSI "rssi"
+#define EVENT_RECONNECT "reconnect"
 
 // Struct defining the wifi settings
 typedef struct
@@ -215,6 +217,7 @@ public:
     void initWiFi();
     void begin();
     void loop();
+    void delayedReconnect();
     String getHostname();
     String getIP();
 
@@ -226,6 +229,8 @@ private:
     EventSocket *_socket;
     unsigned long _lastConnectionAttempt;
     unsigned long _lastRssiUpdate;
+    unsigned long _delayedReconnectTime;
+    bool _delayedReconnectPending;
 
     bool _stopping;
     void onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info);
