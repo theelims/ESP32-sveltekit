@@ -35,7 +35,7 @@
 		>
 			<h2 class="text-base-content text-start text-2xl font-bold">{title}</h2>
 			<div class="divider my-2"></div>
-			<p class="text-base-content mb-1 text-start">{message}</p>
+			<p class="text-base-content mb-1 text-start">{@html message}</p>
 			<div class="divider my-2"></div>
 			<div class="flex justify-end gap-2">
 				<button
