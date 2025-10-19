@@ -53,6 +53,7 @@ ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEnd
 #endif
                                                                                           _restartService(server, &_securitySettingsService),
                                                                                           _factoryResetService(server, &ESPFS, &_securitySettingsService),
+                                                                                          _healthCheckService(server, &_securitySettingsService),
 #if FT_ENABLED(FT_COREDUMP)
                                                                                           _coreDump(server, &_securitySettingsService),
 #endif
@@ -145,6 +146,7 @@ void ESP32SvelteKit::begin()
     _apSettingsService.begin();
     _factoryResetService.begin();
     _featureService.begin();
+    _healthCheckService.begin();
     _restartService.begin();
     _systemStatus.begin();
     _wifiSettingsService.begin();
