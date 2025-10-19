@@ -18,3 +18,4 @@ lib/framework/WWWData.h
 ssl_certs/cacert.pem
 /logs
 .aid
+/scripts/__pycache__
