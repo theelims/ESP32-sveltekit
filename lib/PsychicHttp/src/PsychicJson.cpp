@@ -42,7 +42,7 @@ esp_err_t PsychicJsonResponse::send()
   else
     buffer_size = JSON_BUFFER_SIZE;
 
-  buffer = (char *)malloc(buffer_size);
+  buffer = (char*)heap_caps_malloc_prefer(buffer_size, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_INTERNAL);
   if (buffer == NULL) {
     httpd_resp_send_err(this->_request->request(), HTTPD_500_INTERNAL_SERVER_ERROR, "Unable to allocate memory.");
     return ESP_FAIL;
@@ -76,7 +76,7 @@ esp_err_t PsychicJsonResponse::send()
   }
 
   //let the buffer go
-  free(buffer);
+  heap_caps_free(buffer);
 
   return err;
 }

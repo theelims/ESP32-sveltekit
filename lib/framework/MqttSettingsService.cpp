@@ -28,14 +28,15 @@ extern const uint8_t rootca_crt_bundle_end[] asm("_binary_src_certs_x509_crt_bun
 static char *retainCstr(const char *cstr, char **ptr)
 {
     // free up previously retained value if exists
-    free(*ptr);
+    heap_caps_free(*ptr);
     *ptr = nullptr;
 
     // dynamically allocate and copy cstr (if non null)
     if (cstr != nullptr)
     {
-        *ptr = (char *)malloc(strlen(cstr) + 1);
-        strcpy(*ptr, cstr);
+        *ptr = (char*)heap_caps_malloc_prefer(strlen(cstr) + 1, 2,MALLOC_CAP_SPIRAM, MALLOC_CAP_INTERNAL);
+        if (*ptr)
+            strcpy(*ptr, cstr);
     }
 
     // return reference to pointer for convenience
