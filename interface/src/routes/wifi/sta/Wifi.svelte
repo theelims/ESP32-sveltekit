@@ -498,21 +498,20 @@
 						>
 							{#snippet children({ item: network, index }: { item: any; index: number })}
 								<!-- svelte-ignore a11y_click_events_have_key_events -->
-								<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
+								<div class="rounded-box bg-base-100 grid grid-cols-[auto_auto_minmax(6rem,1fr)_auto] items-center gap-3 p-2">
 									<Grip class="h-6 w-6 text-base-content/30 cursor-grab" />
-									<div class="mask mask-hexagon bg-primary h-auto w-10 shrink-0">
+									<div class="mask mask-hexagon bg-primary h-auto w-10">
 										<Router class="text-primary-content h-auto w-full scale-75" />
 									</div>
-									<div>
-										<div class="font-bold">{network.ssid}</div>
+									<div class="flex items-center gap-2 overflow-hidden">
+										<div class="font-bold truncate">{network.ssid}</div>
+										{#if network.static_ip_config}
+											<div class="badge badge-sm badge-secondary opacity-75 flex-shrink-0">Static</div>
+										{:else}
+											<div class="badge badge-sm badge-outline badge-secondary opacity-75 flex-shrink-0">DHCP</div>
+										{/if}
 									</div>
-									{#if network.static_ip_config}
-										<div class="badge badge-sm badge-secondary opacity-75">Static</div>
-									{:else}
-										<div class="badge badge-sm badge-outline badge-secondary opacity-75">DHCP</div>
-									{/if}
-									<div class="grow"></div>
-									<div class="space-x-0 px-0 mx-0">
+									<div class="flex">
 										<button
 											class="btn btn-ghost btn-sm"
 											onclick={() => {
