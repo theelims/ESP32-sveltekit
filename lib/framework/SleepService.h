@@ -20,7 +20,6 @@
 #include <SecurityManager.h>
 #include "driver/rtc_io.h"
 #include <vector>
-#include <ranges>
 
 #define SLEEP_SERVICE_PATH "/rest/sleep"
 

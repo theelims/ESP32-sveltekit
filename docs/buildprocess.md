@@ -168,6 +168,10 @@ The script will download a public certificate store from Mozilla (`board_ssl_cer
 
      To enable SSL the feature `FT_NTP=1` must be enabled as well.
 
+!!! bug
+
+    At the moment there is a bug with the certificate bundle when using the firmware download e.g. from Github. By using the build flag `-D DOWNLOAD_OTA_SKIP_CERT_VERIFY` you may skip certificate validation to keep OTA working. Only OTA seems affected, not MQTT. Keep in mind, that this voids the main security feature of SSL and allows man-in-the-middle attacks.
+
 ## Vite and LittleFS 32 Character Limit
 
 The static files for the website are build using vite. By default vite adds a unique hash value to all filenames for improved caching performance. However, LittleFS on the ESP32 is limited to filenames with 32 characters. This restricts the number of characters available for the user to name svelte files. To give a little bit more headroom a vite-plugin removes all hash values, as they offer no benefit on an ESP32. However, have the 32 character limit in mind when naming files. Excessively long names may still cause some issues when building the LittleFS binary.
