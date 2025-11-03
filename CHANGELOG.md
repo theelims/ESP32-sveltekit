@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Upcoming [0.6.0] - 2025-11-03
+## [0.6.0] - 2025-11-03
 
 > [!CAUTION]
 > This update has breaking changes!
@@ -115,7 +115,7 @@ The themes are to be found in `app.css` now. Add them back if they had been chan
 
 ### Acknowledgment
 
-Many thanks to @ewowi, @hmbacher, and @stamp who contributed significantly to this new release.
+Many thanks to @runeharlyk, @ewowi, @hmbacher, and @stamp who contributed significantly to this new release.
 
 ## [0.5.0] - 2024-05-06
 
