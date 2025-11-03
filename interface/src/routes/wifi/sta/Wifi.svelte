@@ -506,9 +506,9 @@
 									<div class="flex items-center gap-2 overflow-hidden">
 										<div class="font-bold truncate">{network.ssid}</div>
 										{#if network.static_ip_config}
-											<div class="badge badge-sm badge-secondary opacity-75 flex-shrink-0">Static</div>
+											<div class="badge badge-sm badge-secondary opacity-75 flex-shrink-0 hidden sm:inline-flex">Static</div>
 										{:else}
-											<div class="badge badge-sm badge-outline badge-secondary opacity-75 flex-shrink-0">DHCP</div>
+											<div class="badge badge-sm badge-outline badge-secondary opacity-75 flex-shrink-0 hidden sm:inline-flex">DHCP</div>
 										{/if}
 									</div>
 									<div class="flex">
