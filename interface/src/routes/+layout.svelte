@@ -20,6 +20,7 @@
 	import type { RSSI } from '$lib/types/models';
 	import type { Battery } from '$lib/types/models';
 	import type { DownloadOTA } from '$lib/types/models';
+	import type { Ethernet } from '$lib/types/models';
 
 	interface Props {
 		data: LayoutData;
@@ -60,6 +61,7 @@
 		if (page.data.features.analytics) socket.on('analytics', handleAnalytics);
 		if (page.data.features.battery) socket.on('battery', handleBattery);
 		if (page.data.features.download_firmware) socket.on('otastatus', handleOAT);
+		if (page.data.features.ethernet) socket.on('ethernet', handleEthernet);
 	};
 
 	const removeEventListeners = () => {
@@ -70,6 +72,7 @@
 		socket.off('notification', handleNotification);
 		socket.off('battery', handleBattery);
 		socket.off('otastatus', handleOAT);
+		socket.off('ethernet', handleEthernet);
 	};
 
 	async function validateUser(userdata: userProfile) {
@@ -129,6 +132,10 @@
 	};
 
 	const handleOAT = (data: DownloadOTA) => telemetry.setDownloadOTA(data);
+
+	const handleEthernet = (data: Ethernet) => {
+		telemetry.setEthernet(data);
+	};
 
 	let menuOpen = $state(false);
 </script>
