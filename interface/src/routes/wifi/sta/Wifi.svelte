@@ -257,13 +257,6 @@
 		await getWifiStatus();
 		await getWifiSettings();
 	}
-
-	function truncateSSID(ssid: string, maxLength: number = 15): string {
-		if (ssid.length <= maxLength) {
-			return ssid;
-		}
-		return ssid.substring(0, maxLength) + '...';
-	}
 </script>
 
 <SettingsCard collapsible={false}>
@@ -505,30 +498,30 @@
 						>
 							{#snippet children({ item: network, index }: { item: any; index: number })}
 								<!-- svelte-ignore a11y_click_events_have_key_events -->
-								<div class="rounded-box bg-base-100 flex items-center gap-2 px-2 py-2">
-									<Grip class="h-6 w-6 text-base-content/30 cursor-grab flex-shrink-0" />
-									<div class="mask mask-hexagon bg-primary h-auto w-10 flex-shrink-0">
+								<div
+									class="rounded-box bg-base-100 grid grid-cols-[auto_auto_minmax(6rem,1fr)_auto] items-center gap-3 p-2"
+								>
+									<Grip class="h-6 w-6 text-base-content/30 cursor-grab" />
+									<div class="mask mask-hexagon bg-primary h-auto w-10">
 										<Router class="text-primary-content h-auto w-full scale-75" />
 									</div>
-									<div class="flex flex-1 gap-x-2 min-w-0">
-										<div class="font-bold truncate min-w-0" title={network.ssid}>
-											{network.ssid}
-										</div>
+									<div class="flex items-center gap-2 overflow-hidden">
+										<div class="font-bold truncate">{network.ssid}</div>
 										{#if network.static_ip_config}
 											<div
-												class="badge badge-sm badge-secondary opacity-75 shrink-0 hidden sm:block"
+												class="badge badge-sm badge-secondary opacity-75 flex-shrink-0 hidden sm:block"
 											>
 												Static
 											</div>
 										{:else}
 											<div
-												class="badge badge-sm badge-outline badge-secondary opacity-75 shrink-0 hidden sm:block"
+												class="badge badge-sm badge-outline badge-secondary opacity-75 flex-shrink-0 hidden sm:block"
 											>
 												DHCP
 											</div>
 										{/if}
 									</div>
-									<div class="flex items-center gap-x-1 flex-shrink-0">
+									<div class="flex">
 										<button
 											class="btn btn-ghost btn-sm"
 											onclick={() => {

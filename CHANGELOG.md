@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Upcoming [0.6.0] - tbd
+## [0.6.0] - 2025-11-03
 
 > [!CAUTION]
 > This update has breaking changes!
@@ -76,10 +76,15 @@ All notable changes to this project will be documented in this file.
 - Fixed preprocessor warning: usage of #ifdef with OR operator [#100](https://github.com/theelims/ESP32-sveltekit/pull/100)
 - Fixed preprocessor warning: redefinition of ESP_PLATFORM [#100](https://github.com/theelims/ESP32-sveltekit/pull/100)
 - Fixed deprecated usage of merge-bin and its parameters in scripts/merge_bin.py [#100](https://github.com/theelims/ESP32-sveltekit/pull/100)
+- Fixed Download OTA. Issues with certificate validation might remain, but build flag `-D DOWNLOAD_OTA_SKIP_CERT_VERIFY` allows to circumvent issue by sacrificing certificate validation.
 
 ### Removed
 
 - Removed async workers in PsychicHttp, as these were not used, but caused linker errors.
+
+### Depreciate
+
+- Support for ESP Arduino 2 and ESP-IDF v4 will depreciate some time in the future. Try to migrate to the current Arduino 3 / ESP-IDF v5 based branch.
 
 ### Migration Guide
 
@@ -107,6 +112,10 @@ npx @tailwindcss/upgrade
 This will migrate some of your svelte files to the new naming convention of Tailwind. For DaisyUI follow this [guide](https://daisyui.com/docs/upgrade/#changes-from-v4). Likely you'll need to redo all forms, as the components behave differently. Forms will need the `fieldset` class. Inputs will need an additional `w-full` to have the same behavior as before. And [labels](https://daisyui.com/components/label/) have a different syntax, too.
 
 The themes are to be found in `app.css` now. Add them back if they had been changed from the default.
+
+### Acknowledgment
+
+Many thanks to @runeharlyk, @ewowi, @hmbacher, and @stamp who contributed significantly to this new release.
 
 ## [0.5.0] - 2024-05-06
 
