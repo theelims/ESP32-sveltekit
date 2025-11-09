@@ -138,7 +138,7 @@
 </svelte:head>
 
 {#if page.data.features.security && $user.bearer_token === ''}
-	<Login on:signIn={initSocket} />
+	<Login signIn={initSocket} />
 {:else}
 	<div class="drawer lg:drawer-open">
 		<input id="main-menu" type="checkbox" class="drawer-toggle" bind:checked={menuOpen} />
