@@ -32,7 +32,7 @@
 	import Add from '~icons/tabler/circle-plus';
 	import Edit from '~icons/tabler/pencil';
 	import Delete from '~icons/tabler/trash';
-	import Grip from '~icons/tabler/grip-horizontal';
+	import Grip from '~icons/tabler/grip-vertical';
 	import Cancel from '~icons/tabler/x';
 	import Check from '~icons/tabler/check';
 	import Save from '~icons/tabler/device-floppy';
@@ -498,7 +498,9 @@
 						>
 							{#snippet children({ item: network, index }: { item: any; index: number })}
 								<!-- svelte-ignore a11y_click_events_have_key_events -->
-								<div class="rounded-box bg-base-100 grid grid-cols-[auto_auto_minmax(6rem,1fr)_auto] items-center gap-3 p-2">
+								<div
+									class="rounded-box bg-base-100 grid grid-cols-[auto_auto_minmax(6rem,1fr)_auto] items-center gap-3 p-2"
+								>
 									<Grip class="h-6 w-6 text-base-content/30 cursor-grab" />
 									<div class="mask mask-hexagon bg-primary h-auto w-10">
 										<Router class="text-primary-content h-auto w-full scale-75" />
@@ -506,9 +508,17 @@
 									<div class="flex items-center gap-2 overflow-hidden">
 										<div class="font-bold truncate">{network.ssid}</div>
 										{#if network.static_ip_config}
-											<div class="badge badge-sm badge-secondary opacity-75 flex-shrink-0 hidden sm:inline-flex">Static</div>
+											<div
+												class="badge badge-sm badge-secondary opacity-75 flex-shrink-0 hidden sm:block"
+											>
+												Static
+											</div>
 										{:else}
-											<div class="badge badge-sm badge-outline badge-secondary opacity-75 flex-shrink-0 hidden sm:inline-flex">DHCP</div>
+											<div
+												class="badge badge-sm badge-outline badge-secondary opacity-75 flex-shrink-0 hidden sm:block"
+											>
+												DHCP
+											</div>
 										{/if}
 									</div>
 									<div class="flex">

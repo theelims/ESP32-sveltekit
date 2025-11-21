@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Upcoming [0.6.0] - tbd
+## [0.6.0] - 2025-11-03
 
 > [!CAUTION]
 > This update has breaking changes!
@@ -26,6 +26,12 @@ All notable changes to this project will be documented in this file.
 - Add /rest/coreDump endpoint [#87](https://github.com/theelims/ESP32-sveltekit/pull/87) & [#94](https://github.com/theelims/ESP32-sveltekit/pull/94)
 - Rate limiting for MQTT publish messages. Can be configured as factory setting or at runtime. `0` will disable the rate limiting.
 - Added [discord](https://discord.gg/MTn9mVUG5n) invite to readme.md and docs.
+- Created DraggableList component based on svelte-dnd-action (used in WiFi Settings) [#100](https://github.com/theelims/ESP32-sveltekit/pull/100)
+- Extended Collapsible and SettingsCard components to support a dirty status [#100](https://github.com/theelims/ESP32-sveltekit/pull/100)
+- Enhanced ConfirmDialog, InfoDialog and Toast components to support HTML content [#100](https://github.com/theelims/ESP32-sveltekit/pull/100)
+- Added connection check to WebSocket store (socket.ts) and allow secure WebSocket connections [#100](https://github.com/theelims/ESP32-sveltekit/pull/100)
+- Added a delayed reconnect function to WifiSettingsService.cpp to allow the last POST request from frontend (providing new network settings) to be properly responded to. In the previous implementation, the POST request was never responded to by the backend, as the connection was closed immediately upon receiving the request in the backend. This resulted in the user receiving no feedback about whether the settings update was successful, only a timeout that suggested something had gone wrong. [#100](https://github.com/theelims/ESP32-sveltekit/pull/100)
+- Added scripts/prebuild_utils.py that allows other build scripts to be executed depending on the type of the executed task (e.g. I don't want to have the interface built or the certificate bundle created on clean tasks) [#100](https://github.com/theelims/ESP32-sveltekit/pull/100)
 - Added build flag `-D TELEPLOT_TASKS` to plot task heap high water mark with teleplot. You can include this in your tasks as well:
 
 ```cpp
@@ -51,6 +57,9 @@ All notable changes to this project will be documented in this file.
 - ESPD_LOGx: replace first argument with TAG and define TAG as 🐼 [#85](https://github.com/theelims/ESP32-sveltekit/pull/85)
 - Replace rtc_get_reset_reason(0) with esp_reset_reason() [#86](https://github.com/theelims/ESP32-sveltekit/pull/86)
 - Default build_interface.py script to npm, if no lock file is found.
+- Replaced `svelte-dnd-list` with `svelte-dnd-action` as `svelte-dnd-list` creates build warnings and appears to no longer be maintained, while svelte-dnd-action is under active community development. [#100](https://github.com/theelims/ESP32-sveltekit/pull/100)
+- Made Spinner component more flexible (to allow other texts than "Loading..." or no text at all) [#100](https://github.com/theelims/ESP32-sveltekit/pull/100)
+- Reworked WiFi Settings (Station) dialog: added edit dialog for networks, rearranged UI components, used new DraggableList component [#100](https://github.com/theelims/ESP32-sveltekit/pull/100)
 
 ### Fixed
 
@@ -64,10 +73,18 @@ All notable changes to this project will be documented in this file.
 - Wifi: Multiple edits bug resolved [#79](https://github.com/theelims/ESP32-sveltekit/pull/79)
 - Fixed broken link to Adafruit SSL Cert Store [#93](https://github.com/theelims/ESP32-sveltekit/issues/93)
 - Fixed JSON creation in WiFiSettingsService.h [#91](https://github.com/theelims/ESP32-sveltekit/pull/91)
+- Fixed preprocessor warning: usage of #ifdef with OR operator [#100](https://github.com/theelims/ESP32-sveltekit/pull/100)
+- Fixed preprocessor warning: redefinition of ESP_PLATFORM [#100](https://github.com/theelims/ESP32-sveltekit/pull/100)
+- Fixed deprecated usage of merge-bin and its parameters in scripts/merge_bin.py [#100](https://github.com/theelims/ESP32-sveltekit/pull/100)
+- Fixed Download OTA. Issues with certificate validation might remain, but build flag `-D DOWNLOAD_OTA_SKIP_CERT_VERIFY` allows to circumvent issue by sacrificing certificate validation.
 
 ### Removed
 
 - Removed async workers in PsychicHttp, as these were not used, but caused linker errors.
+
+### Depreciate
+
+- Support for ESP Arduino 2 and ESP-IDF v4 will depreciate some time in the future. Try to migrate to the current Arduino 3 / ESP-IDF v5 based branch.
 
 ### Migration Guide
 
@@ -95,6 +112,10 @@ npx @tailwindcss/upgrade
 This will migrate some of your svelte files to the new naming convention of Tailwind. For DaisyUI follow this [guide](https://daisyui.com/docs/upgrade/#changes-from-v4). Likely you'll need to redo all forms, as the components behave differently. Forms will need the `fieldset` class. Inputs will need an additional `w-full` to have the same behavior as before. And [labels](https://daisyui.com/components/label/) have a different syntax, too.
 
 The themes are to be found in `app.css` now. Add them back if they had been changed from the default.
+
+### Acknowledgment
+
+Many thanks to @runeharlyk, @ewowi, @hmbacher, and @stamp who contributed significantly to this new release.
 
 ## [0.5.0] - 2024-05-06
 
