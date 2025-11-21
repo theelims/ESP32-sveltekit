@@ -140,8 +140,16 @@ class CertificateBundle:
             elif strg == '-----END CERTIFICATE-----\n' and start is True:
                 crt += strg + '\n'
                 start = False
-                self.certificates.append(x509.load_pem_x509_certificate(crt.encode(), default_backend()))
-                count += 1
+                # 🌙 show warning
+                try:
+                    cert = x509.load_pem_x509_certificate(crt.encode(), default_backend())
+                    # Check serial number
+                    if cert.serial_number <= 0:
+                        status(f'Warning: Certificate {cert} has invalid serial number: {cert.serial_number}')
+                    self.certificates.append(cert)
+                    count += 1
+                except Exception as e:
+                    status(f'Failed to load certificate: {e}')
             if start is True:
                 crt += strg
 

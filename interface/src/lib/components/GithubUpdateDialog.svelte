@@ -39,11 +39,11 @@
 		} else if ($telemetry.download_ota.status == 'finished') {
 			message = 'Restarting ...';
 			progress = 0;
-			// Reload page after 5 sec
+			// Reload page after 20 sec
 			timerId = setTimeout(() => {
 				modals.closeAll();
 				location.reload();
-			}, 5000);
+			}, 20000);
 		}
 	});
 
@@ -52,9 +52,6 @@
 			// prevents modal from closing
 			return false;
 		} else {
-			$telemetry.download_ota.status = 'idle';
-			$telemetry.download_ota.error = '';
-			$telemetry.download_ota.progress = 0;
 			return true;
 		}
 	});
@@ -90,7 +87,6 @@
 					disabled={updating}
 					onclick={() => {
 						modals.closeAll();
-						location.reload();
 					}}
 				>
 					<Cancel class="mr-2 h-5 w-5" /><span>Close</span></button
