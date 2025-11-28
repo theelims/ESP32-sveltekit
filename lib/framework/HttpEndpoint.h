@@ -84,7 +84,7 @@ public:
                             }
 
                             JsonObject jsonObject = json.as<JsonObject>();
-                            StateUpdateResult outcome = _statefulService->updateWithoutPropagation(jsonObject, _stateUpdater, "_servicePath");
+                            StateUpdateResult outcome = _statefulService->updateWithoutPropagation(jsonObject, _stateUpdater, _servicePath);
 
                             if (outcome == StateUpdateResult::ERROR)
                             {
