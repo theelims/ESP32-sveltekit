@@ -63,7 +63,7 @@ public:
         root["tz_format"] = settings.tzFormat;
     }
 
-    static StateUpdateResult update(JsonObject &root, NTPSettings &settings)
+    static StateUpdateResult update(JsonObject &root, NTPSettings &settings, const String &originId)
     {
         settings.enabled = root["enabled"] | FACTORY_NTP_ENABLED;
         settings.server = root["server"] | FACTORY_NTP_SERVER;

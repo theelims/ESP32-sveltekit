@@ -47,7 +47,7 @@ public:
             if (error == DeserializationError::Ok && jsonDocument.is<JsonObject>())
             {
                 JsonObject jsonObject = jsonDocument.as<JsonObject>();
-                _statefulService->updateWithoutPropagation(jsonObject, _stateUpdater);
+                _statefulService->updateWithoutPropagation(jsonObject, _stateUpdater, "_filePath");
                 settingsFile.close();
                 return;
             }
@@ -135,7 +135,7 @@ protected:
     {
         JsonDocument jsonDocument;
         JsonObject jsonObject = jsonDocument.as<JsonObject>();
-        _statefulService->updateWithoutPropagation(jsonObject, _stateUpdater);
+        _statefulService->updateWithoutPropagation(jsonObject, _stateUpdater, "_filePath");
     }
 };
 

@@ -114,7 +114,7 @@ public:
         ESP_LOGV(SVK_TAG, "WiFi Settings read");
     }
 
-    static StateUpdateResult update(JsonObject &root, WiFiSettings &settings)
+    static StateUpdateResult update(JsonObject &root, WiFiSettings &settings, const String &originId)
     {
         settings.hostname = root["hostname"] | SettingValue::format(FACTORY_WIFI_HOSTNAME);
         settings.staConnectionMode = root["connection_mode"] | 1;
