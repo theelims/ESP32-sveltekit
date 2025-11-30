@@ -17,7 +17,7 @@
 #include <LightStateService.h>
 #include <PsychicHttpServer.h>
 
-#define SERIAL_BAUD_RATE 115200
+#define SERIAL_BAUD_RATE 921600
 
 PsychicHttpServer server;
 
