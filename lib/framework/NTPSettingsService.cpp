@@ -13,6 +13,9 @@
  **/
 
 #include <NTPSettingsService.h>
+#if FT_ENABLED(FT_ETHERNET)
+#include <ETH.h>
+#endif
 
 NTPSettingsService::NTPSettingsService(PsychicHttpServer *server,
                                        FS *fs,
@@ -29,10 +32,18 @@ NTPSettingsService::NTPSettingsService(PsychicHttpServer *server,
 void NTPSettingsService::begin()
 {
     WiFi.onEvent(
-        std::bind(&NTPSettingsService::onStationModeDisconnected, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&NTPSettingsService::onNetworkDisconnected, this, std::placeholders::_1, std::placeholders::_2),
         WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
-    WiFi.onEvent(std::bind(&NTPSettingsService::onStationModeGotIP, this, std::placeholders::_1, std::placeholders::_2),
+    WiFi.onEvent(std::bind(&NTPSettingsService::onNetworkGotIP, this, std::placeholders::_1, std::placeholders::_2),
                  WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
+
+#if FT_ENABLED(FT_ETHERNET)
+    WiFi.onEvent(
+        std::bind(&NTPSettingsService::onNetworkDisconnected, this, std::placeholders::_1, std::placeholders::_2),
+        WiFiEvent_t::ARDUINO_EVENT_ETH_DISCONNECTED);
+    WiFi.onEvent(std::bind(&NTPSettingsService::onNetworkGotIP, this, std::placeholders::_1, std::placeholders::_2),
+                 WiFiEvent_t::ARDUINO_EVENT_ETH_GOT_IP);
+#endif
 
     _httpEndpoint.begin();
     _server->on(TIME_PATH,
@@ -47,7 +58,7 @@ void NTPSettingsService::begin()
     configureNTP();
 }
 
-void NTPSettingsService::onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
+void NTPSettingsService::onNetworkGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
 {
 #ifdef SERIAL_INFO
     Serial.println(F("Got IP address, starting NTP Synchronization"));
@@ -55,17 +66,21 @@ void NTPSettingsService::onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t i
     configureNTP();
 }
 
-void NTPSettingsService::onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info)
+void NTPSettingsService::onNetworkDisconnected(WiFiEvent_t event, WiFiEventInfo_t info)
 {
 #ifdef SERIAL_INFO
-    Serial.println(F("WiFi connection dropped, stopping NTP."));
+    Serial.println(F("Network connection dropped, stopping NTP."));
 #endif
     configureNTP();
 }
 
 void NTPSettingsService::configureNTP()
 {
-    if (WiFi.isConnected() && _state.enabled)
+    bool networkConnected = WiFi.isConnected();
+#if FT_ENABLED(FT_ETHERNET)
+    networkConnected = networkConnected || ETH.connected();
+#endif
+    if (networkConnected && _state.enabled)
     {
 #ifdef SERIAL_INFO
         Serial.println(F("Starting NTP..."));
