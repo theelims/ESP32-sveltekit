@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Changed the width of the confirm dialog.
+- SvelteKit bundling as single files to reduce heap consumption.
 
 ## [0.6.0] - 2025-11-03
 

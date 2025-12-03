@@ -17,8 +17,10 @@ const config = {
 		}),
 		alias: {
 			$src: './src'
-		}
-		//prerender: { default: true },
+		},
+        output: {
+            bundleStrategy: 'single'
+        }
 	}
 };
 
