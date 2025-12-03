@@ -39,19 +39,19 @@ public:
             lastMillis = millis();
             JsonDocument doc;
             doc["uptime"] = millis() / 1000;
-            doc["free_heap"] = ESP.getFreeHeap();
-            doc["used_heap"] = ESP.getHeapSize() - ESP.getFreeHeap();
-            doc["total_heap"] = ESP.getHeapSize();
-            doc["min_free_heap"] = ESP.getMinFreeHeap();
-            doc["max_alloc_heap"] = ESP.getMaxAllocHeap();
+            doc["free_heap"] = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+            doc["used_heap"] = heap_caps_get_total_size(MALLOC_CAP_INTERNAL) - heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+            doc["total_heap"] = heap_caps_get_total_size(MALLOC_CAP_INTERNAL);
+            doc["min_free_heap"] = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
+            doc["max_alloc_heap"] = heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL);
             doc["fs_used"] = ESPFS.usedBytes();
             doc["fs_total"] = ESPFS.totalBytes();
             doc["core_temp"] = temperatureRead();
             if (psramFound())
             {
-                doc["free_psram"] = ESP.getFreePsram();
-                doc["used_psram"] = ESP.getPsramSize() - ESP.getFreePsram();
-                doc["psram_size"] = ESP.getPsramSize();
+                doc["free_psram"] = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
+                doc["used_psram"] = heap_caps_get_total_size(MALLOC_CAP_SPIRAM) - heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
+                doc["psram_size"] = heap_caps_get_total_size(MALLOC_CAP_SPIRAM);
             }
 
             JsonObject jsonObject = doc.as<JsonObject>();

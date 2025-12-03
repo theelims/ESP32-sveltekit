@@ -88,8 +88,8 @@ public:
         HTTPHeader header;
 
         // these are just going to stick around forever.
-        header.field = (char *)malloc(strlen(field) + 1);
-        header.value = (char *)malloc(strlen(value) + 1);
+        header.field = (char*)heap_caps_malloc_prefer(strlen(field) + 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_INTERNAL);
+        header.value = (char*)heap_caps_malloc_prefer(strlen(value) + 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_INTERNAL);
 
         strlcpy(header.field, field, strlen(field) + 1);
         strlcpy(header.value, value, strlen(value) + 1);
