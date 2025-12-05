@@ -31,7 +31,7 @@ enum class StateUpdateResult
 };
 
 template <typename T>
-using JsonStateUpdater = std::function<StateUpdateResult(JsonObject &root, T &settings)>;
+using JsonStateUpdater = std::function<StateUpdateResult(JsonObject &root, T &settings, const String &originId)>;
 
 template <typename T>
 using JsonStateReader = std::function<void(T &settings, JsonObject &root)>;
@@ -133,7 +133,7 @@ public:
         return result;
     }
 
-    StateUpdateResult updateWithoutPropagation(std::function<StateUpdateResult(T &)> stateUpdater)
+    StateUpdateResult updateWithoutPropagation(std::function<StateUpdateResult(T &)> stateUpdater, const String &originId)
     {
         beginTransaction();
         StateUpdateResult result = stateUpdater(_state);
@@ -144,7 +144,7 @@ public:
     StateUpdateResult update(JsonObject &jsonObject, JsonStateUpdater<T> stateUpdater, const String &originId)
     {
         beginTransaction();
-        StateUpdateResult result = stateUpdater(jsonObject, _state);
+        StateUpdateResult result = stateUpdater(jsonObject, _state, originId);
         endTransaction();
         callHookHandlers(originId, result);
         if (result == StateUpdateResult::CHANGED)
@@ -154,10 +154,10 @@ public:
         return result;
     }
 
-    StateUpdateResult updateWithoutPropagation(JsonObject &jsonObject, JsonStateUpdater<T> stateUpdater)
+    StateUpdateResult updateWithoutPropagation(JsonObject &jsonObject, JsonStateUpdater<T> stateUpdater, const String &originId)
     {
         beginTransaction();
-        StateUpdateResult result = stateUpdater(jsonObject, _state);
+        StateUpdateResult result = stateUpdater(jsonObject, _state, originId);
         endTransaction();
         return result;
     }

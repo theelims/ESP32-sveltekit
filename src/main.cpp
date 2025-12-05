@@ -23,7 +23,7 @@
 
 PsychicHttpServer server;
 
-ESP32SvelteKit esp32sveltekit(&server, 120);
+ESP32SvelteKit esp32sveltekit(&server, 70);
 
 LightMqttSettingsService lightMqttSettingsService = LightMqttSettingsService(&server,
                                                                              &esp32sveltekit);

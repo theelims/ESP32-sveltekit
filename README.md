@@ -49,6 +49,8 @@ The code runs on many variants of the ESP32 chip family. From the plain old ESP3
 
 [https://theelims.github.io/ESP32-sveltekit/](https://theelims.github.io/ESP32-sveltekit/)
 
+## Join our [Discord](https://discord.gg/MTn9mVUG5n)
+
 ## Libraries Used
 
 - [SvelteKit](https://kit.svelte.dev/)
@@ -57,7 +59,7 @@ The code runs on many variants of the ESP32 chip family. From the plain old ESP3
 - [tabler ICONS](https://tabler-icons.io/)
 - [unplugin-icons](https://github.com/antfu/unplugin-icons)
 - [svelte-modals](https://svelte-modals.mattjennings.io/)
-- [svelte-dnd-list](https://github.com/tarb/svelte-dnd-list)
+- [svelte-dnd-action](https://github.com/isaacHagoel/svelte-dnd-action)
 - [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
 - [PsychicHttp](https://github.com/hoeken/PsychicHttp)
 - [PsychicMqttClient](https://github.com/theelims/PsychicMqttClient)

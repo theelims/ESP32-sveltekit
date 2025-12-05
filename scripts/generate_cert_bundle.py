@@ -20,6 +20,15 @@ import sys
 import requests
 from io import open
 
+# Import shared prebuild utilities
+from prebuild_utils import is_build_task
+
+# Check if this script should run
+if not is_build_task(['build', 'upload', 'buildfs', 'erase_upload']):
+    # Skip script execution for all other tasks
+    print("Skipping certificate bundle generation for non-build task.")
+    sys.exit(0)
+
 Import("env")
 
 try:
@@ -32,7 +41,8 @@ except ImportError:
 
 ca_bundle_bin_file = 'x509_crt_bundle.bin'
 mozilla_cacert_url = 'https://curl.se/ca/cacert.pem'
-adafruit_cacert_url = 'https://raw.githubusercontent.com/adafruit/certificates/main/data/roots.pem'
+adafruit_filtered_cacert_url = 'https://raw.githubusercontent.com/adafruit/certificates/main/data/roots-filtered.pem'
+adafruit_full_cacert_url = 'https://raw.githubusercontent.com/adafruit/certificates/main/data/roots-full.pem'
 certs_dir = Path("./ssl_certs")
 binary_dir = Path("./src/certs")
 
@@ -42,7 +52,9 @@ def download_cacert_file(source):
     if source == "mozilla":
         response = requests.get(mozilla_cacert_url)
     elif source == "adafruit":
-        response = requests.get(adafruit_cacert_url)
+        response = requests.get(adafruit_filtered_cacert_url)
+    elif source == "adafruit-full":
+        response = requests.get(adafruit_full_cacert_url)
     else:
         raise InputError('Invalid certificate source')
 
@@ -128,8 +140,16 @@ class CertificateBundle:
             elif strg == '-----END CERTIFICATE-----\n' and start is True:
                 crt += strg + '\n'
                 start = False
-                self.certificates.append(x509.load_pem_x509_certificate(crt.encode(), default_backend()))
-                count += 1
+                # 🌙 show warning
+                try:
+                    cert = x509.load_pem_x509_certificate(crt.encode(), default_backend())
+                    # Check serial number
+                    if cert.serial_number <= 0:
+                        status(f'Warning: Certificate {cert} has invalid serial number: {cert.serial_number}')
+                    self.certificates.append(cert)
+                    count += 1
+                except Exception as e:
+                    status(f'Failed to load certificate: {e}')
             if start is True:
                 crt += strg
 

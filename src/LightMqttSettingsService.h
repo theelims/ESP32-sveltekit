@@ -46,7 +46,7 @@ public:
         root["status_topic"] = settings.stateTopic;
     }
 
-    static StateUpdateResult update(JsonObject &root, LightMqttSettings &settings)
+    static StateUpdateResult update(JsonObject &root, LightMqttSettings &settings, const String& originID)
     {
         settings.mqttPath = root["mqtt_path"] | SettingValue::format("homeassistant/light/#{unique_id}");
         settings.name = root["name"] | SettingValue::format("light-#{unique_id}");

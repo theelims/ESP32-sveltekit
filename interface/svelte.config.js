@@ -14,8 +14,13 @@ const config = {
 			fallback: 'index.html',
 			precompress: false,
 			strict: true
-		})
-		//prerender: { default: true },
+		}),
+		alias: {
+			$src: './src'
+		},
+        output: {
+            bundleStrategy: 'single'
+        }
 	}
 };
 

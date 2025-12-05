@@ -46,10 +46,12 @@
 #define WIFI_SETTINGS_FILE "/config/wifiSettings.json"
 #define WIFI_SETTINGS_SERVICE_PATH "/rest/wifiSettings"
 
-#define WIFI_RECONNECTION_DELAY 1000 * 30
+#define WIFI_RECONNECTION_DELAY 1000 * 5
 #define RSSI_EVENT_DELAY 500
+#define DELAYED_RECONNECT_MS 1000
 
 #define EVENT_RSSI "rssi"
+#define EVENT_RECONNECT "reconnect"
 
 // Struct defining the wifi settings
 typedef struct
@@ -102,17 +104,17 @@ public:
             wifiNetwork["static_ip_config"] = wifi.staticIPConfig;
 
             // extended settings
-            JsonUtils::writeIP(root, "local_ip", wifi.localIP);
-            JsonUtils::writeIP(root, "gateway_ip", wifi.gatewayIP);
-            JsonUtils::writeIP(root, "subnet_mask", wifi.subnetMask);
-            JsonUtils::writeIP(root, "dns_ip_1", wifi.dnsIP1);
-            JsonUtils::writeIP(root, "dns_ip_2", wifi.dnsIP2);
+            JsonUtils::writeIP(wifiNetwork, "local_ip", wifi.localIP);
+            JsonUtils::writeIP(wifiNetwork, "gateway_ip", wifi.gatewayIP);
+            JsonUtils::writeIP(wifiNetwork, "subnet_mask", wifi.subnetMask);
+            JsonUtils::writeIP(wifiNetwork, "dns_ip_1", wifi.dnsIP1);
+            JsonUtils::writeIP(wifiNetwork, "dns_ip_2", wifi.dnsIP2);
         }
 
         ESP_LOGV(SVK_TAG, "WiFi Settings read");
     }
 
-    static StateUpdateResult update(JsonObject &root, WiFiSettings &settings)
+    static StateUpdateResult update(JsonObject &root, WiFiSettings &settings, const String &originId)
     {
         settings.hostname = root["hostname"] | SettingValue::format(FACTORY_WIFI_HOSTNAME);
         settings.staConnectionMode = root["connection_mode"] | 1;
@@ -215,6 +217,7 @@ public:
     void initWiFi();
     void begin();
     void loop();
+    void delayedReconnect();
     String getHostname();
     String getIP();
 
@@ -226,6 +229,8 @@ private:
     EventSocket *_socket;
     unsigned long _lastConnectionAttempt;
     unsigned long _lastRssiUpdate;
+    unsigned long _delayedReconnectTime;
+    bool _delayedReconnectPending;
 
     bool _stopping;
     void onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info);

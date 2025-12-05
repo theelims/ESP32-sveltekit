@@ -40,6 +40,7 @@ Customize the settings as you see fit. A value of 0 will disable the specified f
   -D FT_DOWNLOAD_FIRMWARE=1
   -D FT_SLEEP=1
   -D FT_BATTERY=1
+  -D FT_ETHERNET=1
 ```
 
 | Flag                 | Description                                                                                                                                                                                                              |
@@ -51,6 +52,7 @@ Customize the settings as you see fit. A value of 0 will disable the specified f
 | FT_DOWNLOAD_FIRMWARE | Controls whether the firmware download feature is enabled. Disable this if you won't firmware pulled from a server.                                                                                                      |
 | FT_SLEEP             | Controls whether the deep sleep feature is enabled. Disable this if your device is not battery operated or you don't need to place it in deep sleep to save energy.                                                      |
 | FT_BATTERY           | Controls whether the battery state of charge shall be reported to the clients. Disable this if your device is not battery operated.                                                                                      |
+| FT_ETHERNET          | Controls whether an ethernet interface will be used. Disable this if your device has no ethernet interface connected.                                                                                      |
 
 In addition custom features might be added or removed at runtime. See [Custom Features](statefulservice.md#custom-features) on how to use this in your application.
 
@@ -162,11 +164,15 @@ board_build.embed_files = src/certs/x509_crt_bundle.bin
 board_ssl_cert_source = adafruit
 ```
 
-The script will download a public certificate store from Mozilla (`board_ssl_cert_source = mozilla`) or a repository curated by Adafruit (`board_ssl_cert_source = adafruit`), builds a binary containing all certs and embeds this into the firmware. This will add ~65kb to the firmware image. Should you only need a few known certificates you can place their `*.pem` or `*.der` files in the [ssl_certs](https://github.com/theelims/ESP32-sveltekit/blob/main/ssl_certs) folder and change `board_ssl_cert_source = folder`. Then only these certificates will be included in the store. This is especially useful, if you only need to connect to know servers and need to shave some kb off the firmware image:
+The script will download a public certificate store from Mozilla (`board_ssl_cert_source = mozilla`) or a repository curated by Adafruit (`board_ssl_cert_source = adafruit`) or (`board_ssl_cert_source = adafruit-full`), builds a binary containing all certs and embeds this into the firmware. This will add ~65kb to the firmware image. Should you only need a few known certificates you can place their `*.pem` or `*.der` files in the [ssl_certs](https://github.com/theelims/ESP32-sveltekit/blob/main/ssl_certs) folder and change `board_ssl_cert_source = folder`. Then only these certificates will be included in the store. This is especially useful, if you only need to connect to know servers and need to shave some kb off the firmware image:
 
 !!! info
 
      To enable SSL the feature `FT_NTP=1` must be enabled as well.
+
+!!! bug
+
+    At the moment there is a bug with the certificate bundle when using the firmware download e.g. from Github. By using the build flag `-D DOWNLOAD_OTA_SKIP_CERT_VERIFY` you may skip certificate validation to keep OTA working. Only OTA seems affected, not MQTT. Keep in mind, that this voids the main security feature of SSL and allows man-in-the-middle attacks.
 
 ## Vite and LittleFS 32 Character Limit
 

@@ -18,6 +18,7 @@
 	import NTP from '~icons/tabler/clock-check';
 	import Metrics from '~icons/tabler/report-analytics';
 	import Bug from '~icons/tabler/bug';
+	import PlugConnected from '~icons/tabler/plug-connected';
 	import { page } from '$app/state';
 	import { user } from '$lib/stores/user';
 
@@ -25,7 +26,7 @@
 
 	const github = { href: 'https://github.com/' + page.data.github, active: true };
 
-	const discord = { href: '.', active: false };
+	const discord = { href: 'https://discord.gg/MTn9mVUG5n', active: true };
 
 	type menuItem = {
 		title: string;
@@ -88,6 +89,12 @@
 					feature: true
 				}
 			]
+		},
+		{
+			title: 'Ethernet',
+			icon: PlugConnected,
+			href: '/ethernet',
+			feature: page.data.features.ethernet
 		},
 		{
 			title: 'Users',
@@ -154,7 +161,7 @@
 		class="rounded-box mb-4 flex items-center hover:scale-[1.02] active:scale-[0.98]"
 		onclick={() => setActiveMenuItem('')}
 	>
-		<img src={logo} alt="Logo" class="h-12 w-12" />
+		<img src={logo} alt="Logo" class="max-h-12 max-w-12 h-auto w-auto object-contain" />
 		<h1 class="px-4 text-2xl font-bold">{page.data.appName}</h1>
 	</a>
 	<ul class="menu w-full rounded-box menu-vertical flex-nowrap overflow-y-auto">

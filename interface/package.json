@@ -3,7 +3,7 @@
 	"version": "0.2.0",
 	"private": true,
 	"scripts": {
-		"dev": "vite dev",
+		"dev": "vite dev --host",
 		"build": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -31,6 +31,7 @@
 		"svelte-check": "^4.2.2",
 		"svelte-focus-trap": "^1.2.0",
 		"tailwindcss": "^4.1.11",
+		"terser": "^5.44.0",
 		"tslib": "^2.8.1",
 		"typescript": "^5.8.3",
 		"unplugin-icons": "^22.1.0",
@@ -44,7 +45,7 @@
 		"jwt-decode": "^4.0.0",
 		"luxon": "^3.7.1",
 		"msgpack-lite": "^0.1.26",
-		"svelte-dnd-list": "^0.1.8",
+		"svelte-dnd-action": "^0.9.65",
 		"svelte-modals": "^2.0.1"
 	}
 }

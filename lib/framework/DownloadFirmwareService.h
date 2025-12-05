@@ -24,7 +24,6 @@
 
 #include <WiFiClientSecure.h>
 #include <HTTPUpdate.h>
-// #include <SSLCertBundle.h>
 
 #define GITHUB_FIRMWARE_PATH "/rest/downloadUpdate"
 #define EVENT_DOWNLOAD_OTA "otastatus"

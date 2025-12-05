@@ -17,19 +17,19 @@
 
 #if CONFIG_IDF_TARGET_ESP32 // ESP32/PICO-D4
 #include "esp32/rom/rtc.h"
-#define ESP_PLATFORM "ESP32";
+#define ESP_TARGET "ESP32";
 #elif CONFIG_IDF_TARGET_ESP32S2
 #include "esp32/rom/rtc.h"
-#define ESP_PLATFORM "ESP32-S2";
+#define ESP_TARGET "ESP32-S2";
 #elif CONFIG_IDF_TARGET_ESP32C3
 #include "esp32c3/rom/rtc.h"
-#define ESP_PLATFORM "ESP32-C3";
+#define ESP_TARGET "ESP32-C3";
 #elif CONFIG_IDF_TARGET_ESP32S3
 #include "esp32s3/rom/rtc.h"
-#define ESP_PLATFORM "ESP32-S3";
+#define ESP_TARGET "ESP32-S3";
 #elif CONFIG_IDF_TARGET_ESP32C6
 #include "esp32c6/rom/rtc.h"
-#define ESP_PLATFORM "ESP32-C6";
+#define ESP_TARGET "ESP32-C6";
 #else
 #error Target CONFIG_IDF_TARGET is not supported
 #endif
@@ -133,7 +133,7 @@ esp_err_t SystemStatus::systemStatus(PsychicRequest *request)
     PsychicJsonResponse response = PsychicJsonResponse(request, false);
     JsonObject root = response.getRoot();
 
-    root["esp_platform"] = ESP_PLATFORM;
+    root["esp_platform"] = ESP_TARGET;
     root["firmware_version"] = APP_VERSION;
     root["max_alloc_heap"] = ESP.getMaxAllocHeap();
     if (psramFound())
