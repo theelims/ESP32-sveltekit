@@ -11,109 +11,377 @@
 	import { socket } from '$lib/stores/socket';
 	import type { LightState } from '$lib/types/models';
 
-	let lightState: LightState = $state({ led_on: false });
-
-	let lightOn = $state(false);
-
-	async function getLightstate() {
-		try {
-			const response = await fetch('/rest/lightState', {
-				method: 'GET',
-				headers: {
-					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
-					'Content-Type': 'application/json'
-				}
-			});
-			const light = await response.json();
-			lightOn = light.led_on;
-		} catch (error) {
-			console.error('Error:', error);
-		}
-		return;
-	}
+	let lightState: LightState = $state({
+		section: [
+			{ red: 0, green: 0, blue: 0, warm_white: 0, cold_white: 0 },
+			{ red: 0, green: 0, blue: 0, warm_white: 0, cold_white: 0 },
+			{ red: 0, green: 0, blue: 0, warm_white: 0, cold_white: 0 },
+			{ red: 0, green: 0, blue: 0, warm_white: 0, cold_white: 0 }
+		]
+	});
 
 	onMount(() => {
 		socket.on<LightState>('led', (data) => {
 			lightState = data;
 		});
-		getLightstate();
 	});
 
-	onDestroy(() => socket.off('led'));
-
-	async function postLightstate() {
-		try {
-			const response = await fetch('/rest/lightState', {
-				method: 'POST',
-				headers: {
-					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ led_on: lightOn })
-			});
-			if (response.status == 200) {
-				notifications.success('Light state updated.', 3000);
-				const light = await response.json();
-				lightOn = light.led_on;
-			} else {
-				notifications.error('User not authorized.', 3000);
-			}
-		} catch (error) {
-			console.error('Error:', error);
-		}
+	function sendControl() {
+		socket.sendEvent('led', lightState);
 	}
+
+	onDestroy(() => socket.off('led'));
 </script>
 
-<SettingsCard collapsible={false}>
-	{#snippet icon()}
-		<Light class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-	{/snippet}
-	{#snippet title()}
-		<span>Light State</span>
-	{/snippet}
-	<div class="w-full">
-		<h1 class="text-xl font-semibold">REST Example</h1>
-		<div class="alert alert-info my-2 shadow-lg">
-			<Info class="h-6 w-6 shrink-0 stroke-current" />
-			<span>The form below controls the LED via the RESTful service exposed by the ESP device.</span
-			>
-		</div>
-		<div class="flex flex-row flex-wrap justify-between gap-x-2">
-			<div class="fieldset w-52">
-				<label class="label cursor-pointer">
-					<span class="mr-4 text-base">Light State?</span>
-					<input type="checkbox" bind:checked={lightOn} class="checkbox checkbox-primary" />
-				</label>
+<div class="collapse collapse-plus bg-base-100 border border-base-300">
+	<input type="radio" name="my-accordion-3" checked="checked" />
+	<div class="collapse-title font-semibold inline-flex items-center">
+		<Light class="lex-shrink-0 mr-2 h-6 w-6 self-end" /> <span>Section 0</span>
+	</div>
+	<div class="collapse-content text-sm">
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[0].red}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Red</b></span>
+				<span class="text-sm">{Math.round(lightState.section[0].red)}</span>
 			</div>
-			<div class="grow"></div>
-			<button class="btn btn-primary inline-flex items-center" onclick={postLightstate}
-				><Save class="mr-2 h-5 w-5" /><span>Save</span></button
-			>
-			<button class="btn btn-primary inline-flex items-center" onclick={getLightstate}
-				><Reload class="mr-2 h-5 w-5" /><span>Reload</span></button
-			>
 		</div>
-		<div class="divider"></div>
-		<h1 class="text-xl font-semibold">Event Socket Example</h1>
-		<div class="alert alert-info my-2 shadow-lg">
-			<Info class="h-6 w-6 shrink-0 stroke-current" />
-			<span
-				>The switch below controls the LED via the event system which uses WebSocket under the hood.
-				It will automatically update whenever the LED state changes.</span
-			>
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[0].green}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Green</b></span>
+				<span class="text-sm">{Math.round(lightState.section[0].green)}</span>
+			</div>
 		</div>
-		<div class="fieldset w-52">
-			<label class="label cursor-pointer">
-				<span class="text-base">Light State?</span>
-				<input
-					type="checkbox"
-					class="toggle toggle-primary"
-					bind:checked={lightState.led_on}
-					onchange={() => {
-						socket.sendEvent('led', lightState);
-					}}
-				/>
-			</label>
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[0].blue}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Blue</b></span>
+				<span class="text-sm">{Math.round(lightState.section[0].blue)}</span>
+			</div>
+		</div>
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[0].warm_white}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Warm White</b></span>
+				<span class="text-sm">{Math.round(lightState.section[0].warm_white)}</span>
+			</div>
+		</div>
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[0].cold_white}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Cold White</b></span>
+				<span class="text-sm">{Math.round(lightState.section[0].cold_white)}</span>
+			</div>
 		</div>
 	</div>
-</SettingsCard>
+</div>
+<div class="collapse collapse-plus bg-base-100 border border-base-300">
+	<input type="radio" name="my-accordion-3" />
+	<div class="collapse-title font-semibold inline-flex items-center">
+		<Light class="lex-shrink-0 mr-2 h-6 w-6 self-end" /> <span>Section 1</span>
+	</div>
+	<div class="collapse-content text-sm">
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[1].red}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Red</b></span>
+				<span class="text-sm">{Math.round(lightState.section[1].red)}</span>
+			</div>
+		</div>
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[1].green}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Green</b></span>
+				<span class="text-sm">{Math.round(lightState.section[1].green)}</span>
+			</div>
+		</div>
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[1].blue}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Blue</b></span>
+				<span class="text-sm">{Math.round(lightState.section[1].blue)}</span>
+			</div>
+		</div>
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[1].warm_white}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Warm White</b></span>
+				<span class="text-sm">{Math.round(lightState.section[1].warm_white)}</span>
+			</div>
+		</div>
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[1].cold_white}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Cold White</b></span>
+				<span class="text-sm">{Math.round(lightState.section[1].cold_white)}</span>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="collapse collapse-plus bg-base-100 border border-base-300">
+	<input type="radio" name="my-accordion-3" />
+	<div class="collapse-title font-semibold inline-flex items-center">
+		<Light class="lex-shrink-0 mr-2 h-6 w-6 self-end" /> <span>Section 2</span>
+	</div>
+	<div class="collapse-content text-sm">
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[2].red}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Red</b></span>
+				<span class="text-sm">{Math.round(lightState.section[2].red)}</span>
+			</div>
+		</div>
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[2].green}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Green</b></span>
+				<span class="text-sm">{Math.round(lightState.section[2].green)}</span>
+			</div>
+		</div>
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[2].blue}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Blue</b></span>
+				<span class="text-sm">{Math.round(lightState.section[2].blue)}</span>
+			</div>
+		</div>
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[2].warm_white}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Warm White</b></span>
+				<span class="text-sm">{Math.round(lightState.section[2].warm_white)}</span>
+			</div>
+		</div>
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[2].cold_white}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Cold White</b></span>
+				<span class="text-sm">{Math.round(lightState.section[2].cold_white)}</span>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="collapse collapse-plus bg-base-100 border border-base-300">
+	<input type="radio" name="my-accordion-3" />
+	<div class="collapse-title font-semibold inline-flex items-center">
+		<Light class="lex-shrink-0 mr-2 h-6 w-6 self-end" /> <span>Section 3</span>
+	</div>
+	<div class="collapse-content text-sm">
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[3].red}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Red</b></span>
+				<span class="text-sm">{Math.round(lightState.section[3].red)}</span>
+			</div>
+		</div>
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[3].green}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Green</b></span>
+				<span class="text-sm">{Math.round(lightState.section[3].green)}</span>
+			</div>
+		</div>
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[3].blue}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Blue</b></span>
+				<span class="text-sm">{Math.round(lightState.section[3].blue)}</span>
+			</div>
+		</div>
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[3].warm_white}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Warm White</b></span>
+				<span class="text-sm">{Math.round(lightState.section[3].warm_white)}</span>
+			</div>
+		</div>
+		<div class="mx-4 flex-col justify-around">
+			<input
+				type="range"
+				min="0"
+				max="255"
+				bind:value={lightState.section[3].cold_white}
+				onchange={() => {
+					sendControl();
+				}}
+				class="range range-primary range-xs w-full"
+			/>
+			<div class="inline-flex mt-1 justify-between w-full">
+				<span class="text-sm"><b>Cold White</b></span>
+				<span class="text-sm">{Math.round(lightState.section[3].cold_white)}</span>
+			</div>
+		</div>
+	</div>
+</div>

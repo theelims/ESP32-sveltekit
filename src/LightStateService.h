@@ -16,6 +16,7 @@
  **/
 
 #include <LightMqttSettingsService.h>
+#include <NeopixelBus.h>
 
 #include <EventSocket.h>
 #include <HttpEndpoint.h>
@@ -23,6 +24,15 @@
 #include <EventEndpoint.h>
 #include <WebSocketServer.h>
 #include <ESP32SvelteKit.h>
+#include <vector>
+
+#ifndef NEOPIXEL
+#define NEOPIXEL 16 // GPIO pin for Neopixel data line
+#endif
+
+#ifndef STRIP_LENGTH
+#define STRIP_LENGTH 30
+#endif
 
 #define DEFAULT_LED_STATE false
 #define OFF_STATE "OFF"
@@ -32,52 +42,57 @@
 #define LIGHT_SETTINGS_SOCKET_PATH "/ws/lightState"
 #define LIGHT_SETTINGS_EVENT "led"
 
+// typdef color object
+typedef struct
+{
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+    uint8_t warmWhite;
+    uint8_t coldWhite;
+} LightColor;
+
 class LightState
 {
 public:
-    bool ledOn;
+    // LED color vector with 4 elements
+    std::vector<LightColor> sections = std::vector<LightColor>(4);
 
     static void read(LightState &settings, JsonObject &root)
     {
-        root["led_on"] = settings.ledOn;
+        // write each section's color values into array
+        JsonArray sections = root["section"].to<JsonArray>();
+        for (size_t i = 0; i < settings.sections.size(); i++)
+        {
+            JsonObject sectionObj = sections.add<JsonObject>();
+            sectionObj["red"] = settings.sections[i].red;
+            sectionObj["green"] = settings.sections[i].green;
+            sectionObj["blue"] = settings.sections[i].blue;
+            sectionObj["warm_white"] = settings.sections[i].warmWhite;
+            sectionObj["cold_white"] = settings.sections[i].coldWhite;
+        }
     }
 
-    static StateUpdateResult update(JsonObject &root, LightState &lightState, const String& originID)
+    static StateUpdateResult update(JsonObject &root, LightState &lightState, const String &originID)
     {
-        boolean newState = root["led_on"] | DEFAULT_LED_STATE;
-        if (lightState.ledOn != newState)
+        // read each section's color values from object
+        if (root["section"].is<JsonArray>())
         {
-            lightState.ledOn = newState;
-            return StateUpdateResult::CHANGED;
+            int i = 0;
+            for (JsonVariant sectionObj : root["section"].as<JsonArray>())
+            {
+                if (i < 4)
+                {
+                    lightState.sections[i].red = constrain(sectionObj["red"], 0, 255) | 0;
+                    lightState.sections[i].green = constrain(sectionObj["green"], 0, 255) | 0;
+                    lightState.sections[i].blue = constrain(sectionObj["blue"], 0, 255) | 0;
+                    lightState.sections[i].warmWhite = constrain(sectionObj["warm_white"], 0, 255) | 0;
+                    lightState.sections[i].coldWhite = constrain(sectionObj["cold_white"], 0, 255) | 0;
+                }
+                i++;
+            }
         }
-        return StateUpdateResult::UNCHANGED;
-    }
-
-    static void homeAssistRead(LightState &settings, JsonObject &root)
-    {
-        root["state"] = settings.ledOn ? ON_STATE : OFF_STATE;
-    }
-
-    static StateUpdateResult homeAssistUpdate(JsonObject &root, LightState &lightState, const String& originID)
-    {
-        String state = root["state"];
-        // parse new led state
-        boolean newState = false;
-        if (state.equals(ON_STATE))
-        {
-            newState = true;
-        }
-        else if (!state.equals(OFF_STATE))
-        {
-            return StateUpdateResult::ERROR;
-        }
-        // change the new state, if required
-        if (lightState.ledOn != newState)
-        {
-            lightState.ledOn = newState;
-            return StateUpdateResult::CHANGED;
-        }
-        return StateUpdateResult::UNCHANGED;
+        return StateUpdateResult::CHANGED;
     }
 };
 
@@ -94,11 +109,10 @@ private:
     HttpEndpoint<LightState> _httpEndpoint;
     EventEndpoint<LightState> _eventEndpoint;
     MqttEndpoint<LightState> _mqttEndpoint;
-    WebSocketServer<LightState> _webSocketServer;
     PsychicMqttClient *_mqttClient;
     LightMqttSettingsService *_lightMqttSettingsService;
+    NeoPixelBus<NeoRgbwwFeature, NeoEsp32I2s0Ws2805Method> neopixelStrip = NeoPixelBus<NeoRgbwwFeature, NeoEsp32I2s0Ws2805Method>(STRIP_LENGTH, NEOPIXEL);
 
-    void registerConfig();
     void onConfigUpdated();
 };
 

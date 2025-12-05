@@ -56,8 +56,16 @@ export type ApSettings = {
 	subnet_mask: string;
 };
 
+export type ColorState = {
+	red: number;
+	green: number;
+	blue: number;
+	warm_white: number;
+	cold_white: number;
+};
+
 export type LightState = {
-	led_on: boolean;
+	section: ColorState[];
 };
 
 export type BrokerSettings = {
@@ -148,7 +156,6 @@ export type MQTTSettings = {
 	clean_session: boolean;
 	message_interval_ms: number;
 };
-
 
 export type Ethernet = {
 	connected: boolean;

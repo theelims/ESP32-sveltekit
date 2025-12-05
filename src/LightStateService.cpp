@@ -28,30 +28,15 @@ LightStateService::LightStateService(PsychicHttpServer *server,
                                                                                                           this,
                                                                                                           sveltekit->getSocket(),
                                                                                                           LIGHT_SETTINGS_EVENT),
-                                                                                           _mqttEndpoint(LightState::homeAssistRead,
-                                                                                                         LightState::homeAssistUpdate,
+                                                                                           _mqttEndpoint(LightState::read,
+                                                                                                         LightState::update,
                                                                                                          this,
                                                                                                          sveltekit->getMqttClient()),
-                                                                                           _webSocketServer(LightState::read,
-                                                                                                            LightState::update,
-                                                                                                            this,
-                                                                                                            server,
-                                                                                                            LIGHT_SETTINGS_SOCKET_PATH,
-                                                                                                            sveltekit->getSecurityManager(),
-                                                                                                            AuthenticationPredicates::IS_AUTHENTICATED),
                                                                                            _mqttClient(sveltekit->getMqttClient()),
                                                                                            _lightMqttSettingsService(lightMqttSettingsService)
 {
     // configure led to be output
     pinMode(LED_BUILTIN, OUTPUT);
-
-    // configure MQTT callback
-    _mqttClient->onConnect(std::bind(&LightStateService::registerConfig, this));
-
-    // configure update handler for when the light settings change
-    _lightMqttSettingsService->addUpdateHandler([&](const String &originId)
-                                                { registerConfig(); },
-                                                false);
 
     // configure settings service update handler to update LED state
     addUpdateHandler([&](const String &originId)
@@ -61,44 +46,53 @@ LightStateService::LightStateService(PsychicHttpServer *server,
 
 void LightStateService::begin()
 {
+    neopixelStrip.Begin();
     _httpEndpoint.begin();
     _eventEndpoint.begin();
-    _state.ledOn = DEFAULT_LED_STATE;
     onConfigUpdated();
 }
 
 void LightStateService::onConfigUpdated()
 {
-    digitalWrite(LED_BUILTIN, _state.ledOn ? 1 : 0);
-}
-
-void LightStateService::registerConfig()
-{
-    if (!_mqttClient->connected())
+    // Update the color of each section of the LED strip
+    // first section: 0-9
+    // second section: 10-14
+    // third section: 15-24
+    // fourth section: 25-29
+    for (size_t i = 0; i < _state.sections.size(); i++)
     {
-        return;
+        size_t startIndex = 0;
+        size_t endIndex = 0;
+        switch (i)
+        {
+        case 0:
+            startIndex = 0;
+            endIndex = 9;
+            break;
+        case 1:
+            startIndex = 10;
+            endIndex = 14;
+            break;
+        case 2:
+            startIndex = 15;
+            endIndex = 24;
+            break;
+        case 3:
+            startIndex = 25;
+            endIndex = 29;
+            break;
+        default:
+            break;
+        }
+
+        for (size_t j = startIndex; j <= endIndex; j++)
+        {
+            neopixelStrip.SetPixelColor(j, RgbwwColor(_state.sections[i].red,
+                                                      _state.sections[i].green,
+                                                      _state.sections[i].blue,
+                                                      _state.sections[i].warmWhite,
+                                                      _state.sections[i].coldWhite));
+        }
     }
-    String configTopic;
-    String subTopic;
-    String pubTopic;
-
-    JsonDocument doc;
-    _lightMqttSettingsService->read([&](LightMqttSettings &settings)
-                                    {
-    configTopic = settings.mqttPath + "/config";
-    subTopic = settings.mqttPath + "/set";
-    pubTopic = settings.mqttPath + "/state";
-    doc["~"] = settings.mqttPath;
-    doc["name"] = settings.name;
-    doc["unique_id"] = settings.uniqueId; });
-    doc["cmd_t"] = "~/set";
-    doc["stat_t"] = "~/state";
-    doc["schema"] = "json";
-    doc["brightness"] = false;
-
-    String payload;
-    serializeJson(doc, payload);
-    _mqttClient->publish(configTopic.c_str(), 0, false, payload.c_str());
-
-    _mqttEndpoint.configureTopics(pubTopic, subTopic);
+    neopixelStrip.Show();
 }
