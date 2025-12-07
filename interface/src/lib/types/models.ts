@@ -69,7 +69,8 @@ export type LightState = {
 };
 
 export type BrokerSettings = {
-	mqtt_path: string;
+	mqtt_set_path: string;
+	mqtt_status_path: string;
 	name: string;
 	unique_id: string;
 	status_topic: string;

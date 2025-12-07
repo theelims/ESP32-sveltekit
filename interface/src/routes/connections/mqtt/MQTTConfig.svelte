@@ -10,7 +10,13 @@
 	import Info from '~icons/tabler/info-circle';
 	import type { BrokerSettings } from '$lib/types/models';
 
-	let brokerSettings: BrokerSettings = $state();
+	let brokerSettings: BrokerSettings = $state({
+		mqtt_set_path: '',
+		mqtt_status_path: '',
+		name: '',
+		unique_id: '',
+		status_topic: ''
+	});
 
 	let formField: any = $state();
 
@@ -32,7 +38,8 @@
 
 	let formErrors = $state({
 		uid: false,
-		path: false,
+		setpath: false,
+		statuspath: false,
 		name: false,
 		status_topic: false
 	});
@@ -78,11 +85,19 @@
 			formErrors.name = false;
 		}
 		// Validate MQTT Path
-		if (brokerSettings.mqtt_path.length > 64) {
+		if (brokerSettings.mqtt_set_path.length > 64) {
 			valid = false;
-			formErrors.path = true;
+			formErrors.setpath = true;
 		} else {
-			formErrors.path = false;
+			formErrors.setpath = false;
+		}
+
+		// Validate MQTT Path
+		if (brokerSettings.mqtt_status_path.length > 64) {
+			valid = false;
+			formErrors.statuspath = true;
+		} else {
+			formErrors.statuspath = false;
 		}
 
 		// Validate MQTT Status Topic
@@ -173,21 +188,40 @@
 						</label>
 					</div>
 					<div>
-						<label class="label" for="path">MQTT Path</label>
+						<label class="label" for="setpath">MQTT Set Path</label>
 						<input
 							type="text"
-							class="input w-full invalid:border-error invalid:border-2 {formErrors.path
+							class="input w-full invalid:border-error invalid:border-2 {formErrors.setpath
 								? 'border-error border-2'
 								: ''}"
-							bind:value={brokerSettings.mqtt_path}
-							id="path"
+							bind:value={brokerSettings.mqtt_set_path}
+							id="setpath"
 							min="0"
 							max="64"
 							required
 						/>
-						<label class="label" for="path">
-							<span class="text-error {formErrors.path ? '' : 'hidden'}"
-								>MQTT path is limited to 64 characters</span
+						<label class="label" for="setpath">
+							<span class="text-error {formErrors.setpath ? '' : 'hidden'}"
+								>MQTT set path is limited to 64 characters</span
+							>
+						</label>
+					</div>
+					<div>
+						<label class="label" for="statuspath">MQTT Status Path</label>
+						<input
+							type="text"
+							class="input w-full invalid:border-error invalid:border-2 {formErrors.statuspath
+								? 'border-error border-2'
+								: ''}"
+							bind:value={brokerSettings.mqtt_status_path}
+							id="statuspath"
+							min="0"
+							max="64"
+							required
+						/>
+						<label class="label" for="statuspath">
+							<span class="text-error {formErrors.statuspath ? '' : 'hidden'}"
+								>MQTT status path is limited to 64 characters</span
 							>
 						</label>
 					</div>

@@ -114,6 +114,7 @@ private:
     NeoPixelBus<NeoRgbwwFeature, NeoEsp32I2s0Ws2805Method> neopixelStrip = NeoPixelBus<NeoRgbwwFeature, NeoEsp32I2s0Ws2805Method>(STRIP_LENGTH, NEOPIXEL);
 
     void onConfigUpdated();
+    void configureMqttTopics();
 };
 
 #endif

@@ -33,22 +33,25 @@
 class LightMqttSettings
 {
 public:
-    String mqttPath;
+    String mqttSetPath;
+    String mqttStatusPath;
     String name;
     String uniqueId;
     String stateTopic;
 
     static void read(LightMqttSettings &settings, JsonObject &root)
     {
-        root["mqtt_path"] = settings.mqttPath;
+        root["mqtt_set_path"] = settings.mqttSetPath;
+        root["mqtt_status_path"] = settings.mqttStatusPath;
         root["name"] = settings.name;
         root["unique_id"] = settings.uniqueId;
         root["status_topic"] = settings.stateTopic;
     }
 
-    static StateUpdateResult update(JsonObject &root, LightMqttSettings &settings, const String& originID)
+    static StateUpdateResult update(JsonObject &root, LightMqttSettings &settings, const String &originID)
     {
-        settings.mqttPath = root["mqtt_path"] | SettingValue::format("homeassistant/light/#{unique_id}");
+        settings.mqttSetPath = root["mqtt_set_path"] | SettingValue::format("homeassistant/light/#{unique_id}/set");
+        settings.mqttStatusPath = root["mqtt_status_path"] | SettingValue::format("homeassistant/light/#{unique_id}/status");
         settings.name = root["name"] | SettingValue::format("light-#{unique_id}");
         settings.uniqueId = root["unique_id"] | SettingValue::format("light-#{unique_id}");
         settings.stateTopic = root["status_topic"] | SettingValue::format(FACTORY_MQTT_STATUS_TOPIC);

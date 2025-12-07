@@ -42,6 +42,10 @@ LightStateService::LightStateService(PsychicHttpServer *server,
     addUpdateHandler([&](const String &originId)
                      { onConfigUpdated(); },
                      false);
+    // update the shock topic when the broker settings change
+    _lightMqttSettingsService->addUpdateHandler([&](const String &originId)
+                                                { configureMqttTopics(); },
+                                                false);
 }
 
 void LightStateService::begin()
@@ -95,4 +99,15 @@ void LightStateService::onConfigUpdated()
         }
     }
     neopixelStrip.Show();
+}
+
+void LightStateService::configureMqttTopics()
+{
+    String controlTopicPub;
+    String controlTopicSub;
+    _lightMqttSettingsService->read([&](LightMqttSettings &settings)
+                                    {
+                                        controlTopicPub = settings.mqttSetPath;
+                                        controlTopicSub = settings.mqttStatusPath; });
+    _mqttEndpoint.configureTopics(controlTopicPub.c_str(), controlTopicSub.c_str());
 }
