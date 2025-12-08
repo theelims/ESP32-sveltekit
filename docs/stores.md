@@ -64,6 +64,7 @@ It exposes the following properties you can subscribe to:
 | `$telemetry.download_ota.status`   | `String`  | Status of OTA                               |
 | `$telemetry.download_ota.progress` | `Number`  | Progress of OTA                             |
 | `$telemetry.download_ota.error`    | `String`  | Error Message of OTA                        |
+| `$telemetry.ethernet.connected`    | `Boolean` | Connection status of the ethernet interface |
 
 ## Analytics
 

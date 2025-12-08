@@ -148,3 +148,29 @@ export type MQTTSettings = {
 	clean_session: boolean;
 	message_interval_ms: number;
 };
+
+
+export type Ethernet = {
+	connected: boolean;
+};
+
+export type EthernetStatus = {
+	connected: boolean;
+	local_ip: string;
+	mac_address: string;
+	subnet_mask: string;
+	gateway_ip?: string;
+	dns_ip_1?: string;
+	dns_ip_2?: string;
+	link_speed?: number;
+};
+
+export type EthernetSettings = {
+	hostname: string;
+	static_ip_config: boolean;
+	local_ip?: string;
+	subnet_mask?: string;
+	gateway_ip?: string;
+	dns_ip_1?: string;
+	dns_ip_2?: string;
+};
