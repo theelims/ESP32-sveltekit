@@ -19,3 +19,5 @@ ssl_certs/cacert.pem
 /logs
 .aid
 /scripts/__pycache__
+.DS_Store
+*.bak

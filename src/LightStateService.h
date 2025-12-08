@@ -42,7 +42,7 @@ public:
         root["led_on"] = settings.ledOn;
     }
 
-    static StateUpdateResult update(JsonObject &root, LightState &lightState)
+    static StateUpdateResult update(JsonObject &root, LightState &lightState, const String& originID)
     {
         boolean newState = root["led_on"] | DEFAULT_LED_STATE;
         if (lightState.ledOn != newState)
@@ -58,7 +58,7 @@ public:
         root["state"] = settings.ledOn ? ON_STATE : OFF_STATE;
     }
 
-    static StateUpdateResult homeAssistUpdate(JsonObject &root, LightState &lightState)
+    static StateUpdateResult homeAssistUpdate(JsonObject &root, LightState &lightState, const String& originID)
     {
         String state = root["state"];
         // parse new led state

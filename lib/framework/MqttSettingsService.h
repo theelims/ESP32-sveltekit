@@ -106,7 +106,7 @@ public:
         root["message_interval_ms"] = settings.messageIntervalMs;
     }
 
-    static StateUpdateResult update(JsonObject &root, MqttSettings &settings)
+    static StateUpdateResult update(JsonObject &root, MqttSettings &settings, const String &originId)
     {
         settings.enabled = root["enabled"] | FACTORY_MQTT_ENABLED;
         settings.uri = root["uri"] | FACTORY_MQTT_URI;

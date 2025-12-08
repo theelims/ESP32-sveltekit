@@ -70,7 +70,7 @@ public:
         }
     }
 
-    static StateUpdateResult update(JsonObject &root, SecuritySettings &settings)
+    static StateUpdateResult update(JsonObject &root, SecuritySettings &settings, const String& originID)
     {
         // secret
         settings.jwtSecret = root["jwt_secret"] | SettingValue::format(FACTORY_JWT_SECRET);

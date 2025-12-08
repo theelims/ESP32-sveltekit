@@ -21,7 +21,8 @@ WiFiSettingsService::WiFiSettingsService(PsychicHttpServer *server,
                                                                 _securityManager(securityManager),
                                                                 _httpEndpoint(WiFiSettings::read, WiFiSettings::update, this, server, WIFI_SETTINGS_SERVICE_PATH, securityManager,
                                                                               AuthenticationPredicates::IS_ADMIN),
-                                                                _fsPersistence(WiFiSettings::read, WiFiSettings::update, this, fs, WIFI_SETTINGS_FILE), _lastConnectionAttempt(0),
+                                                                _fsPersistence(WiFiSettings::read, WiFiSettings::update, this, fs, WIFI_SETTINGS_FILE),
+                                                                _lastConnectionAttempt(0),
                                                                 _delayedReconnectTime(0),
                                                                 _delayedReconnectPending(false),
                                                                 _socket(socket)
@@ -148,9 +149,7 @@ void WiFiSettingsService::manageSTA()
     {
         return;
     }
-
-    // Connect or reconnect as required
-    if ((WiFi.getMode() & WIFI_STA) == 0)
+    else
     {
 #ifdef SERIAL_INFO
         Serial.println("Connecting to WiFi...");
@@ -296,7 +295,7 @@ void WiFiSettingsService::updateRSSI()
 
 void WiFiSettingsService::onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info)
 {
-    WiFi.disconnect(true);
+    manageSTA();
 }
 
 void WiFiSettingsService::onStationModeStop(WiFiEvent_t event, WiFiEventInfo_t info)
