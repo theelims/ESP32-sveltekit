@@ -86,7 +86,7 @@ void EthernetSettingsService::configureNetwork(ethernet_settings_t &network)
 #if CONFIG_IDF_TARGET_ESP32
     // ESP32 chips with built-in ethernet MAC/PHY
     ETH.begin();
-#else
+#elif FT_ENABLED(FT_ETHERNET)
     // For SPI based ethernet modules like W5500, ENC28J60 etc.
     SPI.begin(ETH_SPI_SCK, ETH_SPI_MISO, ETH_SPI_MOSI);
     ETH.begin(ETH_PHY_TYPE, ETH_PHY_ADDR, ETH_PHY_CS, ETH_PHY_IRQ, ETH_PHY_RST, SPI);
