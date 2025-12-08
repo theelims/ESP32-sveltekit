@@ -14,6 +14,8 @@
 
 #include <EthernetStatus.h>
 
+#if FT_ENABLED(FT_ETHERNET)
+
 EthernetStatus::EthernetStatus(PsychicHttpServer *server,
                                SecurityManager *securityManager) : _server(server),
                                                                    _securityManager(securityManager)
@@ -91,3 +93,5 @@ bool EthernetStatus::isConnected()
 {
     return ETH.connected();
 }
+
+#endif // end FT_ENABLED(FT_ETHERNET)

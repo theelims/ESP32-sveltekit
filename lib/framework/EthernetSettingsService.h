@@ -38,6 +38,8 @@
 
 #define EVENT_ETHERNET "ethernet"
 
+#if FT_ENABLED(FT_ETHERNET)
+
 // Struct defining the ethernet settings
 typedef struct
 {
@@ -123,4 +125,5 @@ private:
     void updateEthernet();
 };
 
+#endif // end FT_ENABLED(FT_ETHERNET)
 #endif // end EthernetSettingsService_h
