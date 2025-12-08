@@ -25,6 +25,8 @@
 
 #define ETHERNET_STATUS_SERVICE_PATH "/rest/ethernetStatus"
 
+#if FT_ENABLED(FT_ETHERNET)
+
 class EthernetStatus
 {
 public:
@@ -45,5 +47,7 @@ private:
     static void onGotIP(WiFiEvent_t event, WiFiEventInfo_t info);
     esp_err_t ethernetStatus(PsychicRequest *request);
 };
+
+#endif // end FT_ENABLED(FT_ETHERNET)
 
 #endif // end EthernetStatus_h

@@ -14,6 +14,8 @@
 
 #include <EthernetSettingsService.h>
 
+#if FT_ENABLED(FT_ETHERNET)
+
 EthernetSettingsService::EthernetSettingsService(PsychicHttpServer *server,
                                                  FS *fs,
                                                  SecurityManager *securityManager,
@@ -86,7 +88,7 @@ void EthernetSettingsService::configureNetwork(ethernet_settings_t &network)
 #if CONFIG_IDF_TARGET_ESP32
     // ESP32 chips with built-in ethernet MAC/PHY
     ETH.begin();
-#elif FT_ENABLED(FT_ETHERNET)
+#else
     // For SPI based ethernet modules like W5500, ENC28J60 etc.
     SPI.begin(ETH_SPI_SCK, ETH_SPI_MISO, ETH_SPI_MOSI);
     ETH.begin(ETH_PHY_TYPE, ETH_PHY_ADDR, ETH_PHY_CS, ETH_PHY_IRQ, ETH_PHY_RST, SPI);
@@ -107,3 +109,5 @@ void EthernetSettingsService::updateEthernet()
     JsonObject jsonObject = doc.as<JsonObject>();
     _socket->emitEvent(EVENT_ETHERNET, jsonObject);
 }
+
+#endif // end FT_ENABLED(FT_ETHERNET)
