@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 import type { RSSI } from '../types/models';
 import type { Battery } from '../types/models';
-import type { DownloadOTA } from '../types/models';
+import type { OTAStatus } from '../types/models';
 import type { Ethernet } from '../types/models';
 
 let telemetry_data = {
@@ -14,9 +14,11 @@ let telemetry_data = {
 		soc: 100,
 		charging: false
 	},
-	download_ota: {
+	ota_status: {
 		status: 'none',
 		progress: 0,
+		bytes_written: 0,
+		total_bytes: 0,
 		error: ''
 	},
 	ethernet: {
@@ -48,10 +50,16 @@ function createTelemetry() {
 				battery: { soc: data.soc, charging: data.charging }
 			}));
 		},
-		setDownloadOTA: (data: DownloadOTA) => {
+		setOTAStatus: (data: OTAStatus) => {
 			update((telemetry_data) => ({
 				...telemetry_data,
-				download_ota: { status: data.status, progress: data.progress, error: data.error }
+				ota_status: { 
+					status: data.status, 
+					progress: data.progress, 
+					bytes_written: data.bytes_written ?? 0,
+					total_bytes: data.total_bytes ?? 0,
+					error: data.error 
+				}
 			}));
 		},
 		setEthernet: (data: Ethernet) => {
