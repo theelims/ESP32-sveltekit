@@ -64,9 +64,15 @@ void update_started()
 {
     String output;
     doc["status"] = "preparing";
+    doc["progress"] = 0;
+    doc["bytes_written"] = 0;
+    doc["total_bytes"] = 0;
     JsonObject jsonObject = doc.as<JsonObject>();
-    _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
-    ESP_LOGD(SVK_TAG, "HTTP Update started");
+    _socket->emitEvent(EVENT_OTA_UPDATE, jsonObject);
+    ESP_LOGI(SVK_TAG, "HTTP Update started");
+#ifdef SERIAL_INFO
+    Serial.println("HTTP Update started");
+#endif
 }
 
 void update_progress(int currentBytes, int totalBytes)
@@ -76,8 +82,10 @@ void update_progress(int currentBytes, int totalBytes)
     if (progress > previousProgress)
     {
         doc["progress"] = progress;
+        doc["bytes_written"] = currentBytes;
+        doc["total_bytes"] = totalBytes;
         JsonObject jsonObject = doc.as<JsonObject>();
-        _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
+        _socket->emitEvent(EVENT_OTA_UPDATE, jsonObject);
         ESP_LOGV(SVK_TAG, "HTTP update process at %d of %d bytes... (%d %%)", currentBytes, totalBytes, progress);
     }
     previousProgress = progress;
@@ -88,8 +96,9 @@ void update_finished()
     String output;
     doc["status"] = "finished";
     doc["progress"] = 100;
+    // Keep the last known bytes_written and total_bytes from progress
     JsonObject jsonObject = doc.as<JsonObject>();
-    _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
+    _socket->emitEvent(EVENT_OTA_UPDATE, jsonObject);
     ESP_LOGI(SVK_TAG, "HTTP Update successful - Restarting");
 #ifdef SERIAL_INFO
     Serial.println("HTTP Update successful - Restarting");
@@ -165,7 +174,7 @@ void updateTask(void *param)
     if (_emitEvent)
     {
         jsonObject = doc.as<JsonObject>();
-        _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
+        _socket->emitEvent(EVENT_OTA_UPDATE, jsonObject);
     }
 
     // delay to allow the event to be sent out
@@ -186,7 +195,7 @@ void DownloadFirmwareService::begin()
 {
     ::_socket = _socket;
 
-    _socket->registerEvent(EVENT_DOWNLOAD_OTA);
+    _socket->registerEvent(EVENT_OTA_UPDATE);
 
     _server->on(GITHUB_FIRMWARE_PATH,
                 HTTP_POST,
@@ -212,10 +221,12 @@ esp_err_t DownloadFirmwareService::downloadUpdate(PsychicRequest *request, JsonV
 
     doc["status"] = "preparing";
     doc["progress"] = 0;
+    doc["bytes_written"] = 0;
+    doc["total_bytes"] = 0;
     doc["error"] = "";
 
     JsonObject jsonObject = doc.as<JsonObject>();
-    _socket->emitEvent(EVENT_DOWNLOAD_OTA, jsonObject);
+    _socket->emitEvent(EVENT_OTA_UPDATE, jsonObject);
 
     // Allocate memory for the URL on the heap
     String *urlPtr = new String(downloadURL);
@@ -232,6 +243,9 @@ esp_err_t DownloadFirmwareService::downloadUpdate(PsychicRequest *request, JsonV
     {
         delete urlPtr; // Clean up if task creation fails
         ESP_LOGE(SVK_TAG, "Couldn't create download OTA task");
+#ifdef SERIAL_INFO
+        Serial.println("Couldn't create download OTA task");
+#endif
         return request->reply(500);
     }
     return request->reply(200);
