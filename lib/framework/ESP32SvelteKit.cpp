@@ -34,7 +34,7 @@ ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEnd
                                                                                           _ntpStatus(server, &_securitySettingsService),
 #endif
 #if FT_ENABLED(FT_UPLOAD_FIRMWARE)
-                                                                                          _uploadFirmwareService(server, &_securitySettingsService),
+                                                                                          _uploadFirmwareService(server, &_securitySettingsService, &_socket),
 #endif
 #if FT_ENABLED(FT_DOWNLOAD_FIRMWARE)
                                                                                           _downloadFirmwareService(server, &_securitySettingsService, &_socket),

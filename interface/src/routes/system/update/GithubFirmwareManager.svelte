@@ -14,10 +14,11 @@
 	import Prerelease from '~icons/tabler/test-pipe';
 	import Error from '~icons/tabler/circle-x';
 	import { compareVersions } from 'compare-versions';
-	import GithubUpdateDialog from '$lib/components/GithubUpdateDialog.svelte';
+	import FirmwareUpdateDialog from '$lib/components/FirmwareUpdateDialog.svelte';
 	import { assets } from '$app/paths';
 	import InfoDialog from '$lib/components/InfoDialog.svelte';
 	import Check from '~icons/tabler/check';
+	import { telemetry } from '$lib/stores/telemetry';
 
 	async function getGithubAPI() {
 		try {
@@ -84,9 +85,11 @@
 				confirm: { label: 'Update', icon: CloudDown }
 			},
 			onConfirm: () => {
+				// Reset OTA status before starting new download
+				telemetry.setOTAStatus({ status: 'none', progress: 0, error: '' });
 				postGithubDownload(url);
-				modals.open(GithubUpdateDialog as unknown as ModalComponent<any>, {
-					onConfirm: () => modals.closeAll()
+				modals.open(FirmwareUpdateDialog as unknown as ModalComponent<any>, {
+					title: 'Downloading Firmware'
 				});
 			}
 		});
