@@ -15,6 +15,7 @@
 
 #include <UploadFirmwareService.h>
 #include <esp_ota_ops.h>
+#include <esp_partition.h>
 #include <esp_app_format.h>
 #include <strings.h>
 #include <ArduinoJson.h>
@@ -32,9 +33,15 @@ UploadFirmwareService::UploadFirmwareService(PsychicHttpServer *server,
 
 void UploadFirmwareService::begin()
 {
-    _socket->registerEvent(EVENT_OTA_UPDATE);
+    if (!_socket->isEventValid(EVENT_OTA_UPDATE))
+    {
+        _socket->registerEvent(EVENT_OTA_UPDATE);
+    }
     
-    _server->maxUploadSize = MAX_FIRMWARE_SIZE;
+    // Set PsychicHttp's limit to max to avoid connection reset on oversized files
+    // We'll validate the size ourselves in handleUpload() to provide proper error handling
+    _server->maxUploadSize = SIZE_MAX;
+    _maxFirmwareSize = getMaxFirmwareSize();
 
     // Setup progress callback for Update library
     Update.onProgress([this](size_t progress, size_t total) {
@@ -65,6 +72,19 @@ void UploadFirmwareService::begin()
     _server->on(UPLOAD_FIRMWARE_PATH, HTTP_POST, uploadHandler);
 
     ESP_LOGV(SVK_TAG, "Registered POST endpoint: %s", UPLOAD_FIRMWARE_PATH);
+}
+
+size_t UploadFirmwareService::getMaxFirmwareSize()
+{
+    const esp_partition_t* update_partition = esp_ota_get_next_update_partition(NULL);
+    if (update_partition != NULL) {
+        ESP_LOGI(SVK_TAG, "Max firmware size: %d bytes (from OTA partition)", update_partition->size);
+        return update_partition->size;
+    }
+    
+    // Fallback if partition query fails (should never happen)
+    ESP_LOGW(SVK_TAG, "Could not determine OTA partition size, using fallback of 2MB");
+    return 2097152; // 2 MB fallback
 }
 
 bool UploadFirmwareService::validateChipType(uint8_t *data, size_t len)
@@ -123,7 +143,7 @@ esp_err_t UploadFirmwareService::handleUpload(PsychicRequest *request,
         {
             _fileType = ft_md5;
           
-            if (len == MD5_LENGTH)
+            if (len == MD5_LENGTH)  // This implicitely checks that fsize is also 32
             {
                 // Safe: _md5[MD5_LENGTH + 1] has space for 32 bytes + null terminator
                 memcpy(_md5, data, MD5_LENGTH);
@@ -140,6 +160,17 @@ esp_err_t UploadFirmwareService::handleUpload(PsychicRequest *request,
         else if (strcasecmp(extension.c_str(), "bin") == 0) // Are we processing a firmware binary?
         {
             _fileType = ft_firmware;
+            
+            // Validate file size before processing
+            if (fsize > _maxFirmwareSize)
+            {
+                char errorMsg[64];
+                snprintf(errorMsg, sizeof(errorMsg), 
+                        "Firmware too large: %.2f MB (max: %.2f MB)", 
+                        fsize / 1024.0 / 1024.0,
+                        _maxFirmwareSize / 1024.0 / 1024.0);
+                return handleError(request, 413, errorMsg);
+            }
             
             ESP_LOGI(SVK_TAG, "Starting firmware upload: %s (%d bytes)", filename.c_str(), fsize);
 #ifdef SERIAL_INFO

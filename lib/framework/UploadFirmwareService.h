@@ -30,7 +30,6 @@
 #define UPLOAD_FIRMWARE_PATH "/rest/uploadFirmware"
 
 // Firmware upload constants
-constexpr size_t MAX_FIRMWARE_SIZE = 2300000;  // 2.3 MB
 constexpr size_t MD5_LENGTH = 32;              // MD5 hash length
 constexpr uint8_t ESP_MAGIC_BYTE = 0xE9;       // ESP binary magic byte
 
@@ -86,6 +85,13 @@ private:
     char _md5[MD5_LENGTH + 1];
     FileType _fileType = ft_none;
     int _previousProgress = 0;
+    size_t _maxFirmwareSize = 0;
+
+    /**
+     * @brief Get maximum firmware size from OTA partition
+     * @return Size of OTA partition in bytes, or 2MB fallback if not available
+     */
+    size_t getMaxFirmwareSize();
 
     /**
      * @brief Validate firmware chip type matches target device

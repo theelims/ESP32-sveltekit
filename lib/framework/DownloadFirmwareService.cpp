@@ -195,7 +195,10 @@ void DownloadFirmwareService::begin()
 {
     ::_socket = _socket;
 
-    _socket->registerEvent(EVENT_OTA_UPDATE);
+    if (!_socket->isEventValid(EVENT_OTA_UPDATE))
+    {
+        _socket->registerEvent(EVENT_OTA_UPDATE);
+    }
 
     _server->on(GITHUB_FIRMWARE_PATH,
                 HTTP_POST,

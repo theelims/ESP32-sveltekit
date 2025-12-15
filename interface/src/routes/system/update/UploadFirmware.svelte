@@ -133,7 +133,8 @@
 			});
 			
 			if (!response.ok) {
-				// Backend emits error details via WebSocket EVENT_OTA_UPDATE
+				// All upload errors (including file size) are handled via WebSocket EVENT_OTA_UPDATE
+				// The backend's handleError() method emits detailed error information
 				// which updates telemetry and displays in FirmwareUpdateDialog
 				console.error(`Firmware upload failed with HTTP ${response.status}`);
 				return;
@@ -147,7 +148,7 @@
 				telemetry.setOTAStatus({ 
 					status: 'error', 
 					progress: 0, 
-					error: 'Network error during firmware upload' 
+					error: 'Network error during firmware upload'
 				});
 			}
 		}
@@ -172,22 +173,8 @@
 			// Upload MD5 file directly without confirmation
 			uploadMD5();
 		} else if (fileExtension === '.bin') {
-			// Check file size before upload (2.3 MB = 2,300,000 bytes)
-			const MAX_FIRMWARE_SIZE = 2300000;
-			if (fileSize > MAX_FIRMWARE_SIZE) {
-				const sizeMB = (fileSize / 1024 / 1024).toFixed(2);
-				const maxSizeMB = (MAX_FIRMWARE_SIZE / 1024 / 1024).toFixed(2);
-				fileValidationError = `Firmware file too large: ${sizeMB} MB (maximum: ${maxSizeMB} MB)`;
-				
-				// Clear the invalid file selection
-				if (fileInput) {
-					fileInput.value = '';
-					files = undefined;
-				}
-				return;
-			}
-			
 			// Show confirmation dialog for BIN files
+			// File size validation is handled by backend
 			confirmBinUpload();
 		} else {
 			// Invalid file type
