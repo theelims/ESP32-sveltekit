@@ -42,7 +42,7 @@ LightStateService::LightStateService(PsychicHttpServer *server,
     addUpdateHandler([&](const String &originId)
                      { onConfigUpdated(); },
                      false);
-    // update the shock topic when the broker settings change
+    // update the light topic when the broker settings change
     _lightMqttSettingsService->addUpdateHandler([&](const String &originId)
                                                 { configureMqttTopics(); },
                                                 false);
@@ -107,7 +107,7 @@ void LightStateService::configureMqttTopics()
     String controlTopicSub;
     _lightMqttSettingsService->read([&](LightMqttSettings &settings)
                                     {
-                                        controlTopicPub = settings.mqttSetPath;
-                                        controlTopicSub = settings.mqttStatusPath; });
+                                        controlTopicSub = settings.mqttSetPath;
+                                        controlTopicPub = settings.mqttStatusPath; });
     _mqttEndpoint.configureTopics(controlTopicPub.c_str(), controlTopicSub.c_str());
 }
