@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { modals } from 'svelte-modals';
+	import type { ModalComponent } from 'svelte-modals';
 	import { user } from '$lib/stores/user';
 	import { notifications } from '$lib/components/toasts/notifications';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
 	import Firmware from '~icons/tabler/refresh-alert';
 	import Cancel from '~icons/tabler/x';
 	import CloudDown from '~icons/tabler/cloud-download';
-	import GithubUpdateDialog from '$lib/components/GithubUpdateDialog.svelte';
+	import FirmwareUpdateDialog from '$lib/components/FirmwareUpdateDialog.svelte';
 	import { compareVersions } from 'compare-versions';
 	import { onMount } from 'svelte';
 
@@ -87,7 +88,7 @@
 	});
 
 	function confirmGithubUpdate(url: string) {
-		modals.open(ConfirmDialog, {
+		modals.open(ConfirmDialog as unknown as ModalComponent<any>, {
 			title: 'Confirm flashing new firmware to the device',
 			message: 'Are you sure you want to overwrite the existing firmware with a new one?',
 			labels: {
@@ -96,8 +97,8 @@
 			},
 			onConfirm: () => {
 				postGithubDownload(url);
-				modals.open(GithubUpdateDialog, {
-					onConfirm: () => modals.closeAll()
+				modals.open(FirmwareUpdateDialog, {
+					title: 'Downloading Firmware'
 				});
 			}
 		});
