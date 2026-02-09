@@ -8,16 +8,18 @@ All notable changes to this project will be documented in this file.
 
 - Add originID to StateUpdateResult update [#110](https://github.com/theelims/ESP32-sveltekit/pull/110)
 - Add originID to StateUpdateResult update [#110](https://github.com/theelims/ESP32-sveltekit/pull/110)
-- Ethernet Support [#107](https://github.com/theelims/ESP32-sveltekit/pull/107)
+- Ethernet Support [#113](https://github.com/theelims/ESP32-sveltekit/pull/113)
 
 ### Changed
 
 - Changed the width of the confirm dialog.
 - SvelteKit bundling as single files to reduce heap consumption.
+- Rework of firmware upload [#107](https://github.com/theelims/ESP32-sveltekit/pull/107)
 
 ### Fixes
 
-- [#109](https://github.com/theelims/ESP32-sveltekit/issues/109)
+- WiFi reconnection issues [#109](https://github.com/theelims/ESP32-sveltekit/issues/109)
+- Blurred toast notifications [#114](https://github.com/theelims/ESP32-sveltekit/issues/114)
 
 ## [0.6.0] - 2025-11-03
 
