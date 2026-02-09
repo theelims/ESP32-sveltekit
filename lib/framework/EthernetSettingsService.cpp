@@ -14,6 +14,8 @@
 
 #include <EthernetSettingsService.h>
 
+#if FT_ENABLED(FT_ETHERNET)
+
 EthernetSettingsService::EthernetSettingsService(PsychicHttpServer *server,
                                                  FS *fs,
                                                  SecurityManager *securityManager,
@@ -107,3 +109,5 @@ void EthernetSettingsService::updateEthernet()
     JsonObject jsonObject = doc.as<JsonObject>();
     _socket->emitEvent(EVENT_ETHERNET, jsonObject);
 }
+
+#endif // end FT_ENABLED(FT_ETHERNET)

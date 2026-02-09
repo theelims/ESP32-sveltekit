@@ -7,22 +7,24 @@
 	import warning from '~icons/tabler/alert-triangle';
 	import info from '~icons/tabler/info-circle';
 
-
 	/** @type {{theme?: any, icon?: any}} */
-	let { theme = {
-		error: 'alert-error',
-		success: 'alert-success',
-		warning: 'alert-warning',
-		info: 'alert-info'
-	}, icon = {
-		error: error,
-		success: success,
-		warning: warning,
-		info: info
-	} } = $props();
+	let {
+		theme = {
+			error: 'alert-error',
+			success: 'alert-success',
+			warning: 'alert-warning',
+			info: 'alert-info'
+		},
+		icon = {
+			error: error,
+			success: success,
+			warning: warning,
+			info: info
+		}
+	} = $props();
 </script>
 
-<div class="toast toast-end mr-4">
+<div class="toast toast-end z-[100] mr-4">
 	{#each $notifications as notification (notification.id)}
 		{@const SvelteComponent = icon[notification.type]}
 		<div

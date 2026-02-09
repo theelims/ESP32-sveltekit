@@ -7,6 +7,7 @@
  *
  *   Copyright (C) 2018 - 2023 rjwats
  *   Copyright (C) 2023 - 2025 theelims
+ *   Copyright (C) 2025 hmbacher
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -14,23 +15,54 @@
 
 #include <UploadFirmwareService.h>
 #include <esp_ota_ops.h>
+#include <esp_partition.h>
 #include <esp_app_format.h>
+#include <strings.h>
+#include <ArduinoJson.h>
 
 using namespace std::placeholders; // for `_1` etc
 
-static char md5[33] = "\0";
-
-static FileType fileType = ft_none;
-
 UploadFirmwareService::UploadFirmwareService(PsychicHttpServer *server,
-                                             SecurityManager *securityManager) : _server(server),
-                                                                                 _securityManager(securityManager)
+                                             SecurityManager *securityManager,
+                                             EventSocket *socket) : _server(server),
+                                                                    _securityManager(securityManager),
+                                                                    _socket(socket)
 {
+    _md5[0] = '\0';  // Initialize MD5 buffer
 }
 
 void UploadFirmwareService::begin()
 {
-    _server->maxUploadSize = 2300000; // 2.3 MB
+    if (!_socket->isEventValid(EVENT_OTA_UPDATE))
+    {
+        _socket->registerEvent(EVENT_OTA_UPDATE);
+    }
+    
+    // Set PsychicHttp's limit to max to avoid connection reset on oversized files
+    // We'll validate the size ourselves in handleUpload() to provide proper error handling
+    _server->maxUploadSize = SIZE_MAX;
+    _maxFirmwareSize = getMaxFirmwareSize();
+
+    // Setup progress callback for Update library
+    Update.onProgress([this](size_t progress, size_t total) {
+        if (_socket && total > 0) {
+            int percentComplete = (progress * 100) / total;
+            if (percentComplete > _previousProgress || progress == total) {
+                JsonDocument doc;
+                doc["status"] = "progress";
+                doc["progress"] = percentComplete;
+                doc["bytes_written"] = progress;
+                doc["total_bytes"] = total;
+                
+                JsonObject jsonObject = doc.as<JsonObject>();
+                _socket->emitEvent(EVENT_OTA_UPDATE, jsonObject);
+                
+                ESP_LOGV(SVK_TAG, "Firmware upload process at %d of %d bytes... (%d %%)", progress, total, percentComplete);
+                
+                _previousProgress = percentComplete;
+            }
+        }
+    });
 
     PsychicUploadHandler *uploadHandler = new PsychicUploadHandler();
 
@@ -40,6 +72,41 @@ void UploadFirmwareService::begin()
     _server->on(UPLOAD_FIRMWARE_PATH, HTTP_POST, uploadHandler);
 
     ESP_LOGV(SVK_TAG, "Registered POST endpoint: %s", UPLOAD_FIRMWARE_PATH);
+}
+
+size_t UploadFirmwareService::getMaxFirmwareSize()
+{
+    const esp_partition_t* update_partition = esp_ota_get_next_update_partition(NULL);
+    if (update_partition != NULL) {
+        ESP_LOGI(SVK_TAG, "Max firmware size: %d bytes (from OTA partition)", update_partition->size);
+        return update_partition->size;
+    }
+    
+    // Fallback if partition query fails (should never happen)
+    ESP_LOGW(SVK_TAG, "Could not determine OTA partition size, using fallback of 2MB");
+    return 2097152; // 2 MB fallback
+}
+
+bool UploadFirmwareService::validateChipType(uint8_t *data, size_t len)
+{
+    if (len <= 12)
+    {
+        return false; // Not enough data to validate - firmware is invalid
+    }
+    
+    // Check magic byte at offset 0
+    if (data[0] != ESP_MAGIC_BYTE)
+    {
+        return false;
+    }
+    
+    // Check chip ID at offset 12
+    if (data[12] != ESP_CHIP_ID)
+    {
+        return false;
+    }
+    
+    return true;
 }
 
 esp_err_t UploadFirmwareService::handleUpload(PsychicRequest *request,
@@ -53,91 +120,133 @@ esp_err_t UploadFirmwareService::handleUpload(PsychicRequest *request,
     Authentication authentication = _securityManager->authenticateRequest(request);
     if (!AuthenticationPredicates::IS_ADMIN(authentication))
     {
-        return handleError(request, 403); // forbidden
+        return handleError(request, 403, "Insufficient permissions to upload firmware");
     }
 
-    // at init
-    if (!index)
+    if (index == 0) // Are we at the start of a new upload?
     {
-        // check details of the file, to see if its a valid bin or json file
+        // check details of the file, to see if its a valid bin or md5 file
         std::string fname(filename.c_str());
         auto position = fname.find_last_of(".");
+        
+        // Check if extension exists to avoid undefined behavior
+        if (position == std::string::npos)
+        {
+            return handleError(request, 406, "File has no extension");
+        }
+        
         std::string extension = fname.substr(position + 1);
         size_t fsize = request->contentLength();
 
-        fileType = ft_none;
-        if ((extension == "bin") && (fsize > 1000000))
+        _fileType = ft_none;
+        if (strcasecmp(extension.c_str(), "md5") == 0)  // Are we processing an MD5 file?
         {
-            fileType = ft_firmware;
-        }
-        else if (extension == "md5")
-        {
-            fileType = ft_md5;
-            if (len == 32)
+            _fileType = ft_md5;
+          
+            if (len == MD5_LENGTH)  // This implicitely checks that fsize is also 32
             {
-                memcpy(md5, data, 32);
-                md5[32] = '\0';
-            }
-            return ESP_OK;
-        }
-        else
-        {
-            md5[0] = '\0';
-            return handleError(request, 406); // Not Acceptable - unsupported file type
-        }
+                // Safe: _md5[MD5_LENGTH + 1] has space for 32 bytes + null terminator
+                memcpy(_md5, data, MD5_LENGTH);
+                _md5[MD5_LENGTH] = '\0';
 
-        if (fileType == ft_firmware)
+                return ESP_OK;  // Finished processing MD5 file
+            }
+            else
+            {
+                _md5[0] = '\0';  // Clear any previously stored MD5 on invalid upload
+                return handleError(request, 422, "MD5 must be exactly 32 bytes");
+            }
+        }
+        else if (strcasecmp(extension.c_str(), "bin") == 0) // Are we processing a firmware binary?
         {
-            // Check firmware header, 0xE9 magic offset 0 indicates esp bin, chip offset 12: esp32:0, S2:2, C3:5
-#if CONFIG_IDF_TARGET_ESP32 // ESP32/PICO-D4
-            if (len > 12 && (data[0] != 0xE9 || data[12] != 0))
+            _fileType = ft_firmware;
+            
+            // Validate file size before processing
+            if (fsize > _maxFirmwareSize)
             {
-                return handleError(request, 503); // service unavailable
+                char errorMsg[64];
+                snprintf(errorMsg, sizeof(errorMsg), 
+                        "Firmware too large: %.2f MB (max: %.2f MB)", 
+                        fsize / 1024.0 / 1024.0,
+                        _maxFirmwareSize / 1024.0 / 1024.0);
+                return handleError(request, 413, errorMsg);
             }
-#elif CONFIG_IDF_TARGET_ESP32S2
-            if (len > 12 && (data[0] != 0xE9 || data[12] != 2))
-            {
-                return handleError(request, 503); // service unavailable
-            }
-#elif CONFIG_IDF_TARGET_ESP32C3
-            if (len > 12 && (data[0] != 0xE9 || data[12] != 5))
-            {
-                return handleError(request, 503); // service unavailable
-            }
-#elif CONFIG_IDF_TARGET_ESP32S3
-            if (len > 12 && (data[0] != 0xE9 || data[12] != 9))
-            {
-                return handleError(request, 503); // service unavailable
-            }
+            
+            ESP_LOGI(SVK_TAG, "Starting firmware upload: %s (%d bytes)", filename.c_str(), fsize);
+#ifdef SERIAL_INFO
+            Serial.printf("Starting firmware upload: %s (%d bytes)\n", filename.c_str(), fsize);
 #endif
-            // it's firmware - initialize the ArduinoOTA updater
+            
+            // Validate firmware header (magic byte and chip type)
+            if (!validateChipType(data, len))
+            {
+                return handleError(request, 503, "Wrong firmware for this device");
+            }
+            
             if (Update.begin(fsize - sizeof(esp_image_header_t)))
             {
-                if (strlen(md5) == 32)
+                // Emit preparing status after validation succeeds
+                if (_socket)
                 {
-                    Update.setMD5(md5);
-                    md5[0] = '\0';
+                    JsonDocument doc;
+                    doc["status"] = "preparing";
+                    doc["progress"] = 0;
+                    JsonObject jsonObject = doc.as<JsonObject>();
+                    _socket->emitEvent(EVENT_OTA_UPDATE, jsonObject);
+                }
+                
+                if (strlen(_md5) == MD5_LENGTH)
+                {
+                    Update.setMD5(_md5);
+                    ESP_LOGI(SVK_TAG, "MD5 hash for validation: %s", _md5);
+#ifdef SERIAL_INFO
+                    Serial.printf("MD5 hash for validation: %s\n", _md5);
+#endif
+                    _md5[0] = '\0';  // clear md5 after setting it in Arduino Updater
                 }
             }
             else
             {
-                return handleError(request, 507); // failed to begin, send an error response Insufficient Storage
+                return handleError(request, 507, "Insufficient storage space");
             }
+        }
+        else // Are we processing an unsupported file type?
+        {
+            return handleError(request, 406, "File not a firmware binary or MD5 hash");
+        }
+    }
+    else // we are continuing an existing upload
+    {
+        // Resumable upload: verify that Update was already started
+        if (_fileType == ft_none || !Update.isRunning())
+        {
+            return handleError(request, 400, "Upload not initialized");
         }
     }
 
-    // if we haven't delt with an error, continue with the firmware update
+    // if we haven't dealt with an error so far, continue with the firmware update
     if (!request->_tempObject)
     {
-        if (Update.write(data, len) != len)
+        if (_fileType == ft_firmware)
         {
-            handleError(request, 500);
-        }
-        if (final)
-        {
-            if (!Update.end(true))
+            if (Update.write(data, len) != len)
             {
-                handleError(request, 500);
+                Update.abort();
+                return handleError(request, 500, "Firmware write failed");
+            }
+            if (final)
+            {
+                if (!Update.end(true))
+                {
+                    // Get specific error message from Update library (includes MD5 mismatch)
+                    String errorMsg = "Firmware update failed";
+                    if (Update.hasError())
+                    {
+                        errorMsg = Update.errorString();
+                    }
+                    Update.abort();
+                    return handleError(request, 500, errorMsg.c_str());
+                }
             }
         }
     }
@@ -147,22 +256,47 @@ esp_err_t UploadFirmwareService::handleUpload(PsychicRequest *request,
 
 esp_err_t UploadFirmwareService::uploadComplete(PsychicRequest *request)
 {
-    // if we completed uploading a md5 file create a JSON response
-    if (fileType == ft_md5)
+    // if we already handled an error in handleUpload, do nothing
+    if (request->_tempObject)
     {
-        if (strlen(md5) == 32)
+        return ESP_OK;
+    }
+    
+    // if we completed uploading a md5 file create a JSON response
+    if (_fileType == ft_md5)
+    {
+        if (strlen(_md5) == MD5_LENGTH)
         {
             PsychicJsonResponse response = PsychicJsonResponse(request, false);
             JsonObject root = response.getRoot();
-            root["md5"] = md5;
+            root["md5"] = _md5;
             return response.send();
         }
         return ESP_OK;
     }
 
     // if no error, send the success response
-    if (!request->_tempObject)
+    if (_fileType == ft_firmware)
     {
+        // Emit finished event
+        if (_socket)
+        {
+            JsonDocument doc;
+            doc["status"] = "finished";
+            doc["progress"] = 100;
+            JsonObject jsonObject = doc.as<JsonObject>();
+            _socket->emitEvent(EVENT_OTA_UPDATE, jsonObject);
+            vTaskDelay(100 / portTICK_PERIOD_MS); // Give time for event to be sent
+        }
+        
+        ESP_LOGI(SVK_TAG, "Firmware upload successful - Restarting");
+#ifdef SERIAL_INFO
+        Serial.println("Firmware upload successful - Restarting");
+#endif
+        
+        // Reset progress tracker for next upload
+        _previousProgress = 0;
+        
         request->reply(200);
         RestartService::restartNow();
         return ESP_OK;
@@ -171,15 +305,30 @@ esp_err_t UploadFirmwareService::uploadComplete(PsychicRequest *request)
     // if updated has an error send 500 response and log on Serial
     if (Update.hasError())
     {
+        // Get specific error message from Update library
+        String errorMsg = Update.errorString();
+        if (errorMsg.length() == 0)
+        {
+            errorMsg = "Unknown update error";
+        }
+        
+        // Reset progress tracker
+        _previousProgress = 0;
+        
+        ESP_LOGE(SVK_TAG, "Update error: %s", errorMsg.c_str());
+#ifdef SERIAL_INFO
         Update.printError(Serial);
+#endif
         Update.abort();
-        handleError(request, 500);
+        
+        // handleError will emit the WebSocket event and send HTTP response
+        return handleError(request, 500, errorMsg.c_str());
     }
 
     return ESP_OK;
 }
 
-esp_err_t UploadFirmwareService::handleError(PsychicRequest *request, int code)
+esp_err_t UploadFirmwareService::handleError(PsychicRequest *request, int code, const char *message)
 {
     // if we have had an error already, do nothing
     if (request->_tempObject)
@@ -187,8 +336,43 @@ esp_err_t UploadFirmwareService::handleError(PsychicRequest *request, int code)
         return ESP_OK;
     }
 
-    // send the error code to the client and record the error code in the temp object
-    request->_tempObject = new int(code);
+    // Emit WebSocket error event for BIN files (skip for MD5 files)
+    if (_fileType == ft_firmware && _socket && message)
+    {
+        JsonDocument doc;
+        doc["status"] = "error";
+        doc["error"] = message;
+        JsonObject jsonObject = doc.as<JsonObject>();
+        _socket->emitEvent(EVENT_OTA_UPDATE, jsonObject);
+    }
+    
+    // Log error
+    if (message)
+    {
+        ESP_LOGE(SVK_TAG, "Firmware upload failed (%d): %s", code, message);
+#ifdef SERIAL_INFO
+        Serial.printf("Firmware upload failed (%d): %s\n", code, message);
+#endif
+    }
+    else
+    {
+        ESP_LOGE(SVK_TAG, "Firmware upload failed with error code: %d", code);
+#ifdef SERIAL_INFO
+        Serial.printf("Firmware upload failed with error code: %d\n", code);
+#endif
+    }
+
+    // Reset state to allow new upload attempts
+    _fileType = ft_none;
+    _previousProgress = 0;
+    
+    // Abort any ongoing Update to clear error state
+    Update.abort();
+    
+    // Mark this request as having encountered an error using _tempObject as a flag
+    // (The pointer value itself is not used, only checked for NULL vs non-NULL)
+    // The allocated memory is freed on request destruction (see PsychicRequest::~PsychicRequest())
+    request->_tempObject = malloc(sizeof(int));
     return request->reply(code);
 }
 
@@ -197,7 +381,10 @@ esp_err_t UploadFirmwareService::handleEarlyDisconnect()
     // if updated has not ended on connection close, abort it
     if (!Update.end(true))
     {
+        ESP_LOGE(SVK_TAG, "Update error on early disconnect:");
+#ifdef SERIAL_INFO
         Update.printError(Serial);
+#endif
         Update.abort();
         return ESP_OK;
     }
