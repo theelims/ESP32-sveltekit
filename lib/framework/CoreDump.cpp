@@ -49,8 +49,8 @@ esp_err_t CoreDump::coreDump(PsychicRequest *request)
     }
     size_t const chunk_len = 3 * 16; // must be multiple of 3
     size_t const b64_len = chunk_len / 3 * 4 + 4;
-    uint8_t *const chunk = (uint8_t *)malloc(chunk_len);
-    char *const b64 = (char *)malloc(b64_len);
+    uint8_t* const chunk = (uint8_t*)heap_caps_malloc_prefer(chunk_len, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_INTERNAL);
+    char* const b64 = (char*)heap_caps_malloc_prefer(b64_len, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_INTERNAL);
     assert(chunk && b64);
 
     /*if (write_cfg->start) {
@@ -79,8 +79,8 @@ esp_err_t CoreDump::coreDump(PsychicRequest *request)
             break;
         }
     }
-    free(chunk);
-    free(b64);
+    heap_caps_free(chunk);
+    heap_caps_free(b64);
 
     err = response.finishChunking();
 

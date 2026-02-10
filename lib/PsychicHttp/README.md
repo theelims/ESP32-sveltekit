@@ -641,16 +641,16 @@ This example highlights its most basic usage.
 bool templateHandler(Print &output, const char *param){
 
   if(strcmp(param, "FREE_HEAP") == 0){
-    output.print((double)ESP.getFreeHeap() / 1024.0, 2);
+    output.print((double)heap_caps_get_free_size(MALLOC_CAP_INTERNAL) / 1024.0, 2);
 
   }else if(strcmp(param, "MIN_FREE_HEAP") == 0){
-    output.print((double)ESP.getMinFreeHeap() / 1024.0, 2);
+    output.print((double)heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL) / 1024.0, 2);
 
   }else if(strcmp(param, "MAX_ALLOC_HEAP") == 0){
-    output.print((double)ESP.getMaxAllocHeap() / 1024.0, 2);
+    output.print((double)heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL) / 1024.0, 2);
     
   }else if(strcmp(param, "HEAP_SIZE") == 0){
-    output.print((double)ESP.getHeapSize() / 1024.0, 2);
+    output.print((double)heap_caps_get_total_size(MALLOC_CAP_INTERNAL) / 1024.0, 2);
   }else{
     return false;
   }

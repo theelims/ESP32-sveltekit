@@ -16,8 +16,8 @@ PsychicResponse::~PsychicResponse()
   //clean up our header variables.  we have to do this on desctruct since httpd_resp_send doesn't store copies
   for (HTTPHeader header : _headers)
   {
-    free(header.field);
-    free(header.value);
+    heap_caps_free(header.field);
+    heap_caps_free(header.value);
   }
   _headers.clear();
 }
@@ -26,8 +26,8 @@ void PsychicResponse::addHeader(const char *field, const char *value)
 {
   //these get freed after send by the destructor
   HTTPHeader header;
-  header.field =(char *)malloc(strlen(field)+1);
-  header.value = (char *)malloc(strlen(value)+1);
+  header.field = (char*)heap_caps_malloc_prefer(strlen(field) + 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_INTERNAL);
+  header.value = (char*)heap_caps_malloc_prefer(strlen(value) + 1, 2, MALLOC_CAP_SPIRAM, MALLOC_CAP_INTERNAL);
 
   strlcpy(header.field, field, strlen(field)+1);
   strlcpy(header.value, value, strlen(value)+1);
@@ -131,8 +131,8 @@ void PsychicResponse::sendHeaders()
   // clean up our header variables after send
   // for (HTTPHeader header : _headers)
   // {
-  //   free(header.field);
-  //   free(header.value);
+  //   heap_caps_free(header.field);
+  //   heap_caps_free(header.value);
   // }
   // _headers.clear();
 }
