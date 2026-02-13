@@ -39,6 +39,7 @@
 #include <SleepService.h>
 #include <SystemStatus.h>
 #include <CoreDump.h>
+#include <HealthCheckService.h>
 #include <WiFiScanner.h>
 #include <WiFiSettingsService.h>
 #include <WiFiStatus.h>
@@ -183,6 +184,11 @@ public:
         return &_restartService;
     }
 
+    HealthCheckService *getHealthCheckService()
+    {
+        return &_healthCheckService;
+    }
+
     void factoryReset()
     {
         _factoryResetService.factoryReset();
@@ -251,6 +257,7 @@ private:
 #endif
     RestartService _restartService;
     FactoryResetService _factoryResetService;
+    HealthCheckService _healthCheckService;
     SystemStatus _systemStatus;
 
     String _appName = APP_NAME;
