@@ -14,9 +14,8 @@
 
 #include <ESP32SvelteKit.h>
 
-ESP32SvelteKit::ESP32SvelteKit(PsychicHttpServer *server, unsigned int numberEndpoints) : _server(server),
-                                                                                          _numberEndpoints(numberEndpoints),
-                                                                                          _featureService(server, &_socket),
+ESP32SvelteKit::ESP32SvelteKit(AsyncWebServer *server) : _server(server),
+                                                         _featureService(server, &_socket),
                                                                                           _securitySettingsService(server, &ESPFS),
                                                                                           _wifiSettingsService(server, &ESPFS, &_securitySettingsService, &_socket),
                                                                                           _wifiScanner(server, &_securitySettingsService),
@@ -75,36 +74,31 @@ void ESP32SvelteKit::begin()
 
     _wifiSettingsService.initWiFi();
 
-    // SvelteKit uses a lot of handlers, so we need to increase the max_uri_handlers
-    // WWWData has 77 Endpoints, Framework has 27, and Lighstate Demo has 4
-    _server->config.max_uri_handlers = _numberEndpoints;
-    _server->listen(80);
-
 #ifdef EMBED_WWW
     // Serve static resources from PROGMEM
     ESP_LOGV(SVK_TAG, "Registering routes from PROGMEM static resources");
     WWWData::registerRoutes(
         [&](const String &uri, const String &contentType, const uint8_t *content, size_t len)
         {
-            PsychicHttpRequestCallback requestHandler = [contentType, content, len](PsychicRequest *request)
-            {
-                PsychicResponse response(request);
-                response.setCode(200);
-                response.setContentType(contentType.c_str());
-                response.addHeader("Content-Encoding", "gzip");
-                response.addHeader("Cache-Control", "public, immutable, max-age=31536000");
-                response.setContent(content, len);
-                return response.send();
-            };
-            PsychicWebHandler *handler = new PsychicWebHandler();
-            handler->onRequest(requestHandler);
-            _server->on(uri.c_str(), HTTP_GET, handler);
+            _server->on(uri.c_str(), HTTP_GET, [contentType, content, len](AsyncWebServerRequest *request)
+                        {
+                AsyncWebServerResponse *response = request->beginResponse(200, contentType, content, len);
+                response->addHeader("Content-Encoding", "gzip");
+                response->addHeader("Cache-Control", "public, immutable, max-age=31536000");
+                request->send(response); });
 
-            // Set default end-point for all non matching requests
-            // this is easier than using webServer.onNotFound()
             if (uri.equals("/index.html"))
             {
-                _server->defaultEndpoint->setHandler(handler);
+                _server->onNotFound([content, len](AsyncWebServerRequest *request)
+                                    {
+                    if (request->method() == HTTP_GET) {
+                        AsyncWebServerResponse *response = request->beginResponse(200, "text/html", content, len);
+                        response->addHeader("Content-Encoding", "gzip");
+                        response->addHeader("Cache-Control", "public, immutable, max-age=31536000");
+                        request->send(response);
+                    } else {
+                        request->send(404);
+                    } });
             }
         });
 #else
@@ -112,14 +106,12 @@ void ESP32SvelteKit::begin()
     ESP_LOGV(SVK_TAG, "Registering routes from FS /www/ static resources");
     _server->serveStatic("/_app/", ESPFS, "/www/_app/");
     _server->serveStatic("/favicon.png", ESPFS, "/www/favicon.png");
-    //  Serving all other get requests with "/www/index.htm"
-    _server->onNotFound([](PsychicRequest *request)
+    _server->onNotFound([](AsyncWebServerRequest *request)
                         {
         if (request->method() == HTTP_GET) {
-            PsychicFileResponse response(request, ESPFS, "/www/index.html", "text/html");
-            return response.send();
-            // String url = "http://" + request->host() + "/index.html";
-            // request->redirect(url.c_str());
+            request->send(ESPFS, "/www/index.html", "text/html");
+        } else {
+            request->send(404);
         } });
 #endif
 
@@ -195,10 +187,7 @@ void ESP32SvelteKit::begin()
     _sleepService.begin();
     _sleepService.attachOnSleepCallback([&]()
                                         {   ESP_LOGI(SVK_TAG, "Attempting to stop server");
-                                            for (auto client : _server->getClientList())
-                                            {
-                                                client->close();
-                                            }
+                                            _server->end();
                                             vTaskDelete(_loopTaskHandle);
                                             ESP_LOGI(SVK_TAG, "Server stopped"); });
 #if FT_ENABLED(FT_MQTT)
@@ -214,6 +203,8 @@ void ESP32SvelteKit::begin()
 #if FT_ENABLED(FT_ANALYTICS)
     _analyticsService.begin();
 #endif
+
+    _server->begin();
 
     // Start the loop task
     ESP_LOGV(SVK_TAG, "Starting loop task");

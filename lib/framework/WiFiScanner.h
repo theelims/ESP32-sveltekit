@@ -18,7 +18,8 @@
 #include <WiFi.h>
 
 #include <ArduinoJson.h>
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncJson.h>
 #include <SecurityManager.h>
 
 #define SCAN_NETWORKS_SERVICE_PATH "/rest/scanNetworks"
@@ -27,16 +28,16 @@
 class WiFiScanner
 {
 public:
-    WiFiScanner(PsychicHttpServer *server, SecurityManager *securityManager);
+    WiFiScanner(AsyncWebServer *server, SecurityManager *securityManager);
 
     void begin();
 
 private:
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     SecurityManager *_securityManager;
 
-    esp_err_t scanNetworks(PsychicRequest *request);
-    esp_err_t listNetworks(PsychicRequest *request);
+    void scanNetworks(AsyncWebServerRequest *request);
+    void listNetworks(AsyncWebServerRequest *request);
 };
 
 #endif // end WiFiScanner_h

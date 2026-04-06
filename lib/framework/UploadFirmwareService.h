@@ -21,7 +21,8 @@
 #include <Update.h>
 #include <WiFi.h>
 
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncJson.h>
 #include <SecurityManager.h>
 #include <RestartService.h>
 #include <EventSocket.h>
@@ -62,83 +63,33 @@ enum FileType
 class UploadFirmwareService
 {
 public:
-    /**
-     * @brief Construct firmware upload service
-     * @param server PsychicHttpServer instance for handling HTTP requests
-     * @param securityManager Security manager for authentication
-     * @param socket EventSocket for emitting real-time progress updates
-     */
-    UploadFirmwareService(PsychicHttpServer *server, SecurityManager *securityManager, EventSocket *socket);
+    UploadFirmwareService(AsyncWebServer *server, SecurityManager *securityManager, EventSocket *socket);
 
-    /**
-     * @brief Initialize the service and register HTTP endpoints
-     * Sets up upload handlers and progress callbacks
-     */
     void begin();
 
 private:
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     SecurityManager *_securityManager;
     EventSocket *_socket;
 
-    // Upload state (per-instance to support concurrent uploads)
     char _md5[MD5_LENGTH + 1];
     FileType _fileType = ft_none;
     int _previousProgress = 0;
     size_t _maxFirmwareSize = 0;
 
-    /**
-     * @brief Get maximum firmware size from OTA partition
-     * @return Size of OTA partition in bytes, or 2MB fallback if not available
-     */
     size_t getMaxFirmwareSize();
-
-    /**
-     * @brief Validate firmware chip type matches target device
-     * @param data First chunk of firmware data
-     * @param len Length of data chunk
-     * @return true if magic byte and chip ID are valid, false otherwise
-     */
     bool validateChipType(uint8_t *data, size_t len);
 
-    /**
-     * @brief Handle incoming firmware upload chunks. Called once per chunk.
-     * @param request HTTP request object
-     * @param filename Uploaded file name
-     * @param index Byte offset of this chunk (0 for first chunk)
-     * @param data Chunk data buffer
-     * @param len Chunk length in bytes
-     * @param final true if this is the last chunk
-     * @return ESP_OK on success, error code on failure
-     */
-    esp_err_t handleUpload(PsychicRequest *request,
-                           const String &filename,
-                           uint64_t index,
-                           uint8_t *data,
-                           size_t len,
-                           bool final);
-    
-    /**
-     * @brief Called after upload finished (i.e. all chunks received)
-     * @param request HTTP request object
-     * @return ESP_OK on success, error code on failure
-     */
-    esp_err_t uploadComplete(PsychicRequest *request);
-    
-    /**
-     * @brief Handle upload errors and emit error events
-     * @param request HTTP request object
-     * @param code HTTP status code to return
-     * @param message Optional error message (default: nullptr)
-     * @return ESP_OK (error already handled)
-     */
-    esp_err_t handleError(PsychicRequest *request, int code, const char *message = nullptr);
-    
-    /**
-     * @brief Handle client disconnection during upload
-     * @return ESP_OK on successful cleanup
-     */
-    esp_err_t handleEarlyDisconnect();
+    void handleUpload(AsyncWebServerRequest *request,
+                      const String &filename,
+                      size_t index,
+                      uint8_t *data,
+                      size_t len,
+                      bool final);
+
+    void uploadComplete(AsyncWebServerRequest *request);
+    void handleError(AsyncWebServerRequest *request, int code, const char *message = nullptr);
+    void handleEarlyDisconnect();
 };
 
 #endif // end UploadFirmwareService_h

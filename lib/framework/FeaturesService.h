@@ -19,7 +19,8 @@
 
 #include <WiFi.h>
 #include <ArduinoJson.h>
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncJson.h>
 #include <EventSocket.h>
 #include <vector>
 
@@ -35,14 +36,14 @@ typedef struct
 class FeaturesService
 {
 public:
-    FeaturesService(PsychicHttpServer *server, EventSocket *socket);
+    FeaturesService(AsyncWebServer *server, EventSocket *socket);
 
     void begin();
 
     void addFeature(String feature, bool enabled);
 
 private:
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     EventSocket *_socket;
     std::vector<UserFeature> userFeatures;
 

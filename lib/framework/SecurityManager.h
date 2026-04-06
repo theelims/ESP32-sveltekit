@@ -17,7 +17,7 @@
 
 #include <Features.h>
 #include <ArduinoJsonJWT.h>
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
 #include <list>
 
 #define SVK_TAG "🐼"
@@ -62,6 +62,10 @@ public:
 
 typedef std::function<boolean(Authentication &authentication)> AuthenticationPredicate;
 
+typedef std::function<void(AsyncWebServerRequest *request)> ArHttpRequestCallback;
+typedef std::function<void(AsyncWebServerRequest *request, JsonVariant &json)> ArJsonRequestCallback;
+typedef std::function<bool(AsyncWebServerRequest *request)> ArRequestFilterFunc;
+
 class AuthenticationPredicates
 {
 public:
@@ -98,22 +102,22 @@ public:
     /*
      * Check the request header for the Authorization token
      */
-    virtual Authentication authenticateRequest(PsychicRequest *request) = 0;
+    virtual Authentication authenticateRequest(AsyncWebServerRequest *request) = 0;
 
     /**
      * Filter a request with the provided predicate, only returning true if the predicate matches.
      */
-    virtual PsychicRequestFilterFunction filterRequest(AuthenticationPredicate predicate) = 0;
+    virtual ArRequestFilterFunc filterRequest(AuthenticationPredicate predicate) = 0;
 
     /**
      * Wrap the provided request to provide validation against an AuthenticationPredicate.
      */
-    virtual PsychicHttpRequestCallback wrapRequest(PsychicHttpRequestCallback onRequest, AuthenticationPredicate predicate) = 0;
+    virtual ArHttpRequestCallback wrapRequest(ArHttpRequestCallback onRequest, AuthenticationPredicate predicate) = 0;
 
     /**
      * Wrap the provided json request callback to provide validation against an AuthenticationPredicate.
      */
-    virtual PsychicJsonRequestCallback wrapCallback(PsychicJsonRequestCallback onRequest, AuthenticationPredicate predicate) = 0;
+    virtual ArJsonRequestCallback wrapCallback(ArJsonRequestCallback onRequest, AuthenticationPredicate predicate) = 0;
 };
 
 #endif // end SecurityManager_h

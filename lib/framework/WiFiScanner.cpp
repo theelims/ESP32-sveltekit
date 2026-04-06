@@ -14,7 +14,7 @@
 
 #include <WiFiScanner.h>
 
-WiFiScanner::WiFiScanner(PsychicHttpServer *server,
+WiFiScanner::WiFiScanner(AsyncWebServer *server,
                          SecurityManager *securityManager) : _server(server),
                                                              _securityManager(securityManager)
 {
@@ -37,23 +37,23 @@ void WiFiScanner::begin()
     ESP_LOGV(SVK_TAG, "Registered GET endpoint: %s", LIST_NETWORKS_SERVICE_PATH);
 }
 
-esp_err_t WiFiScanner::scanNetworks(PsychicRequest *request)
+void WiFiScanner::scanNetworks(AsyncWebServerRequest *request)
 {
     if (WiFi.scanComplete() != -1)
     {
         WiFi.scanDelete();
         WiFi.scanNetworks(true);
     }
-    return request->reply(202);
+    request->send(202);
 }
 
-esp_err_t WiFiScanner::listNetworks(PsychicRequest *request)
+void WiFiScanner::listNetworks(AsyncWebServerRequest *request)
 {
     int numNetworks = WiFi.scanComplete();
     if (numNetworks > -1)
     {
-        PsychicJsonResponse response = PsychicJsonResponse(request, false);
-        JsonObject root = response.getRoot();
+        AsyncJsonResponse *response = new AsyncJsonResponse();
+        JsonObject root = response->getRoot();
         JsonArray networks = root["networks"].to<JsonArray>();
         for (int i = 0; i < numNetworks; i++)
         {
@@ -65,14 +65,15 @@ esp_err_t WiFiScanner::listNetworks(PsychicRequest *request)
             network["encryption_type"] = (uint8_t)WiFi.encryptionType(i);
         }
 
-        return response.send();
+        response->setLength();
+        request->send(response);
     }
     else if (numNetworks == -1)
     {
-        return request->reply(202);
+        request->send(202);
     }
     else
     {
-        return scanNetworks(request);
+        scanNetworks(request);
     }
 }

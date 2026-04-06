@@ -13,39 +13,42 @@
  **/
 
 #include <AuthenticationService.h>
+#include <AsyncJson.h>
 
 #if FT_ENABLED(FT_SECURITY)
 
-AuthenticationService::AuthenticationService(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
-                                                                                                            _securityManager(securityManager)
+AuthenticationService::AuthenticationService(AsyncWebServer *server, SecurityManager *securityManager) : _server(server),
+                                                                                                         _securityManager(securityManager)
 {
 }
 
 void AuthenticationService::begin()
 {
-    // Signs in a user if the username and password match. Provides a JWT to be used in the Authorization header in subsequent requests
-    _server->on(SIGN_IN_PATH, HTTP_POST, [this](PsychicRequest *request, JsonVariant &json)
-                {
+    auto signInCallback = [this](AsyncWebServerRequest *request, JsonVariant &json)
+    {
         if (json.is<JsonObject>()) {
             String username = json["username"];
             String password = json["password"];
             Authentication authentication = _securityManager->authenticate(username, password);
             if (authentication.authenticated) {
-                PsychicJsonResponse response = PsychicJsonResponse(request, false);
-                JsonObject root = response.getRoot();
+                AsyncJsonResponse *response = new AsyncJsonResponse();
+                JsonObject root = response->getRoot();
                 root["access_token"] = _securityManager->generateJWT(authentication.user);
-                return response.send();
+                response->setLength();
+                request->send(response);
+                return;
             }
         }
-        return request->reply(401); });
+        request->send(401);
+    };
+    _server->on(SIGN_IN_PATH, HTTP_POST, _securityManager->wrapCallback(signInCallback, AuthenticationPredicates::NONE_REQUIRED));
 
     ESP_LOGV(SVK_TAG, "Registered POST endpoint: %s", SIGN_IN_PATH);
 
-    // Verifies that the request supplied a valid JWT
-    _server->on(VERIFY_AUTHORIZATION_PATH, HTTP_GET, [this](PsychicRequest *request)
+    _server->on(VERIFY_AUTHORIZATION_PATH, HTTP_GET, [this](AsyncWebServerRequest *request)
                 {
         Authentication authentication = _securityManager->authenticateRequest(request);
-        return request->reply(authentication.authenticated ? 200 : 401); });
+        request->send(authentication.authenticated ? 200 : 401); });
 
     ESP_LOGV(SVK_TAG, "Registered GET endpoint: %s", VERIFY_AUTHORIZATION_PATH);
 }

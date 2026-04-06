@@ -76,12 +76,12 @@ public:
 class NTPSettingsService : public StatefulService<NTPSettings>
 {
 public:
-    NTPSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager);
+    NTPSettingsService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager);
 
     void begin();
 
 private:
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     SecurityManager *_securityManager;
     HttpEndpoint<NTPSettings> _httpEndpoint;
     FSPersistence<NTPSettings> _fsPersistence;
@@ -89,7 +89,7 @@ private:
     void onNetworkGotIP(WiFiEvent_t event, WiFiEventInfo_t info);
     void onNetworkDisconnected(WiFiEvent_t event, WiFiEventInfo_t info);
     void configureNTP();
-    esp_err_t configureTime(PsychicRequest *request, JsonVariant &json);
+    void configureTime(AsyncWebServerRequest *request, JsonVariant &json);
 };
 
 #endif // end NTPSettingsService_h

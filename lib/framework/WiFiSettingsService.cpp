@@ -14,7 +14,7 @@
 
 #include <WiFiSettingsService.h>
 
-WiFiSettingsService::WiFiSettingsService(PsychicHttpServer *server,
+WiFiSettingsService::WiFiSettingsService(AsyncWebServer *server,
                                          FS *fs,
                                          SecurityManager *securityManager,
                                          EventSocket *socket) : _server(server),

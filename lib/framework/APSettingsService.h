@@ -146,7 +146,7 @@ public:
 class APSettingsService : public StatefulService<APSettings>
 {
 public:
-    APSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager);
+    APSettingsService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager);
 
     void begin();
     void loop();
@@ -154,7 +154,7 @@ public:
     void recoveryMode();
 
 private:
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     SecurityManager *_securityManager;
     HttpEndpoint<APSettings> _httpEndpoint;
     FSPersistence<APSettings> _fsPersistence;

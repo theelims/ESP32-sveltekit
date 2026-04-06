@@ -14,7 +14,7 @@
 
 #include <WiFiStatus.h>
 
-WiFiStatus::WiFiStatus(PsychicHttpServer *server,
+WiFiStatus::WiFiStatus(AsyncWebServer *server,
                        SecurityManager *securityManager) : _server(server),
                                                            _securityManager(securityManager)
 {
@@ -61,10 +61,10 @@ void WiFiStatus::onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
 #endif
 }
 
-esp_err_t WiFiStatus::wifiStatus(PsychicRequest *request)
+void WiFiStatus::wifiStatus(AsyncWebServerRequest *request)
 {
-    PsychicJsonResponse response = PsychicJsonResponse(request, false);
-    JsonObject root = response.getRoot();
+    AsyncJsonResponse *response = new AsyncJsonResponse();
+    JsonObject root = response->getRoot();
     wl_status_t status = WiFi.status();
     root["status"] = (uint8_t)status;
     if (status == WL_CONNECTED)
@@ -89,7 +89,8 @@ esp_err_t WiFiStatus::wifiStatus(PsychicRequest *request)
         }
     }
 
-    return response.send();
+    response->setLength();
+    request->send(response);
 }
 
 bool WiFiStatus::isConnected()

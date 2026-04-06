@@ -15,7 +15,7 @@
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
  **/
 
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
 #include <SecurityManager.h>
 #include <StatefulService.h>
 #include <list>
@@ -30,7 +30,7 @@ typedef std::function<void(const String &originId)> SubscribeCallback;
 class EventSocket
 {
 public:
-    EventSocket(PsychicHttpServer *server, SecurityManager *_securityManager, AuthenticationPredicate authenticationPredicate = AuthenticationPredicates::IS_AUTHENTICATED);
+    EventSocket(AsyncWebServer *server, SecurityManager *_securityManager, AuthenticationPredicate authenticationPredicate = AuthenticationPredicates::IS_AUTHENTICATED);
 
     void begin();
 
@@ -41,15 +41,14 @@ public:
     void onSubscribe(String event, SubscribeCallback callback);
 
     void emitEvent(String event, JsonObject &jsonObject, const char *originId = "", bool onlyToSameOrigin = false);
-    // if onlyToSameOrigin == true, the message will be sent to the originId only, otherwise it will be broadcasted to all clients except the originId
 
     bool isEventValid(String event);
 
     unsigned int getConnectedClients();
 
 private:
-    PsychicHttpServer *_server;
-    PsychicWebSocketHandler _socket;
+    AsyncWebServer *_server;
+    AsyncWebSocket _socket;
     SecurityManager *_securityManager;
     AuthenticationPredicate _authenticationPredicate;
 
@@ -60,9 +59,11 @@ private:
     void handleEventCallbacks(String event, JsonObject &jsonObject, int originId);
     void handleSubscribeCallbacks(String event, const String &originId);
 
-    void onWSOpen(PsychicWebSocketClient *client);
-    void onWSClose(PsychicWebSocketClient *client);
-    esp_err_t onFrame(PsychicWebSocketRequest *request, httpd_ws_frame *frame);
+    void onWSEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
+                   AwsEventType type, void *arg, uint8_t *data, size_t len);
+    void onWSOpen(AsyncWebSocketClient *client);
+    void onWSClose(AsyncWebSocketClient *client);
+    void onFrame(AsyncWebSocketClient *client, AwsFrameInfo *info, uint8_t *data, size_t len);
 };
 
 #endif

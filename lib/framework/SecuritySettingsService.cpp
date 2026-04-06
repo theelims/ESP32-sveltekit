@@ -16,10 +16,10 @@
 
 #if FT_ENABLED(FT_SECURITY)
 
-SecuritySettingsService::SecuritySettingsService(PsychicHttpServer *server, FS *fs) : _server(server),
-                                                                                      _httpEndpoint(SecuritySettings::read, SecuritySettings::update, this, server, SECURITY_SETTINGS_PATH, this),
-                                                                                      _fsPersistence(SecuritySettings::read, SecuritySettings::update, this, fs, SECURITY_SETTINGS_FILE),
-                                                                                      _jwtHandler(FACTORY_JWT_SECRET)
+SecuritySettingsService::SecuritySettingsService(AsyncWebServer *server, FS *fs) : _server(server),
+                                                                                   _httpEndpoint(SecuritySettings::read, SecuritySettings::update, this, server, SECURITY_SETTINGS_PATH, this),
+                                                                                   _fsPersistence(SecuritySettings::read, SecuritySettings::update, this, fs, SECURITY_SETTINGS_FILE),
+                                                                                   _jwtHandler(FACTORY_JWT_SECRET)
 {
     addUpdateHandler([&](const String &originId)
                      { configureJWTHandler(); },
@@ -40,13 +40,11 @@ void SecuritySettingsService::begin()
     configureJWTHandler();
 }
 
-Authentication SecuritySettingsService::authenticateRequest(PsychicRequest *request)
+Authentication SecuritySettingsService::authenticateRequest(AsyncWebServerRequest *request)
 {
-    // Load the parameters from the request, as they are only loaded later with the regular handler
     if (request->hasHeader(AUTHORIZATION_HEADER))
     {
-        auto value = request->header(AUTHORIZATION_HEADER);
-        // ESP_LOGV(SVK_TAG, "Authorization header: %s", value.c_str());
+        String value = request->getHeader(AUTHORIZATION_HEADER)->value();
         if (value.startsWith(AUTHORIZATION_HEADER_PREFIX))
         {
             value = value.substring(AUTHORIZATION_HEADER_PREFIX_LEN);
@@ -56,7 +54,6 @@ Authentication SecuritySettingsService::authenticateRequest(PsychicRequest *requ
     else if (request->hasParam(ACCESS_TOKEN_PARAMATER))
     {
         String value = request->getParam(ACCESS_TOKEN_PARAMATER)->value();
-        // ESP_LOGV(SVK_TAG, "Access token parameter: %s", value.c_str());
         return authenticateJWT(value);
     }
     return Authentication();
@@ -120,109 +117,98 @@ String SecuritySettingsService::generateJWT(User *user)
     return _jwtHandler.buildJWT(payload);
 }
 
-PsychicRequestFilterFunction SecuritySettingsService::filterRequest(AuthenticationPredicate predicate)
+ArRequestFilterFunc SecuritySettingsService::filterRequest(AuthenticationPredicate predicate)
 {
-    return [this, predicate](PsychicRequest *request)
+    return [this, predicate](AsyncWebServerRequest *request)
     {
-        // ESP_LOGV(SVK_TAG, "Authenticating filter request: %s", request->uri().c_str());
-        // ESP_LOGV(SVK_TAG, "Request Method: %s", request->methodStr().c_str());
-
-        // TODO: This is a hack to allow bogus websocket filter requests to pass through
-        // This is a temporary fix until the PsychicHttp websocket handler is fixed to not send a bogus filter request
-
-        // Check if we have a bogus filter request and return true
-        if (request->uri().isEmpty() && request->method() == HTTP_DELETE)
-        {
-            // ESP_LOGV(SVK_TAG, "Bogus filter request - allowing");
-            return true;
-        }
-        else
-            request->loadParams();
-
         Authentication authentication = authenticateRequest(request);
-        bool result = predicate(authentication);
-        // ESP_LOGV(SVK_TAG, "Filter Request %s", result ? "allowed" : "denied");
-        return result;
+        return predicate(authentication);
     };
 }
 
-PsychicHttpRequestCallback SecuritySettingsService::wrapRequest(PsychicHttpRequestCallback onRequest, AuthenticationPredicate predicate)
+ArHttpRequestCallback SecuritySettingsService::wrapRequest(ArHttpRequestCallback onRequest, AuthenticationPredicate predicate)
 {
-    return [this, onRequest, predicate](PsychicRequest *request)
+    return [this, onRequest, predicate](AsyncWebServerRequest *request)
     {
         Authentication authentication = authenticateRequest(request);
         if (!predicate(authentication))
         {
-            return request->reply(401);
+            request->send(401);
+            return;
         }
-        return onRequest(request);
+        onRequest(request);
     };
 }
 
-PsychicJsonRequestCallback SecuritySettingsService::wrapCallback(PsychicJsonRequestCallback onRequest, AuthenticationPredicate predicate)
+ArJsonRequestCallback SecuritySettingsService::wrapCallback(ArJsonRequestCallback onRequest, AuthenticationPredicate predicate)
 {
-    return [this, onRequest, predicate](PsychicRequest *request, JsonVariant &json)
+    return [this, onRequest, predicate](AsyncWebServerRequest *request, JsonVariant &json)
     {
         Authentication authentication = authenticateRequest(request);
         if (!predicate(authentication))
         {
-            return request->reply(401);
+            request->send(401);
+            return;
         }
-        return onRequest(request, json);
+        onRequest(request, json);
     };
 }
 
-esp_err_t SecuritySettingsService::generateToken(PsychicRequest *request)
+void SecuritySettingsService::generateToken(AsyncWebServerRequest *request)
 {
+    if (!request->hasParam("username"))
+    {
+        request->send(400);
+        return;
+    }
     String usernameParam = request->getParam("username")->value();
     for (User _user : _state.users)
     {
         if (_user.username == usernameParam)
         {
-            PsychicJsonResponse response = PsychicJsonResponse(request, false);
-            JsonObject root = response.getRoot();
+            AsyncJsonResponse *response = new AsyncJsonResponse();
+            JsonObject root = response->getRoot();
             root["token"] = generateJWT(&_user);
-            return response.send();
+            response->setLength();
+            request->send(response);
+            return;
         }
     }
-    return request->reply(401);
+    request->send(401);
 }
 
 #else
 
 User ADMIN_USER = User(FACTORY_ADMIN_USERNAME, FACTORY_ADMIN_PASSWORD, true);
 
-SecuritySettingsService::SecuritySettingsService(PsychicHttpServer *server, FS *fs) : SecurityManager()
+SecuritySettingsService::SecuritySettingsService(AsyncWebServer *server, FS *fs) : SecurityManager()
 {
 }
 SecuritySettingsService::~SecuritySettingsService()
 {
 }
 
-PsychicRequestFilterFunction SecuritySettingsService::filterRequest(AuthenticationPredicate predicate)
+ArRequestFilterFunc SecuritySettingsService::filterRequest(AuthenticationPredicate predicate)
 {
-    return [this, predicate](PsychicRequest *request)
+    return [this, predicate](AsyncWebServerRequest *request)
     {
-        // ESP_LOGV(SVK_TAG, "Security disabled - all requests are allowed");
         return true;
     };
 }
 
-// Return the admin user on all request - disabling security features
-Authentication SecuritySettingsService::authenticateRequest(PsychicRequest *request)
+Authentication SecuritySettingsService::authenticateRequest(AsyncWebServerRequest *request)
 {
     return Authentication(ADMIN_USER);
 }
 
-// Return the function unwrapped
-PsychicHttpRequestCallback SecuritySettingsService::wrapRequest(PsychicHttpRequestCallback onRequest,
-                                                                AuthenticationPredicate predicate)
+ArHttpRequestCallback SecuritySettingsService::wrapRequest(ArHttpRequestCallback onRequest,
+                                                           AuthenticationPredicate predicate)
 {
     return onRequest;
 }
 
-PsychicJsonRequestCallback SecuritySettingsService::wrapCallback(PsychicJsonRequestCallback onRequest,
-                                                                 AuthenticationPredicate predicate)
+ArJsonRequestCallback SecuritySettingsService::wrapCallback(ArJsonRequestCallback onRequest,
+                                                            AuthenticationPredicate predicate)
 {
     return onRequest;
 }

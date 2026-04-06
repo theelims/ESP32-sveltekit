@@ -19,7 +19,8 @@
 
 #include <MqttSettingsService.h>
 #include <ArduinoJson.h>
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncJson.h>
 #include <SecurityManager.h>
 
 #define MQTT_STATUS_SERVICE_PATH "/rest/mqttStatus"
@@ -27,18 +28,18 @@
 class MqttStatus
 {
 public:
-    MqttStatus(PsychicHttpServer *server, MqttSettingsService *mqttSettingsService, SecurityManager *securityManager);
+    MqttStatus(AsyncWebServer *server, MqttSettingsService *mqttSettingsService, SecurityManager *securityManager);
 
     void begin();
 
     bool isConnected();
 
 private:
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     SecurityManager *_securityManager;
     MqttSettingsService *_mqttSettingsService;
 
-    esp_err_t mqttStatus(PsychicRequest *request);
+    void mqttStatus(AsyncWebServerRequest *request);
 };
 
 #endif // end MqttStatus_h

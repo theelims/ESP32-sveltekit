@@ -16,7 +16,7 @@
 
 #if FT_ENABLED(FT_ETHERNET)
 
-EthernetSettingsService::EthernetSettingsService(PsychicHttpServer *server,
+EthernetSettingsService::EthernetSettingsService(AsyncWebServer *server,
                                                  FS *fs,
                                                  SecurityManager *securityManager,
                                                  EventSocket *socket) : _server(server),

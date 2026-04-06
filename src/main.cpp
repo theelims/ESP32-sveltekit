@@ -15,13 +15,13 @@
 #include <ESP32SvelteKit.h>
 #include <LightMqttSettingsService.h>
 #include <LightStateService.h>
-#include <PsychicHttpServer.h>
+#include <ESPAsyncWebServer.h>
 
 #define SERIAL_BAUD_RATE 115200
 
-PsychicHttpServer server;
+AsyncWebServer server(80);
 
-ESP32SvelteKit esp32sveltekit(&server, 70);
+ESP32SvelteKit esp32sveltekit(&server);
 
 LightMqttSettingsService lightMqttSettingsService = LightMqttSettingsService(&server,
                                                                              &esp32sveltekit);

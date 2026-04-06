@@ -17,7 +17,7 @@
 
 #include <WiFi.h>
 
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
 #include <SecurityManager.h>
 #include <RestartService.h>
 #include <FS.h>
@@ -30,15 +30,15 @@ class FactoryResetService
     FS *fs;
 
 public:
-    FactoryResetService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager);
+    FactoryResetService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager);
 
     void begin();
     void factoryReset();
 
 private:
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     SecurityManager *_securityManager;
-    esp_err_t handleRequest(PsychicRequest *request);
+    void handleRequest(AsyncWebServerRequest *request);
 };
 
 #endif // end FactoryResetService_h

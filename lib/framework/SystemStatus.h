@@ -18,7 +18,8 @@
 #include <WiFi.h>
 
 #include <ArduinoJson.h>
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncJson.h>
 #include <SecurityManager.h>
 #include <ESPFS.h>
 
@@ -27,14 +28,14 @@
 class SystemStatus
 {
 public:
-    SystemStatus(PsychicHttpServer *server, SecurityManager *securityManager);
+    SystemStatus(AsyncWebServer *server, SecurityManager *securityManager);
 
     void begin();
 
 private:
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     SecurityManager *_securityManager;
-    esp_err_t systemStatus(PsychicRequest *request);
+    void systemStatus(AsyncWebServerRequest *request);
 };
 
 #endif // end SystemStatus_h

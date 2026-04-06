@@ -16,7 +16,7 @@
  **/
 
 #include <Features.h>
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
 #include <SecurityManager.h>
 
 #define VERIFY_AUTHORIZATION_PATH "/rest/verifyAuthorization"
@@ -27,13 +27,13 @@
 class AuthenticationService
 {
 public:
-    AuthenticationService(PsychicHttpServer *server, SecurityManager *securityManager);
+    AuthenticationService(AsyncWebServer *server, SecurityManager *securityManager);
 
     void begin();
 
 private:
     SecurityManager *_securityManager;
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
 };
 
 #endif // end FT_ENABLED(FT_SECURITY)

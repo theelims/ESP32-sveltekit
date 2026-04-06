@@ -19,7 +19,7 @@ u_int64_t _wakeUpPin = WAKEUP_PIN_NUMBER;
 bool _wakeUpSignal = WAKEUP_SIGNAL;
 pinTermination _wakeUpTermination = pinTermination::FLOATING;
 
-SleepService::SleepService(PsychicHttpServer *server,
+SleepService::SleepService(AsyncWebServer *server,
                            SecurityManager *securityManager) : _server(server),
                                                                _securityManager(securityManager)
 {
@@ -32,9 +32,9 @@ void SleepService::begin()
     _server->on(SLEEP_SERVICE_PATH,
                 HTTP_OPTIONS,
                 _securityManager->wrapRequest(
-                    [this](PsychicRequest *request)
+                    [this](AsyncWebServerRequest *request)
                     {
-                        return request->reply(200);
+                        request->send(200);
                     },
                     AuthenticationPredicates::IS_AUTHENTICATED));
 #endif
@@ -47,12 +47,10 @@ void SleepService::begin()
     ESP_LOGV(SVK_TAG, "Registered POST endpoint: %s", SLEEP_SERVICE_PATH);
 }
 
-esp_err_t SleepService::sleep(PsychicRequest *request)
+void SleepService::sleep(AsyncWebServerRequest *request)
 {
-    request->reply(200);
+    request->send(200);
     sleepNow();
-
-    return ESP_OK;
 }
 
 void SleepService::sleepNow()

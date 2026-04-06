@@ -19,7 +19,8 @@
 #include <ETH.h>
 
 #include <ArduinoJson.h>
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncJson.h>
 #include <IPUtils.h>
 #include <SecurityManager.h>
 
@@ -30,14 +31,14 @@
 class EthernetStatus
 {
 public:
-    EthernetStatus(PsychicHttpServer *server, SecurityManager *securityManager);
+    EthernetStatus(AsyncWebServer *server, SecurityManager *securityManager);
 
     void begin();
 
     bool isConnected();
 
 private:
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     SecurityManager *_securityManager;
 
     // static functions for logging Ethernet events to the UART
@@ -45,7 +46,7 @@ private:
     static void onConnected(WiFiEvent_t event, WiFiEventInfo_t info);
     static void onDisconnected(WiFiEvent_t event, WiFiEventInfo_t info);
     static void onGotIP(WiFiEvent_t event, WiFiEventInfo_t info);
-    esp_err_t ethernetStatus(PsychicRequest *request);
+    void ethernetStatus(AsyncWebServerRequest *request);
 };
 
 #endif // end FT_ENABLED(FT_ETHERNET)

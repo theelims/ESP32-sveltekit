@@ -18,7 +18,7 @@
 #include <WiFi.h>
 
 #include <ESPmDNS.h>
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
 #include <SecurityManager.h>
 
 #define RESTART_SERVICE_PATH "/rest/restart"
@@ -26,7 +26,7 @@
 class RestartService
 {
 public:
-    RestartService(PsychicHttpServer *server, SecurityManager *securityManager);
+    RestartService(AsyncWebServer *server, SecurityManager *securityManager);
 
     void begin();
 
@@ -41,9 +41,9 @@ public:
     }
 
 private:
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     SecurityManager *_securityManager;
-    esp_err_t restart(PsychicRequest *request);
+    void restart(AsyncWebServerRequest *request);
 };
 
 #endif // end RestartService_h

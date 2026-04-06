@@ -3,7 +3,8 @@
 
 #include <functional>
 
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncJson.h>
 
 #include <SecurityManager.h>
 #include <StatefulService.h>
@@ -22,14 +23,14 @@ protected:
     StatefulService<T> *_statefulService;
     SecurityManager *_securityManager;
     AuthenticationPredicate _authenticationPredicate;
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     const char *_servicePath;
 
 public:
     HttpEndpoint(JsonStateReader<T> stateReader,
                  JsonStateUpdater<T> stateUpdater,
                  StatefulService<T> *statefulService,
-                 PsychicHttpServer *server,
+                 AsyncWebServer *server,
                  const char *servicePath,
                  SecurityManager *securityManager,
                  AuthenticationPredicate authenticationPredicate = AuthenticationPredicates::IS_ADMIN) : _stateReader(stateReader),
@@ -51,9 +52,9 @@ public:
         _server->on(_servicePath,
                     HTTP_OPTIONS,
                     _securityManager->wrapRequest(
-                        [this](PsychicRequest *request)
+                        [this](AsyncWebServerRequest *request)
                         {
-                            return request->reply(200);
+                            request->send(200);
                         },
                         AuthenticationPredicates::IS_AUTHENTICATED));
 #endif
@@ -62,48 +63,55 @@ public:
         _server->on(_servicePath,
                     HTTP_GET,
                     _securityManager->wrapRequest(
-                        [this](PsychicRequest *request)
+                        [this](AsyncWebServerRequest *request)
                         {
-                            PsychicJsonResponse response = PsychicJsonResponse(request, false);
-                            JsonObject jsonObject = response.getRoot();
+                            AsyncJsonResponse *response = new AsyncJsonResponse();
+                            JsonObject jsonObject = response->getRoot();
                             _statefulService->read(jsonObject, _stateReader);
-                            return response.send();
+                            response->setLength();
+                            request->send(response);
                         },
                         _authenticationPredicate));
         ESP_LOGV(SVK_TAG, "Registered GET endpoint: %s", _servicePath);
 
         // POST
-        _server->on(_servicePath,
-                    HTTP_POST,
-                    _securityManager->wrapCallback(
-                        [this](PsychicRequest *request, JsonVariant &json)
-                        {
-                            if (!json.is<JsonObject>())
-                            {
-                                return request->reply(400);
-                            }
+        {
+            auto wrappedCallback = _securityManager->wrapCallback(
+                [this](AsyncWebServerRequest *request, JsonVariant &json)
+                {
+                    if (!json.is<JsonObject>())
+                    {
+                        request->send(400);
+                        return;
+                    }
 
-                            JsonObject jsonObject = json.as<JsonObject>();
-                            StateUpdateResult outcome = _statefulService->updateWithoutPropagation(jsonObject, _stateUpdater, _servicePath);
+                    JsonObject jsonObject = json.as<JsonObject>();
+                    StateUpdateResult outcome = _statefulService->updateWithoutPropagation(jsonObject, _stateUpdater, _servicePath);
 
-                            if (outcome == StateUpdateResult::ERROR)
-                            {
-                                return request->reply(400);
-                            }
-                            else if ((outcome == StateUpdateResult::CHANGED))
-                            {
-                                // persist the changes to the FS
-                                _statefulService->callUpdateHandlers(HTTP_ENDPOINT_ORIGIN_ID);
-                            }
+                    if (outcome == StateUpdateResult::ERROR)
+                    {
+                        request->send(400);
+                        return;
+                    }
+                    else if ((outcome == StateUpdateResult::CHANGED))
+                    {
+                        _statefulService->callUpdateHandlers(HTTP_ENDPOINT_ORIGIN_ID);
+                    }
 
-                            PsychicJsonResponse response = PsychicJsonResponse(request, false);
-                            jsonObject = response.getRoot();
+                    AsyncJsonResponse *response = new AsyncJsonResponse();
+                    jsonObject = response->getRoot();
 
-                            _statefulService->read(jsonObject, _stateReader);
+                    _statefulService->read(jsonObject, _stateReader);
 
-                            return response.send();
-                        },
-                        _authenticationPredicate));
+                    response->setLength();
+                    request->send(response);
+                },
+                _authenticationPredicate);
+
+            AsyncCallbackJsonWebHandler *jsonHandler = new AsyncCallbackJsonWebHandler(_servicePath, wrappedCallback);
+            jsonHandler->setMethod(HTTP_POST);
+            _server->addHandler(jsonHandler);
+        }
 
         ESP_LOGV(SVK_TAG, "Registered POST endpoint: %s", _servicePath);
     }

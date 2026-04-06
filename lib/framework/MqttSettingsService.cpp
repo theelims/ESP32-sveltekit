@@ -42,7 +42,7 @@ static char *retainCstr(const char *cstr, char **ptr)
     return *ptr;
 }
 
-MqttSettingsService::MqttSettingsService(PsychicHttpServer *server,
+MqttSettingsService::MqttSettingsService(AsyncWebServer *server,
                                          FS *fs,
                                          SecurityManager *securityManager) : _server(server),
                                                                              _securityManager(securityManager),

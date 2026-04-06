@@ -14,7 +14,7 @@
 
 #include <APStatus.h>
 
-APStatus::APStatus(PsychicHttpServer *server,
+APStatus::APStatus(AsyncWebServer *server,
                    SecurityManager *securityManager,
                    APSettingsService *apSettingsService) : _server(server),
                                                            _securityManager(securityManager),
@@ -31,17 +31,18 @@ void APStatus::begin()
     ESP_LOGV(SVK_TAG, "Registered GET endpoint: %s", AP_STATUS_SERVICE_PATH);
 }
 
-esp_err_t APStatus::apStatus(PsychicRequest *request)
+void APStatus::apStatus(AsyncWebServerRequest *request)
 {
-    PsychicJsonResponse response = PsychicJsonResponse(request, false);
-    JsonObject root = response.getRoot();
+    AsyncJsonResponse *response = new AsyncJsonResponse();
+    JsonObject root = response->getRoot();
 
     root["status"] = _apSettingsService->getAPNetworkStatus();
     root["ip_address"] = WiFi.softAPIP().toString();
     root["mac_address"] = WiFi.softAPmacAddress();
     root["station_num"] = WiFi.softAPgetStationNum();
 
-    return response.send();
+    response->setLength();
+    request->send(response);
 }
 
 bool APStatus::isActive()

@@ -16,7 +16,7 @@
  **/
 
 #include <StatefulService.h>
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
 #include <SecurityManager.h>
 
 #define WEB_SOCKET_ORIGIN "wsserver"
@@ -29,7 +29,7 @@ public:
     WebSocketServer(JsonStateReader<T> stateReader,
                     JsonStateUpdater<T> stateUpdater,
                     StatefulService<T> *statefulService,
-                    PsychicHttpServer *server,
+                    AsyncWebServer *server,
                     const char *webSocketPath,
                     SecurityManager *securityManager,
                     AuthenticationPredicate authenticationPredicate = AuthenticationPredicates::IS_ADMIN) : _stateReader(stateReader),
@@ -37,6 +37,7 @@ public:
                                                                                                             _statefulService(statefulService),
                                                                                                             _server(server),
                                                                                                             _webSocketPath(webSocketPath),
+                                                                                                            _webSocket(webSocketPath),
                                                                                                             _authenticationPredicate(authenticationPredicate),
                                                                                                             _securityManager(securityManager)
     {
@@ -49,59 +50,78 @@ public:
     void begin()
     {
         _webSocket.setFilter(_securityManager->filterRequest(_authenticationPredicate));
-        _webSocket.onOpen(std::bind(&WebSocketServer::onWSOpen,
-                                    this,
-                                    std::placeholders::_1));
-        _webSocket.onClose(std::bind(&WebSocketServer::onWSClose,
-                                     this,
-                                     std::placeholders::_1));
-        _webSocket.onFrame(std::bind(&WebSocketServer::onWSFrame,
+        _webSocket.onEvent(std::bind(&WebSocketServer::onWSEvent,
                                      this,
                                      std::placeholders::_1,
-                                     std::placeholders::_2));
-        _server->on(_webSocketPath.c_str(), &_webSocket);
+                                     std::placeholders::_2,
+                                     std::placeholders::_3,
+                                     std::placeholders::_4,
+                                     std::placeholders::_5,
+                                     std::placeholders::_6));
+        _server->addHandler(&_webSocket);
 
         ESP_LOGV(SVK_TAG, "Registered WebSocket handler: %s", _webSocketPath.c_str());
     }
 
-    void onWSOpen(PsychicWebSocketClient *client)
+    void onWSEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
+                   AwsEventType type, void *arg, uint8_t *data, size_t len)
     {
+        switch (type)
+        {
+        case WS_EVT_CONNECT:
+            onWSOpen(client);
+            break;
+        case WS_EVT_DISCONNECT:
+            onWSClose(client);
+            break;
+        case WS_EVT_DATA:
+        {
+            AwsFrameInfo *info = (AwsFrameInfo *)arg;
+            if (info->final && info->index == 0 && info->len == len)
+            {
+                onWSFrame(client, info, data, len);
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    }
 
-        // when a client connects, we transmit it's id and the current payload
+    void onWSOpen(AsyncWebSocketClient *client)
+    {
         transmitId(client);
         transmitData(client, WEB_SOCKET_ORIGIN);
-        ESP_LOGI(SVK_TAG, "ws[%s][%u] connect", client->remoteIP().toString().c_str(), client->socket());
+        ESP_LOGI(SVK_TAG, "ws[%s][%u] connect", client->remoteIP().toString().c_str(), client->id());
     }
 
-    void onWSClose(PsychicWebSocketClient *client)
+    void onWSClose(AsyncWebSocketClient *client)
     {
-        ESP_LOGI(SVK_TAG, "ws[%s][%u] disconnect", client->remoteIP().toString().c_str(), client->socket());
+        ESP_LOGI(SVK_TAG, "ws[%s][%u] disconnect", client->remoteIP().toString().c_str(), client->id());
     }
 
-    esp_err_t onWSFrame(PsychicWebSocketRequest *request, httpd_ws_frame *frame)
+    void onWSFrame(AsyncWebSocketClient *client, AwsFrameInfo *info, uint8_t *data, size_t len)
     {
-        ESP_LOGV(SVK_TAG, "ws[%s][%u] opcode[%d]", request->client()->remoteIP().toString().c_str(), request->client()->socket(), frame->type);
+        ESP_LOGV(SVK_TAG, "ws[%s][%u] opcode[%d]", client->remoteIP().toString().c_str(), client->id(), info->opcode);
 
-        if (frame->type == HTTPD_WS_TYPE_TEXT)
+        if (info->opcode == WS_TEXT)
         {
-            ESP_LOGV(SVK_TAG, "ws[%s][%u] request: %s", request->client()->remoteIP().toString().c_str(), request->client()->socket(), (char *)frame->payload);
+            ESP_LOGV(SVK_TAG, "ws[%s][%u] request: %s", client->remoteIP().toString().c_str(), client->id(), (char *)data);
 
             JsonDocument jsonDocument;
-            DeserializationError error = deserializeJson(jsonDocument, (char *)frame->payload, frame->len);
+            DeserializationError error = deserializeJson(jsonDocument, (char *)data, len);
 
             if (!error && jsonDocument.is<JsonObject>())
             {
                 JsonObject jsonObject = jsonDocument.as<JsonObject>();
-                _statefulService->update(jsonObject, _stateUpdater, clientId(request->client()));
-                return ESP_OK;
+                _statefulService->update(jsonObject, _stateUpdater, clientId(client));
             }
         }
-        return ESP_OK;
     }
 
-    String clientId(PsychicWebSocketClient *client)
+    String clientId(AsyncWebSocketClient *client)
     {
-        return WEB_SOCKET_ORIGIN_CLIENT_ID_PREFIX + String(client->socket());
+        return WEB_SOCKET_ORIGIN_CLIENT_ID_PREFIX + String(client->id());
     }
 
 private:
@@ -110,31 +130,23 @@ private:
     StatefulService<T> *_statefulService;
     AuthenticationPredicate _authenticationPredicate;
     SecurityManager *_securityManager;
-    PsychicHttpServer *_server;
-    PsychicWebSocketHandler _webSocket;
+    AsyncWebServer *_server;
     String _webSocketPath;
+    AsyncWebSocket _webSocket;
 
-    void transmitId(PsychicWebSocketClient *client)
+    void transmitId(AsyncWebSocketClient *client)
     {
         JsonDocument jsonDocument;
         JsonObject root = jsonDocument.to<JsonObject>();
         root["type"] = "id";
         root["id"] = clientId(client);
 
-        // serialize the json to a string
         String buffer;
         serializeJson(jsonDocument, buffer);
-        client->sendMessage(buffer.c_str());
+        client->text(buffer.c_str());
     }
 
-    /**
-     * Broadcasts the payload to the destination, if provided. Otherwise broadcasts to all clients except the origin, if
-     * specified.
-     *
-     * Original implementation sent clients their own IDs so they could ignore updates they initiated. This approach
-     * simplifies the client and the server implementation but may not be sufficient for all use-cases.
-     */
-    void transmitData(PsychicWebSocketClient *client, const String &originId)
+    void transmitData(AsyncWebSocketClient *client, const String &originId)
     {
         JsonDocument jsonDocument;
         JsonObject root = jsonDocument.to<JsonObject>();
@@ -142,15 +154,14 @@ private:
 
         _statefulService->read(root, _stateReader);
 
-        // serialize the json to a string
         serializeJson(jsonDocument, buffer);
         if (client)
         {
-            client->sendMessage(buffer.c_str());
+            client->text(buffer.c_str());
         }
         else
         {
-            _webSocket.sendAll(buffer.c_str());
+            _webSocket.textAll(buffer.c_str());
         }
     }
 };

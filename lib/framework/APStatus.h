@@ -18,7 +18,8 @@
 #include <WiFi.h>
 
 #include <ArduinoJson.h>
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncJson.h>
 #include <IPAddress.h>
 #include <SecurityManager.h>
 #include <APSettingsService.h>
@@ -28,17 +29,17 @@
 class APStatus
 {
 public:
-    APStatus(PsychicHttpServer *server, SecurityManager *securityManager, APSettingsService *apSettingsService);
+    APStatus(AsyncWebServer *server, SecurityManager *securityManager, APSettingsService *apSettingsService);
 
     void begin();
 
     bool isActive();
 
 private:
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     SecurityManager *_securityManager;
     APSettingsService *_apSettingsService;
-    esp_err_t apStatus(PsychicRequest *request);
+    void apStatus(AsyncWebServerRequest *request);
 };
 
 #endif // end APStatus_h

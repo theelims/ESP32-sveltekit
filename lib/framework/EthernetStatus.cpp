@@ -16,7 +16,7 @@
 
 #if FT_ENABLED(FT_ETHERNET)
 
-EthernetStatus::EthernetStatus(PsychicHttpServer *server,
+EthernetStatus::EthernetStatus(AsyncWebServer *server,
                                SecurityManager *securityManager) : _server(server),
                                                                    _securityManager(securityManager)
 {
@@ -61,10 +61,10 @@ void EthernetStatus::onGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
 #endif
 }
 
-esp_err_t EthernetStatus::ethernetStatus(PsychicRequest *request)
+void EthernetStatus::ethernetStatus(AsyncWebServerRequest *request)
 {
-    PsychicJsonResponse response = PsychicJsonResponse(request, false);
-    JsonObject root = response.getRoot();
+    AsyncJsonResponse *response = new AsyncJsonResponse();
+    JsonObject root = response->getRoot();
     bool isConnected = ETH.connected();
     root["connected"] = isConnected;
     if (isConnected)
@@ -86,7 +86,8 @@ esp_err_t EthernetStatus::ethernetStatus(PsychicRequest *request)
         root["link_speed"] = ETH.linkSpeed();
     }
 
-    return response.send();
+    response->setLength();
+    request->send(response);
 }
 
 bool EthernetStatus::isConnected()

@@ -14,7 +14,7 @@
 
 #include <MqttStatus.h>
 
-MqttStatus::MqttStatus(PsychicHttpServer *server,
+MqttStatus::MqttStatus(AsyncWebServer *server,
                        MqttSettingsService *mqttSettingsService,
                        SecurityManager *securityManager) : _server(server),
                                                            _securityManager(securityManager),
@@ -32,17 +32,18 @@ void MqttStatus::begin()
     ESP_LOGV(SVK_TAG, "Registered GET endpoint: %s", MQTT_STATUS_SERVICE_PATH);
 }
 
-esp_err_t MqttStatus::mqttStatus(PsychicRequest *request)
+void MqttStatus::mqttStatus(AsyncWebServerRequest *request)
 {
-    PsychicJsonResponse response = PsychicJsonResponse(request, false);
-    JsonObject root = response.getRoot();
+    AsyncJsonResponse *response = new AsyncJsonResponse();
+    JsonObject root = response->getRoot();
 
     root["enabled"] = _mqttSettingsService->isEnabled();
     root["connected"] = _mqttSettingsService->isConnected();
     root["client_id"] = _mqttSettingsService->getClientId();
     root["last_error"] = _mqttSettingsService->getLastError();
 
-    return response.send();
+    response->setLength();
+    request->send(response);
 }
 
 bool MqttStatus::isConnected()

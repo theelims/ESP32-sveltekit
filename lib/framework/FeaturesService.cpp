@@ -14,18 +14,19 @@
 
 #include <FeaturesService.h>
 
-FeaturesService::FeaturesService(PsychicHttpServer *server, EventSocket *eventsocket) : _server(server), _socket(eventsocket)
+FeaturesService::FeaturesService(AsyncWebServer *server, EventSocket *eventsocket) : _server(server), _socket(eventsocket)
 {
 }
 
 void FeaturesService::begin()
 {
-    _server->on(FEATURES_SERVICE_PATH, HTTP_GET, [&](PsychicRequest *request)
+    _server->on(FEATURES_SERVICE_PATH, HTTP_GET, [&](AsyncWebServerRequest *request)
                 {
-                    PsychicJsonResponse response = PsychicJsonResponse(request, false);
-                    JsonObject root = response.getRoot();
+                    AsyncJsonResponse *response = new AsyncJsonResponse();
+                    JsonObject root = response->getRoot();
                     createJSON(root);
-                    return response.send(); });
+                    response->setLength();
+                    request->send(response); });
 
     ESP_LOGV(SVK_TAG, "Registered GET endpoint: %s", FEATURES_SERVICE_PATH);
 

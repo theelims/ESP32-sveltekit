@@ -16,7 +16,7 @@
 
 using namespace std::placeholders;
 
-FactoryResetService::FactoryResetService(PsychicHttpServer *server,
+FactoryResetService::FactoryResetService(AsyncWebServer *server,
                                          FS *fs,
                                          SecurityManager *securityManager) : _server(server),
                                                                              fs(fs),
@@ -33,12 +33,10 @@ void FactoryResetService::begin()
     ESP_LOGV(SVK_TAG, "Registered POST endpoint: %s", FACTORY_RESET_SERVICE_PATH);
 }
 
-esp_err_t FactoryResetService::handleRequest(PsychicRequest *request)
+void FactoryResetService::handleRequest(AsyncWebServerRequest *request)
 {
-    request->reply(200);
+    request->send(200);
     factoryReset();
-
-    return ESP_OK;
 }
 
 /**

@@ -18,7 +18,8 @@
 #include <WiFi.h>
 
 #include <ArduinoJson.h>
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncJson.h>
 #include <IPUtils.h>
 #include <SecurityManager.h>
 
@@ -27,21 +28,21 @@
 class WiFiStatus
 {
 public:
-    WiFiStatus(PsychicHttpServer *server, SecurityManager *securityManager);
+    WiFiStatus(AsyncWebServer *server, SecurityManager *securityManager);
 
     void begin();
 
     bool isConnected();
 
 private:
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     SecurityManager *_securityManager;
 
     // static functions for logging WiFi events to the UART
     static void onStationModeConnected(WiFiEvent_t event, WiFiEventInfo_t info);
     static void onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info);
     static void onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t info);
-    esp_err_t wifiStatus(PsychicRequest *request);
+    void wifiStatus(AsyncWebServerRequest *request);
 };
 
 #endif // end WiFiStatus_h

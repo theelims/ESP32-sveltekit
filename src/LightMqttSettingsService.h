@@ -59,7 +59,7 @@ public:
 class LightMqttSettingsService : public StatefulService<LightMqttSettings>
 {
 public:
-    LightMqttSettingsService(PsychicHttpServer *server, ESP32SvelteKit *sveltekit);
+    LightMqttSettingsService(AsyncWebServer *server, ESP32SvelteKit *sveltekit);
     void begin();
     void onConfigUpdated();
 

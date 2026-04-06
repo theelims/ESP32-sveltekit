@@ -17,7 +17,7 @@
 
 #include <ArduinoJson.h>
 #include <ESPFS.h>
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
 #include <SecurityManager.h>
 #include <WiFi.h>
 
@@ -26,14 +26,14 @@
 class CoreDump
 {
 public:
-    CoreDump(PsychicHttpServer *server, SecurityManager *securityManager);
+    CoreDump(AsyncWebServer *server, SecurityManager *securityManager);
 
     void begin();
 
 private:
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     SecurityManager *_securityManager;
-    esp_err_t coreDump(PsychicRequest *request);
+    void coreDump(AsyncWebServerRequest *request);
 };
 
 #endif // end CoreDump_h

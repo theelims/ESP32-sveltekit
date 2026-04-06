@@ -14,8 +14,8 @@
 
 #include <RestartService.h>
 
-RestartService::RestartService(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
-                                                                                              _securityManager(securityManager)
+RestartService::RestartService(AsyncWebServer *server, SecurityManager *securityManager) : _server(server),
+                                                                                          _securityManager(securityManager)
 {
 }
 
@@ -29,9 +29,9 @@ void RestartService::begin()
     ESP_LOGV(SVK_TAG, "Registered POST endpoint: %s", RESTART_SERVICE_PATH);
 }
 
-esp_err_t RestartService::restart(PsychicRequest *request)
+void RestartService::restart(AsyncWebServerRequest *request)
 {
-    request->reply(200);
-    restartNow();
-    return ESP_OK;
+    request->onDisconnect([]()
+                          { restartNow(); });
+    request->send(200);
 }

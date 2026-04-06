@@ -14,7 +14,7 @@
 
 #include <NTPStatus.h>
 
-NTPStatus::NTPStatus(PsychicHttpServer *server, SecurityManager *securityManager) : _server(server),
+NTPStatus::NTPStatus(AsyncWebServer *server, SecurityManager *securityManager) : _server(server),
                                                                                     _securityManager(securityManager)
 {
 }
@@ -51,10 +51,10 @@ String toLocalTimeString(tm *time)
     return formatTime(time, "%FT%T");
 }
 
-esp_err_t NTPStatus::ntpStatus(PsychicRequest *request)
+void NTPStatus::ntpStatus(AsyncWebServerRequest *request)
 {
-    PsychicJsonResponse response = PsychicJsonResponse(request, false);
-    JsonObject root = response.getRoot();
+    AsyncJsonResponse *response = new AsyncJsonResponse();
+    JsonObject root = response->getRoot();
 
     // grab the current instant in unix seconds
     time_t now = time(nullptr);
@@ -74,5 +74,6 @@ esp_err_t NTPStatus::ntpStatus(PsychicRequest *request)
     // device uptime in seconds
     root["uptime"] = millis() / 1000;
 
-    return response.send();
+    response->setLength();
+    request->send(response);
 }

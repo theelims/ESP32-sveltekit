@@ -24,7 +24,7 @@
 #include <HttpEndpoint.h>
 #include <JsonUtils.h>
 #include <SecurityManager.h>
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
 #include <vector>
 
 #ifndef FACTORY_ETHERNET_HOSTNAME
@@ -104,7 +104,7 @@ public:
 class EthernetSettingsService : public StatefulService<EthernetSettings>
 {
 public:
-    EthernetSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, EventSocket *socket);
+    EthernetSettingsService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager, EventSocket *socket);
 
     void initEthernet();
     void begin();
@@ -113,7 +113,7 @@ public:
     String getIP();
 
 private:
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     SecurityManager *_securityManager;
     HttpEndpoint<EthernetSettings> _httpEndpoint;
     FSPersistence<EthernetSettings> _fsPersistence;

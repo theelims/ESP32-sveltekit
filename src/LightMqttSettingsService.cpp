@@ -14,7 +14,7 @@
 
 #include <LightMqttSettingsService.h>
 
-LightMqttSettingsService::LightMqttSettingsService(PsychicHttpServer *server,
+LightMqttSettingsService::LightMqttSettingsService(AsyncWebServer *server,
                                                    ESP32SvelteKit *sveltekit) : _httpEndpoint(LightMqttSettings::read,
                                                                                               LightMqttSettings::update,
                                                                                               this,

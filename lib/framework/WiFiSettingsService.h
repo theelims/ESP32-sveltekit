@@ -24,7 +24,7 @@
 #include <HttpEndpoint.h>
 #include <JsonUtils.h>
 #include <SecurityManager.h>
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
 #include <vector>
 
 #ifndef FACTORY_WIFI_SSID
@@ -212,7 +212,7 @@ public:
 class WiFiSettingsService : public StatefulService<WiFiSettings>
 {
 public:
-    WiFiSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager, EventSocket *socket);
+    WiFiSettingsService(AsyncWebServer *server, FS *fs, SecurityManager *securityManager, EventSocket *socket);
 
     void initWiFi();
     void begin();
@@ -222,7 +222,7 @@ public:
     String getIP();
 
 private:
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     SecurityManager *_securityManager;
     HttpEndpoint<WiFiSettings> _httpEndpoint;
     FSPersistence<WiFiSettings> _fsPersistence;

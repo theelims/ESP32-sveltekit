@@ -5,6 +5,8 @@ nav:
   - "Build Tools":
       - gettingstarted.md
       - buildprocess.md
+  - "Debugging":
+      - coredump.md
   - "Front End":
       - sveltekit.md
       - structure.md

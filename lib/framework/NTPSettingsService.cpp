@@ -17,7 +17,7 @@
 #include <ETH.h>
 #endif
 
-NTPSettingsService::NTPSettingsService(PsychicHttpServer *server,
+NTPSettingsService::NTPSettingsService(AsyncWebServer *server,
                                        FS *fs,
                                        SecurityManager *securityManager) : _server(server),
                                                                            _securityManager(securityManager),
@@ -110,7 +110,7 @@ void NTPSettingsService::configureNTP()
     }
 }
 
-esp_err_t NTPSettingsService::configureTime(PsychicRequest *request, JsonVariant &json)
+void NTPSettingsService::configureTime(AsyncWebServerRequest *request, JsonVariant &json)
 {
     if (!sntp_enabled() && json.is<JsonObject>())
     {
@@ -122,8 +122,9 @@ esp_err_t NTPSettingsService::configureTime(PsychicRequest *request, JsonVariant
             time_t time = mktime(&tm);
             struct timeval now = {.tv_sec = time};
             settimeofday(&now, nullptr);
-            return request->reply(200);
+            request->send(200);
+            return;
         }
     }
-    return request->reply(400);
+    request->send(400);
 }

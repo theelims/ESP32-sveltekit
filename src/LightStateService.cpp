@@ -14,7 +14,7 @@
 
 #include <LightStateService.h>
 
-LightStateService::LightStateService(PsychicHttpServer *server,
+LightStateService::LightStateService(AsyncWebServer *server,
                                      ESP32SvelteKit *sveltekit,
                                      LightMqttSettingsService *lightMqttSettingsService) : _httpEndpoint(LightState::read,
                                                                                                          LightState::update,

@@ -20,7 +20,8 @@
 #include <lwip/apps/sntp.h>
 
 #include <ArduinoJson.h>
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncJson.h>
 #include <SecurityManager.h>
 
 #define NTP_STATUS_SERVICE_PATH "/rest/ntpStatus"
@@ -28,14 +29,14 @@
 class NTPStatus
 {
 public:
-    NTPStatus(PsychicHttpServer *server, SecurityManager *securityManager);
+    NTPStatus(AsyncWebServer *server, SecurityManager *securityManager);
 
     void begin();
 
 private:
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     SecurityManager *_securityManager;
-    esp_err_t ntpStatus(PsychicRequest *request);
+    void ntpStatus(AsyncWebServerRequest *request);
 };
 
 #endif // end NTPStatus_h

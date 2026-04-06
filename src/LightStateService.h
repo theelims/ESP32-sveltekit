@@ -84,7 +84,7 @@ public:
 class LightStateService : public StatefulService<LightState>
 {
 public:
-    LightStateService(PsychicHttpServer *server,
+    LightStateService(AsyncWebServer *server,
                       ESP32SvelteKit *sveltekit,
                       LightMqttSettingsService *lightMqttSettingsService);
 

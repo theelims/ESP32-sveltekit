@@ -14,7 +14,7 @@
 
 #include <APSettingsService.h>
 
-APSettingsService::APSettingsService(PsychicHttpServer *server,
+APSettingsService::APSettingsService(AsyncWebServer *server,
                                      FS *fs,
                                      SecurityManager *securityManager) : _server(server),
                                                                          _securityManager(securityManager),

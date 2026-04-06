@@ -19,7 +19,7 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
 #include <EventSocket.h>
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
 #include <SecurityManager.h>
 #include <FirmwareUpdateEvents.h>
 
@@ -32,13 +32,13 @@
 class DownloadFirmwareService
 {
 public:
-    DownloadFirmwareService(PsychicHttpServer *server, SecurityManager *securityManager, EventSocket *socket);
+    DownloadFirmwareService(AsyncWebServer *server, SecurityManager *securityManager, EventSocket *socket);
 
     void begin();
 
 private:
     SecurityManager *_securityManager;
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     EventSocket *_socket;
-    esp_err_t downloadUpdate(PsychicRequest *request, JsonVariant &json);
+    void downloadUpdate(AsyncWebServerRequest *request, JsonVariant &json);
 };

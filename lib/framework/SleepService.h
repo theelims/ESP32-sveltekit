@@ -16,7 +16,7 @@
 #include <WiFi.h>
 #include <ESPmDNS.h>
 
-#include <PsychicHttp.h>
+#include <ESPAsyncWebServer.h>
 #include <SecurityManager.h>
 #include "driver/rtc_io.h"
 #include <vector>
@@ -44,7 +44,7 @@ typedef std::function<void()> sleepCallback;
 class SleepService
 {
 public:
-    SleepService(PsychicHttpServer *server, SecurityManager *securityManager);
+    SleepService(AsyncWebServer *server, SecurityManager *securityManager);
 
     void begin();
 
@@ -58,9 +58,9 @@ public:
     void setWakeUpPin(int pin, bool level, pinTermination termination = pinTermination::FLOATING);
 
 private:
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
     SecurityManager *_securityManager;
-    esp_err_t sleep(PsychicRequest *request);
+    void sleep(AsyncWebServerRequest *request);
 
 protected:
     static std::vector<sleepCallback> _sleepCallbacks;

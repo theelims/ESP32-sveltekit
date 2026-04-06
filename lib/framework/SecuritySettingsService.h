@@ -96,27 +96,27 @@ public:
 class SecuritySettingsService : public StatefulService<SecuritySettings>, public SecurityManager
 {
 public:
-    SecuritySettingsService(PsychicHttpServer *server, FS *fs);
+    SecuritySettingsService(AsyncWebServer *server, FS *fs);
 
     void begin();
 
     // Functions to implement SecurityManager
     Authentication authenticate(const String &username, const String &password);
-    Authentication authenticateRequest(PsychicRequest *request);
+    Authentication authenticateRequest(AsyncWebServerRequest *request);
     String generateJWT(User *user);
 
-    PsychicRequestFilterFunction filterRequest(AuthenticationPredicate predicate);
-    PsychicHttpRequestCallback wrapRequest(PsychicHttpRequestCallback onRequest, AuthenticationPredicate predicate);
-    PsychicJsonRequestCallback wrapCallback(PsychicJsonRequestCallback onRequest, AuthenticationPredicate predicate);
+    ArRequestFilterFunc filterRequest(AuthenticationPredicate predicate);
+    ArHttpRequestCallback wrapRequest(ArHttpRequestCallback onRequest, AuthenticationPredicate predicate);
+    ArJsonRequestCallback wrapCallback(ArJsonRequestCallback onRequest, AuthenticationPredicate predicate);
 
 private:
-    PsychicHttpServer *_server;
+    AsyncWebServer *_server;
 
     HttpEndpoint<SecuritySettings> _httpEndpoint;
     FSPersistence<SecuritySettings> _fsPersistence;
     ArduinoJsonJWT _jwtHandler;
 
-    esp_err_t generateToken(PsychicRequest *request);
+    void generateToken(AsyncWebServerRequest *request);
 
     void configureJWTHandler();
 
@@ -136,14 +136,14 @@ private:
 class SecuritySettingsService : public SecurityManager
 {
 public:
-    SecuritySettingsService(PsychicHttpServer *server, FS *fs);
+    SecuritySettingsService(AsyncWebServer *server, FS *fs);
     ~SecuritySettingsService();
 
     // minimal set of functions to support framework with security settings disabled
-    Authentication authenticateRequest(PsychicRequest *request);
-    PsychicRequestFilterFunction filterRequest(AuthenticationPredicate predicate);
-    PsychicHttpRequestCallback wrapRequest(PsychicHttpRequestCallback onRequest, AuthenticationPredicate predicate);
-    PsychicJsonRequestCallback wrapCallback(PsychicJsonRequestCallback onRequest, AuthenticationPredicate predicate);
+    Authentication authenticateRequest(AsyncWebServerRequest *request);
+    ArRequestFilterFunc filterRequest(AuthenticationPredicate predicate);
+    ArHttpRequestCallback wrapRequest(ArHttpRequestCallback onRequest, AuthenticationPredicate predicate);
+    ArJsonRequestCallback wrapCallback(ArJsonRequestCallback onRequest, AuthenticationPredicate predicate);
 };
 
 #endif // end FT_ENABLED(FT_SECURITY)

@@ -112,7 +112,7 @@ String verbosePrintResetReason(int reason)
     }
 }
 
-SystemStatus::SystemStatus(PsychicHttpServer *server,
+SystemStatus::SystemStatus(AsyncWebServer *server,
                            SecurityManager *securityManager) : _server(server),
                                                                _securityManager(securityManager)
 {
@@ -128,10 +128,10 @@ void SystemStatus::begin()
     ESP_LOGV(SVK_TAG, "Registered GET endpoint: %s", SYSTEM_STATUS_SERVICE_PATH);
 }
 
-esp_err_t SystemStatus::systemStatus(PsychicRequest *request)
+void SystemStatus::systemStatus(AsyncWebServerRequest *request)
 {
-    PsychicJsonResponse response = PsychicJsonResponse(request, false);
-    JsonObject root = response.getRoot();
+    AsyncJsonResponse *response = new AsyncJsonResponse();
+    JsonObject root = response->getRoot();
 
     root["esp_platform"] = ESP_TARGET;
     root["firmware_version"] = APP_VERSION;
@@ -162,5 +162,6 @@ esp_err_t SystemStatus::systemStatus(PsychicRequest *request)
     root["cpu_reset_reason"] = verbosePrintResetReason(esp_reset_reason());
     root["uptime"] = millis() / 1000;
 
-    return response.send();
+    response->setLength();
+    request->send(response);
 }
