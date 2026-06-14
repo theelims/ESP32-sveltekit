@@ -143,7 +143,7 @@
 
 <SettingsCard collapsible={false}>
 	{#snippet icon()}
-		<Battery class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+		<Battery class="h-6 w-6" />
 	{/snippet}
 	{#snippet title()}
 		<span>Battery History</span>

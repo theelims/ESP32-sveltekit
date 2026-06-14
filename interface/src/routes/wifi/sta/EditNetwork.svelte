@@ -38,8 +38,7 @@
 	// Create helper variable to achieve reactivity
 	let staticIPConfig = $state(networkEditable.static_ip_config);
 
-	// Use this to directly access the form's DOM element
-	let formField: any = $state();
+	const titleId = `edit-network-title-${Math.random().toString(36).slice(2)}`;
 
 	let formErrors = $state({
 		ssid: false,
@@ -118,31 +117,28 @@
 			onSaveNetwork(networkEditable);
 		}
 	}
-
-	function preventDefault(fn: (event: Event) => void) {
-		return function (event: Event) {
-			event.preventDefault();
-			fn(event);
-		};
-	}
 </script>
 
 {#if isOpen}
 	<div
 		role="dialog"
+		aria-modal="true"
+		aria-labelledby={titleId}
 		class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center overflow-y-auto"
 		transition:fly={{ y: 50 }}
 	>
 		<div
 			class="rounded-box bg-base-100 shadow-secondary/30 pointer-events-auto flex min-w-fit max-w-md flex-col justify-between p-4 shadow-lg md:w-[28rem]"
 		>
-			<h2 class="text-base-content text-start text-2xl font-bold">{title}</h2>
+			<h2 id={titleId} class="text-base-content text-start text-2xl font-bold">{title}</h2>
 			<div class="divider my-2"></div>
 			<form
 				class="fieldset"
-				onsubmit={preventDefault(validateNetworkSettings)}
+				onsubmit={(e) => {
+					e.preventDefault();
+					validateNetworkSettings();
+				}}
 				novalidate
-				bind:this={formField}
 			>
 				<div
 					class="grid w-full grid-cols-1 content-center gap-4 px-4 sm:grid-cols-2"
@@ -157,16 +153,14 @@
 								: ''}"
 							bind:value={networkEditable.ssid}
 							id="ssid"
-							min="3"
-							max="32"
+							minlength="3"
+							maxlength="32"
 							required
 						/>
 						{#if formErrors.ssid}
 							<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
 								<label for="ssid" class="label">
-									<span class="text-error">
-										SSID must be between 3 and 32 characters long.
-									</span>
+									<span class="text-error"> SSID must be between 3 and 32 characters long. </span>
 								</label>
 							</div>
 						{/if}
@@ -209,9 +203,7 @@
 							{#if formErrors.local_ip}
 								<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
 									<label for="localIP" class="label">
-										<span class="text-error">
-											Local IP must be a valid IPv4 address.
-										</span>
+										<span class="text-error"> Local IP must be a valid IPv4 address. </span>
 									</label>
 								</div>
 							{/if}
@@ -234,9 +226,7 @@
 							{#if formErrors.gateway_ip}
 								<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
 									<label for="gateway" class="label">
-										<span class="text-error">
-											Gateway IP must be a valid IPv4 address.
-										</span>
+										<span class="text-error"> Gateway IP must be a valid IPv4 address. </span>
 									</label>
 								</div>
 							{/if}
@@ -258,9 +248,7 @@
 							{#if formErrors.subnet_mask}
 								<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
 									<label for="subnet" class="label">
-										<span class="text-error">
-											Subnet Mask must be a valid IPv4 subnet mask.
-										</span>
+										<span class="text-error"> Subnet Mask must be a valid IPv4 subnet mask. </span>
 									</label>
 								</div>
 							{/if}
@@ -282,9 +270,7 @@
 							{#if formErrors.dns_1}
 								<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
 									<label for="dns_1" class="label">
-										<span class="text-error">
-											DNS 1 must be a valid IPv4 address.
-										</span>
+										<span class="text-error"> DNS 1 must be a valid IPv4 address. </span>
 									</label>
 								</div>
 							{/if}
@@ -306,9 +292,7 @@
 							{#if formErrors.dns_2}
 								<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
 									<label for="dns_2" class="label">
-										<span class="text-error">
-											DNS 2 must be a valid IPv4 address.
-										</span>
+										<span class="text-error"> DNS 2 must be a valid IPv4 address. </span>
 									</label>
 								</div>
 							{/if}

@@ -36,7 +36,7 @@ try:
     from cryptography.hazmat.backends import default_backend
     from cryptography.hazmat.primitives import serialization
 except ImportError:
-    env.Execute("$PYTHONEXE -m pip install cryptography")
+    env.Execute('"$PYTHONEXE" -m pip install cryptography')
 
 
 ca_bundle_bin_file = 'x509_crt_bundle.bin'

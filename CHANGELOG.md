@@ -7,19 +7,67 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Add originID to StateUpdateResult update [#110](https://github.com/theelims/ESP32-sveltekit/pull/110)
-- Add originID to StateUpdateResult update [#110](https://github.com/theelims/ESP32-sveltekit/pull/110)
 - Ethernet Support [#113](https://github.com/theelims/ESP32-sveltekit/pull/113)
+- **Home Assistant MQTT Discovery integration** (`FT_HOME_ASSISTANT`): devices and all entities self-register in HA the moment MQTT connects — no manual HA configuration required.
+  - Composable entity hierarchy: `HACommandEntity`, `HASensorEntity`, `HAActuatorEntity<T>`, `HASwitch`, `HALight`, `HAButton`, `HABinarySensor`, `HASensor`
+  - `HAGroupedSwitchPublisher<T>` — N boolean settings as HA switch entities sharing one MQTT state topic
+  - `HAGroupedSensorPublisher` — N read-only sensor values sharing one MQTT state topic
+  - `HADevice` entity container with `registerControl/Config/Diagnostic`; auto-sets `entity_category`
+  - `HAService` core: `mainDevice()`, `publishAll()` via dedicated FreeRTOS task, `unpublishAll()`, sub-device support
+  - `HADiagnosticService` — heap %, temperature, status sensor, restart button with zero application code
+  - `HAUpdateService` — native HA `update` entity with live OTA installation progress and periodic GitHub release polling
+  - `HASettingsService` — web UI + flash persistence for HA settings (enabled, discovery prefix, device name, manufacturer, model)
+  - Sub-device architecture: `addSubDevice()` / `removeSubDevice()` for physically distinct nodes with own identity, topic namespace, and `suggested_area`
+  - Entire integration costs **zero flash and RAM** when `FT_HOME_ASSISTANT=0`
+- `GitHubReleaseService` — backend proxy for GitHub Releases API, shared by the Web UI firmware manager and `HAUpdateService`; browser never contacts `api.github.com` directly
+- `GitHubReleaseEndpoint` — REST endpoint `GET /rest/github-release` serving release lists and latest-version queries
+- Polymorphic `OTAUpdateCallback` interface with `WebSocketOTACallback` (Web UI) and `HAOTACallback` (HA-triggered OTA) so both upgrade paths share one OTA engine
+- `FirmwareUpdateEvents.h` centralises the `EVENT_OTA_UPDATE` constant and shared event schema used by both upload and download OTA paths
+- `UriInput.svelte` — reusable structured URI input: scheme dropdown, host field, port field, reactive `$derived` validation, `bind:error` for parent forms
+- `HAConfig.svelte` — Home Assistant settings panel embedded in the MQTT settings card
+- `SpinnerSmall.svelte` — compact inline spinner component
+- `HealthCheckService` — connection health monitoring
+- Restart / factory-reset overlay in `SystemStatus.svelte`: blur backdrop + spinner while device reboots, auto-dismisses when WebSocket reconnects, `InfoDialog` fallback after 30 s timeout
+- `docs/homeassistant.md` — HA integration reference documentation
+- Added default factory values for `FACTORY_HA_MANUFACTURER` ("ESP32 SvelteKit Project") and `FACTORY_HA_MODEL` ("ESP32 SvelteKit") in `factory_settings.ini`
 
 ### Changed
 
 - Changed the width of the confirm dialog.
 - SvelteKit bundling as single files to reduce heap consumption.
 - Rework of firmware upload [#107](https://github.com/theelims/ESP32-sveltekit/pull/107)
+- `DownloadFirmwareService::startOTAUpdate()` is now a public static method shared by the Web UI and `HAUpdateService`
+- OTA uses graceful `RestartService::restartNow()` instead of raw `ESP.restart()`, ensuring pending WebSocket and MQTT messages are delivered before the device goes offline
+- GitHub release asset downloads resolve redirects manually before TLS download, working around a `WiFiClientSecure` bug that silently discarded the CA bundle after a redirect
+- `UploadFirmwareService` hardened: MD5 pre-validation, chip ID check at byte offset 12, partition size limit via `esp_ota_get_next_update_partition()`, real-time progress events, early-disconnect abort
+- `GithubFirmwareManager.svelte` rewritten: uses `/rest/github-release` backend proxy, shows installed version with highlighted row, build target compatibility UI, backend error surfacing
+- `UploadFirmware.svelte` rewritten: MD5 pre-upload flow, per-HTTP-status-code error messages, client-side file type guard, auto-clearing input state
+- `MQTT.svelte`: `UriInput` component for broker URI with per-field reactive `$derived` validation; Apply button disabled while any field is invalid
+- `MQTTConfig.svelte` removed; replaced by `HAConfig.svelte` embedded in `MQTT.svelte`
+- Integrated Home Assistant configuration into the MQTT settings card as a nested collapsible section, removing the standalone HA settings card from the page.
+- Home Assistant settings now track unsaved changes (dirty state indicator) and the Apply button is disabled until a change is made.
+- Home Assistant settings enable toggle changed from checkbox to toggle switch for visual consistency.
+- Device Name placeholder in Home Assistant settings now dynamically shows the active firmware name (e.g. "empty falls back to firmware name: ESP32 SvelteKit").
+- Improved icon vertical alignment in `SettingsCard` and `Collapsible` components so the icon aligns with the first line even on wrapped titles.
+- GitHub Firmware Manager table header is now responsive — the date column collapses on small screens and the install button column is always visible.
+- Demo app: `LightMqttSettingsService` (hand-written HA discovery boilerplate) replaced by `LightSettingsService` using `HALight<LightState>` and `HAGroupedSwitchPublisher<LightSettings>`; LED driver upgraded from `digitalWrite` to `ledcWrite` PWM with FreeRTOS soft-fade and active-low support
+- Bump pioarduino platform to 55.03.36
+- App version bumped to 0.6.1
+- `ConfirmDialog`: added optional `onCancel` callback prop; cancel button now always closes the modal before invoking the callback; added optional `cancelClass` prop; replaced `any` types with typed `IconComponent`/`Labels`; added `aria-modal` and `aria-labelledby`
+- `InfoDialog`: added `variant` prop (`info`/`warning`/`error`) driving icon and button colour; variant icon shown in dialog title; typed props replacing `any`; added `aria-modal` and `aria-labelledby`
+- `UriInput`: refactored from two-effect ping-pong (fragile `writingValue` boolean) to single-source-of-truth using `lastExternalValue`; initial field state now seeded from `value` at script init; defensive regex escaping for scheme names
+- `MQTT`, `NTP`, `Accesspoint` settings: `$state()` now initialised with typed default objects (fixes svelte-check errors and undefined reads before first fetch); inline `e.preventDefault()` replaces `preventDefault()` wrapper; dead `formField` binding removed
+- `HAConfig`, `EditNetwork`, `Ethernet`, `EditUser`: dead `formField` binding and `preventDefault()` wrapper removed
 
-### Fixes
+### Fixed
 
 - WiFi reconnection issues [#109](https://github.com/theelims/ESP32-sveltekit/issues/109)
 - Blurred toast notifications [#114](https://github.com/theelims/ESP32-sveltekit/issues/114)
+- Fixed missing `shrink-0` on status hexagon icons in MQTT, NTP, Access Point, WiFi, System Status, Metrics, and User pages, preventing icons from shrinking incorrectly in flex layouts.
+- `HAGroupedSensorPublisher` and `HAGroupedSwitchPublisher`: added liveness guard (`std::shared_ptr<bool> _alive`) — destructor sets the flag to `false`; registered lambdas capture the shared_ptr by value and bail out if the publisher was already destroyed. Prevents a firmware crash when a publisher is torn down while its lambda still lives in `HAService::_publishCallbacks`
+- HA disable left stale entities: fixed wrong call order (`unpublishAll()` must run before `setEnabled(false)`) and missing `onUnpublishAll` hooks in grouped publishers — disabling HA now fully removes the device from the HA registry
+- WiFi reconnect stability: `WiFi.setSleep(false)` prevents packet loss from power-save mode; `manageSTA()` removed from `onStationModeDisconnected` event handler (triggered redundant `WiFi.begin()` calls); `WL_IDLE_STATUS` guard prevents overlapping connect attempts; `_lastConnectionAttempt` stamped after `WiFi.begin()` fires
+- Global icon class typo `lex-shrink-0` (missing `f`) fixed across NTP, WiFi, Access Point, Core Dump, Battery Metrics, System Metrics, and User Management pages
 
 ## [0.6.0] - 2025-11-03
 

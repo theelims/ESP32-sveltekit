@@ -51,35 +51,35 @@
 		}
 	}
 
-	function preventDefault(fn) {
-		return function (event) {
-			event.preventDefault();
-			fn.call(this, event);
-		};
-	}
+	const titleId = `edit-user-title-${Math.random().toString(36).slice(2)}`;
 </script>
 
 {#if isOpen}
 	<div
 		role="dialog"
+		aria-modal="true"
+		aria-labelledby={titleId}
 		class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center overflow-y-auto"
 		transition:fly={{ y: 50 }}
 	>
 		<div
 			class="rounded-box bg-base-100 shadow-secondary/30 pointer-events-auto flex min-w-fit max-w-md flex-col justify-between p-4 shadow-lg md:w-md"
 		>
-			<h2 class="text-base-content text-start text-2xl font-bold">{title}</h2>
+			<h2 id={titleId} class="text-base-content text-start text-2xl font-bold">{title}</h2>
 			<div class="divider my-2"></div>
 			<form
 				class="fieldset text-base-content mb-1 w-full"
-				onsubmit={preventDefault(handleSave)}
+				onsubmit={(e) => {
+					e.preventDefault();
+					handleSave();
+				}}
 				novalidate
 			>
 				<label class="label" for="username">Username</label>
 				<input
 					type="text"
-					min="3"
-					max="32"
+					minlength="3"
+					maxlength="32"
 					class="input invalid:border-error w-full invalid:border-2"
 					bind:value={user.username}
 					id="username"

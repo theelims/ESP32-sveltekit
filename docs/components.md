@@ -73,7 +73,7 @@ Three slots are available. Besides the main slot for the content there is a name
 
 ```
 <SettingsCard collapsible={true} open={false}>
-	<Icon slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+	<Icon slot="icon" class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">Title</span>
     ...
 </SettingsCard>

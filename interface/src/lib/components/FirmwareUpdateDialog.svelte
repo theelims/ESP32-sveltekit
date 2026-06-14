@@ -3,6 +3,7 @@
 	import { focusTrap } from 'svelte-focus-trap';
 	import { fly } from 'svelte/transition';
 	import { telemetry } from '$lib/stores/telemetry';
+	import { socket } from '$lib/stores/socket';
 	import Cancel from '~icons/tabler/x';
 	import Check from '~icons/tabler/check';
 	import AlertCircle from '~icons/tabler/alert-circle';
@@ -33,7 +34,7 @@
 		return 'Waiting for update...';
 	});
 
-	const RELOAD_COUNTDOWN_SECONDS = 10;
+	const RELOAD_COUNTDOWN_SECONDS = 15;
 	
 	let timerId: number | undefined = $state();
 	let countdown: number = $state(RELOAD_COUNTDOWN_SECONDS);
@@ -60,6 +61,15 @@
 			return () => {
 				if (timerId) clearInterval(timerId);
 			};
+		}
+	});
+
+	// Detect WebSocket disconnect during active OTA update.
+	// When the ESP32 reboots after a successful flash, the WebSocket connection drops
+	// before the "finished" event can be delivered. Treat this as a successful update.
+	$effect(() => {
+		if (!$socket && currentStatus === 'progress' && currentProgress >= 90) {
+			telemetry.setOTAStatus({ status: 'finished', progress: 100, error: '' });
 		}
 	});
 

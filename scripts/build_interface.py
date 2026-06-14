@@ -8,7 +8,7 @@
 #   Copyright (C) 2023 - 2024 theelims
 #   Copyright (C) 2023 Maxtrium B.V. [ code available under dual license ]
 #   Copyright (C) 2024 runeharlyk
-#   Copyright (C) 2025 hmbacher
+#   Copyright (C) 2026 hmbacher
 #
 #   All Rights Reserved. This software may be modified and distributed under
 #   the terms of the LGPL v3 license. See the LICENSE file for details.

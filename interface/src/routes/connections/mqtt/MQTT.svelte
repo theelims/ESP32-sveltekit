@@ -4,19 +4,45 @@
 	import { cubicOut } from 'svelte/easing';
 	import InputPassword from '$lib/components/InputPassword.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
+	import UriInput, { type UriProtocol } from '$lib/components/UriInput.svelte';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/state';
 	import { notifications } from '$lib/components/toasts/notifications';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import Collapsible from '$lib/components/Collapsible.svelte';
-	import MQTT from '~icons/tabler/topology-star-3';
+	import IconMQTT from '~icons/tabler/topology-star-3';
+	import IconSettings from '~icons/tabler/adjustments-alt';
 	import Client from '~icons/tabler/robot';
 	import type { MQTTSettings, MQTTStatus } from '$lib/types/models';
+	import HAConfig from './HAConfig.svelte';
 
-	let mqttSettings: MQTTSettings = $state();
-	let mqttStatus: MQTTStatus = $state();
+	const mqttProtocols: UriProtocol[] = [
+		{ scheme: 'mqtt', defaultPort: 1883 },
+		{ scheme: 'mqtts', defaultPort: 8883 },
+		{ scheme: 'ws', defaultPort: 80 },
+		{ scheme: 'wss', defaultPort: 443 }
+	];
 
-	let formField: any = $state();
+	const defaultMQTTSettings: MQTTSettings = {
+		enabled: false,
+		uri: '',
+		username: '',
+		password: '',
+		client_id: '',
+		keep_alive: 60,
+		clean_session: true,
+		message_interval_ms: 0
+	};
+	let mqttSettings: MQTTSettings = $state({ ...defaultMQTTSettings });
+	let strSettings: string = $state(JSON.stringify(defaultMQTTSettings));
+	let uriDirty = $state(false);
+	let isSettingsDirty: boolean = $derived(JSON.stringify(mqttSettings) !== strSettings || uriDirty);
+	let mqttStatus: MQTTStatus = $state({
+		enabled: false,
+		connected: false,
+		client_id: '',
+		last_error: ''
+	});
 
 	async function getMQTTStatus() {
 		try {
@@ -27,7 +53,9 @@
 					'Content-Type': 'application/json'
 				}
 			});
-			mqttStatus = await response.json();
+			if (response.ok) {
+				mqttStatus = await response.json();
+			}
 		} catch (error) {
 			console.error('Error:', error);
 		}
@@ -43,7 +71,10 @@
 					'Content-Type': 'application/json'
 				}
 			});
-			mqttSettings = await response.json();
+			if (response.ok) {
+				mqttSettings = await response.json();
+				strSettings = JSON.stringify(mqttSettings);
+			}
 		} catch (error) {
 			console.error('Error:', error);
 		}
@@ -62,13 +93,20 @@
 		}
 	});
 
-	let formErrors = $state({
-		host: false,
-		port: false,
-		keep_alive: false,
-		topic_length: false,
-		rate_limit: false
-	});
+	let uriError = $state(false);
+	let keepAliveError = $derived(
+		!!mqttSettings &&
+			(!Number.isFinite(Number(mqttSettings.keep_alive)) ||
+				Number(mqttSettings.keep_alive) < 1 ||
+				Number(mqttSettings.keep_alive) > 600)
+	);
+	let rateLimitError = $derived(
+		!!mqttSettings &&
+			(!Number.isFinite(Number(mqttSettings.message_interval_ms)) ||
+				Number(mqttSettings.message_interval_ms) < 0 ||
+				Number(mqttSettings.message_interval_ms) > 1000)
+	);
+	let hasErrors = $derived(uriError || keepAliveError || rateLimitError);
 
 	async function postMQTTSettings(data: MQTTSettings) {
 		try {
@@ -83,8 +121,9 @@
 			if (response.status == 200) {
 				notifications.success('MQTT settings updated.', 3000);
 				mqttSettings = await response.json();
+				strSettings = JSON.stringify(mqttSettings);
 			} else {
-				notifications.error('User not authorized.', 3000);
+				notifications.error('Updating MQTT settings failed.', 3000);
 			}
 		} catch (error) {
 			console.error('Error:', error);
@@ -93,60 +132,20 @@
 	}
 
 	function handleSubmitMQTT() {
-		let valid = true;
-
-		// Validate Server URI
-		const regexExpURL =
-			/^(mqtt|mqtts|ws|wss):\/\/((?:[a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+|(?:\d{1,3}\.){3}\d{1,3})(?::(\d{1,5}))?$/;
-
-		if (!regexExpURL.test(mqttSettings.uri)) {
-			valid = false;
-			formErrors.host = true;
-		} else {
-			formErrors.host = false;
-		}
-
-		// Validate if port is a number and within the right range
-		let keepalive = Number(mqttSettings.keep_alive);
-		if (1 <= keepalive && keepalive <= 600) {
-			formErrors.keep_alive = false;
-		} else {
-			formErrors.keep_alive = true;
-			valid = false;
-		}
-
-		// Validate it rate limit is a number and within the right range
-		let ratelimit = Number(mqttSettings.message_interval_ms);
-		if (0 <= ratelimit && ratelimit <= 1000) {
-			formErrors.rate_limit = false;
-		} else {
-			formErrors.rate_limit = true;
-			valid = false;
-		}
-
-		// Submit JSON to REST API
-		if (valid) {
+		if (!hasErrors) {
 			postMQTTSettings(mqttSettings);
-			//alert('Form Valid');
 		}
-	}
-
-	function preventDefault(fn) {
-		return function (event) {
-			event.preventDefault();
-			fn.call(this, event);
-		};
 	}
 </script>
 
 <SettingsCard collapsible={false}>
 	{#snippet icon()}
-		<MQTT class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+		<IconMQTT class="h-6 w-6" />
 	{/snippet}
 	{#snippet title()}
 		<span>MQTT</span>
 	{/snippet}
-	<div class="w-full">
+	<div class="w-full overflow-x-auto">
 		{#await getMQTTStatus()}
 			<Spinner />
 		{:then nothing}
@@ -156,11 +155,11 @@
 			>
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
 					<div
-						class="mask mask-hexagon h-auto w-10 {mqttStatus.connected === true
+						class="mask mask-hexagon h-auto w-10 shrink-0 {mqttStatus.connected === true
 							? 'bg-success'
 							: 'bg-error'}"
 					>
-						<MQTT
+						<IconMQTT
 							class="h-auto w-full scale-75 {mqttStatus.connected === true
 								? 'text-success-content'
 								: 'text-error-content'}"
@@ -181,7 +180,7 @@
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 shrink-0">
 						<Client class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -196,60 +195,61 @@
 	</div>
 
 	{#if !page.data.features.security || $user.admin}
-		<Collapsible open={false} class="shadow-lg" icon={null} opened={() => {}} closed={() => {}}>
+		<Collapsible open={false} class="shadow-lg" closed={getMQTTSettings} isDirty={isSettingsDirty}>
+			{#snippet icon()}
+				<IconSettings class="h-6 w-6" />
+			{/snippet}
 			{#snippet title()}
-				<span>Change MQTT Settings</span>
+				<span>General Settings</span>
 			{/snippet}
 
 			<form
-				onsubmit={preventDefault(handleSubmitMQTT)}
+				onsubmit={(e) => {
+					e.preventDefault();
+					handleSubmitMQTT();
+				}}
 				novalidate
-				bind:this={formField}
-				class="fieldset"
+			class="fieldset"
 			>
-				<div class="grid w-full grid-cols-1 content-center gap-x-4 gap-y-2 sm:grid-cols-2">
+				<div class="grid w-full grid-cols-1 content-center gap-x-4 gap-y-2 px-4 sm:grid-cols-2">
 					<!-- Enable -->
-					<label class="label inline-flex cursor-pointer content-end justify-start gap-4 text-base">
+					<label class="label inline-flex cursor-pointer content-end justify-start gap-4">
 						<input
 							type="checkbox"
 							bind:checked={mqttSettings.enabled}
 							class="checkbox checkbox-primary"
 						/>
-						Enable MQTT
+						<span>Enable MQTT</span>
 					</label>
-
 					<div class="hidden sm:block"></div>
 					<!-- URI -->
 					<div class="sm:col-span-2">
-						<label class="label" for="host">URI</label>
-						<input
-							type="text"
-							class="input w-full invalid:border-error invalid:border-2 {formErrors.host
-								? 'border-error border-2'
-								: ''}"
+						<UriInput
 							bind:value={mqttSettings.uri}
-							id="host"
-							min="3"
-							max="64"
-							required
+							bind:error={uriError}
+							bind:dirty={uriDirty}
+							protocols={mqttProtocols}
+							id="mqtt-uri"
 						/>
-						<label class="label" for="host">
-							<span class=" text-error {formErrors.host ? '' : 'hidden'}">Must be a valid URI</span>
-						</label>
 					</div>
 					<!-- Username -->
 					<div>
-						<label class="label" for="user">Username </label>
-						<input type="text" class="input w-full" bind:value={mqttSettings.username} id="user" />
+						<label class="label" for="user">Username</label>
+						<input
+							type="text"
+							class="input w-full"
+							bind:value={mqttSettings.username}
+							id="user"
+						/>
 					</div>
 					<!-- Password -->
 					<div>
-						<label class="label" for="pwd">Password </label>
+						<label class="label" for="pwd">Password</label>
 						<InputPassword bind:value={mqttSettings.password} id="pwd" />
 					</div>
 					<!-- Client ID -->
 					<div>
-						<label class="label" for="clientid">Client ID </label>
+						<label class="label" for="clientid">Client ID</label>
 						<input
 							type="text"
 							class="input w-full"
@@ -259,10 +259,10 @@
 					</div>
 					<!-- Keep Alive -->
 					<div>
-						<label class="label" for="keepalive">Keep Alive </label>
+						<label class="label" for="keepalive">Keep Alive</label>
 						<label
 							for="keepalive"
-							class="input w-full invalid:border-error invalid:border-2 {formErrors.keep_alive
+							class="input w-full invalid:border-error invalid:border-2 {keepAliveError
 								? 'border-error border-2'
 								: ''}"
 						>
@@ -277,18 +277,18 @@
 							/>
 							<span class="label">Seconds</span>
 						</label>
-						<label for="keepalive" class=""
-							><span class=" text-error {formErrors.keep_alive ? '' : 'hidden'}"
-								>Must be between 1 and 600 seconds</span
-							></label
-						>
+						{#if keepAliveError}
+							<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
+								<span class="text-error text-sm">Must be between 1 and 600 seconds</span>
+							</div>
+						{/if}
 					</div>
 					<!-- Rate Limit -->
 					<div>
 						<label class="label" for="ratelimit">Publish Message Interval</label>
 						<label
 							for="ratelimit"
-							class="input w-full invalid:border-error invalid:border-2 {formErrors.rate_limit
+							class="input w-full invalid:border-error invalid:border-2 {rateLimitError
 								? 'border-error border-2'
 								: ''}"
 						>
@@ -303,11 +303,11 @@
 							/>
 							<span class="label">Milliseconds</span>
 						</label>
-						<label for="ratelimit" class=""
-							><span class=" text-error {formErrors.rate_limit ? '' : 'hidden'}"
-								>Must be between 0 and 1000 milliseconds</span
-							></label
-						>
+						{#if rateLimitError}
+							<div transition:slide|local={{ duration: 300, easing: cubicOut }}>
+								<span class="text-error text-sm">Must be between 0 and 1000 milliseconds</span>
+							</div>
+						{/if}
 					</div>
 					<!-- Clean Session -->
 					<label
@@ -317,14 +317,17 @@
 							type="checkbox"
 							bind:checked={mqttSettings.clean_session}
 							class="checkbox checkbox-primary"
-						/>Clean Session?
+						/>
+						<span class="">Clean Session?</span>
 					</label>
 				</div>
 				<div class="divider mb-2 mt-0"></div>
-				<div class="flex flex-wrap justify-end gap-2">
-					<button class="btn btn-primary" type="submit">Apply Settings</button>
+				<div class="mx-4 flex flex-wrap justify-end gap-2">
+					<button class="btn btn-primary" type="submit" disabled={hasErrors || !isSettingsDirty}>Apply Settings</button>
 				</div>
 			</form>
 		</Collapsible>
+
+		<HAConfig />
 	{/if}
 </SettingsCard>

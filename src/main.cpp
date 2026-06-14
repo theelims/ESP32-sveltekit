@@ -13,22 +13,18 @@
  **/
 
 #include <ESP32SvelteKit.h>
-#include <LightMqttSettingsService.h>
 #include <LightStateService.h>
+#include <LightSettingsService.h>
 #include <PsychicHttpServer.h>
 
 #define SERIAL_BAUD_RATE 115200
 
 PsychicHttpServer server;
 
-ESP32SvelteKit esp32sveltekit(&server, 70);
+ESP32SvelteKit esp32sveltekit(&server, 75);
 
-LightMqttSettingsService lightMqttSettingsService = LightMqttSettingsService(&server,
-                                                                             &esp32sveltekit);
-
-LightStateService lightStateService = LightStateService(&server,
-                                                        &esp32sveltekit,
-                                                        &lightMqttSettingsService);
+LightSettingsService lightSettingsService = LightSettingsService(&server, &esp32sveltekit);
+LightStateService lightStateService = LightStateService(&server, &esp32sveltekit, &lightSettingsService);
 
 void setup()
 {
@@ -38,10 +34,11 @@ void setup()
     // start ESP32-SvelteKit
     esp32sveltekit.begin();
 
+    // load light settings first (LightStateService reads them on begin)
+    lightSettingsService.begin();
+
     // load the initial light settings
     lightStateService.begin();
-    // start the light service
-    lightMqttSettingsService.begin();
 }
 
 void loop()

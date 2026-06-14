@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { dndzone } from 'svelte-dnd-action';
+	import { dndzone, dragHandleZone, dragHandle } from 'svelte-dnd-action';
 	import type { Snippet } from 'svelte';
 
 	interface Props {
@@ -7,6 +7,7 @@
 		onReorder?: (reorderedItems: any[]) => void;
 		flipDurationMs?: number;
 		dragDisabled?: boolean;
+		useHandleMode?: boolean;
 		class?: string;
 		children: Snippet<[{ item: any; index: number; originalItem: any }]>;
 	}
@@ -16,10 +17,12 @@
 		onReorder = () => {},
 		flipDurationMs = 200,
 		dragDisabled = false,
+		useHandleMode = false,
 		class: className = '',
 		children
 	}: Props = $props();
 
+	const zone = useHandleMode ? dragHandleZone : dndzone;
 	// Create a state array with IDs for drag-and-drop functionality
 	let itemsWithIds: any[] = $state([]);
 
@@ -55,7 +58,7 @@
 </script>
 
 <section
-	use:dndzone={{
+	use:zone={{
 		items: itemsWithIds,
 		flipDurationMs,
 		dropTargetStyle: {}, // This is to actively clear default styles

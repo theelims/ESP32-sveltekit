@@ -25,12 +25,11 @@
 	// Clear file input when BIN upload finishes (success or error)
 	$effect(() => {
 		const status = $telemetry.ota_status.status;
-		
-		if ((status === 'finished' || status === 'error') && fileInput) {
-			fileInput.value = '';
-			files = undefined;
+
+		if (status === 'finished' || status === 'error') {
+			clearFileInput();
 		}
-		
+
 		// Clear MD5 status when firmware update succeeds
 		if (status === 'finished') {
 			md5StatusMessage = '';
@@ -80,13 +79,7 @@
 				}
 				md5StatusMessage = errorMsg;
 				md5StatusType = 'error';
-
-				// Clear file input on error
-				if (fileInput) {
-					fileInput.value = '';
-					files = undefined;
-				}
-
+				clearFileInput();
 				return;
 			}
 
@@ -97,23 +90,13 @@
 				md5Hash = result.md5;
 				md5StatusMessage = 'MD5 hash uploaded successfully.';
 				md5StatusType = 'success';
-
-				// Clear file input for next upload
-				if (fileInput) {
-					fileInput.value = '';
-					files = undefined;
-				}
+				clearFileInput();
 			}
 		} catch (error) {
 			console.error('Error:', error);
 			md5StatusMessage = 'Network error during upload';
 			md5StatusType = 'error';
-
-			// Clear file input on network error
-			if (fileInput) {
-				fileInput.value = '';
-				files = undefined;
-			}
+			clearFileInput();
 		}
 	}
 
@@ -181,10 +164,14 @@
 			fileValidationError = `Invalid file type "${fileExtension}". Please upload a .bin or .md5 file.`;
 
 			// Clear the invalid file selection
-			if (fileInput) {
-				fileInput.value = '';
-				files = undefined;
-			}
+			clearFileInput();
+		}
+	}
+
+	function clearFileInput() {
+		if (fileInput) {
+			fileInput.value = '';
+			files = undefined;
 		}
 	}
 
@@ -195,6 +182,10 @@
 			labels: {
 				cancel: { label: 'Abort', icon: Cancel },
 				confirm: { label: 'Upload', icon: OTA }
+			},
+			onCancel: () => {
+				modals.close();
+				clearFileInput();
 			},
 			onConfirm: () => {
 				modals.close();
@@ -211,7 +202,7 @@
 
 <SettingsCard collapsible={false}>
 	{#snippet icon()}
-		<OTA class="flex-shrink-0 mr-2 h-6 w-6 self-end rounded-full" />
+		<OTA class="h-6 w-6 rounded-full" />
 	{/snippet}
 	{#snippet title()}
 		<span>Upload Firmware</span>

@@ -136,6 +136,7 @@ public:
     String getStatusTopic();
     PsychicMqttClient *getMqttClient();
     void disconnect();
+    void shutdown();
 
 protected:
     void onConfigUpdated();
@@ -157,6 +158,7 @@ private:
 
     // variable to help manage connection
     bool _reconfigureMqtt;
+    bool _shuttingDown = false;
     String _lastError;
 
     // the MQTT client instance

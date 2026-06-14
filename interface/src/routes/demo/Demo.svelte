@@ -9,10 +9,9 @@
 	import Save from '~icons/tabler/device-floppy';
 	import Reload from '~icons/tabler/reload';
 	import { socket } from '$lib/stores/socket';
-	import type { LightState } from '$lib/types/models';
+	import type { LightState, LightSettings } from '$lib/types/models';
 
 	let lightState: LightState = $state({ led_on: false });
-
 	let lightOn = $state(false);
 
 	async function getLightstate() {
@@ -29,17 +28,7 @@
 		} catch (error) {
 			console.error('Error:', error);
 		}
-		return;
 	}
-
-	onMount(() => {
-		socket.on<LightState>('led', (data) => {
-			lightState = data;
-		});
-		getLightstate();
-	});
-
-	onDestroy(() => socket.off('led'));
 
 	async function postLightstate() {
 		try {
@@ -62,11 +51,44 @@
 			console.error('Error:', error);
 		}
 	}
+
+	let lightSettings: LightSettings = $state({ soft_dimming: false, active_low: true });
+
+	async function loadLightSettings() {
+		try {
+			const response = await fetch('/rest/lightSettings', {
+				method: 'GET',
+				headers: {
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					'Content-Type': 'application/json'
+				}
+			});
+			lightSettings = await response.json();
+		} catch (error) {
+			console.error('Error:', error);
+		}
+	}
+
+	onMount(() => {
+		socket.on<LightState>('led', (data) => {
+			lightState = data;
+		});
+		socket.on<LightSettings>('lightSettings', (data) => {
+			lightSettings = data;
+		});
+		getLightstate();
+		loadLightSettings();
+	});
+
+	onDestroy(() => {
+		socket.off('led');
+		socket.off('lightSettings');
+	});
 </script>
 
 <SettingsCard collapsible={false}>
 	{#snippet icon()}
-		<Light class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+		<Light class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
 	{/snippet}
 	{#snippet title()}
 		<span>Light State</span>
@@ -109,9 +131,39 @@
 					type="checkbox"
 					class="toggle toggle-primary"
 					bind:checked={lightState.led_on}
-					onchange={() => {
-						socket.sendEvent('led', lightState);
-					}}
+					onchange={() => { socket.sendEvent('led', lightState); notifications.success('Light state updated.', 3000); }}
+				/>
+			</label>
+		</div>
+		<div class="divider"></div>
+		<h1 class="text-xl font-semibold">Configuration Example</h1>
+		<div class="alert alert-info my-2 shadow-lg">
+			<Info class="h-6 w-6 shrink-0 stroke-current" />
+			<span
+				>Light behaviour settings. With Home Assistant integration enabled, these appear as
+				configuration switches on the HA device page and can be controlled from there in
+				real-time.</span
+			>
+		</div>
+		<div class="fieldset w-52">
+			<label class="label cursor-pointer">
+				<span class="text-base">Soft Dimming</span>
+				<input
+					type="checkbox"
+					class="toggle toggle-primary"
+					bind:checked={lightSettings.soft_dimming}
+					onchange={() => socket.sendEvent('lightSettings', lightSettings)}
+				/>
+			</label>
+		</div>
+		<div class="fieldset w-52">
+			<label class="label cursor-pointer">
+				<span class="text-base">Active Low</span>
+				<input
+					type="checkbox"
+					class="toggle toggle-primary"
+					bind:checked={lightSettings.active_low}
+					onchange={() => socket.sendEvent('lightSettings', lightSettings)}
 				/>
 			</label>
 		</div>

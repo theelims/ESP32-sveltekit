@@ -24,6 +24,7 @@
 namespace SettingValue
 {
     String format(String value);
+    String getUniqueId();
 };
 
 #endif // end SettingValue

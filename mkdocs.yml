@@ -12,6 +12,7 @@ nav:
       - components.md
   - "Back End":
       - statefulservice.md
+      - homeassistant.md
       - restfulapi.md
 
 site_author: elims

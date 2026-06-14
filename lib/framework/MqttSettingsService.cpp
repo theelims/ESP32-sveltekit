@@ -168,7 +168,7 @@ void MqttSettingsService::onConfigUpdated()
 
 void MqttSettingsService::onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t info)
 {
-    if (_state.enabled)
+    if (_state.enabled && !_shuttingDown)
     {
         ESP_LOGI(SVK_TAG, "WiFi connection established, starting MQTT client.");
         onConfigUpdated();
@@ -177,7 +177,7 @@ void MqttSettingsService::onStationModeGotIP(WiFiEvent_t event, WiFiEventInfo_t 
 
 void MqttSettingsService::onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info)
 {
-    if (_state.enabled)
+    if (_state.enabled && !_shuttingDown)
     {
         ESP_LOGI(SVK_TAG, "WiFi connection dropped, stopping MQTT client.");
         onConfigUpdated();
@@ -235,6 +235,12 @@ void MqttSettingsService::setStatusTopic(String statusTopic)
 String MqttSettingsService::getStatusTopic()
 {
     return String(_retainedWillTopic);
+}
+
+void MqttSettingsService::shutdown()
+{
+    _shuttingDown = true;
+    disconnect();
 }
 
 void MqttSettingsService::disconnect()

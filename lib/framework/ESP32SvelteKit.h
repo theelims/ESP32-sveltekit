@@ -27,6 +27,8 @@
 #include <BatteryService.h>
 #include <FactoryResetService.h>
 #include <DownloadFirmwareService.h>
+#include <GitHubReleaseService.h>
+#include <GitHubReleaseEndpoint.h>
 #include <EventSocket.h>
 #include <MqttSettingsService.h>
 #include <MqttStatus.h>
@@ -39,6 +41,7 @@
 #include <SleepService.h>
 #include <SystemStatus.h>
 #include <CoreDump.h>
+#include <HealthCheckService.h>
 #include <WiFiScanner.h>
 #include <WiFiSettingsService.h>
 #include <WiFiStatus.h>
@@ -47,6 +50,13 @@
 #include <ESPFS.h>
 #include <PsychicHttp.h>
 #include <vector>
+
+#if FT_ENABLED(FT_HOME_ASSISTANT)
+#include <HomeAssistant/HAService.h>
+#include <HomeAssistant/HASettingsService.h>
+#include <HomeAssistant/HAUpdateService.h>
+#include <HomeAssistant/HADiagnosticService.h>
+#endif
 
 #ifdef EMBED_WWW
 #include <WWWData.h>
@@ -183,6 +193,41 @@ public:
         return &_restartService;
     }
 
+#if FT_ENABLED(FT_DOWNLOAD_FIRMWARE)
+
+    DownloadFirmwareService *getDownloadFirmwareService()
+    {
+        return &_downloadFirmwareService;
+    }
+#endif
+
+#if FT_ENABLED(FT_HOME_ASSISTANT)
+    HAService *getHAService()
+    {
+        return &_haService;
+    }
+
+    HASettingsService *getHASettingsService()
+    {
+        return &_haSettingsService;
+    }
+
+    HAUpdateService *getHAUpdateService()
+    {
+        return &_haUpdateService;
+    }
+
+    HADiagnosticService *getHADiagnosticService()
+    {
+        return &_haDiagnosticService;
+    }
+#endif
+
+    HealthCheckService *getHealthCheckService()
+    {
+        return &_healthCheckService;
+    }
+
     void factoryReset()
     {
         _factoryResetService.factoryReset();
@@ -229,6 +274,13 @@ private:
 #endif
 #if FT_ENABLED(FT_DOWNLOAD_FIRMWARE)
     DownloadFirmwareService _downloadFirmwareService;
+    GitHubReleaseEndpoint _githubReleaseEndpoint;
+#endif
+#if FT_ENABLED(FT_HOME_ASSISTANT)
+    HAService _haService;
+    HASettingsService _haSettingsService;
+    HAUpdateService _haUpdateService;
+    HADiagnosticService _haDiagnosticService;
 #endif
 #if FT_ENABLED(FT_MQTT)
     MqttSettingsService _mqttSettingsService;
@@ -251,6 +303,7 @@ private:
 #endif
     RestartService _restartService;
     FactoryResetService _factoryResetService;
+    HealthCheckService _healthCheckService;
     SystemStatus _systemStatus;
 
     String _appName = APP_NAME;

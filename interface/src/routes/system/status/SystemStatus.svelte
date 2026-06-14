@@ -4,6 +4,7 @@
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/state';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
+	import InfoDialog from '$lib/components/InfoDialog.svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import { slide } from 'svelte/transition';
@@ -45,9 +46,45 @@
 		return systemInformation;
 	}
 
-	onMount(() => socket.on('analytics', handleSystemData));
+	const RESTART_TIMEOUT_MS = 30_000;
+	type RestartState = 'idle' | 'restarting' | 'failed';
+	let restartState: RestartState = $state('idle');
+	let restartTimeoutId: ReturnType<typeof setTimeout>;
 
-	onDestroy(() => socket.off('analytics', handleSystemData));
+	function startRestartOverlay() {
+		restartState = 'restarting';
+		restartTimeoutId = setTimeout(() => {
+			restartState = 'failed';
+			modals.open(InfoDialog as any, {
+				title: 'Reconnect Failed',
+				message: `Device did not reconnect within ${RESTART_TIMEOUT_MS / 1000} seconds.`,
+				onDismiss: () => {
+					modals.close();
+					restartState = 'idle';
+					window.location.reload();
+				},
+				dismiss: { label: 'Refresh Page', icon: Power }
+			});
+		}, RESTART_TIMEOUT_MS);
+	}
+
+	function handleSocketOpen() {
+		if (restartState === 'idle') return;
+		clearTimeout(restartTimeoutId);
+		if (restartState === 'failed') modals.close();
+		restartState = 'idle';
+	}
+
+	onMount(() => {
+		socket.on('analytics', handleSystemData);
+		socket.on('open', handleSocketOpen);
+	});
+
+	onDestroy(() => {
+		socket.off('analytics', handleSystemData);
+		socket.off('open', handleSocketOpen);
+		clearTimeout(restartTimeoutId);
+	});
 
 	const handleSystemData = (data: Analytics) =>
 		(systemInformation = { ...systemInformation, ...data });
@@ -71,6 +108,7 @@
 			},
 			onConfirm: () => {
 				modals.close();
+				startRestartOverlay();
 				postRestart();
 			}
 		});
@@ -95,6 +133,7 @@
 			},
 			onConfirm: () => {
 				modals.close();
+				startRestartOverlay();
 				postFactoryReset();
 			}
 		});
@@ -154,7 +193,7 @@
 
 <SettingsCard collapsible={false}>
 	{#snippet icon()}
-		<Health class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+		<Health class="h-6 w-6" />
 	{/snippet}
 	{#snippet title()}
 		<span>System Status</span>
@@ -169,7 +208,7 @@
 				transition:slide|local={{ duration: 300, easing: cubicOut }}
 			>
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 shrink-0">
 						<Stopwatch class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -300,7 +339,7 @@
 					<div>
 						<div class="font-bold">Firmware Version</div>
 						<div class="text-sm opacity-75">
-							{systemInformation.firmware_version}
+							{systemInformation.firmware_version} @ {systemInformation.build_target}
 						</div>
 					</div>
 				</div>
@@ -376,3 +415,14 @@
 		{/if}
 	</div>
 </SettingsCard>
+
+{#if restartState !== 'idle'}
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-base-100/60 backdrop-blur-sm">
+		{#if restartState === 'restarting'}
+			<div class="flex flex-col items-center gap-4">
+				<span class="loading loading-spinner loading-xl text-primary"></span>
+				<p class="text-lg">Restarting...</p>
+			</div>
+		{/if}
+	</div>
+{/if}

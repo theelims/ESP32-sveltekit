@@ -6,8 +6,8 @@ function createWebSocket() {
 	const { subscribe, set } = writable(false);
 	const socketEvents = ['open', 'close', 'error', 'message', 'unresponsive'] as const;
 	type SocketEvent = (typeof socketEvents)[number];
-	let unresponsiveTimeoutId: number;
-	let reconnectTimeoutId: number;
+	let unresponsiveTimeoutId: ReturnType<typeof setTimeout>;
+	let reconnectTimeoutId: ReturnType<typeof setTimeout>;
 	let ws: WebSocket;
 	let socketUrl: string | URL;
 	let event_use_json = false;
@@ -29,12 +29,25 @@ function createWebSocket() {
 	}
 
 	function connect() {
-		//console.log('connect');
-		ws = new WebSocket(socketUrl);
-		ws.binaryType = 'arraybuffer';
+		// Close existing connection if any
+		if (ws?.readyState === WebSocket.OPEN) {
+			ws.close();
+		}
+
+		try {
+			ws = new WebSocket(socketUrl);
+			ws.binaryType = 'arraybuffer';
+		} catch (error) {
+			console.error('WebSocket connection failed:', error);
+			// Retry connection after delay
+			reconnectTimeoutId = setTimeout(connect, 1000);
+			return;
+		}
+
 		ws.onopen = (ev) => {
 			set(true);
 			clearTimeout(reconnectTimeoutId);
+			resetUnresponsiveCheck();
 			listeners.get('open')?.forEach((listener) => listener(ev));
 			for (const event of listeners.keys()) {
 				if (socketEvents.includes(event as SocketEvent)) continue;
@@ -65,27 +78,40 @@ function createWebSocket() {
 		let eventListeners = listeners.get(event);
 		if (!eventListeners) return;
 
-		if (!eventListeners.size) {
-			sendEvent('unsubscribe', event);
-		}
 		if (listener) {
-			eventListeners?.delete(listener);
+			eventListeners.delete(listener);
 		} else {
+			eventListeners.clear();
+		}
+
+		// If no more listeners for this event, unsubscribe from server
+		if (eventListeners.size === 0) {
+			if (!socketEvents.includes(event as SocketEvent)) {
+				sendEvent('unsubscribe', event);
+			}
 			listeners.delete(event);
 		}
 	}
 
 	function resetUnresponsiveCheck() {
 		clearTimeout(unresponsiveTimeoutId);
-		unresponsiveTimeoutId = setTimeout(() => disconnect('unresponsive'), 2000);
+		unresponsiveTimeoutId = setTimeout(() => disconnect('unresponsive'), 10000);
 	}
 
 	function send(msg: unknown) {
-		if (!ws || ws.readyState !== WebSocket.OPEN) return;
-		if (event_use_json) {
-			ws.send(JSON.stringify(msg));
-		} else {
-			ws.send(msgpack.encode(msg));
+		if (!ws || ws.readyState !== WebSocket.OPEN) {
+			console.warn('WebSocket not open, cannot send message');
+			return;
+		}
+		
+		try {
+			if (event_use_json) {
+				ws.send(JSON.stringify(msg));
+			} else {
+				ws.send(msgpack.encode(msg));
+			}
+		} catch (error) {
+			console.error('Failed to send WebSocket message:', error);
 		}
 	}
 

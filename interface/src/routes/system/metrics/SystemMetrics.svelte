@@ -358,7 +358,7 @@
 
 <SettingsCard collapsible={false}>
 	{#snippet icon()}
-		<Metrics class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+		<Metrics class="h-6 w-6" />
 	{/snippet}
 	{#snippet title()}
 		<span>System Metrics</span>

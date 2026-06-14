@@ -73,11 +73,12 @@ lightStateService.removeUpdateHandler(myUpdateHandler);
 
 An "originId" is passed to the update handler which may be used to identify the origin of an update. The default origin values the framework provides are:
 
-| Origin                     | Description                                     |
-| -------------------------- | ----------------------------------------------- |
-| http                       | An update sent over REST (HttpEndpoint)         |
-| mqtt                       | An update sent over MQTT (MqttEndpoint)         |
-| websocketserver:{clientId} | An update sent over WebSocket (WebSocketServer) |
+| Origin                     | Description                                          |
+| -------------------------- | ---------------------------------------------------- |
+| http                       | An update sent over REST (HttpEndpoint)              |
+| mqtt                       | An update sent over MQTT (MqttEndpoint)              |
+| websocketserver:{clientId} | An update sent over WebSocket (WebSocketServer)      |
+| ha                         | An update sent via Home Assistant MQTT Discovery     |
 
 ### Hook Handler
 
@@ -301,6 +302,10 @@ _mqttEndpoint.configureBroker("homeassistant/light/desk_lamp/set", "homeassistan
 
 The demo project allows the user to modify the MQTT topics via the UI so they can be changed without re-flashing the firmware.
 
+!!! tip "Home Assistant MQTT Discovery"
+
+    For Home Assistant integration the framework provides a higher-level abstraction built on top of the raw MQTT client. It handles discovery config publishing, state confirmation, and command subscriptions automatically. See the [Home Assistant Integration](homeassistant.md) documentation for details.
+
 ## Event Socket
 
 Beside RESTful HTTP Endpoints the Event Socket System provides a convenient communication path between the client and the ESP32. It uses a single WebSocket connection to synchronize state and to push realtime data to the client. The client needs to subscribe to the topics he is interested. Only clients who have an active subscription will receive data. Every authenticated client may make use of this system as the security settings are set to `AuthenticationPredicates::IS_AUTHENTICATED`.
@@ -409,15 +414,14 @@ Various settings support placeholder substitution, indicated by comments in [fac
 | #{unique_id} | A unique identifier derived from the MAC address, e.g. "0b0a859d6816" |
 | #{random}    | A random number encoded as a hex string, e.g. "55722f94"              |
 
-You may use SettingValue::format in your own code if you require the use of these placeholders. This is demonstrated in the demo project:
+You may use SettingValue::format in your own code if you require the use of these placeholders:
 
 ```cpp
-  static StateUpdateResult update(JsonObject& root, LightMqttSettings& settings) {
-    settings.mqttPath = root["mqtt_path"] | SettingValue::format("homeassistant/light/#{unique_id}");
-    settings.name = root["name"] | SettingValue::format("light-#{unique_id}");
-    settings.uniqueId = root["unique_id"] | SettingValue::format("light-#{unique_id}");
+static StateUpdateResult update(JsonObject &root, MySettings &settings, const String &originId) {
+    settings.clientId = root["client_id"] | SettingValue::format("device-#{unique_id}");
+    settings.topic    = root["topic"]     | SettingValue::format("sensors/#{platform}/#{unique_id}");
     return StateUpdateResult::CHANGED;
-  }
+}
 ```
 
 ## Accessing settings and services
@@ -434,6 +438,7 @@ The framework supplies access to various features via getter functions:
 | getNTPSettingsService()      | Configures and manages the network time            |
 | getMqttSettingsService()     | Configures and manages the MQTT connection         |
 | getMqttClient()              | Provides direct access to the MQTT client instance |
+| getHAService()               | Provides access to the Home Assistant MQTT Discovery service |
 | getNotificationEvents()      | Lets you send push notifications to all clients    |
 | getSleepService()            | Send the ESP32 into deep sleep                     |
 | getBatteryService()          | Update battery information on the client           |

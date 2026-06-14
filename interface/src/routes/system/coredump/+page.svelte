@@ -48,7 +48,7 @@
 >
 	<SettingsCard collapsible={false}>
 		{#snippet icon()}
-			<CoreDump class="lex-shrink-0 mr-2 h-6 w-6 self-end rounded-full" />
+			<CoreDump class="h-6 w-6 rounded-full" />
 		{/snippet}
 		{#snippet title()}
 			<span>Core Dump</span>

@@ -60,11 +60,9 @@ export type LightState = {
 	led_on: boolean;
 };
 
-export type BrokerSettings = {
-	mqtt_path: string;
-	name: string;
-	unique_id: string;
-	status_topic: string;
+export type LightSettings = {
+	soft_dimming: boolean;
+	active_low: boolean;
 };
 
 export type NTPStatus = {
@@ -118,6 +116,7 @@ export type OTAStatus = {
 export type StaticSystemInformation = {
 	esp_platform: string;
 	firmware_version: string;
+	build_target: string;
 	cpu_freq_mhz: number;
 	cpu_type: string;
 	cpu_rev: number;
@@ -149,6 +148,14 @@ export type MQTTSettings = {
 	keep_alive: number;
 	clean_session: boolean;
 	message_interval_ms: number;
+};
+
+export type HASettings = {
+	enabled: boolean;
+	discovery_prefix: string;
+	device_name: string;
+	manufacturer: string;
+	model: string;
 };
 
 

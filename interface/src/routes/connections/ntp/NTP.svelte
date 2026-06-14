@@ -16,8 +16,19 @@
 	import Stopwatch from '~icons/tabler/24-hours';
 	import type { NTPSettings, NTPStatus } from '$lib/types/models';
 
-	let ntpSettings: NTPSettings = $state();
-	let ntpStatus: NTPStatus = $state();
+	let ntpSettings: NTPSettings = $state({
+		enabled: false,
+		server: '',
+		tz_label: '',
+		tz_format: ''
+	});
+	let ntpStatus: NTPStatus = $state({
+		status: 0,
+		utc_time: '',
+		local_time: '',
+		server: '',
+		uptime: 0
+	});
 
 	async function getNTPStatus() {
 		try {
@@ -62,8 +73,6 @@
 			getNTPSettings();
 		}
 	});
-
-	let formField: any = $state();
 
 	let formErrors = $state({
 		server: false
@@ -143,18 +152,11 @@
 
 		return result;
 	}
-
-	function preventDefault(fn) {
-		return function (event) {
-			event.preventDefault();
-			fn.call(this, event);
-		};
-	}
 </script>
 
 <SettingsCard collapsible={false}>
 	{#snippet icon()}
-		<Clock class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+		<Clock class="h-6 w-6" />
 	{/snippet}
 	{#snippet title()}
 		<span>Network Time</span>
@@ -169,7 +171,7 @@
 			>
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
 					<div
-						class="mask mask-hexagon h-auto w-10 {ntpStatus.status === 1
+						class="mask mask-hexagon h-auto w-10 shrink-0 {ntpStatus.status === 1
 							? 'bg-success'
 							: 'bg-error'}"
 					>
@@ -188,7 +190,7 @@
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 shrink-0">
 						<Server class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -200,7 +202,7 @@
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 shrink-0">
 						<Clock class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -215,7 +217,7 @@
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 shrink-0">
 						<UTC class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -231,7 +233,7 @@
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 shrink-0">
 						<Stopwatch class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -252,9 +254,11 @@
 			{/snippet}
 			<form
 				class="fieldset"
-				onsubmit={preventDefault(handleSubmitNTP)}
+				onsubmit={(e) => {
+					e.preventDefault();
+					handleSubmitNTP();
+				}}
 				novalidate
-				bind:this={formField}
 			>
 				<label class="label text-base inline-flex cursor-pointer content-end justify-start gap-4">
 					<input

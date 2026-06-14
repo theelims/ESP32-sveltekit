@@ -21,3 +21,4 @@ ssl_certs/cacert.pem
 /scripts/__pycache__
 .DS_Store
 *.bak
+.claude

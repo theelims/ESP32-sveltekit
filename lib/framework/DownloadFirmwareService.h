@@ -25,6 +25,7 @@
 
 #include <WiFiClientSecure.h>
 #include <HTTPUpdate.h>
+#include <OTAUpdateCallback.h>
 
 #define GITHUB_FIRMWARE_PATH "/rest/downloadUpdate"
 #define OTA_TASK_STACK_SIZE 9216
@@ -35,6 +36,19 @@ public:
     DownloadFirmwareService(PsychicHttpServer *server, SecurityManager *securityManager, EventSocket *socket);
 
     void begin();
+
+    /**
+     * @brief Start HTTP OTA update in background task
+     * 
+     * Downloads and flashes firmware from the given URL. Upon success, performs
+     * graceful restart via RestartService (WiFi disconnect + MDNS cleanup) to ensure
+     * all pending WebSocket/MQTT messages are delivered before reboot.
+     * 
+     * @param url Direct URL to firmware binary
+     * @param callback OTAUpdateCallback for progress/error reporting (heap-allocated, deleted by task)
+     * @return true if task creation succeeded, false otherwise
+     */
+    static bool startOTAUpdate(const String& url, OTAUpdateCallback* callback);
 
 private:
     SecurityManager *_securityManager;

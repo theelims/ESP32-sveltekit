@@ -39,6 +39,10 @@ void WiFiSettingsService::initWiFi()
     // Disable WiFi config persistance and auto reconnect
     WiFi.persistent(false);
     WiFi.setAutoReconnect(false);
+    
+    // Disable WiFi power save to prevent packet loss
+    WiFi.setSleep(false);
+    ESP_LOGI(SVK_TAG, "WiFi power save mode disabled");
 
     WiFi.onEvent(
         std::bind(&WiFiSettingsService::onStationModeDisconnected, this, std::placeholders::_1, std::placeholders::_2),
@@ -117,8 +121,8 @@ void WiFiSettingsService::loop()
 
     if (!_lastConnectionAttempt || (unsigned long)(currentMillis - _lastConnectionAttempt) >= WIFI_RECONNECTION_DELAY)
     {
-        _lastConnectionAttempt = currentMillis;
         manageSTA();
+        _lastConnectionAttempt = millis(); // Set AFTER scan+connect so 5s cooldown starts after WiFi.begin()
     }
 
     if (!_lastRssiUpdate || (unsigned long)(currentMillis - _lastRssiUpdate) >= RSSI_EVENT_DELAY)
@@ -149,13 +153,17 @@ void WiFiSettingsService::manageSTA()
     {
         return;
     }
-    else
+
+    // Abort if a connection attempt is already in progress (WiFi.begin() was called but hasn't resolved yet)
+    if (WiFi.status() == WL_IDLE_STATUS)
     {
+        return;
+    }
+
 #ifdef SERIAL_INFO
         Serial.println("Connecting to WiFi...");
 #endif
         connectToWiFi();
-    }
 }
 
 void WiFiSettingsService::connectToWiFi()
@@ -295,14 +303,21 @@ void WiFiSettingsService::updateRSSI()
 
 void WiFiSettingsService::onStationModeDisconnected(WiFiEvent_t event, WiFiEventInfo_t info)
 {
-    manageSTA();
+    // Don't trigger reconnection from event handler — let loop() handle all
+    // reconnection via manageSTA() on its regular 5s interval.
+    // WiFi.begin() internally fires DISCONNECTED events which would cause
+    // redundant scan/connect attempts while a connection is already in progress.
+    ESP_LOGD(SVK_TAG, "WiFi disconnected (reason: %d), reconnection handled by loop()", info.wifi_sta_disconnected.reason);
 }
 
 void WiFiSettingsService::onStationModeStop(WiFiEvent_t event, WiFiEventInfo_t info)
 {
     if (_stopping)
     {
-        _lastConnectionAttempt = 0;
         _stopping = false;
+        // Note: _lastConnectionAttempt is already reset by reconfigureWiFiConnection()
+        // before WiFi.disconnect(true) is called, so loop() will have already
+        // initiated a connection attempt. Don't reset it here to avoid triggering
+        // a redundant scan/connect while WiFi.begin() is still in progress.
     }
 }

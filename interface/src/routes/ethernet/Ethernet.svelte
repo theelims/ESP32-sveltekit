@@ -55,9 +55,6 @@
 	// Recognize changes in settings
 	let isSettingsDirty: boolean = $derived(JSON.stringify(ethernetEditable, emptyStringToUndefinedReplacer) !== strEthernetEditable);
 
-	// Use this to directly access the form's DOM element
-	let formField: any = $state();
-
 	let formErrors = $state({
 		hostname: false,
 		local_ip: false,
@@ -214,18 +211,12 @@
 		await getEthernetSettings();
 	}
 
-	function preventDefault(fn: (event: Event) => void) {
-		return function (event: Event) {
-			event.preventDefault();
-			fn(event);
-		};
-	}
 
 </script>
 
 <SettingsCard collapsible={false}>
 	{#snippet icon()}
-		<PlugConnected class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+		<PlugConnected class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
 	{/snippet}
 	{#snippet title()}
 		<span>Ethernet Connection</span>
@@ -342,7 +333,7 @@
 		{#if !page.data.features.security || $user.admin}
 			<Collapsible open={true} class="shadow-lg" isDirty={isSettingsDirty}>
 				{#snippet icon()}
-					<Settings class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+					<Settings class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
 				{/snippet}
 				{#snippet title()}
 					<span>Settings</span>
@@ -350,9 +341,11 @@
 	
 				<form
 					class="fieldset"
-					onsubmit={preventDefault(validateAndApplyNetworkSettings)}
-					novalidate
-					bind:this={formField}
+					onsubmit={(e) => {
+					e.preventDefault();
+					validateAndApplyNetworkSettings();
+				}}
+				novalidate
 				>
 				<div>
 					<label class="label" for="hostname">Host Name (mDNS)</label>

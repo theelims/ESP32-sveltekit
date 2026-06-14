@@ -15,10 +15,23 @@
 	import Devices from '~icons/tabler/devices';
 	import type { ApSettings, ApStatus } from '$lib/types/models';
 
-	let apSettings: ApSettings = $state();
-	let apStatus: ApStatus = $state();
-
-	let formField: any = $state();
+	let apSettings: ApSettings = $state({
+		provision_mode: 0,
+		ssid: '',
+		password: '',
+		channel: 1,
+		ssid_hidden: false,
+		max_clients: 4,
+		local_ip: '',
+		gateway_ip: '',
+		subnet_mask: ''
+	});
+	let apStatus: ApStatus = $state({
+		status: 0,
+		ip_address: '',
+		mac_address: '',
+		station_num: 0
+	});
 
 	async function getAPStatus() {
 		try {
@@ -108,7 +121,7 @@
 				notifications.success('Access Point settings updated.', 3000);
 				apSettings = await response.json();
 			} else {
-				notifications.error('User not authorized.', 3000);
+				notifications.error('Updaing Access Point settings failed.', 3000);
 			}
 		} catch (error) {
 			console.error('Error:', error);
@@ -177,18 +190,11 @@
 			postAPSettings(apSettings);
 		}
 	}
-
-	function preventDefault(fn) {
-		return function (event) {
-			event.preventDefault();
-			fn.call(this, event);
-		};
-	}
 </script>
 
 <SettingsCard collapsible={false}>
 	{#snippet icon()}
-		<AP class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+		<AP class="h-6 w-6" />
 	{/snippet}
 	{#snippet title()}
 		<span>Access Point</span>
@@ -203,7 +209,8 @@
 			>
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
 					<div
-						class="mask mask-hexagon h-auto w-10 {apStatusDescription[apStatus.status].bg_color}"
+						class="mask mask-hexagon h-auto w-10 shrink-0 {apStatusDescription[apStatus.status]
+							.bg_color}"
 					>
 						<AP class="h-auto w-full scale-75 {apStatusDescription[apStatus.status].text_color}" />
 					</div>
@@ -216,7 +223,7 @@
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 shrink-0">
 						<Home class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -228,7 +235,7 @@
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 shrink-0">
 						<MAC class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -240,7 +247,7 @@
 				</div>
 
 				<div class="rounded-box bg-base-100 flex items-center space-x-3 px-4 py-2">
-					<div class="mask mask-hexagon bg-primary h-auto w-10">
+					<div class="mask mask-hexagon bg-primary h-auto w-10 shrink-0">
 						<Devices class="text-primary-content h-auto w-full scale-75" />
 					</div>
 					<div>
@@ -270,9 +277,11 @@
 				>
 					<form
 						class="fieldset grid w-full grid-cols-1 content-center gap-x-4 gap-y-2 p-4 mb-4 sm:grid-cols-2"
-						onsubmit={preventDefault(handleSubmitAP)}
+						onsubmit={(e) => {
+							e.preventDefault();
+							handleSubmitAP();
+						}}
 						novalidate
-						bind:this={formField}
 					>
 						<div>
 							<label class="label" for="apmode">Provide Access Point ... </label>
