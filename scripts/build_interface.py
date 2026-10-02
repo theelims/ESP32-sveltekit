@@ -43,6 +43,10 @@ source_www_dir = interface_dir + "/src"
 build_dir = interface_dir + "/build"
 filesystem_dir = project_dir + "/data/www"
 
+# CONFIG_LITTLEFS_OBJ_NAME_LEN: max length of a single file or directory name
+# on the LittleFS partition, including the terminating NULL.
+LITTLEFS_OBJ_NAME_LEN = 64
+
 
 def find_latest_timestamp_for_app():
     return max(
@@ -153,6 +157,30 @@ def build_progmem():
         progmem.write("};\n\n")
 
 
+def check_littlefs_name_lengths(www_path):
+    """
+    Vite keeps the original name of imported assets and adds a hash, so a long
+    asset name can exceed the LittleFS name limit. The image still builds, but
+    the file can't be opened on the device. Fail the build early instead.
+    """
+    too_long = []
+    for current_path, _, files in os.walk(www_path):
+        for file in files:
+            rel_path = os.path.relpath(os.path.join(current_path, file), www_path)
+            device_path = "/www/" + rel_path.replace(os.sep, "/") + ".gz"
+            if any(len(name) >= LITTLEFS_OBJ_NAME_LEN for name in device_path.split("/")):
+                too_long.append(device_path)
+
+    if too_long:
+        offenders = "\n".join(f"  {path}" for path in too_long)
+        sys.exit(
+            "Error: the following paths contain a name longer than "
+            f"{LITTLEFS_OBJ_NAME_LEN - 1} characters, the LittleFS limit "
+            f"(CONFIG_LITTLEFS_OBJ_NAME_LEN):\n{offenders}\n"
+            "Shorten the affected file or route names, then rebuild."
+        )
+
+
 def add_app_to_filesystem():
     build_path = Path(build_dir)
     www_path = Path(filesystem_dir)
@@ -160,6 +188,7 @@ def add_app_to_filesystem():
         rmtree(www_path)
     print("Copying and compress interface to data directory")
     copytree(build_path, www_path)
+    check_littlefs_name_lengths(www_path)
     for current_path, _, files in os.walk(www_path):
         for file in files:
             gzip_file(os.path.join(current_path, file))
