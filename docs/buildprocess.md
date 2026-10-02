@@ -174,9 +174,24 @@ The script will download a public certificate store from Mozilla (`board_ssl_cer
 
     At the moment there is a bug with the certificate bundle when using the firmware download e.g. from Github. By using the build flag `-D DOWNLOAD_OTA_SKIP_CERT_VERIFY` you may skip certificate validation to keep OTA working. Only OTA seems affected, not MQTT. Keep in mind, that this voids the main security feature of SSL and allows man-in-the-middle attacks.
 
-## Vite and LittleFS 32 Character Limit
+## Asset Hashes and Browser Caching
 
-The static files for the website are build using vite. By default vite adds a unique hash value to all filenames for improved caching performance. However, LittleFS on the ESP32 is limited to filenames with 32 characters. This restricts the number of characters available for the user to name svelte files. To give a little bit more headroom a vite-plugin removes all hash values, as they offer no benefit on an ESP32. However, have the 32 character limit in mind when naming files. Excessively long names may still cause some issues when building the LittleFS binary.
+The static files for the website are built using Vite. Vite adds a content hash to the file names of all assets under `/_app/immutable/` (e.g. `bundle.CBPHuw2m.js`). The hash changes whenever the content changes, so these files can be cached by the browser forever. The following cache headers are sent:
+
+| Files                                                          | `Cache-Control`                       |
+| -------------------------------------------------------------- | ------------------------------------- |
+| `/_app/immutable/*` (hashed)                                   | `public, immutable, max-age=31536000` |
+| everything else (`index.html`, `env.js`, `version.json`, ...) | `no-cache`                            |
+
+This makes sure a browser always picks up the new frontend after a firmware or file system update, while the large bundles are only downloaded once per version. The non-hashed files are small (about 2 kB in total) and are sent in full on every request, no `ETag` is used.
+
+!!! tip
+
+    A browser tab that was opened before an update may still request a hashed file that no longer exists. Reload the page in that case.
+
+### LittleFS File Name Length
+
+LittleFS on the ESP32 limits each file or directory name to 63 characters (`CONFIG_LITTLEFS_OBJ_NAME_LEN` of 64 including the terminating NULL). Vite keeps the original name of imported assets and adds a hash, e.g. `user-manual.CBPHuw2m.pdf`, and the build script appends `.gz`. In LittleFS mode the build aborts with an error message if a name is too long. Shorten the file name in that case.
 
 ## Merged Firmware File for Web Flasher
 
