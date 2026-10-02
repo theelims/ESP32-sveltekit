@@ -86,13 +86,17 @@ void ESP32SvelteKit::begin()
     WWWData::registerRoutes(
         [&](const String &uri, const String &contentType, const uint8_t *content, size_t len)
         {
-            PsychicHttpRequestCallback requestHandler = [contentType, content, len](PsychicRequest *request)
+            // Hashed assets in /_app/immutable/ are cached forever. Everything
+            // else, most importantly index.html, is fetched again on every
+            // request so a firmware update shows up without a hard refresh.
+            const char *cacheControl = uri.startsWith("/_app/immutable/") ? "public, immutable, max-age=31536000" : "no-cache";
+            PsychicHttpRequestCallback requestHandler = [contentType, content, len, cacheControl](PsychicRequest *request)
             {
                 PsychicResponse response(request);
                 response.setCode(200);
                 response.setContentType(contentType.c_str());
                 response.addHeader("Content-Encoding", "gzip");
-                response.addHeader("Cache-Control", "public, immutable, max-age=31536000");
+                response.addHeader("Cache-Control", cacheControl);
                 response.setContent(content, len);
                 return response.send();
             };
@@ -110,17 +114,24 @@ void ESP32SvelteKit::begin()
 #else
     // Serve static resources from /www/
     ESP_LOGV(SVK_TAG, "Registering routes from FS /www/ static resources");
-    _server->serveStatic("/_app/", ESPFS, "/www/_app/");
-    _server->serveStatic("/favicon.png", ESPFS, "/www/favicon.png");
-    //  Serving all other get requests with "/www/index.htm"
+    // Files in /_app/immutable/ carry a content hash in their name and can be
+    // cached forever.
+    _server->serveStatic("/_app/immutable/", ESPFS, "/www/_app/immutable/", "public, immutable, max-age=31536000");
+    // Everything else (index.html, env.js, version.json, favicon.png) keeps its
+    // name across builds and is always sent in full.
     _server->onNotFound([](PsychicRequest *request)
                         {
-        if (request->method() == HTTP_GET) {
-            PsychicFileResponse response(request, ESPFS, "/www/index.html", "text/html");
-            return response.send();
-            // String url = "http://" + request->host() + "/index.html";
-            // request->redirect(url.c_str());
-        } });
+        if (request->method() != HTTP_GET) {
+            return request->reply(404);
+        }
+        String path = request->path();
+        bool isAsset = (path.startsWith("/_app/") || path.equals("/favicon.png")) && path.indexOf("..") < 0;
+        if (!isAsset || !(ESPFS.exists("/www" + path) || ESPFS.exists("/www" + path + ".gz"))) {
+            path = "/index.html";
+        }
+        PsychicFileResponse response(request, ESPFS, "/www" + path);
+        response.addHeader("Cache-Control", "no-cache");
+        return response.send(); });
 #endif
 
     // Serve static resources from /config/ if set by platformio.ini

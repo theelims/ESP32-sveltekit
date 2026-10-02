@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
 - Changed the width of the confirm dialog.
 - SvelteKit bundling as single files to reduce heap consumption.
 - Rework of firmware upload [#107](https://github.com/theelims/ESP32-sveltekit/pull/107)
+- Asset file names keep the content hash added by Vite. The LittleFS file name workaround `vite-plugin-littlefs.ts` was removed.
+- Only hashed files under `/_app/immutable/` are cached as immutable. All other frontend files are sent with `Cache-Control: no-cache`, so browsers pick up a new frontend after a firmware update without a hard refresh.
 
 ### Fixes
 
