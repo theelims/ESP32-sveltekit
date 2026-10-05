@@ -13,9 +13,45 @@
  **/
 
 #include <NTPSettingsService.h>
+#include <lwip/dhcp.h>
+#include <lwip/netif.h>
 #if FT_ENABLED(FT_ETHERNET)
 #include <ETH.h>
 #endif
+
+// The esp_sntp_* wrappers take the TCPIP core lock themselves and that lock is
+// not recursive, so everything in here uses the raw lwIP sntp_* functions while
+// holding the lock explicitly.
+static void lockTcpipCore()
+{
+#ifdef CONFIG_LWIP_TCPIP_CORE_LOCKING
+    if (!sys_thread_tcpip(LWIP_CORE_LOCK_QUERY_HOLDER))
+    {
+        LOCK_TCPIP_CORE();
+    }
+#endif
+}
+
+static void unlockTcpipCore()
+{
+#ifdef CONFIG_LWIP_TCPIP_CORE_LOCKING
+    if (sys_thread_tcpip(LWIP_CORE_LOCK_QUERY_HOLDER))
+    {
+        UNLOCK_TCPIP_CORE();
+    }
+#endif
+}
+
+// lwIP writes a server announced by DHCP as a plain address without a name
+static bool slotHoldsDhcpServer(u8_t idx)
+{
+    return sntp_getservername(idx) == NULL && !ip_addr_isany(sntp_getserver(idx));
+}
+
+static bool slotIsEmpty(u8_t idx)
+{
+    return sntp_getservername(idx) == NULL && ip_addr_isany(sntp_getserver(idx));
+}
 
 NTPSettingsService::NTPSettingsService(PsychicHttpServer *server,
                                        FS *fs,
@@ -80,33 +116,143 @@ void NTPSettingsService::configureNTP()
 #if FT_ENABLED(FT_ETHERNET)
     networkConnected = networkConnected || ETH.connected();
 #endif
-    if (networkConnected && _state.enabled)
+
+    bool serverModeDhcp = _state.preferServerFromDhcp;
+    bool renewDhcp = false;
+    bool renewFailed = false;
+    bool useDhcpServer = false;
+    char dhcpServer[IPADDR_STRLEN_MAX] = {0};
+
+    lockTcpipCore();
+
+    bool switchedOn = serverModeDhcp && !_serverModeDhcp;
+    _serverModeDhcp = serverModeDhcp;
+
+    sntp_servermode_dhcp(serverModeDhcp ? 1 : 0);
+    sntp_stop();
+    sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    _fallbackServer = _state.server;
+
+    if (networkConnected)
     {
-#ifdef SERIAL_INFO
-        Serial.println(F("Starting NTP..."));
-#endif
-        configTzTime(_state.tzFormat.c_str(), _state.server.c_str());
+        // slot 0 is the source of truth for the server announced by DHCP
+        useDhcpServer = serverModeDhcp && slotHoldsDhcpServer(0);
+        if (useDhcpServer)
+        {
+            sntp_setservername(1, _fallbackServer.c_str());
+            ipaddr_ntoa_r(sntp_getserver(0), dhcpServer, sizeof(dhcpServer));
+        }
+        else
+        {
+            sntp_setservername(0, _fallbackServer.c_str());
+            sntp_setserver(1, NULL);
+        }
+        sntp_setserver(2, NULL);
+
+        if (_state.enabled)
+        {
+            sntp_init();
+        }
+
+        // lwIP only takes the announced server from a DHCP ACK that arrives
+        // while the mode is on; the one from the current lease was discarded.
+        // A renewal provokes a fresh ACK and keeps the IP, unlike a reconnect.
+        if (switchedOn && !useDhcpServer)
+        {
+            renewFailed = !renewDhcpLeases();
+            renewDhcp = true;
+        }
     }
     else
     {
-
-#ifdef CONFIG_LWIP_TCPIP_CORE_LOCKING
-        if (!sys_thread_tcpip(LWIP_CORE_LOCK_QUERY_HOLDER))
+        for (u8_t i = 0; i < SNTP_MAX_SERVERS; i++)
         {
-            LOCK_TCPIP_CORE();
+            sntp_setserver(i, NULL);
         }
-#endif
+    }
 
-        setenv("TZ", _state.tzFormat.c_str(), 1);
-        tzset();
-        sntp_stop();
+    unlockTcpipCore();
 
-#ifdef CONFIG_LWIP_TCPIP_CORE_LOCKING
-        if (sys_thread_tcpip(LWIP_CORE_LOCK_QUERY_HOLDER))
+    setenv("TZ", _state.tzFormat.c_str(), 1);
+    tzset();
+
+    if (!networkConnected)
+    {
+        ESP_LOGI(SVK_TAG, "Network not connected, NTP stopped");
+    }
+    else if (!_state.enabled)
+    {
+        ESP_LOGI(SVK_TAG, "NTP disabled");
+    }
+    else if (useDhcpServer)
+    {
+        ESP_LOGI(SVK_TAG, "Starting NTP with server %s (via DHCP), fallback %s", dhcpServer, _fallbackServer.c_str());
+    }
+    else
+    {
+        ESP_LOGI(SVK_TAG, "Starting NTP with server %s", _fallbackServer.c_str());
+    }
+
+    if (renewDhcp)
+    {
+        ESP_LOGI(SVK_TAG, "Renewing DHCP lease to obtain the NTP server announced by DHCP");
+        if (renewFailed)
         {
-            UNLOCK_TCPIP_CORE();
+            ESP_LOGW(SVK_TAG, "DHCP lease renewal failed, waiting for the regular renewal");
         }
-#endif
+    }
+}
+
+// must be called with the TCPIP core lock held
+bool NTPSettingsService::renewDhcpLeases()
+{
+    bool ok = true;
+    struct netif *netif;
+    NETIF_FOREACH(netif)
+    {
+        if (dhcp_supplied_address(netif) && dhcp_renew(netif) != ERR_OK)
+        {
+            ok = false;
+        }
+    }
+    return ok;
+}
+
+// Every DHCP ACK carrying option 42 (initial lease and renewals alike) makes
+// lwIP overwrite slot 0 with the announced server and empty the other slots.
+// An ACK without option 42 leaves the slots alone. There is no callback for
+// this, so the fallback server is put back periodically.
+void NTPSettingsService::loop()
+{
+    unsigned long currentMillis = millis();
+    if ((long)(currentMillis - _nextLoopCheck) < 0)
+    {
+        return;
+    }
+    _nextLoopCheck = currentMillis + NTP_LOOP_INTERVAL;
+
+    if (!_state.preferServerFromDhcp)
+    {
+        return;
+    }
+
+    bool restored = false;
+    char dhcpServer[IPADDR_STRLEN_MAX] = {0};
+
+    lockTcpipCore();
+
+    if (slotHoldsDhcpServer(0) && slotIsEmpty(1))
+    {
+        sntp_setservername(1, _fallbackServer.c_str());
+        ipaddr_ntoa_r(sntp_getserver(0), dhcpServer, sizeof(dhcpServer));
+        restored = true;
+    }
+
+    unlockTcpipCore();
+
+    if (restored)
+    {
+        ESP_LOGI(SVK_TAG, "NTP server %s (via DHCP) in use, restored fallback %s", dhcpServer, _fallbackServer.c_str());
     }
 }
 

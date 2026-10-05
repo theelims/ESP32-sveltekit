@@ -68,8 +68,20 @@ esp_err_t NTPStatus::ntpStatus(PsychicRequest *request)
     // local time with offset
     root["local_time"] = toLocalTimeString(localtime(&now));
 
-    // the sntp server name
-    root["server"] = sntp_getservername(0);
+    // the sntp server name, or its address if lwIP took it from DHCP
+    const char *serverName = sntp_getservername(0);
+    const ip_addr_t *serverAddr = sntp_getserver(0);
+    bool serverFromDhcp = serverName == NULL && !ip_addr_isany(serverAddr);
+    if (serverFromDhcp)
+    {
+        char buf[IPADDR_STRLEN_MAX];
+        root["server"] = String(ipaddr_ntoa_r(serverAddr, buf, sizeof(buf)));
+    }
+    else
+    {
+        root["server"] = serverName ? serverName : "";
+    }
+    root["server_from_dhcp"] = serverFromDhcp;
 
     // device uptime in seconds
     root["uptime"] = millis() / 1000;

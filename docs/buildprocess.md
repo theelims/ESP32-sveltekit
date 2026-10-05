@@ -95,6 +95,16 @@ Changing factory time zone setting is a common requirement. This requires a litt
   -D FACTORY_NTP_TIME_ZONE_FORMAT=\"PST8PDT,M3.2.0,M11.1.0\"
 ```
 
+### NTP server from DHCP
+
+Many routers announce an NTP server as part of the DHCP lease (DHCP option 42). By default the device uses this server first and keeps the configured server as a fallback in case the announced server does not respond. This behaviour can be switched off in the user interface, or its default can be changed with:
+
+```ini
+  -D FACTORY_NTP_PREFER_SERVER_FROM_DHCP=false
+```
+
+If the DHCP server does not announce an NTP server, only the configured server is used. The NTP status page shows which server is in use and whether it was obtained via DHCP.
+
 ### Placeholder substitution
 
 Various settings support placeholder substitution, indicated by comments in [factory_settings.ini](https://github.com/theelims/ESP32-sveltekit/blob/main/factory_settings.ini). This can be particularly useful where settings need to be unique, such as the Access Point SSID or MQTT client id. The following placeholders are supported:

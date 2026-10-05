@@ -42,15 +42,23 @@
 #define FACTORY_NTP_SERVER "time.google.com"
 #endif
 
+#ifndef FACTORY_NTP_PREFER_SERVER_FROM_DHCP
+#define FACTORY_NTP_PREFER_SERVER_FROM_DHCP true
+#endif
+
 #define NTP_SETTINGS_FILE "/config/ntpSettings.json"
 #define NTP_SETTINGS_SERVICE_PATH "/rest/ntpSettings"
 
 #define TIME_PATH "/rest/time"
 
+// how often loop() inspects the SNTP server slots
+#define NTP_LOOP_INTERVAL 10000
+
 class NTPSettings
 {
 public:
     bool enabled;
+    bool preferServerFromDhcp;
     String tzLabel;
     String tzFormat;
     String server;
@@ -58,6 +66,7 @@ public:
     static void read(NTPSettings &settings, JsonObject &root)
     {
         root["enabled"] = settings.enabled;
+        root["prefer_server_from_dhcp"] = settings.preferServerFromDhcp;
         root["server"] = settings.server;
         root["tz_label"] = settings.tzLabel;
         root["tz_format"] = settings.tzFormat;
@@ -66,6 +75,7 @@ public:
     static StateUpdateResult update(JsonObject &root, NTPSettings &settings, const String &originId)
     {
         settings.enabled = root["enabled"] | FACTORY_NTP_ENABLED;
+        settings.preferServerFromDhcp = root["prefer_server_from_dhcp"] | FACTORY_NTP_PREFER_SERVER_FROM_DHCP;
         settings.server = root["server"] | FACTORY_NTP_SERVER;
         settings.tzLabel = root["tz_label"] | FACTORY_NTP_TIME_ZONE_LABEL;
         settings.tzFormat = root["tz_format"] | FACTORY_NTP_TIME_ZONE_FORMAT;
@@ -79,6 +89,7 @@ public:
     NTPSettingsService(PsychicHttpServer *server, FS *fs, SecurityManager *securityManager);
 
     void begin();
+    void loop();
 
 private:
     PsychicHttpServer *_server;
@@ -86,9 +97,17 @@ private:
     HttpEndpoint<NTPSettings> _httpEndpoint;
     FSPersistence<NTPSettings> _fsPersistence;
 
+    // lwIP only stores the pointer passed to sntp_setservername(), so the
+    // fallback name lives in a buffer that is only changed under the TCPIP lock
+    String _fallbackServer;
+    // the value last passed to sntp_servermode_dhcp(); lwIP starts with it off
+    bool _serverModeDhcp = false;
+    unsigned long _nextLoopCheck = 0;
+
     void onNetworkGotIP(WiFiEvent_t event, WiFiEventInfo_t info);
     void onNetworkDisconnected(WiFiEvent_t event, WiFiEventInfo_t info);
     void configureNTP();
+    bool renewDhcpLeases();
     esp_err_t configureTime(PsychicRequest *request, JsonVariant &json);
 };
 

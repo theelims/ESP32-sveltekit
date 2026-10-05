@@ -9,12 +9,14 @@ All notable changes to this project will be documented in this file.
 - Add originID to StateUpdateResult update [#110](https://github.com/theelims/ESP32-sveltekit/pull/110)
 - Add originID to StateUpdateResult update [#110](https://github.com/theelims/ESP32-sveltekit/pull/110)
 - Ethernet Support [#113](https://github.com/theelims/ESP32-sveltekit/pull/113)
+- Use the NTP server announced by DHCP (option 42) with the configured server as fallback. Default on, see `FACTORY_NTP_PREFER_SERVER_FROM_DHCP`.
 
 ### Changed
 
 - Changed the width of the confirm dialog.
 - SvelteKit bundling as single files to reduce heap consumption.
 - Rework of firmware upload [#107](https://github.com/theelims/ESP32-sveltekit/pull/107)
+- NTP status page shows times in the browser locale without the browser's time zone name.
 
 ### Fixes
 

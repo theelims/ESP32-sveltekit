@@ -245,6 +245,9 @@ void ESP32SvelteKit::_loop()
     {
         _wifiSettingsService.loop(); // 30 seconds
         _apSettingsService.loop();   // 10 seconds
+#if FT_ENABLED(FT_NTP)
+        _ntpSettingsService.loop();  // 10 seconds
+#endif
 #if FT_ENABLED(FT_MQTT)
         _mqttSettingsService.loop(); // 5 seconds
 #endif
