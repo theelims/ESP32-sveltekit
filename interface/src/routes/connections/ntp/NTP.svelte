@@ -194,7 +194,7 @@
 					<div>
 						<div class="font-bold">NTP Server</div>
 						<div class="text-sm opacity-75">
-							{ntpStatus.server}
+							{ntpStatus.server}{ntpStatus.server_from_dhcp ? ' (via DHCP)' : ''}
 						</div>
 					</div>
 				</div>
@@ -206,9 +206,9 @@
 					<div>
 						<div class="font-bold">Local Time</div>
 						<div class="text-sm opacity-75">
-							{new Intl.DateTimeFormat('en-GB', {
+							{new Intl.DateTimeFormat(undefined, {
 								dateStyle: 'long',
-								timeStyle: 'long'
+								timeStyle: 'medium'
 							}).format(new Date(ntpStatus.local_time))}
 						</div>
 					</div>
@@ -221,7 +221,7 @@
 					<div>
 						<div class="font-bold">UTC Time</div>
 						<div class="text-sm opacity-75">
-							{new Intl.DateTimeFormat('en-GB', {
+							{new Intl.DateTimeFormat(undefined, {
 								dateStyle: 'long',
 								timeStyle: 'long',
 								timeZone: 'UTC'
@@ -264,7 +264,17 @@
 					/>Enable NTP
 				</label>
 
-				<label class="label" for="server">Server</label>
+				<label class="label text-base inline-flex cursor-pointer content-end justify-start gap-4">
+					<input
+						type="checkbox"
+						bind:checked={ntpSettings.prefer_server_from_dhcp}
+						class="checkbox checkbox-primary"
+					/>Use NTP server provided by DHCP
+				</label>
+
+				<label class="label" for="server"
+					>{ntpSettings.prefer_server_from_dhcp ? 'Fallback Server' : 'Server'}</label
+				>
 				<input
 					type="text"
 					min="3"

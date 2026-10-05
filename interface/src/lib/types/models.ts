@@ -72,11 +72,13 @@ export type NTPStatus = {
 	utc_time: string;
 	local_time: string;
 	server: string;
+	server_from_dhcp: boolean;
 	uptime: number;
 };
 
 export type NTPSettings = {
 	enabled: boolean;
+	prefer_server_from_dhcp: boolean;
 	server: string;
 	tz_label: string;
 	tz_format: string;
